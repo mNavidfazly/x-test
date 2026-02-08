@@ -278,14 +278,14 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 ### Phase 1: Foundation
 
 #### 1A - Supabase Setup
-- [ ] Create Supabase project
-- [ ] Initialize GitHub monorepo:
-  - [ ] `git init` + create `.gitignore` (node_modules, .env, dist, __pycache__, .venv)
-  - [ ] Create private GitHub repo
-  - [ ] Push initial commit with `docs/` and `supabase/` folders
-- [ ] Run database migrations (`00001-00013` — 30 tables, ~215+ RLS policies, auth method enforcement, security hardening)
+- [x] Create Supabase project — `ruhdnvtvoxxiodnyyqqf` (Frankfurt, Calypso Ventures GmbH org)
+- [x] Initialize GitHub monorepo:
+  - [x] `git init` + create `.gitignore`
+  - [x] Create private GitHub repo — `TereschenkoAI/x-course-v2`
+  - [x] Push initial commit with `docs/` and `supabase/` folders
+- [x] Run database migrations — all 13 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility)
 - [ ] Configure auth:
-  - [ ] Microsoft Entra ID SSO (for @calypso.ai domain)
+  - [ ] Microsoft Entra ID SSO (for @calypso.ai domain) — deferred (Azure AD app registration needed)
   - [ ] Enable email/password auth
   - [ ] Enable magic link auth
   - [ ] Disable public registration (invite-only via admin)
@@ -293,15 +293,15 @@ x-course-v2/                                  # GitHub monorepo (main branch →
   - [ ] Set magic link / OTP expiration to 15 minutes (900 seconds)
   - [ ] Use OTP code template instead of clickable magic link (`{{ .Token }}` in email template — prevents corporate email scanner consumption)
   - [ ] Configure `xms_edov` optional claim on Azure AD app registration (prevents unverified email impersonation)
-  - [ ] Configure per-tenant auth methods in `tenants.settings` (e.g. `{"auth_methods": ["azure_sso", "email_password"]}`)
+  - [x] Configure per-tenant auth methods in `tenants.settings` — Calypso set to `["azure_sso","email_password","magic_link"]`
 - [ ] Configure auth hooks:
   - [ ] Custom Access Token Hook → `public.custom_access_token_hook`
   - [ ] Password Verification Hook → `public.password_verification_hook` (blocks password sign-in for SSO-only tenants)
-- [ ] Verify master tenant seed data (Calypso, is_master=true, domain='calypso.ai')
-- [ ] Enable Realtime for `notifications` table
-- [ ] Verify storage buckets created (avatars, course-files, exam-submissions)
+- [x] Verify master tenant seed data (Calypso, is_master=true, domain='calypso.ai')
+- [x] Enable Realtime for `notifications` table
+- [x] Verify storage buckets created (avatars, course-files, exam-submissions)
 - [ ] Enable pg_cron extension (for exam deadlines + staleness checks)
-- [ ] Note credentials (URL, anon key, service role key, JWT secret)
+- [x] Note credentials — `.env.example` created, API keys retrieved via CLI
 
 #### 1B - RLS Test Infrastructure
 - [ ] Install dependencies: `vitest @supabase/supabase-js dotenv @faker-js/faker`
