@@ -27,6 +27,9 @@ Thumbs.db
 .vscode/
 .claude/
 
+# Angular
+frontend/.angular/
+
 # Supabase local
 .supabase/
 supabase/.temp/

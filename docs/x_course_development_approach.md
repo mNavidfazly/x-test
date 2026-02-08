@@ -329,20 +329,20 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] Create health check endpoint (`GET /api/health` — returns status + Supabase connectivity)
 - [x] Write Dockerfile (Python 3.11-slim, uvicorn)
 - [x] **Tests:** 11 pytest tests passing (health, auth/JWT, config validation)
-- [ ] Commit and push `backend/` to GitHub
-- [ ] Connect Railway to GitHub repo (root directory: `backend/`, deploy branch: `main`, auto-deploy on push)
+- [x] Commit and push `backend/` to GitHub
+- [x] Connect Railway to GitHub repo (root directory: `backend/`, deploy branch: `main`, auto-deploy on push)
 - [x] Verify connectivity to Supabase (health endpoint returns `"supabase": "connected"`)
 
 #### 1D - Angular Setup
-- [ ] Create Angular 19 project
-- [ ] Install and configure Tailwind CSS v3
-- [ ] Install Lucide icons (`lucide-angular`)
-- [ ] Setup Supabase JS client (SupabaseService)
-- [ ] Setup API service for FastAPI (ApiService)
-- [ ] Configure environment files (supabaseUrl, supabaseAnonKey, apiUrl)
+- [x] Create Angular 19 project (`ng new frontend --style=scss --routing --skip-git --skip-tests --ssr=false`)
+- [x] Install and configure Tailwind CSS v3
+- [x] Install Lucide icons (`lucide-angular`)
+- [x] Setup Supabase JS client (SupabaseService — PKCE flow, autoRefreshToken, persistSession, detectSessionInUrl)
+- [x] Setup API service for FastAPI (ApiService — HttpClient wrapper with JWT auth headers)
+- [x] Configure environment files (supabaseUrl, supabaseAnonKey, apiUrl) + angular.json fileReplacements
 - [ ] Commit and push `frontend/` to GitHub
 - [ ] Connect Vercel to GitHub repo (root directory: `frontend/`, deploy branch: `main`, auto-deploy on push)
-- [ ] **Tests:** Basic smoke tests
+- [ ] **Tests:** Basic smoke tests (deferred to 1E — frontend test infrastructure)
 
 #### 1E - Frontend Test Infrastructure
 - [ ] Install: vitest, @analogjs/vitest-angular, @analogjs/vite-plugin-angular, jsdom, @testing-library/angular
@@ -1634,7 +1634,7 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 ### Phase 1: Foundation
 - [x] Supabase setup + schema + RLS + multi-provider auth (Azure SSO + email/password + magic link)
 - [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
-- [ ] FastAPI setup + deploy to Railway
+- [x] FastAPI setup + deploy to Railway (11 tests, health endpoint verified)
 - [ ] Angular setup + deploy to Vercel
 - [ ] Frontend test infrastructure setup
 - [ ] Auth flow (Azure SSO + email/password + magic link, per-tenant config, guards, access request) + tests
