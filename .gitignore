@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / personal config
+.idea/
+*.swp
+*.swo
+.vscode/
+.claude/
+
+# Supabase local
+.supabase/
+supabase/.temp/
