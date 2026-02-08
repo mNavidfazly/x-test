@@ -315,7 +315,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
   - [x] setProfileRole() helper (direct pg with fake JWT claims to bypass `protect_profile_role_fields` trigger)
   - [x] cleanupTestData() (FK dependency order)
 - [x] Create `vitest.config.ts` for RLS tests (fork pooling for isolation)
-- [ ] Create `scripts/test-runner.ts` (Supabase branch management)
+- [x] Create `scripts/test-runner.ts` (Supabase branch management — creates ephemeral preview branch, runs tests, deletes branch)
 - [x] Add npm scripts: `test:rls`, `test:rls:local`, `test:rls:watch`
 - [x] Write initial RLS tests for tenants (10 tests) + profiles (14 tests)
 - [x] **Tests:** 24 RLS tests passing (tenants + profiles)
