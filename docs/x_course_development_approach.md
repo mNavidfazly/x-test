@@ -286,22 +286,23 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] Run database migrations — all 13 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility)
 - [ ] Configure auth:
   - [ ] Microsoft Entra ID SSO (for @calypso-commodities.com domain) — deferred (Azure AD app registration needed)
-  - [ ] Enable email/password auth
-  - [ ] Enable magic link auth
-  - [ ] Disable public registration (invite-only via admin)
-  - [ ] Disable public email signup (Auth → Providers → Email → disable "Allow new users to sign up")
-  - [ ] Set magic link / OTP expiration to 15 minutes (900 seconds)
-  - [ ] Use OTP code template instead of clickable magic link (`{{ .Token }}` in email template — prevents corporate email scanner consumption)
-  - [ ] Configure `xms_edov` optional claim on Azure AD app registration (prevents unverified email impersonation)
+  - [x] Enable email/password auth — enabled by default, confirmed via `config push`
+  - [x] Enable magic link auth — implicit with email provider (uses `signInWithOtp`)
+  - [x] Disable public registration — `enable_signup = false` in config.toml, pushed via `supabase config push`
+  - [x] Disable public email signup — covered by `enable_signup = false`
+  - [x] Set magic link / OTP expiration to 15 minutes — `otp_expiry = 900` in config.toml
+  - [x] Use OTP code template — all 4 email templates use `{{ .Token }}` (magic_link, confirmation, invite, recovery)
+  - [ ] Configure `xms_edov` optional claim on Azure AD app registration — deferred (Azure Portal needed)
   - [x] Configure per-tenant auth methods in `tenants.settings` — Calypso set to `["azure_sso","email_password","magic_link"]`
-- [ ] Configure auth hooks:
-  - [ ] Custom Access Token Hook → `public.custom_access_token_hook`
-  - [ ] Password Verification Hook → `public.password_verification_hook` (blocks password sign-in for SSO-only tenants)
+  - [x] Configure custom SMTP — Office 365 (`smtp.office365.com:587`, `support@calypso-commodities.com`)
+- [x] Configure auth hooks:
+  - [x] Custom Access Token Hook → `public.custom_access_token_hook` — enabled via `config push` + GRANTs for `supabase_auth_admin`
+  - [ ] Password Verification Hook → requires Team/Enterprise plan (project is Pro)
 - [x] Verify master tenant seed data (Calypso, is_master=true, domain='calypso-commodities.com')
 - [x] Enable Realtime for `notifications` table
 - [x] Verify storage buckets created (avatars, course-files, exam-submissions)
-- [ ] Enable pg_cron extension (for exam deadlines + staleness checks)
-- [x] Note credentials — `.env.example` created, API keys retrieved via CLI
+- [x] Enable pg_cron — 4 jobs scheduled: orphaned-users cleanup (daily 3AM), exam-deadline reminder (hourly), content-staleness check (daily midnight), cron-history cleanup (weekly)
+- [x] Note credentials — `.env.example` + `.env` created, API keys retrieved via CLI
 
 #### 1B - RLS Test Infrastructure
 - [ ] Install dependencies: `vitest @supabase/supabase-js dotenv @faker-js/faker`
