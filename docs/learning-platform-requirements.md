@@ -1521,7 +1521,7 @@ On login, we use a Supabase hook/function to add custom claims to the JWT:
 
 ### Helper Function
 ```sql
-CREATE OR REPLACE FUNCTION auth.jwt_claim(claim text)
+CREATE OR REPLACE FUNCTION public.jwt_claim(claim text)
 RETURNS text AS $$
   SELECT coalesce(
     current_setting('request.jwt.claims', true)::json->>claim,
@@ -1529,7 +1529,7 @@ RETURNS text AS $$
   );
 $$ LANGUAGE sql STABLE;
 
-CREATE OR REPLACE FUNCTION auth.jwt_claim_array(claim text)
+CREATE OR REPLACE FUNCTION public.jwt_claim_array(claim text)
 RETURNS text[] AS $$
   SELECT array(
     SELECT jsonb_array_elements_text(
@@ -1551,18 +1551,18 @@ CREATE POLICY "read_own_profile" ON profiles
 -- Tenant admins can read profiles in their tenant
 CREATE POLICY "tenant_admin_read_profiles" ON profiles
   FOR SELECT USING (
-    tenant_id = auth.jwt_claim('tenant_id')::uuid
-    AND auth.jwt_claim('is_tenant_admin') = 'true'
+    tenant_id = public.jwt_claim('tenant_id')::uuid
+    AND public.jwt_claim('is_tenant_admin') = 'true'
   );
 
 -- Platform admins can read all profiles
 CREATE POLICY "platform_admin_read_profiles" ON profiles
-  FOR SELECT USING (auth.jwt_claim('is_platform_admin') = 'true');
+  FOR SELECT USING (public.jwt_claim('is_platform_admin') = 'true');
 
 -- CSMs can read profiles in assigned tenants
 CREATE POLICY "csm_read_profiles" ON profiles
   FOR SELECT USING (
-    tenant_id = ANY(auth.jwt_claim_array('csm_tenant_ids')::uuid[])
+    tenant_id = ANY(public.jwt_claim_array('csm_tenant_ids')::uuid[])
   );
 ```
 
@@ -1575,18 +1575,18 @@ CREATE POLICY "own_progress" ON user_progress
 -- Tenant admins can read progress in their tenant
 CREATE POLICY "tenant_admin_read_progress" ON user_progress
   FOR SELECT USING (
-    tenant_id = auth.jwt_claim('tenant_id')::uuid
-    AND auth.jwt_claim('is_tenant_admin') = 'true'
+    tenant_id = public.jwt_claim('tenant_id')::uuid
+    AND public.jwt_claim('is_tenant_admin') = 'true'
   );
 
 -- Platform admins can read all progress
 CREATE POLICY "platform_admin_read_progress" ON user_progress
-  FOR SELECT USING (auth.jwt_claim('is_platform_admin') = 'true');
+  FOR SELECT USING (public.jwt_claim('is_platform_admin') = 'true');
 
 -- CSMs can read progress in assigned tenants
 CREATE POLICY "csm_read_progress" ON user_progress
   FOR SELECT USING (
-    tenant_id = ANY(auth.jwt_claim_array('csm_tenant_ids')::uuid[])
+    tenant_id = ANY(public.jwt_claim_array('csm_tenant_ids')::uuid[])
   );
 
 -- Lecturers can read progress for their assigned courses (CROSS-TENANT)
@@ -1595,7 +1595,7 @@ CREATE POLICY "lecturer_read_progress" ON user_progress
     EXISTS (
       SELECT 1 FROM modules m
       WHERE m.id = user_progress.module_id
-      AND m.course_id = ANY(auth.jwt_claim_array('lecturer_course_ids')::uuid[])
+      AND m.course_id = ANY(public.jwt_claim_array('lecturer_course_ids')::uuid[])
     )
   );
 ```
@@ -1604,12 +1604,12 @@ CREATE POLICY "lecturer_read_progress" ON user_progress
 ```sql
 -- Users can read comments in their tenant
 CREATE POLICY "read_tenant_comments" ON comments
-  FOR SELECT USING (tenant_id = auth.jwt_claim('tenant_id')::uuid);
+  FOR SELECT USING (tenant_id = public.jwt_claim('tenant_id')::uuid);
 
 -- Users can insert comments (own tenant only)
 CREATE POLICY "insert_own_comment" ON comments
   FOR INSERT WITH CHECK (
-    tenant_id = auth.jwt_claim('tenant_id')::uuid
+    tenant_id = public.jwt_claim('tenant_id')::uuid
     AND user_id = auth.uid()
   );
 
@@ -1622,18 +1622,18 @@ CREATE POLICY "delete_own_comment" ON comments
 -- Tenant admins can delete any comment in their tenant
 CREATE POLICY "tenant_admin_delete_comment" ON comments
   FOR DELETE USING (
-    tenant_id = auth.jwt_claim('tenant_id')::uuid
-    AND auth.jwt_claim('is_tenant_admin') = 'true'
+    tenant_id = public.jwt_claim('tenant_id')::uuid
+    AND public.jwt_claim('is_tenant_admin') = 'true'
   );
 
 -- Platform admins can read all comments
 CREATE POLICY "platform_admin_read_comments" ON comments
-  FOR SELECT USING (auth.jwt_claim('is_platform_admin') = 'true');
+  FOR SELECT USING (public.jwt_claim('is_platform_admin') = 'true');
 
 -- CSMs can read comments in assigned tenants
 CREATE POLICY "csm_read_comments" ON comments
   FOR SELECT USING (
-    tenant_id = ANY(auth.jwt_claim_array('csm_tenant_ids')::uuid[])
+    tenant_id = ANY(public.jwt_claim_array('csm_tenant_ids')::uuid[])
   );
 
 -- Lecturers can read comments on their courses (CROSS-TENANT)
@@ -1642,7 +1642,7 @@ CREATE POLICY "lecturer_read_comments" ON comments
     EXISTS (
       SELECT 1 FROM modules m
       WHERE m.id = comments.module_id
-      AND m.course_id = ANY(auth.jwt_claim_array('lecturer_course_ids')::uuid[])
+      AND m.course_id = ANY(public.jwt_claim_array('lecturer_course_ids')::uuid[])
     )
   );
 ```
@@ -1655,18 +1655,18 @@ CREATE POLICY "read_tenant_courses" ON courses
     EXISTS (
       SELECT 1 FROM tenant_courses tc
       WHERE tc.course_id = courses.id
-      AND tc.tenant_id = auth.jwt_claim('tenant_id')::uuid
+      AND tc.tenant_id = public.jwt_claim('tenant_id')::uuid
     )
   );
 
 -- Platform admins can read/write all courses
 CREATE POLICY "platform_admin_all_courses" ON courses
-  FOR ALL USING (auth.jwt_claim('is_platform_admin') = 'true');
+  FOR ALL USING (public.jwt_claim('is_platform_admin') = 'true');
 
 -- Lecturers with can_edit can write to their assigned courses
 CREATE POLICY "lecturer_edit_assigned_courses" ON courses
   FOR UPDATE USING (
-    id = ANY(auth.jwt_claim_array('lecturer_can_edit_course_ids')::uuid[])
+    id = ANY(public.jwt_claim_array('lecturer_can_edit_course_ids')::uuid[])
   );
 
 -- Similar policies needed for lectures and modules tables

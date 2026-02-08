@@ -50,8 +50,8 @@
 │  JWT arrives with every Supabase client request                            │
 │       │                                                                    │
 │       v                                                                    │
-│  auth.jwt_claim(name)        ── extract scalar from JWT   [00001:66-72]    │
-│  auth.jwt_claim_array(name)  ── extract array from JWT    [00001:75-88]    │
+│  public.jwt_claim(name)        ── extract scalar from JWT   [00001:66-72]    │
+│  public.jwt_claim_array(name)  ── extract array from JWT    [00001:75-88]    │
 │       │                                                                    │
 │       v                                                                    │
 │  ~215+ RLS policies evaluate claims — zero DB lookups per row              │
@@ -160,8 +160,8 @@ The function `custom_access_token_hook(event jsonb)` runs on every token issuanc
 These extract claims from the JWT at RLS evaluation time (`00001:66-88`):
 
 ```sql
--- Extract scalar: auth.jwt_claim('tenant_id') → text
-CREATE OR REPLACE FUNCTION auth.jwt_claim(claim text)
+-- Extract scalar: public.jwt_claim('tenant_id') → text
+CREATE OR REPLACE FUNCTION public.jwt_claim(claim text)
 RETURNS text AS $$
   SELECT coalesce(
     current_setting('request.jwt.claims', true)::json ->> claim,
@@ -169,8 +169,8 @@ RETURNS text AS $$
   );
 $$ LANGUAGE sql STABLE;
 
--- Extract array: auth.jwt_claim_array('csm_tenant_ids') → text[]
-CREATE OR REPLACE FUNCTION auth.jwt_claim_array(claim text)
+-- Extract array: public.jwt_claim_array('csm_tenant_ids') → text[]
+CREATE OR REPLACE FUNCTION public.jwt_claim_array(claim text)
 RETURNS text[] AS $$
   SELECT coalesce(
     array(
@@ -346,9 +346,9 @@ Fires BEFORE UPDATE on `profiles`. Rules:
 
 ```sql
 -- Reads caller's role from JWT claims:
-_is_platform_admin := coalesce(auth.jwt_claim('is_platform_admin'), '') = 'true';
-_is_tenant_admin := coalesce(auth.jwt_claim('is_tenant_admin'), '') = 'true';
-_caller_tenant_id := nullif(auth.jwt_claim('tenant_id'), '')::uuid;
+_is_platform_admin := coalesce(public.jwt_claim('is_platform_admin'), '') = 'true';
+_is_tenant_admin := coalesce(public.jwt_claim('is_tenant_admin'), '') = 'true';
+_caller_tenant_id := nullif(public.jwt_claim('tenant_id'), '')::uuid;
 ```
 
 ### 5.2 `enforce_platform_roles_master_tenant()` (`00005:66-78`)
@@ -367,20 +367,20 @@ All 30 tables have RLS enabled (`00004:13-42`). Policies follow consistent patte
 
 ### Platform Admin — Global Access
 ```sql
-auth.jwt_claim('is_platform_admin') = 'true'
+public.jwt_claim('is_platform_admin') = 'true'
 ```
 Platform admins have FOR ALL or FOR SELECT/UPDATE/INSERT/DELETE policies on every table. No tenant filtering.
 
 ### Tenant Admin — Own Tenant
 ```sql
-auth.jwt_claim('is_tenant_admin') = 'true'
-AND tenant_id = auth.jwt_claim('tenant_id')::uuid
+public.jwt_claim('is_tenant_admin') = 'true'
+AND tenant_id = public.jwt_claim('tenant_id')::uuid
 ```
 Tenant admins can manage users, enrollments, and view data within their own tenant. Cannot access other tenants.
 
 ### CSM — Assigned Tenants
 ```sql
-tenant_id = ANY(auth.jwt_claim_array('csm_tenant_ids')::uuid[])
+tenant_id = ANY(public.jwt_claim_array('csm_tenant_ids')::uuid[])
 ```
 CSMs can view (SELECT) data across their assigned tenants. For tables without a `tenant_id` column (e.g., `quiz_attempt_answers`), policies JOIN through a parent table that has `tenant_id`:
 ```sql
@@ -388,21 +388,21 @@ CSMs can view (SELECT) data across their assigned tenants. For tables without a 
 EXISTS (
   SELECT 1 FROM quiz_attempts qa
   WHERE qa.id = quiz_attempt_answers.attempt_id
-    AND qa.tenant_id = ANY(auth.jwt_claim_array('csm_tenant_ids')::uuid[])
+    AND qa.tenant_id = ANY(public.jwt_claim_array('csm_tenant_ids')::uuid[])
 )
 ```
 
 ### Lecturer — Assigned Courses
 ```sql
-course_id = ANY(auth.jwt_claim_array('lecturer_course_ids')::uuid[])
+course_id = ANY(public.jwt_claim_array('lecturer_course_ids')::uuid[])
 ```
 For content editing:
 ```sql
-course_id = ANY(auth.jwt_claim_array('lecturer_can_edit_course_ids')::uuid[])
+course_id = ANY(public.jwt_claim_array('lecturer_can_edit_course_ids')::uuid[])
 ```
 For grading:
 ```sql
-course_id = ANY(auth.jwt_claim_array('lecturer_can_grade_course_ids')::uuid[])
+course_id = ANY(public.jwt_claim_array('lecturer_can_grade_course_ids')::uuid[])
 ```
 Lecturers are cross-tenant — they see data from all tenants for their assigned courses.
 
@@ -415,7 +415,7 @@ user_id = auth.uid()
 EXISTS (
   SELECT 1 FROM tenant_courses tc
   WHERE tc.course_id = courses.id
-    AND tc.tenant_id = auth.jwt_claim('tenant_id')::uuid
+    AND tc.tenant_id = public.jwt_claim('tenant_id')::uuid
 )
 ```
 Learners see only courses assigned to their tenant, and can only read/write their own records (progress, quiz attempts, comments, etc.).
@@ -761,7 +761,7 @@ Only 2 changes needed:
 | Component | Why |
 |-----------|-----|
 | `custom_access_token_hook()` | Reads profiles + assignments, not auth provider |
-| ~215+ RLS policies | All use `auth.jwt_claim()` — provider-agnostic |
+| ~215+ RLS policies | All use `public.jwt_claim()` — provider-agnostic |
 | `protect_profile_role_fields()` | Reads JWT claims, not provider info |
 | All triggers | Check business rules, not provider |
 | Storage policies | Path-based, provider-agnostic |
@@ -795,7 +795,7 @@ Supabase may drop custom Keycloak claims from `raw_user_meta_data`. This means t
 
 | Migration | Auth-Related Content |
 |-----------|---------------------|
-| `00001_extensions_types_helpers.sql` | `auth.jwt_claim()`, `auth.jwt_claim_array()` helper functions |
+| `00001_extensions_types_helpers.sql` | `public.jwt_claim()`, `public.jwt_claim_array()` helper functions |
 | `00002_tables.sql` | `profiles`, `tenants`, `csm_tenant_assignments`, `lecturer_course_assignments`, `access_requests` tables |
 | `00004_rls_policies.sql` | All ~215+ RLS policies across 30 tables |
 | `00005_functions_and_triggers.sql` | `handle_new_user()`, `protect_profile_role_fields()`, `enforce_platform_roles_master_tenant()`, `enforce_master_tenant_assignment()`, all notification triggers |
