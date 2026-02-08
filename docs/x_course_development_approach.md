@@ -321,15 +321,17 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] **Tests:** 24 RLS tests passing (tenants + profiles)
 
 #### 1C - FastAPI Setup
-- [ ] Create FastAPI project structure (`backend/app/main.py`, `config.py`)
-- [ ] Configure environment variables (Pydantic BaseSettings, `.env.example`)
-- [ ] Setup Supabase Python client (service role for server-side operations)
-- [ ] Setup JWT authentication middleware (verify Supabase JWT)
-- [ ] Setup SMTP client (Calypso SMTP — host, port, username, password)
-- [ ] Create health check endpoint (`GET /api/health`)
+- [x] Create FastAPI project structure (`backend/app/main.py`, `config.py`, `dependencies.py`, routers, services, models)
+- [x] Configure environment variables (Pydantic BaseSettings, `.env.example`)
+- [x] Setup Supabase Python client (service role for server-side operations)
+- [x] Setup JWT authentication middleware (verify Supabase JWT via python-jose HS256)
+- [x] Setup SMTP client (Calypso SMTP via Office 365 — `smtp.office365.com:587`, `aiosmtplib`)
+- [x] Create health check endpoint (`GET /api/health` — returns status + Supabase connectivity)
+- [x] Write Dockerfile (Python 3.11-slim, uvicorn)
+- [x] **Tests:** 11 pytest tests passing (health, auth/JWT, config validation)
 - [ ] Commit and push `backend/` to GitHub
 - [ ] Connect Railway to GitHub repo (root directory: `backend/`, deploy branch: `main`, auto-deploy on push)
-- [ ] Verify connectivity to Supabase
+- [x] Verify connectivity to Supabase (health endpoint returns `"supabase": "connected"`)
 
 #### 1D - Angular Setup
 - [ ] Create Angular 19 project
