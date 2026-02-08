@@ -196,7 +196,7 @@ tenants
 **Example data:**
 | id | name | is_master | domain |
 |----|------|-----------|--------|
-| uuid-1 | Calypso | true | calypso.ai |
+| uuid-1 | Calypso | true | calypso-commodities.com |
 | uuid-2 | Santos | false | santos.com |
 | uuid-3 | Equinor | false | equinor.com |
 
@@ -1492,7 +1492,7 @@ On login, we use a Supabase hook/function to add custom claims to the JWT:
 ```json
 {
   "sub": "user-uuid",
-  "email": "drchen@calypso.ai",
+  "email": "drchen@calypso-commodities.com",
   "tenant_id": "calypso-tenant-uuid",
   "is_tenant_admin": false,
   "is_platform_admin": false,

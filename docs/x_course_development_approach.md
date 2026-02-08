@@ -32,7 +32,7 @@ This document describes the development approach for building X-Course v2 (Multi
 | **Backend API** | FastAPI (Python 3.11+) | Railway |
 | **Video** | Bunny CDN (streaming URLs, not Supabase Storage) | Bunny CDN |
 | **Email** | Calypso SMTP (direct SMTP, not Resend) | Calypso Infrastructure |
-| **SSO** | Microsoft Entra ID (for @calypso.ai domain). Phase 2: Keycloak SSO for xLNG cross-product SSO | Microsoft |
+| **SSO** | Microsoft Entra ID (for @calypso-commodities.com domain). Phase 2: Keycloak SSO for xLNG cross-product SSO | Microsoft |
 | **Source Control** | GitHub (monorepo) | GitHub |
 | **CI/CD** | Vercel + Railway auto-deploy from `main` branch | Vercel / Railway |
 
@@ -285,7 +285,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
   - [x] Push initial commit with `docs/` and `supabase/` folders
 - [x] Run database migrations — all 13 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility)
 - [ ] Configure auth:
-  - [ ] Microsoft Entra ID SSO (for @calypso.ai domain) — deferred (Azure AD app registration needed)
+  - [ ] Microsoft Entra ID SSO (for @calypso-commodities.com domain) — deferred (Azure AD app registration needed)
   - [ ] Enable email/password auth
   - [ ] Enable magic link auth
   - [ ] Disable public registration (invite-only via admin)
@@ -297,7 +297,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [ ] Configure auth hooks:
   - [ ] Custom Access Token Hook → `public.custom_access_token_hook`
   - [ ] Password Verification Hook → `public.password_verification_hook` (blocks password sign-in for SSO-only tenants)
-- [x] Verify master tenant seed data (Calypso, is_master=true, domain='calypso.ai')
+- [x] Verify master tenant seed data (Calypso, is_master=true, domain='calypso-commodities.com')
 - [x] Enable Realtime for `notifications` table
 - [x] Verify storage buckets created (avatars, course-files, exam-submissions)
 - [ ] Enable pg_cron extension (for exam deadlines + staleness checks)
@@ -929,11 +929,11 @@ SUPABASE_SERVICE_KEY=eyJ...
 SUPABASE_JWT_SECRET=xxx
 
 # Email (Calypso SMTP)
-SMTP_HOST=smtp.calypso.ai
+SMTP_HOST=smtp.calypso-commodities.com
 SMTP_PORT=587
-SMTP_USERNAME=noreply@calypso.ai
+SMTP_USERNAME=noreply@calypso-commodities.com
 SMTP_PASSWORD=xxx
-FROM_EMAIL=noreply@calypso.ai
+FROM_EMAIL=noreply@calypso-commodities.com
 ```
 
 ### 6.2 Angular (environment.ts)
@@ -1004,7 +1004,7 @@ If an auth method is not allowed for the tenant, no profile is created. Admin in
 
 ### 8.2 Per-Tenant Auth Methods
 
-All @calypso.ai users use Microsoft Entra ID SSO (configured via `tenants.settings.auth_methods = ["azure_sso"]`).
+All @calypso-commodities.com users use Microsoft Entra ID SSO (configured via `tenants.settings.auth_methods = ["azure_sso"]`).
 Client tenants configure their own allowed methods (email/password, magic link, or both).
 Phase 2: Keycloak SSO for xLNG cross-product single sign-on.
 

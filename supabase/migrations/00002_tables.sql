@@ -359,4 +359,4 @@ CREATE TABLE access_requests (
 -- SEED DATA: Master Tenant
 -- ============================================================================
 INSERT INTO tenants (name, is_master, domain)
-VALUES ('Calypso', true, 'calypso.ai');
+VALUES ('Calypso', true, 'calypso-commodities.com');

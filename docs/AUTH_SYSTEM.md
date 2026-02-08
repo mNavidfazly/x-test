@@ -607,7 +607,7 @@ Supabase Auth has built-in **Automatic Identity Linking** (always enabled, no to
 
 **Security:** Only **verified** email addresses are linked. Unverified identities are purged during linking to prevent pre-account takeover attacks.
 
-**Practical example:** A Calypso employee with both a Microsoft Entra account and a Keycloak (xLNG) account — same email `alice@calypso.ai`:
+**Practical example:** A Calypso employee with both a Microsoft Entra account and a Keycloak (xLNG) account — same email `alice@calypso-commodities.com`:
 1. First login via Azure SSO → `auth.users` row created, `handle_new_user()` fires, profile created
 2. Later login via Keycloak SSO → `auth.identities` row added, no new user, no trigger fire
 3. Result: one profile, two auth identities, same JWT claims regardless of provider used
