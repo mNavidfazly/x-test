@@ -9,7 +9,7 @@ SECRET = "test-jwt-secret-that-is-long-enough-for-hs256"
 
 
 def _make_token(
-    claims: dict | None = None,
+    claims=None,
     secret: str = SECRET,
     exp_offset: int = 3600,
 ) -> str:

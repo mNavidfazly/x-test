@@ -26,7 +26,19 @@ def mock_supabase() -> MagicMock:
     mock.table.return_value.select.return_value.limit.return_value.execute.return_value = (
         MagicMock(count=1)
     )
+    # Also wire up .ilike() chain for tenant lookups
+    mock.table.return_value.select.return_value.ilike.return_value.limit.return_value.execute.return_value = (
+        MagicMock(data=[])
+    )
     return mock
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limiter():
+    """Reset slowapi rate limiter between tests to avoid 429s."""
+    from app.routers.auth import limiter
+    yield
+    limiter.reset()
 
 
 @pytest.fixture

@@ -359,33 +359,33 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] 3 smoke tests (8 assertions) passing: AppComponent, SupabaseService, ApiService
 
 #### 1F - Auth Flow
-- [ ] Login page (tenant-aware):
-  - [ ] Read tenant's `settings.auth_methods` to determine available methods
-  - [ ] Azure SSO button (show if tenant allows `azure_sso`)
-  - [ ] Email + Password form (show if tenant allows `email_password`)
-  - [ ] Magic Link input (show if tenant allows `magic_link`)
-  - [ ] Domain detection: user enters email → resolve tenant → show allowed methods
-  - [ ] Use PKCE flow (`flowType: 'pkce'` in Supabase client init)
-- [ ] Password reset flow:
-  - [ ] Proxy through FastAPI (`POST /api/auth/reset-password`)
-  - [ ] FastAPI validates tenant allows `email_password` before forwarding to Supabase admin API
-  - [ ] Frontend never calls `resetPasswordForEmail()` directly (prevents ghost password on SSO-only users)
-- [ ] Tenant resolution:
-  - [ ] `POST /api/auth/resolve-tenant` — returns allowed auth methods for email domain
-  - [ ] Rate limit: 10 requests/minute/IP
-  - [ ] Pre-invite check: verify email doesn't already have a profile before sending invitation
-- [ ] Accept invite page (set password)
-- [ ] Access request page (enter email → domain routing → pending approval)
-- [ ] Auth guard (redirect to login if not authenticated)
-- [ ] Role guard with 5-role support:
-  - [ ] Learner (implicit — all authenticated users)
-  - [ ] Tenant Admin (`is_tenant_admin` from JWT)
-  - [ ] Platform Admin (`is_platform_admin` from JWT)
-  - [ ] CSM (`csm_tenant_ids.length > 0` from JWT)
-  - [ ] Lecturer (`lecturer_course_ids.length > 0` from JWT)
-- [ ] Auth service with session management
-- [ ] Logout functionality
-- [ ] **Tests:** Auth service tests, guard tests
+- [x] Login page (tenant-aware):
+  - [x] Read tenant's `settings.auth_methods` to determine available methods
+  - [x] Azure SSO button (show if tenant allows `azure_sso`)
+  - [x] Email + Password form (show if tenant allows `email_password`)
+  - [x] Magic Link input (show if tenant allows `magic_link`)
+  - [x] Domain detection: user enters email → resolve tenant → show allowed methods
+  - [x] Use PKCE flow (`flowType: 'pkce'` in Supabase client init)
+- [x] Password reset flow:
+  - [x] Proxy through FastAPI (`POST /api/auth/reset-password`)
+  - [x] FastAPI validates tenant allows `email_password` before forwarding to Supabase admin API
+  - [x] Frontend never calls `resetPasswordForEmail()` directly (prevents ghost password on SSO-only users)
+- [x] Tenant resolution:
+  - [x] `POST /api/auth/resolve-tenant` — returns allowed auth methods for email domain
+  - [x] Rate limit: 10 requests/minute/IP
+  - [x] Pre-invite check: verify email doesn't already have a profile before sending invitation
+- [x] Accept invite page — not needed (Supabase invite links go to `/auth/callback`, `detectSessionInUrl: true` handles token exchange)
+- [x] Access request page (enter email → domain routing → pending approval)
+- [x] Auth guard (redirect to login if not authenticated)
+- [x] Role guard with 5-role support:
+  - [x] Learner (implicit — all authenticated users)
+  - [x] Tenant Admin (`is_tenant_admin` from JWT)
+  - [x] Platform Admin (`is_platform_admin` from JWT)
+  - [x] CSM (`csm_tenant_ids.length > 0` from JWT)
+  - [x] Lecturer (`lecturer_course_ids.length > 0` from JWT)
+- [x] Auth service with session management
+- [x] Logout functionality
+- [x] **Tests:** 38 backend tests (tenant service, resolve-tenant, reset-password) + 57 frontend tests (auth service, guards, login, reset-password, access-request, tenant service)
 
 #### 1G - Layout Shell
 - [ ] Main layout component
@@ -1637,8 +1637,8 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 - [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
 - [x] FastAPI setup + deploy to Railway (11 tests, health endpoint verified)
 - [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-course-v2.vercel.app)
-- [ ] Frontend test infrastructure setup
-- [ ] Auth flow (Azure SSO + email/password + magic link, per-tenant config, guards, access request) + tests
+- [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 7 mock factories)
+- [x] Auth flow (Azure SSO + email/password + magic link, per-tenant config, guards, access request) + tests (38 backend + 57 frontend)
 - [ ] Layout shell (role-aware sidebar, notification bell) + tests
 
 ### Phase 2: Content Read

@@ -1,8 +1,10 @@
+from typing import Optional
+
 from supabase import Client, create_client
 
 from app.config import Settings
 
-_client: Client | None = None
+_client: Optional[Client] = None
 
 
 def get_supabase_client(settings: Settings) -> Client:

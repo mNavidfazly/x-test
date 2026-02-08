@@ -1,0 +1,58 @@
+import pytest
+
+from app.services.tenant import (
+    ALL_AUTH_METHODS,
+    extract_domain,
+    resolve_auth_methods,
+)
+
+
+class TestExtractDomain:
+    def test_valid_email(self):
+        assert extract_domain("user@example.com") == "example.com"
+
+    def test_case_insensitive(self):
+        assert extract_domain("User@EXAMPLE.COM") == "example.com"
+
+    def test_no_at_sign(self):
+        with pytest.raises(ValueError, match="Invalid email"):
+            extract_domain("nope")
+
+    def test_empty_string(self):
+        with pytest.raises(ValueError, match="Invalid email"):
+            extract_domain("")
+
+    def test_multiple_at_signs(self):
+        with pytest.raises(ValueError, match="Invalid email"):
+            extract_domain("a@b@c.com")
+
+
+class TestResolveAuthMethods:
+    def test_no_tenant_returns_empty(self):
+        assert resolve_auth_methods(None) == []
+
+    def test_null_settings_returns_all(self):
+        assert resolve_auth_methods({"settings": None}) == list(ALL_AUTH_METHODS)
+
+    def test_empty_settings_returns_all(self):
+        assert resolve_auth_methods({"settings": {}}) == list(ALL_AUTH_METHODS)
+
+    def test_explicit_methods(self):
+        tenant = {"settings": {"auth_methods": ["email_password", "magic_link"]}}
+        assert resolve_auth_methods(tenant) == ["email_password", "magic_link"]
+
+    def test_filters_invalid_methods(self):
+        tenant = {"settings": {"auth_methods": ["email_password", "carrier_pigeon"]}}
+        assert resolve_auth_methods(tenant) == ["email_password"]
+
+    def test_no_auth_methods_key_returns_all(self):
+        tenant = {"settings": {"other_setting": True}}
+        assert resolve_auth_methods(tenant) == list(ALL_AUTH_METHODS)
+
+    def test_empty_auth_methods_returns_all(self):
+        tenant = {"settings": {"auth_methods": []}}
+        assert resolve_auth_methods(tenant) == list(ALL_AUTH_METHODS)
+
+    def test_settings_not_dict_returns_all(self):
+        tenant = {"settings": "not-a-dict"}
+        assert resolve_auth_methods(tenant) == list(ALL_AUTH_METHODS)
