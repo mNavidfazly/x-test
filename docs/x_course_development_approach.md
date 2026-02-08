@@ -345,17 +345,18 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [ ] **Tests:** Basic smoke tests (deferred to 1E — frontend test infrastructure)
 
 #### 1E - Frontend Test Infrastructure
-- [ ] Install: vitest, @analogjs/vitest-angular, @analogjs/vite-plugin-angular, jsdom, @testing-library/angular
-- [ ] Create `vitest.config.mts` with AnalogJS plugin, pool: 'forks'
-- [ ] Create `src/test-setup.ts` (Zone.js via @analogjs/vitest-angular/setup-zone)
-- [ ] Create mock infrastructure:
-  - [ ] `supabase.mock.ts` — Multi-tenant aware mock with JWT claims simulation (tenant_id, is_platform_admin, csm_tenant_ids, lecturer_course_ids, etc.)
-  - [ ] `auth.mock.ts` — Session mock with role switching
-  - [ ] `api.mock.ts` — FastAPI client mock
-  - [ ] `toast.mock.ts`
-  - [ ] `router.mock.ts`
-  - [ ] `lucide.mock.ts`
-- [ ] Add npm scripts: `test`, `test:watch`, `test:coverage`, `test:ui`
+- [x] Install: vitest, @analogjs/vitest-angular, @analogjs/vite-plugin-angular, jsdom, @testing-library/angular
+- [x] Create `vitest.config.mts` with AnalogJS plugin
+- [x] Create `src/test-setup.mjs` (Zone.js via @analogjs/vitest-angular/setup-zone, TestBed init)
+- [x] Create mock infrastructure:
+  - [x] `supabase.mock.ts` — Multi-tenant aware mock with JWT claims simulation
+  - [x] `auth.mock.ts` — Session mock with role switching (placeholder for Phase 1F)
+  - [x] `api.mock.ts` — FastAPI client mock
+  - [x] `toast.mock.ts`
+  - [x] `router.mock.ts`
+  - [x] `lucide.mock.ts`
+- [x] Add npm scripts: `test`, `test:watch`, `test:coverage`, `test:ui`
+- [x] 3 smoke tests (8 assertions) passing: AppComponent, SupabaseService, ApiService
 
 #### 1F - Auth Flow
 - [ ] Login page (tenant-aware):
