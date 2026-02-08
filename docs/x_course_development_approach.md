@@ -340,8 +340,8 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] Setup Supabase JS client (SupabaseService — PKCE flow, autoRefreshToken, persistSession, detectSessionInUrl)
 - [x] Setup API service for FastAPI (ApiService — HttpClient wrapper with JWT auth headers)
 - [x] Configure environment files (supabaseUrl, supabaseAnonKey, apiUrl) + angular.json fileReplacements
-- [ ] Commit and push `frontend/` to GitHub
-- [ ] Connect Vercel to GitHub repo (root directory: `frontend/`, deploy branch: `main`, auto-deploy on push)
+- [x] Commit and push `frontend/` to GitHub
+- [x] Connect Vercel to GitHub repo (root directory: `frontend/`, deploy branch: `main`, auto-deploy on push) — live at `https://x-course-v2.vercel.app`
 - [ ] **Tests:** Basic smoke tests (deferred to 1E — frontend test infrastructure)
 
 #### 1E - Frontend Test Infrastructure
@@ -1635,7 +1635,7 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 - [x] Supabase setup + schema + RLS + multi-provider auth (Azure SSO + email/password + magic link)
 - [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
 - [x] FastAPI setup + deploy to Railway (11 tests, health endpoint verified)
-- [ ] Angular setup + deploy to Vercel
+- [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-course-v2.vercel.app)
 - [ ] Frontend test infrastructure setup
 - [ ] Auth flow (Azure SSO + email/password + magic link, per-tenant config, guards, access request) + tests
 - [ ] Layout shell (role-aware sidebar, notification bell) + tests
