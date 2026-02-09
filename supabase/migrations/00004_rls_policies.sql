@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00004: Row Level Security Policies
+-- X-Courses v2 - Migration 00004: Row Level Security Policies
 -- ============================================================================
 -- Enable RLS on all 30 tables and define ~236 policies covering:
 -- tenant isolation, cross-tenant lecturer access, CSM assigned tenant access,

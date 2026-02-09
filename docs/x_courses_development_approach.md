@@ -1,10 +1,10 @@
-# X-Course v2 - Development Approach
+# X-Courses v2 - Development Approach
 
 ---
 
 ## 1. Overview
 
-This document describes the development approach for building X-Course v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00014` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00014` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -95,10 +95,10 @@ This document describes the development approach for building X-Course v2 (Multi
 ## 2. Project Structure
 
 ```
-x-course-v2/                                  # GitHub monorepo (main branch → auto-deploy)
+x-courses-v2/                                  # GitHub monorepo (main branch → auto-deploy)
 ├── docs/
 │   ├── learning-platform-requirements.md
-│   ├── x_course_development_approach.md    # This document
+│   ├── x_courses_development_approach.md    # This document
 │   └── e2e-user-stories/
 │
 ├── supabase/
@@ -152,7 +152,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 │   │   │   ├── core/
 │   │   │   │   ├── services/
 │   │   │   │   │   ├── supabase.service.ts
-│   │   │   │   │   ├── auth.service.ts   # Azure SSO + email/password + magic link (per-tenant)
+│   │   │   │   │   ├── auth.service.ts   # Azure SSO + email/password + magic link OTP (per-tenant)
 │   │   │   │   │   ├── api.service.ts    # FastAPI client
 │   │   │   │   │   └── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
 │   │   │   │   ├── guards/
@@ -181,7 +181,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 │   │   │   │
 │   │   │   ├── features/
 │   │   │   │   ├── auth/
-│   │   │   │   │   ├── login/            # Tenant-aware: Azure SSO + email/password + magic link
+│   │   │   │   │   ├── login/            # Tenant-aware: Azure SSO + email/password + magic link (3-step OTP)
 │   │   │   │   │   ├── accept-invite/    # Set password flow
 │   │   │   │   │   └── access-request/   # Request access page
 │   │   │   │   │
@@ -292,7 +292,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] Create Supabase project — `ruhdnvtvoxxiodnyyqqf` (Frankfurt, Calypso Ventures GmbH org)
 - [x] Initialize GitHub monorepo:
   - [x] `git init` + create `.gitignore`
-  - [x] Create private GitHub repo — `TereschenkoAI/x-course-v2`
+  - [x] Create private GitHub repo — `TereschenkoAI/x-courses-v2`
   - [x] Push initial commit with `docs/` and `supabase/` folders
 - [x] Run database migrations — all 14 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes missing `SET search_path = public` on `custom_access_token_hook`)
 - [ ] Configure auth:
@@ -352,7 +352,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] Setup API service for FastAPI (ApiService — HttpClient wrapper with JWT auth headers)
 - [x] Configure environment files (supabaseUrl, supabaseAnonKey, apiUrl) + angular.json fileReplacements
 - [x] Commit and push `frontend/` to GitHub
-- [x] Connect Vercel to GitHub repo (root directory: `frontend/`, deploy branch: `main`, auto-deploy on push) — live at `https://x-course-v2.vercel.app`
+- [x] Connect Vercel to GitHub repo (root directory: `frontend/`, deploy branch: `main`, auto-deploy on push) — live at `https://x-courses-v2.vercel.app`
 - [ ] **Tests:** Basic smoke tests (deferred to 1E — frontend test infrastructure)
 
 #### 1E - Frontend Test Infrastructure
@@ -374,7 +374,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
   - [x] Read tenant's `settings.auth_methods` to determine available methods
   - [x] Azure SSO button (show if tenant allows `azure_sso`)
   - [x] Email + Password form (show if tenant allows `email_password`)
-  - [x] Magic Link input (show if tenant allows `magic_link`)
+  - [x] Magic Link / OTP code flow (show if tenant allows `magic_link`) — 3-step: send code → enter 6-digit OTP → verify
   - [x] Domain detection: user enters email → resolve tenant → show allowed methods
   - [x] Use PKCE flow (`flowType: 'pkce'` in Supabase client init)
 - [x] Password reset flow:
@@ -396,7 +396,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
   - [x] Lecturer (`lecturer_course_ids.length > 0` from JWT)
 - [x] Auth service with session management
 - [x] Logout functionality
-- [x] **Tests:** 38 backend tests (tenant service, resolve-tenant, reset-password) + 57 frontend tests (auth service, guards, login, reset-password, access-request, tenant service)
+- [x] **Tests:** 38 backend tests (tenant service, resolve-tenant, reset-password) + 92 frontend tests (auth service, guards, login with OTP flow, reset-password, access-request, tenant service, layout shell)
 
 #### 1G - Layout Shell
 - [x] Main layout component (wraps authenticated routes via `loadComponent` on parent route)
@@ -1033,7 +1033,7 @@ Additionally, `password_verification_hook` (00013) enforces auth method restrict
 
 ### 8.3 No Versioning System
 
-Unlike X-Crude, X-Course has no version management. Content is edited directly:
+Unlike X-Crude, X-Courses has no version management. Content is edited directly:
 - Updates go straight to the database (no version history)
 - "Significant update" checkbox on module save → resets affected learner progress
 - No version comparison or restore functionality
@@ -1055,7 +1055,7 @@ Videos are **not** stored in Supabase Storage. They're hosted on Bunny CDN:
 
 ### 8.6 No AI Chat
 
-AI chat is not in scope for X-Course v2 (unlike X-Crude which has Claude integration).
+AI chat is not in scope for X-Courses v2 (unlike X-Crude which has Claude integration).
 
 ### 8.7 JWT Custom Claims Refresh
 
@@ -1650,10 +1650,10 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 - [x] Supabase setup + schema + RLS + multi-provider auth (Azure SSO + email/password + magic link)
 - [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
 - [x] FastAPI setup + deploy to Railway (11 tests, health endpoint verified)
-- [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-course-v2.vercel.app)
+- [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-courses-v2.vercel.app)
 - [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 8 mock factories)
-- [x] Auth flow (Azure SSO + email/password + magic link, per-tenant config, guards, access request) + tests (38 backend + 57 frontend)
-- [x] Layout shell (role-aware sidebar, notification bell, user menu, ProfileService, mobile responsive) + tests (25 new — 82 total frontend)
+- [x] Auth flow (Azure SSO + email/password + magic link OTP, per-tenant config, guards, access request) + tests (38 backend + 92 frontend)
+- [x] Layout shell (role-aware sidebar, notification bell, user menu, ProfileService, mobile responsive) + tests (25 new)
 
 ### Phase 2: Content Read
 - [ ] Course list + detail + tests

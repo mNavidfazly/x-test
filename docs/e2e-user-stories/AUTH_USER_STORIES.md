@@ -1,4 +1,4 @@
-# X-Course v2 — Auth Flow Playwright User Stories
+# X-Courses v2 — Auth Flow Playwright User Stories
 
 ## Overview
 
@@ -8,8 +8,8 @@ Manual E2E testing scenarios for the tenant-aware authentication flow. These sto
 
 | Setting | Value |
 |---------|-------|
-| **Frontend URL** | https://x-course-v2.vercel.app |
-| **Backend URL** | https://x-course-v2-production.up.railway.app |
+| **Frontend URL** | https://x-courses-v2.vercel.app |
+| **Backend URL** | https://x-courses-v2-production.up.railway.app |
 | **Test Email** | et@calypso-commodities.com |
 | **Tenant** | Calypso |
 | **Auth Methods** | azure_sso, email_password, magic_link |
@@ -19,7 +19,7 @@ Manual E2E testing scenarios for the tenant-aware authentication flow. These sto
 
 | Environment | Frontend | Backend |
 |-------------|----------|---------|
-| **Production** | https://x-course-v2.vercel.app | https://x-course-v2-production.up.railway.app |
+| **Production** | https://x-courses-v2.vercel.app | https://x-courses-v2-production.up.railway.app |
 | **Local Dev** | http://localhost:4200 | http://localhost:8000 |
 
 ### Test User Setup
@@ -92,8 +92,8 @@ curl -X PUT "https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/admin/users/{USER_
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to https://x-course-v2.vercel.app | Redirected to `/login` by authGuard (no active session) | ☐ |
-| 2 | Verify Step 1 UI | "X-Course v2" heading, "Enter your email to sign in" text, Email input with placeholder `you@company.com`, "Continue" button, "Request access" link | ☐ |
+| 1 | Navigate to https://x-courses-v2.vercel.app | Redirected to `/login` by authGuard (no active session) | ☐ |
+| 2 | Verify Step 1 UI | "X-Courses v2" heading, "Enter your email to sign in" text, Email input with placeholder `you@company.com`, "Continue" button, "Request access" link | ☐ |
 | 3 | Enter email: `et@calypso-commodities.com` | Email field accepts input | ☐ |
 | 4 | Click "Continue" | Loading spinner appears briefly while tenant resolves | ☐ |
 | 5 | Verify Step 2 header | "Sign in to **Calypso**" with back arrow button, email shown as `et@calypso-commodities.com` below header | ☐ |
@@ -217,13 +217,13 @@ curl -X PUT "https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/admin/users/{USER_
 
 ```bash
 # Should always return 200 with same message
-curl -s -X POST https://x-course-v2-production.up.railway.app/api/auth/reset-password \
+curl -s -X POST https://x-courses-v2-production.up.railway.app/api/auth/reset-password \
   -H "Content-Type: application/json" \
   -d '{"email":"et@calypso-commodities.com"}'
 # Expected: {"message":"If an account exists for this email, you will receive a password reset link."}
 
 # Unknown email — same response (anti-enumeration)
-curl -s -X POST https://x-course-v2-production.up.railway.app/api/auth/reset-password \
+curl -s -X POST https://x-courses-v2-production.up.railway.app/api/auth/reset-password \
   -H "Content-Type: application/json" \
   -d '{"email":"nobody@nowhere.com"}'
 # Expected: {"message":"If an account exists for this email, you will receive a password reset link."}
@@ -341,7 +341,7 @@ Before this story can run, the following infrastructure must be configured:
 | 3 | Click "Sign in with Microsoft" | Browser redirects to `login.microsoftonline.com` (Microsoft login page) | ☐ |
 | 4 | Verify Microsoft login page loads | Microsoft "Sign in" form with email field, organization branding if configured | ☐ |
 | 5 | Enter Microsoft credentials (email + password or MFA) | Microsoft authenticates the user | ☐ |
-| 6 | Microsoft redirects back | Browser goes to `https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/callback` then to `https://x-course-v2.vercel.app/auth/callback` | ☐ |
+| 6 | Microsoft redirects back | Browser goes to `https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/callback` then to `https://x-courses-v2.vercel.app/auth/callback` | ☐ |
 | 7 | Verify AuthCallbackComponent | "Completing sign in..." spinner shown, Supabase exchanges PKCE code for session | ☐ |
 | 8 | Wait for redirect | Redirected to `/dashboard` | ☐ |
 | 9 | Verify authenticated session | Dashboard loads, user is logged in | ☐ |
@@ -417,7 +417,7 @@ _No issues discovered yet — update this section during test execution._
 | Document | Purpose |
 |----------|---------|
 | `docs/AUTH_SYSTEM.md` | Full auth architecture, JWT claims, multi-provider flows |
-| `docs/x_course_development_approach.md` | Phase 1F completion details |
+| `docs/x_courses_development_approach.md` | Phase 1F completion details |
 | `docs/STYLING_GUIDE.md` | Calypso design tokens for UI verification |
 | `backend/app/routers/auth.py` | FastAPI auth endpoints (resolve-tenant, reset-password) |
 | `frontend/src/app/features/auth/` | All auth components (login, reset-password, access-request, callback) |

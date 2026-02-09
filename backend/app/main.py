@@ -6,7 +6,7 @@ from slowapi.errors import RateLimitExceeded
 from app.config import get_settings
 from app.routers import auth, health
 
-app = FastAPI(title="X-Course v2 API")
+app = FastAPI(title="X-Courses v2 API")
 
 settings = get_settings()
 

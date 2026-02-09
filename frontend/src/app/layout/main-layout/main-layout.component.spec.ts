@@ -30,7 +30,7 @@ async function renderLayout() {
 describe('MainLayoutComponent', () => {
   it('should render sidebar', async () => {
     await renderLayout();
-    expect(screen.getByText('X-Course')).toBeTruthy();
+    expect(screen.getByText('X-Courses')).toBeTruthy();
   });
 
   it('should render header', async () => {

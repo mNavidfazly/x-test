@@ -1,4 +1,4 @@
-# X-Course v2 — Authentication, Authorization & Multi-Tenancy
+# X-Courses v2 — Authentication, Authorization & Multi-Tenancy
 
 > Technical reference for the database-level auth system as implemented in `supabase/migrations/00001-00013`. Frontend and backend code do not exist yet — see [Section 12](#12-frontend--backend-planned) for planned architecture.
 
@@ -709,35 +709,35 @@ From `docs/COMPREHENSIVE_AUDIT.md` and multi-provider auth security audit — re
 
 ## 13. Future: Keycloak Integration
 
-> **Status: PLANNED — Phase 2.** This section documents the planned architecture for adding Keycloak SSO to enable cross-product single sign-on between xLNG and X-Course.
+> **Status: PLANNED — Phase 2.** This section documents the planned architecture for adding Keycloak SSO to enable cross-product single sign-on between xLNG and X-Courses.
 
-### Architecture: Single X-Course Broker Realm
+### Architecture: Single X-Courses Broker Realm
 
 ```
 xLNG Keycloak Instance
   ├── Realm: Santos          (xLNG tenant)
   ├── Realm: Equinor         (xLNG tenant)
   ├── Realm: QatarEnergy     (xLNG tenant)
-  └── Realm: x-course        ← NEW broker realm
+  └── Realm: x-courses        ← NEW broker realm
         ├── IdP: santos-xlng      → brokers to Santos realm
         ├── IdP: equinor-xlng     → brokers to Equinor realm
         ├── IdP: qatarenergy-xlng → brokers to QatarEnergy realm
-        └── Client: supabase-xcourse (OIDC client for Supabase)
+        └── Client: supabase-xcourses (OIDC client for Supabase)
 
 Supabase Auth
-  └── Keycloak provider → https://keycloak.example.com/realms/x-course
+  └── Keycloak provider → https://keycloak.example.com/realms/x-courses
 ```
 
-**Why broker realm:** Supabase's built-in Keycloak provider supports exactly ONE realm URL. The broker realm solves this — Supabase connects to `x-course` realm only, which delegates authentication to the appropriate xLNG tenant realm via Identity Brokering.
+**Why broker realm:** Supabase's built-in Keycloak provider supports exactly ONE realm URL. The broker realm solves this — Supabase connects to `x-courses` realm only, which delegates authentication to the appropriate xLNG tenant realm via Identity Brokering.
 
 ### SSO Flow
 
 ```
 [1] User working in xLNG (Santos realm) → has active Keycloak session
-[2] Clicks "Go to X-Course" → URL includes kc_idp_hint=santos-xlng
-[3] Supabase redirects to x-course realm → auto-redirects to Santos realm
+[2] Clicks "Go to X-Courses" → URL includes kc_idp_hint=santos-xlng
+[3] Supabase redirects to x-courses realm → auto-redirects to Santos realm
 [4] Santos realm sees active session → redirects back immediately (SSO!)
-[5] x-course realm issues token → Supabase creates auth.users row
+[5] x-courses realm issues token → Supabase creates auth.users row
 [6] handle_new_user() trigger: email bob@santos.com → domain "santos.com" → tenant resolved
 [7] custom_access_token_hook injects JWT claims → user lands on dashboard
 Total time: ~2-3 seconds, zero manual input
@@ -783,10 +783,10 @@ Supabase may drop custom Keycloak claims from `raw_user_meta_data`. This means t
 
 ### Keycloak Configuration Checklist (Manual Steps)
 
-1. **Create x-course realm** on existing Keycloak instance
+1. **Create x-courses realm** on existing Keycloak instance
 2. **Add Identity Providers** for each xLNG tenant realm (type: "Keycloak OpenID Connect", alias: `{tenant}-xlng`)
-3. **Create supabase-xcourse client** (openid-connect, confidential, redirect URI to Supabase callback)
-4. **Configure Supabase Dashboard** (Authentication → Providers → Enable Keycloak, point to x-course realm)
+3. **Create supabase-xcourses client** (openid-connect, confidential, redirect URI to Supabase callback)
+4. **Configure Supabase Dashboard** (Authentication → Providers → Enable Keycloak, point to x-courses realm)
 5. **Add Identity Provider Mappers** (hardcoded `kc_realm` attribute per IdP for tenant resolution)
 
 ---

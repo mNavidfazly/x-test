@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00001: Extensions, Types & Helper Functions
+-- X-Courses v2 - Migration 00001: Extensions, Types & Helper Functions
 -- ============================================================================
 -- Extensions (uuid-ossp, pgcrypto), 10 custom enum types, and JWT helper
 -- functions needed before RLS policies.

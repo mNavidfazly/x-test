@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00011: Comprehensive Audit Fixes
+-- X-Courses v2 - Migration 00011: Comprehensive Audit Fixes
 -- ============================================================================
 -- Addresses findings from docs/COMPREHENSIVE_AUDIT.md (19-agent audit).
 -- Fixes: B1 (exam storage SELECT bug), B2 (time-limit unit mismatch),

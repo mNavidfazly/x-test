@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00006: JWT Custom Claims Hook
+-- X-Courses v2 - Migration 00006: JWT Custom Claims Hook
 -- ============================================================================
 -- Custom access token hook that injects tenant_id, role flags, and
 -- multi-tenant arrays (CSM assignments, lecturer permissions) into JWT claims.

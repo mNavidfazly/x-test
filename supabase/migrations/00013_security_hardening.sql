@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00013: Security Hardening
+-- X-Courses v2 - Migration 00013: Security Hardening
 -- ============================================================================
 -- Addresses findings from the multi-provider auth security audit:
 --   C2: Password reset bypasses per-tenant auth method enforcement

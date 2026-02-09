@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00002: Tables
+-- X-Courses v2 - Migration 00002: Tables
 -- ============================================================================
 -- All 30 tables with constraints and foreign keys.
 -- Organized into: Core, Shared Content, Assignment/Linking, Tenant-Scoped Data.

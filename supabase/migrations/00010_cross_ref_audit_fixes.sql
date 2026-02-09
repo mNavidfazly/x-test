@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00010: Cross-Reference Audit Fixes
+-- X-Courses v2 - Migration 00010: Cross-Reference Audit Fixes
 -- ============================================================================
 -- Addresses findings from docs/CROSS_REFERENCE_AUDIT.md.
 -- Fixes: C1 (quiz base table exposure), C2 (course-files storage leak),

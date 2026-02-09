@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00009: Audit Fixes
+-- X-Courses v2 - Migration 00009: Audit Fixes
 -- ============================================================================
 -- Addresses findings from docs/SQL_AUDIT.md deep assessments (Sections 8-9).
 -- Creates: safe views, RPC functions, CHECK constraints, indexes, triggers.

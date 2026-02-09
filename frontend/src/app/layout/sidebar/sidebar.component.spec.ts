@@ -101,8 +101,8 @@ describe('SidebarComponent', () => {
     expect(openChangeSpy).toHaveBeenCalledWith(false);
   });
 
-  it('should show X-Course brand', async () => {
+  it('should show X-Courses brand', async () => {
     await renderSidebar();
-    expect(screen.getByText('X-Course')).toBeTruthy();
+    expect(screen.getByText('X-Courses')).toBeTruthy();
   });
 });

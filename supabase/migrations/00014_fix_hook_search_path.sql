@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00014: Fix custom_access_token_hook search_path
+-- X-Courses v2 - Migration 00014: Fix custom_access_token_hook search_path
 -- ============================================================================
 -- The custom_access_token_hook function (from 00006) was the only SECURITY
 -- DEFINER function missing `SET search_path = public`. When GoTrue invokes

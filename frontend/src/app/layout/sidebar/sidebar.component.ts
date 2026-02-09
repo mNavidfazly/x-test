@@ -31,7 +31,7 @@ import { filterNavSections } from './sidebar-nav.config';
       <!-- Brand -->
       <div class="flex items-center gap-2.5 px-5 h-16 border-b border-slate-200 shrink-0">
         <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="24"></lucide-icon>
-        <span class="text-lg font-bold text-slate-900">X-Course</span>
+        <span class="text-lg font-bold text-slate-900">X-Courses</span>
       </div>
 
       <!-- Navigation -->

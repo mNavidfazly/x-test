@@ -1,4 +1,4 @@
-# X-Course v2 — Project Instructions
+# X-Courses v2 — Project Instructions
 
 ## Project Owner
 
@@ -115,7 +115,7 @@ Badge base:         inline-flex items-center rounded-full px-2.5 py-0.5 text-xs 
 
 - **Available CLIs:** `supabase` (DB migrations, type generation, branch management), `railway` (backend deployment/logs), `vercel` (frontend deployment/logs), Playwright MCP (E2E browser testing).
 - **Deployment is Git-push based** — push to `main` on GitHub auto-deploys: Vercel picks up `frontend/`, Railway picks up `backend/`. Supabase migrations are pushed manually via `supabase db push`. **Always commit and push to GitHub for deployment — never deploy directly from CLI.**
-- **Monorepo:** `TereschenkoAI/x-course-v2` (private, SSH remote). Vercel root: `frontend/`. Railway root: `backend/`.
+- **Monorepo:** `TereschenkoAI/x-courses-v2` (private, SSH remote). Vercel root: `frontend/`. Railway root: `backend/`.
 - **Supabase Cloud:** project ref `ruhdnvtvoxxiodnyyqqf` (Frankfurt). Type generation: `supabase gen types typescript --linked > frontend/src/app/core/models/database.types.ts`.
 - **No CI/CD GitHub Actions** — deployment is purely git-based auto-deploy from hosting providers.
 

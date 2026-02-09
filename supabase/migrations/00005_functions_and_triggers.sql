@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00005: Functions & Triggers
+-- X-Courses v2 - Migration 00005: Functions & Triggers
 -- ============================================================================
 -- All trigger functions (utility, enforcement, notification) and their
 -- trigger attachments.

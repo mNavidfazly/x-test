@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00008: Scheduled Jobs (pg_cron)
+-- X-Courses v2 - Migration 00008: Scheduled Jobs (pg_cron)
 -- ============================================================================
 -- Requires pg_cron extension enabled in Supabase Dashboard.
 -- Uncomment after enabling pg_cron.

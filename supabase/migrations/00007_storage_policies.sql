@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00007: Storage Bucket Policies
+-- X-Courses v2 - Migration 00007: Storage Bucket Policies
 -- ============================================================================
 -- Storage buckets (avatars, course-files, exam-submissions) and their
 -- access policies.

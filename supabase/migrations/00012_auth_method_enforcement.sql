@@ -1,5 +1,5 @@
 -- ============================================================================
--- X-Course v2 - Migration 00012: Per-Tenant Auth Method Enforcement
+-- X-Courses v2 - Migration 00012: Per-Tenant Auth Method Enforcement
 -- ============================================================================
 -- Updates handle_new_user() to check tenants.settings->'auth_methods' against
 -- the auth provider from raw_app_meta_data before creating a profile.
