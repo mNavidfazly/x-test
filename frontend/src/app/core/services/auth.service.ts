@@ -41,7 +41,14 @@ export class AuthService {
   }
 
   async signInWithOtp(email: string) {
-    return this.#supabase.client.auth.signInWithOtp({ email });
+    return this.#supabase.client.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: false },
+    });
+  }
+
+  async verifyOtp(email: string, token: string) {
+    return this.#supabase.client.auth.verifyOtp({ email, token, type: 'email' });
   }
 
   async signInWithOAuth(provider: 'azure') {

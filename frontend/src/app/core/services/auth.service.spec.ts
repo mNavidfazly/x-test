@@ -38,6 +38,7 @@ describe('AuthService', () => {
   let mockGetSession: ReturnType<typeof vi.fn>;
   let mockSignInWithPassword: ReturnType<typeof vi.fn>;
   let mockSignInWithOtp: ReturnType<typeof vi.fn>;
+  let mockVerifyOtp: ReturnType<typeof vi.fn>;
   let mockSignOut: ReturnType<typeof vi.fn>;
   let mockSignInWithOAuth: ReturnType<typeof vi.fn>;
 
@@ -45,6 +46,7 @@ describe('AuthService', () => {
     mockGetSession = vi.fn().mockResolvedValue({ data: { session: initialSession } });
     mockSignInWithPassword = vi.fn().mockResolvedValue({ data: {}, error: null });
     mockSignInWithOtp = vi.fn().mockResolvedValue({ data: {}, error: null });
+    mockVerifyOtp = vi.fn().mockResolvedValue({ data: { user: {}, session: {} }, error: null });
     mockSignOut = vi.fn().mockResolvedValue({ error: null });
     mockSignInWithOAuth = vi.fn().mockResolvedValue({ data: {}, error: null });
 
@@ -54,6 +56,7 @@ describe('AuthService', () => {
           getSession: mockGetSession,
           signInWithPassword: mockSignInWithPassword,
           signInWithOtp: mockSignInWithOtp,
+          verifyOtp: mockVerifyOtp,
           signOut: mockSignOut,
           signInWithOAuth: mockSignInWithOAuth,
           onAuthStateChange: vi.fn((cb: (event: string, session: unknown) => void) => {
@@ -161,10 +164,33 @@ describe('AuthService', () => {
     expect(mockSignInWithPassword).toHaveBeenCalledWith({ email: 'a@b.com', password: 'pass' });
   });
 
-  it('should call signInWithOtp correctly', async () => {
+  it('should call signInWithOtp with shouldCreateUser false', async () => {
     const service = createService();
     await service.signInWithOtp('a@b.com');
-    expect(mockSignInWithOtp).toHaveBeenCalledWith({ email: 'a@b.com' });
+    expect(mockSignInWithOtp).toHaveBeenCalledWith({
+      email: 'a@b.com',
+      options: { shouldCreateUser: false },
+    });
+  });
+
+  it('should call verifyOtp correctly', async () => {
+    const service = createService();
+    await service.verifyOtp('a@b.com', '123456');
+    expect(mockVerifyOtp).toHaveBeenCalledWith({
+      email: 'a@b.com',
+      token: '123456',
+      type: 'email',
+    });
+  });
+
+  it('should propagate verifyOtp error', async () => {
+    const service = createService();
+    mockVerifyOtp.mockResolvedValueOnce({
+      data: { user: null, session: null },
+      error: { message: 'Token has expired or is invalid' },
+    });
+    const result = await service.verifyOtp('a@b.com', '000000');
+    expect(result.error?.message).toBe('Token has expired or is invalid');
   });
 
   it('should call signOut correctly', async () => {

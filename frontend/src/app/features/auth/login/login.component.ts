@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, GraduationCap, Loader2, Mail, ArrowLeft } from 'lucide-angular';
+import { LucideAngularModule, GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
@@ -19,7 +19,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
           <!-- Header -->
           <div class="flex items-center justify-center gap-3 mb-6">
             <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="32"></lucide-icon>
-            <h1 class="text-xl font-bold text-slate-900">X-Course v2</h1>
+            <h1 class="text-xl font-bold text-slate-900">X-Courses</h1>
           </div>
 
           @if (step() === 'email') {
@@ -92,13 +92,6 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               </div>
             }
 
-            <!-- Magic link sent confirmation -->
-            @if (magicLinkSent()) {
-              <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
-                Check your email for a sign-in link.
-              </div>
-            }
-
             <!-- No tenant found -->
             @if (noTenant()) {
               <div class="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
@@ -164,7 +157,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               </p>
             }
 
-            <!-- Magic link -->
+            <!-- Magic link / OTP -->
             @if (showMagicLink()) {
               @if (showEmailPassword()) {
                 <div class="relative my-4">
@@ -178,7 +171,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               }
 
               <button
-                (click)="onSendMagicLink()"
+                (click)="onSendCode()"
                 [disabled]="loading()"
                 class="w-full bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
@@ -187,9 +180,87 @@ import { TenantResolution } from '../../../core/models/tenant.model';
                 } @else {
                   <lucide-icon [img]="icons.Mail" [size]="16"></lucide-icon>
                 }
-                Send magic link
+                Send sign-in code
               </button>
             }
+          }
+
+          @if (step() === 'otp') {
+            <!-- Back button -->
+            <div class="flex items-center gap-2 mb-6">
+              <button
+                (click)="onBackFromOtp()"
+                class="bg-transparent text-slate-600 rounded-lg p-2 hover:bg-slate-100 transition-all duration-200"
+                aria-label="Back"
+              >
+                <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
+              </button>
+              <p class="text-sm text-slate-500">Verify your identity</p>
+            </div>
+
+            <!-- Instruction -->
+            <div class="text-center mb-6">
+              <lucide-icon [img]="icons.ShieldCheck" [size]="32" class="text-teal-600 mx-auto mb-3"></lucide-icon>
+              <p class="text-sm text-slate-700">
+                We sent a 6-digit code to
+                <span class="font-semibold">{{ email }}</span>
+              </p>
+              <p class="text-xs text-slate-400 mt-1">The code expires in 15 minutes.</p>
+            </div>
+
+            <!-- Error message -->
+            @if (otpError()) {
+              <div class="mb-4 rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+                {{ otpError() }}
+              </div>
+            }
+
+            <!-- OTP input -->
+            <div class="mb-4">
+              <label for="otp-code" class="block text-sm font-medium text-slate-700 mb-1">Verification code</label>
+              <input
+                id="otp-code"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                [(ngModel)]="otpCode"
+                maxlength="6"
+                placeholder="000000"
+                class="w-full rounded-lg border border-slate-300 px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] tabular-nums focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                [disabled]="otpLoading()"
+                (keydown.enter)="onVerifyOtp()"
+              />
+            </div>
+
+            <!-- Verify button -->
+            <button
+              (click)="onVerifyOtp()"
+              [disabled]="otpLoading() || otpCode.trim().length !== 6"
+              class="w-full bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-4"
+            >
+              @if (otpLoading()) {
+                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              }
+              Verify
+            </button>
+
+            <!-- Resend code -->
+            <div class="text-center">
+              @if (resendCooldown() > 0) {
+                <p class="text-sm text-slate-400">
+                  Resend code in {{ resendCooldown() }}s
+                </p>
+              } @else {
+                <button
+                  (click)="onResendCode()"
+                  [disabled]="otpLoading()"
+                  class="bg-transparent text-teal-600 rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-100 transition-all duration-200 disabled:opacity-50 inline-flex items-center gap-1.5"
+                >
+                  <lucide-icon [img]="icons.RefreshCw" [size]="14"></lucide-icon>
+                  Resend code
+                </button>
+              }
+            </div>
           }
         </div>
       </div>
@@ -197,23 +268,28 @@ import { TenantResolution } from '../../../core/models/tenant.model';
   `,
 })
 export class LoginComponent {
-  readonly icons = { GraduationCap, Loader2, Mail, ArrowLeft };
+  readonly icons = { GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck };
 
   #auth = inject(AuthService);
   #tenant = inject(TenantService);
   #router = inject(Router);
+  #destroyRef = inject(DestroyRef);
 
   email = '';
   password = '';
+  otpCode = '';
 
-  step = signal<'email' | 'methods'>('email');
+  step = signal<'email' | 'methods' | 'otp'>('email');
   errorMessage = signal('');
   loading = signal(false);
   resolving = signal(false);
-  magicLinkSent = signal(false);
   magicLinkLoading = signal(false);
+  otpLoading = signal(false);
+  otpError = signal('');
+  resendCooldown = signal(0);
 
   #resolution = signal<TenantResolution | null>(null);
+  #resendInterval: ReturnType<typeof setInterval> | null = null;
 
   tenantName = computed(() => this.#resolution()?.tenant_name ?? null);
   noTenant = computed(() => {
@@ -223,6 +299,10 @@ export class LoginComponent {
   showAzureSso = computed(() => this.#resolution()?.auth_methods.includes('azure_sso') ?? false);
   showEmailPassword = computed(() => this.#resolution()?.auth_methods.includes('email_password') ?? false);
   showMagicLink = computed(() => this.#resolution()?.auth_methods.includes('magic_link') ?? false);
+
+  constructor() {
+    this.#destroyRef.onDestroy(() => this.#clearResendCooldown());
+  }
 
   async onContinue() {
     if (!this.email) {
@@ -247,9 +327,11 @@ export class LoginComponent {
   onBack() {
     this.step.set('email');
     this.errorMessage.set('');
-    this.magicLinkSent.set(false);
     this.#resolution.set(null);
     this.password = '';
+    this.otpCode = '';
+    this.otpError.set('');
+    this.#clearResendCooldown();
   }
 
   async onSignIn() {
@@ -268,11 +350,10 @@ export class LoginComponent {
     }
   }
 
-  async onSendMagicLink() {
+  async onSendCode() {
     if (!this.email) return;
 
     this.errorMessage.set('');
-    this.magicLinkSent.set(false);
     this.loading.set(true);
     this.magicLinkLoading.set(true);
 
@@ -284,8 +365,52 @@ export class LoginComponent {
     if (error) {
       this.errorMessage.set(error.message);
     } else {
-      this.magicLinkSent.set(true);
+      this.otpCode = '';
+      this.otpError.set('');
+      this.step.set('otp');
+      this.#startResendCooldown();
     }
+  }
+
+  async onVerifyOtp() {
+    const code = this.otpCode.trim();
+    if (code.length !== 6) return;
+
+    this.otpError.set('');
+    this.otpLoading.set(true);
+
+    const { error } = await this.#auth.verifyOtp(this.email, code);
+
+    if (error) {
+      this.otpError.set(error.message);
+      this.otpLoading.set(false);
+    } else {
+      this.#router.navigate(['/']);
+    }
+  }
+
+  async onResendCode() {
+    if (this.resendCooldown() > 0) return;
+
+    this.otpError.set('');
+    this.otpLoading.set(true);
+
+    const { error } = await this.#auth.signInWithOtp(this.email);
+
+    this.otpLoading.set(false);
+
+    if (error) {
+      this.otpError.set(error.message);
+    } else {
+      this.#startResendCooldown();
+    }
+  }
+
+  onBackFromOtp() {
+    this.step.set('methods');
+    this.otpCode = '';
+    this.otpError.set('');
+    this.#clearResendCooldown();
   }
 
   async onAzureSso() {
@@ -297,6 +422,27 @@ export class LoginComponent {
     if (error) {
       this.errorMessage.set(error.message);
       this.loading.set(false);
+    }
+  }
+
+  #startResendCooldown() {
+    this.resendCooldown.set(60);
+    this.#clearResendCooldown();
+    this.#resendInterval = setInterval(() => {
+      const current = this.resendCooldown();
+      if (current <= 1) {
+        this.resendCooldown.set(0);
+        this.#clearResendCooldown();
+      } else {
+        this.resendCooldown.set(current - 1);
+      }
+    }, 1000);
+  }
+
+  #clearResendCooldown() {
+    if (this.#resendInterval) {
+      clearInterval(this.#resendInterval);
+      this.#resendInterval = null;
     }
   }
 }

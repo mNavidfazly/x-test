@@ -11,6 +11,7 @@ import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { createMockTenantService } from '../../../__mocks__/tenant.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { TenantResolution } from '../../../core/models/tenant.model';
+import { AuthMethod } from '../../../core/models/tenant.model';
 
 describe('LoginComponent', () => {
   async function renderLogin(options?: {
@@ -96,13 +97,13 @@ describe('LoginComponent', () => {
       expect(screen.getByRole('button', { name: /^sign in$/i })).toBeTruthy();
     });
 
-    it('should show magic link button when allowed', async () => {
+    it('should show send sign-in code button when magic_link allowed', async () => {
       await setupStep2({
         tenant_name: 'Acme',
         auth_methods: ['magic_link'],
       });
 
-      expect(screen.getByRole('button', { name: /send magic link/i })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /send sign-in code/i })).toBeTruthy();
     });
 
     it('should show no account message when no tenant', async () => {
@@ -135,13 +136,13 @@ describe('LoginComponent', () => {
       expect(auth.signInWithPassword).toHaveBeenCalledWith('test@acme.com', 'secret123');
     });
 
-    it('should call signInWithOtp for magic link', async () => {
+    it('should call signInWithOtp when sending code', async () => {
       const { auth, user } = await setupStep2({
         tenant_name: 'Acme',
         auth_methods: ['magic_link'],
       });
 
-      await user.click(screen.getByRole('button', { name: /send magic link/i }));
+      await user.click(screen.getByRole('button', { name: /send sign-in code/i }));
 
       expect(auth.signInWithOtp).toHaveBeenCalledWith('test@acme.com');
     });
@@ -169,6 +170,105 @@ describe('LoginComponent', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /continue/i })).toBeTruthy();
+      });
+    });
+  });
+
+  describe('Step 3 — OTP verification', () => {
+    async function setupOtpStep() {
+      const tenant = createMockTenantService();
+      tenant.resolveTenant.mockReturnValue(
+        of({ tenant_name: 'Acme', auth_methods: ['magic_link'] as AuthMethod[] }),
+      );
+      const auth = createMockAuthService();
+      await renderLogin({ auth, tenant });
+      const user = userEvent.setup();
+
+      // Step 1: enter email
+      await user.type(screen.getByLabelText('Email'), 'test@acme.com');
+      await user.click(screen.getByRole('button', { name: /continue/i }));
+
+      // Step 2: click "Send sign-in code"
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /send sign-in code/i })).toBeTruthy();
+      });
+      await user.click(screen.getByRole('button', { name: /send sign-in code/i }));
+
+      // Step 3: OTP input should appear
+      await waitFor(() => {
+        expect(screen.getByLabelText('Verification code')).toBeTruthy();
+      });
+
+      return { auth, user };
+    }
+
+    it('should show OTP input after sending code', async () => {
+      await setupOtpStep();
+      expect(screen.getByLabelText('Verification code')).toBeTruthy();
+      expect(screen.getByRole('button', { name: /verify/i })).toBeTruthy();
+      expect(screen.getByText(/we sent a 6-digit code/i)).toBeTruthy();
+    });
+
+    it('should show the email address in the OTP message', async () => {
+      await setupOtpStep();
+      expect(screen.getByText('test@acme.com')).toBeTruthy();
+    });
+
+    it('should disable verify button when code is incomplete', async () => {
+      const { user } = await setupOtpStep();
+      const verifyBtn = screen.getByRole('button', { name: /verify/i }) as HTMLButtonElement;
+      expect(verifyBtn.disabled).toBe(true);
+
+      await user.type(screen.getByLabelText('Verification code'), '123');
+      expect(verifyBtn.disabled).toBe(true);
+    });
+
+    it('should enable verify button when 6 digits entered', async () => {
+      const { user } = await setupOtpStep();
+      await user.type(screen.getByLabelText('Verification code'), '123456');
+
+      await waitFor(() => {
+        const verifyBtn = screen.getByRole('button', { name: /verify/i }) as HTMLButtonElement;
+        expect(verifyBtn.disabled).toBe(false);
+      });
+    });
+
+    it('should call verifyOtp with email and code', async () => {
+      const { auth, user } = await setupOtpStep();
+      await user.type(screen.getByLabelText('Verification code'), '654321');
+      await user.click(screen.getByRole('button', { name: /verify/i }));
+
+      await waitFor(() => {
+        expect(auth.verifyOtp).toHaveBeenCalledWith('test@acme.com', '654321');
+      });
+    });
+
+    it('should show error on invalid code', async () => {
+      const { auth, user } = await setupOtpStep();
+      auth.verifyOtp.mockResolvedValueOnce({
+        data: { user: null, session: null },
+        error: { message: 'Token has expired or is invalid' },
+      });
+
+      await user.type(screen.getByLabelText('Verification code'), '000000');
+      await user.click(screen.getByRole('button', { name: /verify/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/token has expired/i)).toBeTruthy();
+      });
+    });
+
+    it('should show resend cooldown after sending', async () => {
+      await setupOtpStep();
+      expect(screen.getByText(/resend code in/i)).toBeTruthy();
+    });
+
+    it('should navigate back to methods step on back button', async () => {
+      const { user } = await setupOtpStep();
+      await user.click(screen.getByRole('button', { name: /back/i }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /send sign-in code/i })).toBeTruthy();
       });
     });
   });
