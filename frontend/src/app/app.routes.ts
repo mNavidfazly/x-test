@@ -31,6 +31,10 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layout/main-layout/main-layout.component').then(
+        (m) => m.MainLayoutComponent,
+      ),
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
@@ -38,6 +42,62 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then(
             (m) => m.DashboardComponent,
+          ),
+      },
+      {
+        path: 'courses',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
+          ),
+      },
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
+          ),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
+          ),
+      },
+      {
+        path: 'teaching/:path',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
+          ),
+      },
+      {
+        path: 'admin/:path',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
+          ),
+      },
+      {
+        path: 'csm/:path',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
+          ),
+      },
+      {
+        path: 'analytics/:path',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
+          ),
+      },
+      {
+        path: 'platform/:path',
+        loadComponent: () =>
+          import('./shared/components/stub-page.component').then(
+            (m) => m.StubPageComponent,
           ),
       },
     ],

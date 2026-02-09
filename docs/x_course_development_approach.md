@@ -145,13 +145,16 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 │   │   │   │   ├── api.mock.ts           # FastAPI client mock
 │   │   │   │   ├── toast.mock.ts
 │   │   │   │   ├── router.mock.ts
-│   │   │   │   └── lucide.mock.ts
+│   │   │   │   ├── lucide.mock.ts
+│   │   │   │   ├── tenant.mock.ts
+│   │   │   │   └── profile.mock.ts
 │   │   │   │
 │   │   │   ├── core/
 │   │   │   │   ├── services/
 │   │   │   │   │   ├── supabase.service.ts
 │   │   │   │   │   ├── auth.service.ts   # Azure SSO + email/password + magic link (per-tenant)
-│   │   │   │   │   └── api.service.ts    # FastAPI client
+│   │   │   │   │   ├── api.service.ts    # FastAPI client
+│   │   │   │   │   └── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
 │   │   │   │   │   └── role.guard.ts     # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
@@ -165,9 +168,16 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 │   │   │   │       └── ...
 │   │   │   │
 │   │   │   ├── layout/
-│   │   │   │   ├── sidebar/              # Role-aware navigation
-│   │   │   │   ├── header/               # Notification bell, user menu
+│   │   │   │   ├── sidebar/
+│   │   │   │   │   ├── sidebar.component.ts        # Role-aware nav, mobile overlay, desktop static
+│   │   │   │   │   ├── sidebar.component.spec.ts
+│   │   │   │   │   └── sidebar-nav.config.ts       # 6 sections, 13 items, filterNavSections()
+│   │   │   │   ├── header/
+│   │   │   │   │   ├── header.component.ts          # Hamburger, notification bell, user menu dropdown
+│   │   │   │   │   └── header.component.spec.ts
 │   │   │   │   └── main-layout/
+│   │   │   │       ├── main-layout.component.ts     # Shell: sidebar + header + <router-outlet>
+│   │   │   │       └── main-layout.component.spec.ts
 │   │   │   │
 │   │   │   ├── features/
 │   │   │   │   ├── auth/
@@ -222,6 +232,7 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 │   │   │   │
 │   │   │   └── shared/
 │   │   │       ├── components/
+│   │   │       │   ├── stub-page.component.ts  # "Coming soon" placeholder for unbuilt feature routes
 │   │   │       │   ├── data-table/
 │   │   │       │   ├── confirmation-dialog/
 │   │   │       │   ├── loading-spinner/
@@ -388,16 +399,19 @@ x-course-v2/                                  # GitHub monorepo (main branch →
 - [x] **Tests:** 38 backend tests (tenant service, resolve-tenant, reset-password) + 57 frontend tests (auth service, guards, login, reset-password, access-request, tenant service)
 
 #### 1G - Layout Shell
-- [ ] Main layout component
-- [ ] Role-aware sidebar navigation:
-  - [ ] **All users:** My Courses, Notifications
-  - [ ] **Tenant Admin:** + User Management, Progress Dashboard
-  - [ ] **CSM:** + Assigned Tenants, Progress Dashboard, Expert Questions
-  - [ ] **Lecturer:** + My Courses (teaching), Questions Board, Exam Grading, Progress Dashboard
-  - [ ] **Platform Admin:** + All of the above + Tenant Management, Content Management, Staleness Dashboard
-- [ ] Header with notification bell (unread count) + user menu
-- [ ] Mobile responsive sidebar (overlay on mobile, static on desktop)
-- [ ] **Tests:** Layout component tests
+- [x] Main layout component (wraps authenticated routes via `loadComponent` on parent route)
+- [x] Role-aware sidebar navigation (6 sections, 13 nav items, `filterNavSections()` pure function):
+  - [x] **All users:** Dashboard, My Courses, Notifications
+  - [x] **Tenant Admin:** + User Management, Progress Dashboard
+  - [x] **CSM:** + Assigned Tenants, Expert Questions, Progress Dashboard
+  - [x] **Lecturer:** + My Courses (teaching), Questions Board, Exam Grading, Progress Dashboard
+  - [x] **Platform Admin:** + All of the above + Tenant Management, Content Management, Staleness Dashboard
+- [x] Header with notification bell (hardcoded 0 count for 1G, Realtime in Phase 8) + user menu dropdown (avatar/initials, profile link, sign out)
+- [x] ProfileService (fetches `full_name`/`avatar_url` from `profiles` table via `effect()` watching auth state)
+- [x] Mobile responsive sidebar (fixed overlay with backdrop on `<lg`, static `w-64` on `lg:`, translate-x transitions)
+- [x] StubPageComponent ("Coming soon" placeholder for unbuilt feature routes)
+- [x] Dashboard stripped to content-only (layout handled by MainLayoutComponent)
+- [x] **Tests:** 25 new tests (4 ProfileService + 9 Sidebar + 7 Header + 5 MainLayout) — 82 total frontend tests
 
 ---
 
@@ -1637,9 +1651,9 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 - [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
 - [x] FastAPI setup + deploy to Railway (11 tests, health endpoint verified)
 - [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-course-v2.vercel.app)
-- [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 7 mock factories)
+- [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 8 mock factories)
 - [x] Auth flow (Azure SSO + email/password + magic link, per-tenant config, guards, access request) + tests (38 backend + 57 frontend)
-- [ ] Layout shell (role-aware sidebar, notification bell) + tests
+- [x] Layout shell (role-aware sidebar, notification bell, user menu, ProfileService, mobile responsive) + tests (25 new — 82 total frontend)
 
 ### Phase 2: Content Read
 - [ ] Course list + detail + tests
