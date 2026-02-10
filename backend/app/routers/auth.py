@@ -63,12 +63,9 @@ async def reset_password(
             options = {}
             if body.redirect_to:
                 options["redirect_to"] = body.redirect_to
-            supabase.auth.admin.generate_link(
-                {
-                    "type": "recovery",
-                    "email": body.email,
-                    **({"options": options} if options else {}),
-                }
+            supabase.auth.reset_password_for_email(
+                body.email,
+                options=options if options else None,
             )
     except Exception:
         logger.debug("reset-password swallowed error for %s", body.email)

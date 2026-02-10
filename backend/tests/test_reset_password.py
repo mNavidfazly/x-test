@@ -19,7 +19,7 @@ class TestResetPassword:
         resp = client.post("/api/auth/reset-password", json={"email": "user@acme.com"})
         assert resp.status_code == 200
         assert resp.json()["message"] == RESET_MESSAGE
-        mock_supabase.auth.admin.generate_link.assert_called_once()
+        mock_supabase.auth.reset_password_for_email.assert_called_once()
 
     def test_skips_when_not_allowed(self, client, mock_supabase):
         _mock_tenant_lookup(mock_supabase, [{
@@ -30,14 +30,14 @@ class TestResetPassword:
         resp = client.post("/api/auth/reset-password", json={"email": "user@acme.com"})
         assert resp.status_code == 200
         assert resp.json()["message"] == RESET_MESSAGE
-        mock_supabase.auth.admin.generate_link.assert_not_called()
+        mock_supabase.auth.reset_password_for_email.assert_not_called()
 
     def test_no_tenant_skips(self, client, mock_supabase):
         _mock_tenant_lookup(mock_supabase, [])
         resp = client.post("/api/auth/reset-password", json={"email": "user@unknown.com"})
         assert resp.status_code == 200
         assert resp.json()["message"] == RESET_MESSAGE
-        mock_supabase.auth.admin.generate_link.assert_not_called()
+        mock_supabase.auth.reset_password_for_email.assert_not_called()
 
     def test_same_message_always(self, client, mock_supabase):
         _mock_tenant_lookup(mock_supabase, [])
@@ -56,7 +56,7 @@ class TestResetPassword:
             "name": "Acme",
             "settings": {"auth_methods": ["email_password"]},
         }])
-        mock_supabase.auth.admin.generate_link.side_effect = Exception("User not found")
+        mock_supabase.auth.reset_password_for_email.side_effect = Exception("User not found")
         resp = client.post("/api/auth/reset-password", json={"email": "user@acme.com"})
         assert resp.status_code == 200
         assert resp.json()["message"] == RESET_MESSAGE
@@ -74,4 +74,4 @@ class TestResetPassword:
         }])
         resp = client.post("/api/auth/reset-password", json={"email": "user@acme.com"})
         assert resp.status_code == 200
-        mock_supabase.auth.admin.generate_link.assert_called_once()
+        mock_supabase.auth.reset_password_for_email.assert_called_once()
