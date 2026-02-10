@@ -13,7 +13,7 @@ from app.models.schemas import (
     ResolveEmailRequest,
     ResolveEmailResponse,
 )
-from app.services.tenant import extract_domain, lookup_tenant, resolve_auth_methods
+from app.services.tenant import extract_domain, lookup_idp_hint, lookup_tenant, resolve_auth_methods
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,11 @@ async def resolve_tenant(
     methods = resolve_auth_methods(tenant)
     tenant_name = tenant["name"] if tenant else None
 
-    return ResolveEmailResponse(tenant_name=tenant_name, auth_methods=methods)
+    idp_hint = None
+    if "keycloak_sso" in methods:
+        idp_hint = lookup_idp_hint(supabase, body.email)
+
+    return ResolveEmailResponse(tenant_name=tenant_name, auth_methods=methods, idp_hint=idp_hint)
 
 
 @router.post("/auth/reset-password", response_model=ResetPasswordResponse)

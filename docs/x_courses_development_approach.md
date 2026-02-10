@@ -13,7 +13,7 @@ This document describes the development approach for building X-Courses v2 (Mult
 | **Schema-First** | Database schema is defined completely before any feature work |
 | **Isolated Features** | Each feature is self-contained. Changes to one feature don't affect others |
 | **Desktop-First** | UI optimized for desktop, but must work on mobile/tablet |
-| **Real Auth First** | Multi-provider auth (Azure SSO + email/password + magic link) with per-tenant configuration in Phase 1. Invite-only (no public registration) |
+| **Real Auth First** | Multi-provider auth (Keycloak SSO + email/password + magic link) with per-tenant configuration. Invite-only (no public registration) |
 | **Incremental Validation** | Each step is tested and validated before moving to the next |
 | **CRUD via Supabase** | All basic CRUD operations go directly from Angular to Supabase |
 | **Complex Logic via FastAPI** | Invitations, reminders, external quiz webhooks go through FastAPI |
@@ -24,7 +24,7 @@ This document describes the development approach for building X-Courses v2 (Mult
 | Layer | Technology | Hosting |
 |-------|------------|---------|
 | **Database** | Supabase PostgreSQL + RLS (~236 policies) | Supabase Cloud |
-| **Auth** | Supabase Auth (Azure SSO for Calypso, email/password + magic link per-tenant for clients) | Supabase Cloud |
+| **Auth** | Supabase Auth (Keycloak SSO for Calypso + onboarded clients, email/password + magic link per-tenant) | Supabase Cloud |
 | **Storage** | Supabase Storage (PDFs, files, avatars, exam submissions) | Supabase Cloud |
 | **Realtime** | Supabase Realtime (notifications) | Supabase Cloud |
 | **Scheduled Jobs** | pg_cron (exam deadlines, content staleness) | Supabase Cloud |
@@ -32,7 +32,7 @@ This document describes the development approach for building X-Courses v2 (Mult
 | **Backend API** | FastAPI (Python 3.11+) | Railway |
 | **Video** | Bunny CDN (streaming URLs, not Supabase Storage) | Bunny CDN |
 | **Email** | Calypso SMTP (direct SMTP, not Resend) | Calypso Infrastructure |
-| **SSO** | Microsoft Entra ID (for @calypso-commodities.com domain). Phase 2: Keycloak SSO for xLNG cross-product SSO | Microsoft |
+| **SSO** | Keycloak SSO (via `calypso-xcourses` client in "customers" realm) for Calypso + onboarded client tenants | Keycloak |
 | **Source Control** | GitHub (monorepo) | GitHub |
 | **CI/CD** | Vercel + Railway auto-deploy from `main` branch | Vercel / Railway |
 
@@ -63,7 +63,7 @@ This document describes the development approach for building X-Courses v2 (Mult
 │  └───────────┘  │  avatars) │       │    │  GET  /api/health                 │
 │  ┌───────────┐  └───────────┘       │    │                                   │
 │  │   Auth    │  ┌───────────┐       │    └───────────────────────────────────┘
-│  │ (Azure +  │  │ Realtime  │       │                    │
+│  │(Keycloak+ │  │ Realtime  │       │                    │
 │  │  email +  │  │ (notifs)  │       │                    │
 │  │  magic)   │  └───────────┘       │                    │
 │  └───────────┘                      │                    ▼
@@ -152,7 +152,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   ├── core/
 │   │   │   │   ├── services/
 │   │   │   │   │   ├── supabase.service.ts
-│   │   │   │   │   ├── auth.service.ts   # Azure SSO + email/password + magic link OTP (per-tenant)
+│   │   │   │   │   ├── auth.service.ts   # Keycloak SSO + email/password + magic link OTP (per-tenant)
 │   │   │   │   │   ├── api.service.ts    # FastAPI client
 │   │   │   │   │   └── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
 │   │   │   │   ├── guards/
@@ -181,7 +181,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │
 │   │   │   ├── features/
 │   │   │   │   ├── auth/
-│   │   │   │   │   ├── login/            # Tenant-aware: Azure SSO + email/password + magic link (3-step OTP)
+│   │   │   │   │   ├── login/            # Tenant-aware: Keycloak SSO + email/password + magic link (3-step OTP)
 │   │   │   │   │   ├── accept-invite/    # Set password flow
 │   │   │   │   │   └── access-request/   # Request access page
 │   │   │   │   │
@@ -296,15 +296,14 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
   - [x] Push initial commit with `docs/` and `supabase/` folders
 - [x] Run database migrations — all 14 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes missing `SET search_path = public` on `custom_access_token_hook`)
 - [ ] Configure auth:
-  - [ ] Microsoft Entra ID SSO (for @calypso-commodities.com domain) — deferred (Azure AD app registration needed)
+  - [x] Keycloak SSO (for @calypso-commodities.com domain + onboarded clients) — via `calypso-xcourses` client in "customers" realm
   - [x] Enable email/password auth — enabled by default, confirmed via `config push`
   - [x] Enable magic link auth — implicit with email provider (uses `signInWithOtp`)
   - [x] Disable public registration — `enable_signup = false` in config.toml, pushed via `supabase config push`
   - [x] Disable public email signup — covered by `enable_signup = false`
   - [x] Set magic link / OTP expiration to 15 minutes — `otp_expiry = 900` in config.toml
   - [x] Use OTP code template — all 4 email templates use `{{ .Token }}` (magic_link, confirmation, invite, recovery)
-  - [ ] Configure `xms_edov` optional claim on Azure AD app registration — deferred (Azure Portal needed)
-  - [x] Configure per-tenant auth methods in `tenants.settings` — Calypso set to `["azure_sso","email_password","magic_link"]`
+  - [x] Configure per-tenant auth methods in `tenants.settings` — Calypso set to `["keycloak_sso","email_password","magic_link"]`
   - [x] Configure custom SMTP — Office 365 (`smtp.office365.com:587`, `support@calypso-commodities.com`)
 - [x] Configure auth hooks:
   - [x] Custom Access Token Hook → `public.custom_access_token_hook` — enabled via `config push` + GRANTs for `supabase_auth_admin`
@@ -372,7 +371,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 #### 1F - Auth Flow
 - [x] Login page (tenant-aware):
   - [x] Read tenant's `settings.auth_methods` to determine available methods
-  - [x] Azure SSO button (show if tenant allows `azure_sso`)
+  - [x] Keycloak SSO button (show if tenant allows `keycloak_sso`)
   - [x] Email + Password form (show if tenant allows `email_password`)
   - [x] Magic Link / OTP code flow (show if tenant allows `magic_link`) — 3-step: send code → enter 6-digit OTP → verify
   - [x] Domain detection: user enters email → resolve tenant → show allowed methods
@@ -891,7 +890,7 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 
 | Operation | Table(s) | Notes |
 |-----------|----------|-------|
-| Login (Azure SSO) | auth | Supabase Auth with Microsoft provider (Calypso employees) |
+| Login (Keycloak SSO) | auth | Supabase Auth with Keycloak provider (Calypso + onboarded clients) |
 | Login (Email/Magic Link) | auth | Supabase Auth |
 | Accept Invite | auth | Set password |
 | List Courses | courses + tenant_courses | RLS filters by tenant |
@@ -1023,9 +1022,8 @@ If an auth method is not allowed for the tenant, no profile is created. Admin in
 
 ### 8.2 Per-Tenant Auth Methods
 
-All @calypso-commodities.com users use Microsoft Entra ID SSO (configured via `tenants.settings.auth_methods = ["azure_sso"]`).
-Client tenants configure their own allowed methods (email/password, magic link, or both).
-Phase 2: Keycloak SSO for xLNG cross-product single sign-on.
+All @calypso-commodities.com users use Keycloak SSO (configured via `tenants.settings.auth_methods = ["keycloak_sso"]`).
+Client tenants configure their own allowed methods (email/password, magic link, keycloak_sso, or a combination).
 
 `handle_new_user()` enforces these settings at the database level — if a user authenticates via a method not allowed for their tenant, no profile is created. See `docs/AUTH_SYSTEM.md` Section 8 for the full settings schema.
 
@@ -1647,12 +1645,12 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 ## 11. Checklist Summary
 
 ### Phase 1: Foundation
-- [x] Supabase setup + schema + RLS + multi-provider auth (Azure SSO + email/password + magic link)
+- [x] Supabase setup + schema + RLS + multi-provider auth (Keycloak SSO + email/password + magic link)
 - [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
 - [x] FastAPI setup + deploy to Railway (11 tests, health endpoint verified)
 - [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-courses-v2.vercel.app)
 - [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 8 mock factories)
-- [x] Auth flow (Azure SSO + email/password + magic link OTP, per-tenant config, guards, access request) + tests (38 backend + 92 frontend)
+- [x] Auth flow (Keycloak SSO + email/password + magic link OTP, per-tenant config, guards, access request) + tests (38 backend + 92 frontend)
 - [x] Layout shell (role-aware sidebar, notification bell, user menu, ProfileService, mobile responsive) + tests (25 new)
 
 ### Phase 2: Content Read
@@ -1721,12 +1719,11 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 2. **Initialize GitHub monorepo** (`git init`, create `.gitignore`, push `docs/` + `supabase/` to private repo)
 3. **Run SQL migrations** from `supabase/migrations/00001-00014`
 4. **Configure auth:**
-   - Add Microsoft Entra ID as OAuth provider (for Calypso employees)
+   - Enable Keycloak as OAuth provider (realm URL, client ID, client secret)
    - Enable email/password auth
    - Disable public email signup (Auth → Providers → Email → disable "Allow new users to sign up")
    - Set OTP expiration to 15 minutes (900 seconds)
    - Use OTP code template (`{{ .Token }}`) instead of clickable magic link
-   - Configure `xms_edov` optional claim on Azure AD app registration
    - Enable magic link auth
    - Disable public registration (invite-only via admin)
    - Set per-tenant auth methods in `tenants.settings` (see Section 8.2)

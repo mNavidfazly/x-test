@@ -5,10 +5,12 @@ import { AuthMethod, TenantResolution } from '../core/models/tenant.model';
 export function createMockTenantService(options?: {
   tenantName?: string | null;
   authMethods?: AuthMethod[];
+  idpHint?: string | null;
 }) {
   const defaultResolution: TenantResolution = {
     tenant_name: options?.tenantName ?? 'Test Corp',
     auth_methods: options?.authMethods ?? ['email_password', 'magic_link'],
+    idp_hint: options?.idpHint ?? null,
   };
 
   return {

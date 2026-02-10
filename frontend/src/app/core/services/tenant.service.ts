@@ -10,19 +10,19 @@ export class TenantService {
 
   resolveTenant(email: string): Observable<TenantResolution> {
     if (!email || !email.includes('@')) {
-      return of({ tenant_name: null, auth_methods: [] });
+      return of({ tenant_name: null, auth_methods: [], idp_hint: null });
     }
 
-    const domain = email.split('@')[1].toLowerCase();
+    const cacheKey = email.toLowerCase();
 
-    const cached = this.#cache.get(domain);
+    const cached = this.#cache.get(cacheKey);
     if (cached) {
       return of(cached);
     }
 
     return this.#api
       .post<TenantResolution>('/auth/resolve-tenant', { email })
-      .pipe(tap((result) => this.#cache.set(domain, result)));
+      .pipe(tap((result) => this.#cache.set(cacheKey, result)));
   }
 
   clearCache(): void {

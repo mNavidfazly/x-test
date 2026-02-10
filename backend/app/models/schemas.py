@@ -27,6 +27,7 @@ class ResolveEmailRequest(BaseModel):
 class ResolveEmailResponse(BaseModel):
     tenant_name: Optional[str]
     auth_methods: List[str]
+    idp_hint: Optional[str] = None
 
 
 class ResetPasswordRequest(BaseModel):

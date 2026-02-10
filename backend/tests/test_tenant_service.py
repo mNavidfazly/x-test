@@ -1,8 +1,11 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from app.services.tenant import (
     ALL_AUTH_METHODS,
     extract_domain,
+    lookup_idp_hint,
     resolve_auth_methods,
 )
 
@@ -56,3 +59,31 @@ class TestResolveAuthMethods:
     def test_settings_not_dict_returns_all(self):
         tenant = {"settings": "not-a-dict"}
         assert resolve_auth_methods(tenant) == list(ALL_AUTH_METHODS)
+
+    def test_keycloak_sso_included(self):
+        assert "keycloak_sso" in ALL_AUTH_METHODS
+
+    def test_all_auth_methods_has_three_entries(self):
+        assert len(ALL_AUTH_METHODS) == 3
+
+
+class TestLookupIdpHint:
+    def _mock_profiles_query(self, mock_supabase: MagicMock, data: list):
+        mock_supabase.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+            MagicMock(data=data)
+        )
+
+    def test_returns_alias_when_found(self):
+        mock_sb = MagicMock()
+        self._mock_profiles_query(mock_sb, [{"keycloak_idp_alias": "equinor-entraid"}])
+        assert lookup_idp_hint(mock_sb, "user@equinor.com") == "equinor-entraid"
+
+    def test_returns_none_when_no_profile(self):
+        mock_sb = MagicMock()
+        self._mock_profiles_query(mock_sb, [])
+        assert lookup_idp_hint(mock_sb, "user@unknown.com") is None
+
+    def test_returns_none_when_alias_is_null(self):
+        mock_sb = MagicMock()
+        self._mock_profiles_query(mock_sb, [{"keycloak_idp_alias": None}])
+        assert lookup_idp_hint(mock_sb, "user@acme.com") is None

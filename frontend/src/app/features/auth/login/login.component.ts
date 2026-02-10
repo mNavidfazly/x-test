@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck } from 'lucide-angular';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LucideAngularModule, GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck, KeyRound } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
@@ -102,20 +102,21 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               </p>
             }
 
-            <!-- Azure SSO -->
-            @if (showAzureSso()) {
+            <!-- Keycloak SSO -->
+            @if (showKeycloakSso()) {
               <button
-                (click)="onAzureSso()"
+                (click)="onKeycloakSso()"
                 [disabled]="loading()"
                 class="w-full bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-3"
               >
-                Sign in with Microsoft
+                <lucide-icon [img]="icons.KeyRound" [size]="16"></lucide-icon>
+                Sign in with SSO
               </button>
             }
 
             <!-- Email/Password -->
             @if (showEmailPassword()) {
-              @if (showAzureSso()) {
+              @if (showKeycloakSso()) {
                 <div class="relative my-4">
                   <div class="absolute inset-0 flex items-center">
                     <div class="w-full border-t border-slate-200"></div>
@@ -268,12 +269,14 @@ import { TenantResolution } from '../../../core/models/tenant.model';
   `,
 })
 export class LoginComponent {
-  readonly icons = { GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck };
+  readonly icons = { GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck, KeyRound };
 
   #auth = inject(AuthService);
   #tenant = inject(TenantService);
   #router = inject(Router);
+  #route = inject(ActivatedRoute);
   #destroyRef = inject(DestroyRef);
+  #urlIdpHint: string | null = null;
 
   email = '';
   password = '';
@@ -296,11 +299,12 @@ export class LoginComponent {
     const r = this.#resolution();
     return r !== null && r.auth_methods.length === 0;
   });
-  showAzureSso = computed(() => this.#resolution()?.auth_methods.includes('azure_sso') ?? false);
+  showKeycloakSso = computed(() => this.#resolution()?.auth_methods.includes('keycloak_sso') ?? false);
   showEmailPassword = computed(() => this.#resolution()?.auth_methods.includes('email_password') ?? false);
   showMagicLink = computed(() => this.#resolution()?.auth_methods.includes('magic_link') ?? false);
 
   constructor() {
+    this.#urlIdpHint = this.#route.snapshot.queryParamMap.get('kc_idp_hint');
     this.#destroyRef.onDestroy(() => this.#clearResendCooldown());
   }
 
@@ -413,11 +417,13 @@ export class LoginComponent {
     this.#clearResendCooldown();
   }
 
-  async onAzureSso() {
+  async onKeycloakSso() {
     this.errorMessage.set('');
     this.loading.set(true);
 
-    const { error } = await this.#auth.signInWithOAuth('azure');
+    // Priority: URL param (cross-product SSO) > API response > none
+    const hint = this.#urlIdpHint ?? this.#resolution()?.idp_hint ?? undefined;
+    const { error } = await this.#auth.signInWithOAuth(hint);
 
     if (error) {
       this.errorMessage.set(error.message);

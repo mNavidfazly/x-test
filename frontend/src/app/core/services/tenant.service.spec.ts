@@ -25,7 +25,8 @@ describe('TenantService', () => {
   it('should resolve a known domain', async () => {
     const resolution: TenantResolution = {
       tenant_name: 'Acme Corp',
-      auth_methods: ['email_password', 'azure_sso'],
+      auth_methods: ['email_password', 'keycloak_sso'],
+      idp_hint: null,
     };
     mockApi.post.mockReturnValue(of(resolution));
 
@@ -34,12 +35,12 @@ describe('TenantService', () => {
     });
 
     expect(result.tenant_name).toBe('Acme Corp');
-    expect(result.auth_methods).toEqual(['email_password', 'azure_sso']);
+    expect(result.auth_methods).toEqual(['email_password', 'keycloak_sso']);
     expect(mockApi.post).toHaveBeenCalledWith('/auth/resolve-tenant', { email: 'user@acme.com' });
   });
 
   it('should return empty for unknown domain', async () => {
-    const resolution: TenantResolution = { tenant_name: null, auth_methods: [] };
+    const resolution: TenantResolution = { tenant_name: null, auth_methods: [], idp_hint: null };
     mockApi.post.mockReturnValue(of(resolution));
 
     const result = await new Promise<TenantResolution>((resolve) => {
@@ -50,10 +51,11 @@ describe('TenantService', () => {
     expect(result.auth_methods).toEqual([]);
   });
 
-  it('should cache results per domain', async () => {
+  it('should cache results per email', async () => {
     const resolution: TenantResolution = {
       tenant_name: 'Acme',
       auth_methods: ['email_password'],
+      idp_hint: null,
     };
     mockApi.post.mockReturnValue(of(resolution));
 
@@ -62,18 +64,33 @@ describe('TenantService', () => {
       service.resolveTenant('a@acme.com').subscribe(resolve);
     });
 
-    // Second call with same domain
+    // Second call with same email
     await new Promise<TenantResolution>((resolve) => {
-      service.resolveTenant('b@acme.com').subscribe(resolve);
+      service.resolveTenant('a@acme.com').subscribe(resolve);
     });
 
     // Should only call API once (second was cached)
     expect(mockApi.post).toHaveBeenCalledTimes(1);
   });
 
+  it('should call API for different emails even on same domain', async () => {
+    const resolution: TenantResolution = { tenant_name: 'Acme', auth_methods: ['keycloak_sso'], idp_hint: 'acme-entraid' };
+    mockApi.post.mockReturnValue(of(resolution));
+
+    await new Promise<TenantResolution>((resolve) => {
+      service.resolveTenant('a@acme.com').subscribe(resolve);
+    });
+    await new Promise<TenantResolution>((resolve) => {
+      service.resolveTenant('b@acme.com').subscribe(resolve);
+    });
+
+    // Different emails = different cache keys (idp_hint is per-user)
+    expect(mockApi.post).toHaveBeenCalledTimes(2);
+  });
+
   it('should call API after cache miss for different domain', async () => {
-    const resolution1: TenantResolution = { tenant_name: 'Acme', auth_methods: ['email_password'] };
-    const resolution2: TenantResolution = { tenant_name: 'Beta', auth_methods: ['magic_link'] };
+    const resolution1: TenantResolution = { tenant_name: 'Acme', auth_methods: ['email_password'], idp_hint: null };
+    const resolution2: TenantResolution = { tenant_name: 'Beta', auth_methods: ['magic_link'], idp_hint: null };
     mockApi.post.mockReturnValueOnce(of(resolution1)).mockReturnValueOnce(of(resolution2));
 
     await new Promise<TenantResolution>((resolve) => {
@@ -97,7 +114,7 @@ describe('TenantService', () => {
   });
 
   it('should clear cache', async () => {
-    const resolution: TenantResolution = { tenant_name: 'Acme', auth_methods: ['email_password'] };
+    const resolution: TenantResolution = { tenant_name: 'Acme', auth_methods: ['email_password'], idp_hint: null };
     mockApi.post.mockReturnValue(of(resolution));
 
     await new Promise<TenantResolution>((resolve) => {

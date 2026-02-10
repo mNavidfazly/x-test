@@ -51,10 +51,17 @@ export class AuthService {
     return this.#supabase.client.auth.verifyOtp({ email, token, type: 'email' });
   }
 
-  async signInWithOAuth(provider: 'azure') {
+  async signInWithOAuth(hint?: string) {
+    const options: Record<string, unknown> = {
+      redirectTo: `${window.location.origin}/auth/callback`,
+      scopes: 'openid',
+    };
+    if (hint) {
+      options['queryParams'] = { kc_idp_hint: hint };
+    }
     return this.#supabase.client.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      provider: 'keycloak',
+      options,
     });
   }
 

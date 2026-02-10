@@ -162,7 +162,7 @@ Badge base:         inline-flex items-center rounded-full px-2.5 py-0.5 text-xs 
 - **`quiz_question_options.is_correct`** — **NEVER expose to learners**. Use `quiz_question_options_safe` view.
 - **`quiz_questions.correct_answer`** — **NEVER expose to learners**. Use `quiz_questions_safe` view.
 - **`issues.internal_notes`** — hidden from learners/tenant admins. Use `issues_safe` view.
-- **`tenants.settings`** — JSONB. Auth methods at key `auth_methods`: array of `["azure_sso", "email_password", "magic_link", "keycloak_sso"]`. If absent = all methods allowed.
+- **`tenants.settings`** — JSONB. Auth methods at key `auth_methods`: array of `["email_password", "magic_link", "keycloak_sso"]`. If absent = all methods allowed.
 - **`tenants.is_master`** — only one row can be true (unique partial index). **Cannot be changed after creation** (trigger).
 - **`exam_submissions.course_id`** — denormalized, enforced by trigger.
 - **`exams.max_file_size`** — bigint, default 50MB (52428800 bytes). `allowed_file_types` default `['application/pdf', 'application/zip']`.

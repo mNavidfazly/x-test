@@ -78,19 +78,11 @@ describe('LoginComponent', () => {
       return { auth: a, tenant: t, user };
     }
 
-    it('should show Azure SSO when allowed', async () => {
-      await setupStep2({
-        tenant_name: 'Acme',
-        auth_methods: ['azure_sso', 'email_password'],
-      });
-
-      expect(screen.getByRole('button', { name: /sign in with microsoft/i })).toBeTruthy();
-    });
-
     it('should show password input when email_password allowed', async () => {
       await setupStep2({
         tenant_name: 'Acme',
         auth_methods: ['email_password'],
+        idp_hint: null,
       });
 
       expect(screen.getByLabelText('Password')).toBeTruthy();
@@ -101,6 +93,7 @@ describe('LoginComponent', () => {
       await setupStep2({
         tenant_name: 'Acme',
         auth_methods: ['magic_link'],
+        idp_hint: null,
       });
 
       expect(screen.getByRole('button', { name: /send sign-in code/i })).toBeTruthy();
@@ -110,6 +103,7 @@ describe('LoginComponent', () => {
       await setupStep2({
         tenant_name: null,
         auth_methods: [],
+        idp_hint: null,
       });
 
       expect(screen.getByText(/no account found/i)).toBeTruthy();
@@ -119,6 +113,7 @@ describe('LoginComponent', () => {
       await setupStep2({
         tenant_name: 'Acme Corp',
         auth_methods: ['email_password'],
+        idp_hint: null,
       });
 
       expect(screen.getByText('Acme Corp')).toBeTruthy();
@@ -128,6 +123,7 @@ describe('LoginComponent', () => {
       const { auth, user } = await setupStep2({
         tenant_name: 'Acme',
         auth_methods: ['email_password'],
+        idp_hint: null,
       });
 
       await user.type(screen.getByLabelText('Password'), 'secret123');
@@ -140,6 +136,7 @@ describe('LoginComponent', () => {
       const { auth, user } = await setupStep2({
         tenant_name: 'Acme',
         auth_methods: ['magic_link'],
+        idp_hint: null,
       });
 
       await user.click(screen.getByRole('button', { name: /send sign-in code/i }));
@@ -147,21 +144,55 @@ describe('LoginComponent', () => {
       expect(auth.signInWithOtp).toHaveBeenCalledWith('test@acme.com');
     });
 
-    it('should call signInWithOAuth for Azure', async () => {
-      const { auth, user } = await setupStep2({
-        tenant_name: 'Acme',
-        auth_methods: ['azure_sso'],
+    it('should show Keycloak SSO button when allowed', async () => {
+      await setupStep2({
+        tenant_name: 'Equinor',
+        auth_methods: ['keycloak_sso'],
+        idp_hint: null,
       });
 
-      await user.click(screen.getByRole('button', { name: /sign in with microsoft/i }));
+      expect(screen.getByRole('button', { name: /sign in with sso/i })).toBeTruthy();
+    });
 
-      expect(auth.signInWithOAuth).toHaveBeenCalledWith('azure');
+    it('should call signInWithOAuth for Keycloak with idp_hint', async () => {
+      const { auth, user } = await setupStep2({
+        tenant_name: 'Equinor',
+        auth_methods: ['keycloak_sso'],
+        idp_hint: 'equinor-entraid',
+      });
+
+      await user.click(screen.getByRole('button', { name: /sign in with sso/i }));
+
+      expect(auth.signInWithOAuth).toHaveBeenCalledWith('equinor-entraid');
+    });
+
+    it('should call signInWithOAuth for Keycloak without hint when none available', async () => {
+      const { auth, user } = await setupStep2({
+        tenant_name: 'Equinor',
+        auth_methods: ['keycloak_sso'],
+        idp_hint: null,
+      });
+
+      await user.click(screen.getByRole('button', { name: /sign in with sso/i }));
+
+      expect(auth.signInWithOAuth).toHaveBeenCalledWith(undefined);
+    });
+
+    it('should show or divider between SSO and password', async () => {
+      await setupStep2({
+        tenant_name: 'Acme',
+        auth_methods: ['keycloak_sso', 'email_password'],
+        idp_hint: null,
+      });
+
+      expect(screen.getByText('or')).toBeTruthy();
     });
 
     it('should go back to email step on back button', async () => {
       await setupStep2({
         tenant_name: 'Acme',
         auth_methods: ['email_password'],
+        idp_hint: null,
       });
 
       const backButton = screen.getByRole('button', { name: /back/i });
@@ -178,7 +209,7 @@ describe('LoginComponent', () => {
     async function setupOtpStep() {
       const tenant = createMockTenantService();
       tenant.resolveTenant.mockReturnValue(
-        of({ tenant_name: 'Acme', auth_methods: ['magic_link'] as AuthMethod[] }),
+        of({ tenant_name: 'Acme', auth_methods: ['magic_link'] as AuthMethod[], idp_hint: null }),
       );
       const auth = createMockAuthService();
       await renderLogin({ auth, tenant });

@@ -9,18 +9,24 @@ def _mock_tenant_lookup(mock_supabase: MagicMock, tenant_data: list):
     )
 
 
+def _mock_profile_lookup(mock_supabase: MagicMock, profile_data: list):
+    mock_supabase.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+        MagicMock(data=profile_data)
+    )
+
+
 class TestResolveTenant:
     def test_tenant_found_with_auth_methods(self, client, mock_supabase):
         _mock_tenant_lookup(mock_supabase, [{
             "id": "tid-1",
             "name": "Acme Corp",
-            "settings": {"auth_methods": ["email_password", "azure_sso"]},
+            "settings": {"auth_methods": ["email_password", "keycloak_sso"]},
         }])
         resp = client.post("/api/auth/resolve-tenant", json={"email": "user@acme.com"})
         assert resp.status_code == 200
         data = resp.json()
         assert data["tenant_name"] == "Acme Corp"
-        assert data["auth_methods"] == ["email_password", "azure_sso"]
+        assert data["auth_methods"] == ["email_password", "keycloak_sso"]
 
     def test_tenant_found_without_auth_methods_returns_all(self, client, mock_supabase):
         _mock_tenant_lookup(mock_supabase, [{
@@ -76,3 +82,39 @@ class TestResolveTenant:
         data = resp.json()
         assert "id" not in data
         assert "secret-tid" not in str(data)
+
+    def test_idp_hint_returned_for_keycloak_user(self, client, mock_supabase):
+        _mock_tenant_lookup(mock_supabase, [{
+            "id": "tid-1",
+            "name": "Equinor",
+            "settings": {"auth_methods": ["keycloak_sso"]},
+        }])
+        _mock_profile_lookup(mock_supabase, [{"keycloak_idp_alias": "equinor-entraid"}])
+        resp = client.post("/api/auth/resolve-tenant", json={"email": "user@equinor.com"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["auth_methods"] == ["keycloak_sso"]
+        assert data["idp_hint"] == "equinor-entraid"
+
+    def test_idp_hint_null_for_new_keycloak_user(self, client, mock_supabase):
+        _mock_tenant_lookup(mock_supabase, [{
+            "id": "tid-1",
+            "name": "Equinor",
+            "settings": {"auth_methods": ["keycloak_sso"]},
+        }])
+        _mock_profile_lookup(mock_supabase, [])
+        resp = client.post("/api/auth/resolve-tenant", json={"email": "new@equinor.com"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["idp_hint"] is None
+
+    def test_idp_hint_null_when_no_keycloak(self, client, mock_supabase):
+        _mock_tenant_lookup(mock_supabase, [{
+            "id": "tid-1",
+            "name": "Acme Corp",
+            "settings": {"auth_methods": ["email_password"]},
+        }])
+        resp = client.post("/api/auth/resolve-tenant", json={"email": "user@acme.com"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["idp_hint"] is None

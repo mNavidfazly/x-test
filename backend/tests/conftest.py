@@ -30,6 +30,10 @@ def mock_supabase() -> MagicMock:
     mock.table.return_value.select.return_value.ilike.return_value.limit.return_value.execute.return_value = (
         MagicMock(data=[])
     )
+    # Wire up .eq() chain for profile lookups (lookup_idp_hint)
+    mock.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+        MagicMock(data=[])
+    )
     return mock
 
 

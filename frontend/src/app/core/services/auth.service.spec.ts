@@ -199,12 +199,28 @@ describe('AuthService', () => {
     expect(mockSignOut).toHaveBeenCalled();
   });
 
-  it('should call signInWithOAuth correctly', async () => {
+  it('should call signInWithOAuth for keycloak with scopes', async () => {
     const service = createService();
-    await service.signInWithOAuth('azure');
+    await service.signInWithOAuth();
     expect(mockSignInWithOAuth).toHaveBeenCalledWith({
-      provider: 'azure',
-      options: { redirectTo: expect.stringContaining('/auth/callback') },
+      provider: 'keycloak',
+      options: {
+        redirectTo: expect.stringContaining('/auth/callback'),
+        scopes: 'openid',
+      },
+    });
+  });
+
+  it('should pass kc_idp_hint when hint provided', async () => {
+    const service = createService();
+    await service.signInWithOAuth('equinor-entraid');
+    expect(mockSignInWithOAuth).toHaveBeenCalledWith({
+      provider: 'keycloak',
+      options: {
+        redirectTo: expect.stringContaining('/auth/callback'),
+        scopes: 'openid',
+        queryParams: { kc_idp_hint: 'equinor-entraid' },
+      },
     });
   });
 

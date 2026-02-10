@@ -27,7 +27,7 @@
 15. [Multi-Provider Identity Linking](#15-multi-provider-identity-linking)
 16. [Security Hardening](#16-security-hardening)
 17. [Edge Cases & Failure Modes](#17-edge-cases--failure-modes)
-18. [Future: Azure SSO & Keycloak](#18-future-azure-sso--keycloak)
+18. [Keycloak SSO Integration](#18-keycloak-sso-integration)
 19. [Known Gaps & Trade-offs](#19-known-gaps--trade-offs)
 20. [File Reference](#20-file-reference)
 
@@ -209,7 +209,7 @@ FastAPI Backend:
 [Step 3] Frontend shows available login options:
      │   ├── "Sign in with Password" button (if email_password allowed)
      │   ├── "Send sign-in code" button (if magic_link allowed)
-     │   ├── "Sign in with Microsoft" button (if azure_sso allowed)
+     │   ├── "Sign in with SSO" button (if keycloak_sso allowed)
      │   └── If auth_methods is empty → "No tenant found" message
      │
      ▼
@@ -228,9 +228,9 @@ FastAPI Backend:
      │       → supabase.auth.verifyOtp({ email, token, type: 'email' })
      │       → Returns session with JWT
      │
-     └── Azure SSO:
-         └── supabase.auth.signInWithOAuth({ provider: 'azure' })
-             → Browser redirects to Microsoft login
+     └── Keycloak SSO:
+         └── supabase.auth.signInWithOAuth({ provider: 'keycloak' })
+             → Browser redirects to Keycloak login
              → After auth, redirects back to /auth/callback
              → Supabase PKCE exchange happens automatically
              → Returns session with JWT
@@ -336,12 +336,12 @@ Login page (step 2: methods) → "Send sign-in code" button
 
 **Important limitation:** At the database level, Supabase uses `provider = 'email'` for BOTH email+password and magic link. The database **cannot distinguish** between them. If a tenant allows `magic_link` but not `email_password`, the `handle_new_user()` trigger allows both (it checks `_auth_methods ? 'email_password' OR _auth_methods ? 'magic_link'`). The `password_verification_hook` provides enforcement for password sign-in specifically, but magic link sign-in has no equivalent hook. **The frontend is the enforcement layer** for showing only allowed methods.
 
-### 5.3 Azure SSO (Microsoft Entra ID)
+### 5.3 Keycloak SSO
 
 **How it works:**
-- User clicks "Sign in with Microsoft"
-- Browser redirects to Microsoft's login page
-- After authentication, Microsoft redirects back to Supabase's callback URL
+- User clicks "Sign in with SSO"
+- Browser redirects to Keycloak login page (with optional `kc_idp_hint` for automatic IdP selection)
+- After authentication, Keycloak redirects back to Supabase's callback URL
 - Supabase exchanges the authorization code (PKCE flow) for tokens
 - Supabase creates/updates the `auth.users` row
 - Browser redirects to the app's `/auth/callback` page
@@ -349,19 +349,16 @@ Login page (step 2: methods) → "Send sign-in code" button
 
 **Frontend code path:**
 ```
-Login page → signInWithOAuth({ provider: 'azure', options: { redirectTo } })
-           → Browser → Microsoft login
-           → Microsoft → Supabase callback
+Login page → signInWithOAuth({ provider: 'keycloak', options: { redirectTo, queryParams: { kc_idp_hint } } })
+           → Browser → Keycloak login (customers realm)
+           → Keycloak → Supabase callback
            → Supabase → /auth/callback
            → detectSessionInUrl: true handles PKCE exchange
            → onAuthStateChange fires
            → AuthCallbackComponent effect() redirects to /
 ```
 
-**Current status:** The frontend code is ready (`signInWithOAuth({ provider: 'azure' })`), but the actual Azure AD app registration has not been created yet. This requires:
-1. Creating an app registration in Microsoft Entra ID (Azure Portal)
-2. Configuring the redirect URI to point to Supabase's callback
-3. Adding the client ID and secret to Supabase Dashboard → Authentication → Providers → Azure
+**Cross-product SSO:** Users with an active session in xLNG (same Keycloak "customers" realm) are redirected back immediately with zero prompts. See `AUTH_SYSTEM.md` Section 13 for full architecture.
 
 ---
 
@@ -471,7 +468,6 @@ handle_new_user() — SECURITY DEFINER, SET search_path = public
      │       │
      │       ├── auth_methods is NULL → allow all (backward compat)
      │       ├── admin invitation (has tenant_id metadata) → bypass check
-     │       ├── provider = 'azure' → check 'azure_sso' in allowed
      │       ├── provider = 'keycloak' → check 'keycloak_sso' in allowed
      │       ├── provider = 'email' → check 'email_password' OR 'magic_link'
      │       └── unknown provider → blocked
@@ -673,7 +669,7 @@ There are **three layers** of enforcement:
 
 | Layer | Where | What It Blocks |
 |-------|-------|----------------|
-| **Frontend** | Login page | Only shows buttons for allowed methods. Hides "Sign in with Microsoft" if `azure_sso` not in list |
+| **Frontend** | Login page | Only shows buttons for allowed methods. Hides "Sign in with SSO" if `keycloak_sso` not in list |
 | **Database trigger** | `handle_new_user()` | Blocks profile creation if auth method is not allowed for the resolved tenant |
 | **Database hook** | `password_verification_hook` | Blocks password sign-in if `email_password` is not in the tenant's allowed methods |
 
@@ -681,10 +677,9 @@ There are **three layers** of enforcement:
 
 | Value | Provider String | Description |
 |-------|----------------|-------------|
-| `azure_sso` | `azure` | Microsoft Entra ID / Azure AD |
 | `email_password` | `email` | Traditional email + password |
 | `magic_link` | `email` | Passwordless email login |
-| `keycloak_sso` | `keycloak` | Keycloak SSO (future Phase 2) |
+| `keycloak_sso` | `keycloak` | Keycloak SSO (via `calypso-xcourses` client in "customers" realm) |
 
 ### The Email Provider Problem
 
@@ -698,7 +693,7 @@ Supabase uses `provider = 'email'` for both email+password and magic link. At th
 
 The `protect_tenant_critical_fields()` trigger validates `auth_methods` on UPDATE:
 - Must be a JSONB array
-- Each element must be one of the 4 valid strings
+- Each element must be one of the 3 valid strings
 - Invalid values are rejected with an error
 
 Note: This trigger fires on UPDATE only, not INSERT. On INSERT, `is_master` uniqueness is protected by the partial unique index `idx_tenants_single_master`.
@@ -980,27 +975,22 @@ When a user authenticates via a **second** OAuth provider using the **same verif
 ### Example
 
 ```
-Day 1: alice@calypso-commodities.com signs in via Azure SSO
+Day 1: alice@calypso-commodities.com signs in via email+password
   → auth.users row created (UUID: aaa-111)
   → handle_new_user() fires → profile created
-  → auth.identities: [{ provider: 'azure', ... }]
+  → auth.identities: [{ provider: 'email', ... }]
 
-Day 30: Same Alice signs in via email+password (same email)
+Day 30: Same Alice signs in via Keycloak SSO (same email)
   → Supabase finds existing auth.users row (aaa-111)
-  → auth.identities: [{ provider: 'azure', ... }, { provider: 'email', ... }]
+  → auth.identities: [{ provider: 'email', ... }, { provider: 'keycloak', ... }]
   → No trigger fires, no duplicate profile
   → JWT claims are identical regardless of which provider she used
-
-Day 60: Keycloak SSO added, Alice signs in via Keycloak (same email)
-  → auth.identities: [{ provider: 'azure' }, { provider: 'email' }, { provider: 'keycloak' }]
-  → Still one user, one profile, same UUID
 ```
 
 ### Security
 
 - Only **verified** email addresses are linked. Unverified identities are purged during linking.
 - This prevents pre-account takeover attacks (attacker creates email+password before legitimate user uses SSO).
-- Azure AD should be configured with the `xms_edov` claim to ensure email verification status is passed to Supabase.
 
 ---
 
@@ -1107,7 +1097,7 @@ All `SECURITY DEFINER` functions have `SET search_path = public`. This is critic
 
 ### Edge Case 5: SSO User Sets Password via Reset Link
 
-**Scenario:** A Calypso employee (Azure SSO only) receives a password reset email somehow.
+**Scenario:** A user on an SSO-only tenant (Keycloak SSO only) receives a password reset email somehow.
 
 **What happens without mitigation:**
 - `resetPasswordForEmail()` sends a reset link
@@ -1139,45 +1129,18 @@ All `SECURITY DEFINER` functions have `SET search_path = public`. This is critic
 
 ---
 
-## 18. Future: Azure SSO & Keycloak
+## 18. Keycloak SSO Integration
 
-### Azure SSO — Current Status
+Keycloak enables cross-product SSO between xLNG and X-Courses. The architecture uses the existing "customers" realm -- no broker realm needed.
 
-**Frontend code: READY.** The login page has a "Sign in with Microsoft" button that calls `signInWithOAuth({ provider: 'azure' })`. The auth callback page handles the redirect.
+See `AUTH_SYSTEM.md` Section 13 for the full technical architecture, SSO flows, DB changes, API changes, and Keycloak configuration checklist.
 
-**Azure AD configuration: NOT DONE.** Required steps:
-
-1. Go to Microsoft Entra ID (Azure Portal)
-2. Create an App Registration for X-Courses
-3. Set redirect URI: `https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/callback`
-4. Note the Application (client) ID and create a Client Secret
-5. In Supabase Dashboard → Authentication → Providers → Enable Azure
-6. Enter the Client ID, Client Secret, and Azure Tenant ID (or 'common' for multi-tenant)
-7. Set the `xms_edov` optional claim in Azure for email verification safety
-
-### Keycloak — Phase 2 Architecture
-
-Keycloak enables cross-product SSO between xLNG and X-Courses. The architecture uses a **broker realm**:
-
-```
-xLNG Keycloak Instance
-  ├── Santos Realm      (xLNG tenant)
-  ├── Equinor Realm     (xLNG tenant)
-  └── x-courses Realm    (NEW — broker)
-        ├── IdP: santos-xlng → brokers to Santos Realm
-        ├── IdP: equinor-xlng → brokers to Equinor Realm
-        └── Client: supabase-xcourses (OIDC)
-
-Supabase Auth → Keycloak provider → x-courses Realm
-```
-
-**Why a broker realm?** Supabase supports only ONE Keycloak realm URL. The broker realm handles routing to the correct tenant realm based on `kc_idp_hint`.
-
-**SSO experience:** User working in xLNG → clicks "Go to X-Courses" → redirected through broker realm → existing Keycloak session recognized → zero-input SSO → lands on X-Courses dashboard in ~2-3 seconds.
-
-**DB changes needed:** Just 2 — add `keycloak_realm` column to `tenants` and update `handle_new_user()` with realm-based resolution fallback.
-
-**What doesn't change:** All 215+ RLS policies, the access token hook, all triggers, storage policies — everything reads JWT claims, not provider info.
+**Key points:**
+- Single OIDC client (`calypso-xcourses`) in the existing "customers" realm
+- Same realm = same session: users authenticated in xLNG get instant SSO to X-Courses
+- `kc_idp_hint` parameter enables automatic IdP routing (no manual selection)
+- `profiles.keycloak_idp_alias` stores the user's IdP alias for subsequent logins
+- All 215+ RLS policies, the access token hook, all triggers, storage policies are provider-agnostic -- no changes needed
 
 ---
 
@@ -1196,8 +1159,6 @@ Supabase Auth → Keycloak provider → x-courses Realm
 
 | Priority | Gap | Impact | Mitigation |
 |----------|-----|--------|------------|
-| High | Azure SSO not configured | Calypso employees can't use SSO | Use email+password or magic link for now |
-| High | No break-glass procedure | If Azure AD goes down, Calypso employees locked out | Keep one platform admin with magic link fallback |
 | Medium | Email+password vs magic link indistinguishable at DB level | Tenant with `magic_link` only still allows password signup at DB level | `password_verification_hook` blocks password sign-in |
 | Medium | Same email can't belong to two tenants | Cross-tenant users not supported | Known limitation, by design |
 | Medium | Auth method changes not fully retroactive | Removing `email_password` blocks sign-in but old passwords remain on auth.users | Not a security issue — password_verification_hook blocks usage |

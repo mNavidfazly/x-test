@@ -323,6 +323,18 @@ skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
+# Keycloak SSO — calypso-xcourses client in "customers" realm
+# Enable in Supabase Dashboard for Cloud; this section is for local dev reference.
+# PKCE disabled on KC client due to Supabase bug #1542 (sends s256 instead of S256).
+[auth.external.keycloak]
+enabled = false
+client_id = "calypso-xcourses"
+secret = "env(SUPABASE_AUTH_EXTERNAL_KEYCLOAK_SECRET)"
+redirect_uri = ""
+# Dev: https://dev-auth.x-lng.com/realms/customers
+# Prod: TBD
+url = "https://dev-auth.x-lng.com/realms/customers"
+
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
 # You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
 [auth.web3.solana]

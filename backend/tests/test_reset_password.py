@@ -25,7 +25,7 @@ class TestResetPassword:
         _mock_tenant_lookup(mock_supabase, [{
             "id": "tid-1",
             "name": "Acme",
-            "settings": {"auth_methods": ["azure_sso"]},
+            "settings": {"auth_methods": ["keycloak_sso"]},
         }])
         resp = client.post("/api/auth/reset-password", json={"email": "user@acme.com"})
         assert resp.status_code == 200

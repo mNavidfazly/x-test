@@ -2,7 +2,7 @@
 
 ## Overview
 
-Manual E2E testing scenarios for the tenant-aware authentication flow. These stories cover the complete auth journey: tenant resolution, email/password login, magic link, Azure SSO, password reset, and access requests.
+Manual E2E testing scenarios for the tenant-aware authentication flow. These stories cover the complete auth journey: tenant resolution, email/password login, magic link, password reset, and access requests.
 
 ## Test Environment
 
@@ -12,7 +12,7 @@ Manual E2E testing scenarios for the tenant-aware authentication flow. These sto
 | **Backend URL** | https://x-courses-v2-production.up.railway.app |
 | **Test Email** | et@calypso-commodities.com |
 | **Tenant** | Calypso |
-| **Auth Methods** | azure_sso, email_password, magic_link |
+| **Auth Methods** | email_password, magic_link, keycloak_sso |
 | **Password** | Set via Supabase Auth Admin API (see below) |
 
 ### Alternative URLs
@@ -55,7 +55,6 @@ curl -X PUT "https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/admin/users/{USER_
 | 2 | AUTH-02 | Magic Link Login | Test user exists |
 | 3 | AUTH-03 | Password Reset Flow | Test user exists |
 | 4 | AUTH-04 | Access Request Submission | None (anonymous) |
-| 5 | AUTH-05 | Azure SSO Login | Azure AD configured in Supabase |
 
 ---
 
@@ -67,7 +66,6 @@ curl -X PUT "https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/admin/users/{USER_
 | AUTH-02 | Magic Link Login | ⏳ Not Tested | - |
 | AUTH-03 | Password Reset Flow | ⏳ Not Tested | - |
 | AUTH-04 | Access Request Submission | ⏳ Not Tested | - |
-| AUTH-05 | Azure SSO Login | ⏳ Not Tested | - |
 
 ---
 
@@ -97,7 +95,7 @@ curl -X PUT "https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/admin/users/{USER_
 | 3 | Enter email: `et@calypso-commodities.com` | Email field accepts input | ☐ |
 | 4 | Click "Continue" | Loading spinner appears briefly while tenant resolves | ☐ |
 | 5 | Verify Step 2 header | "Sign in to **Calypso**" with back arrow button, email shown as `et@calypso-commodities.com` below header | ☐ |
-| 6 | Verify all 3 auth methods visible | "Sign in with Microsoft" button, Password field + "Sign in" button + "Forgot password?" link, "Send magic link" button — separated by "OR" dividers | ☐ |
+| 6 | Verify all 3 auth methods visible | "Sign in with SSO" button (if keycloak_sso allowed), Password field + "Sign in" button + "Forgot password?" link, "Send magic link" button — separated by "OR" dividers | ☐ |
 | 7 | Verify "Forgot password?" link URL | Link href is `/reset-password?email=et@calypso-commodities.com` (email pre-populated) | ☐ |
 | 8 | Enter password in Password field | Field masks input (shows dots) | ☐ |
 | 9 | Click "Sign in" | Loading state on button, AuthService.signInWithPassword called | ☐ |
@@ -296,105 +294,6 @@ Expected: `status = 'pending'`, `domain = 'calypso-commodities.com'` (extracted 
 - RLS policy allows anonymous INSERT but not SELECT/UPDATE/DELETE — submitters cannot see their own requests
 - A `notify_new_access_request()` database trigger fires on INSERT to create a notification for tenant admins
 - After the request is reviewed (approved/rejected), the `notify_access_request_reviewed()` trigger notifies the requester (if they have a profile by then)
-
----
-
-## AUTH-05: Azure SSO Login (Microsoft Entra ID)
-
-| Field | Value |
-|-------|-------|
-| **Last Checked** | - |
-| **Status** | ⏳ Not Tested |
-| **Tester** | - |
-
-**Purpose**: Verify the full Azure SSO (Microsoft Entra ID / formerly Azure AD) login flow. Clicking "Sign in with Microsoft" triggers Supabase's OAuth flow, redirects to Microsoft login, and returns to `/auth/callback` where the session is exchanged and the user lands on the dashboard.
-
-**Covers**: LoginComponent (Azure SSO button), AuthService.signInWithOAuth('azure'), Supabase OAuth provider, Microsoft login page, AuthCallbackComponent, Automatic Identity Linking (if user already has email/password account)
-
-### Azure AD Setup Checklist
-
-Before this story can run, the following infrastructure must be configured:
-
-| # | Task | Where | Status |
-|---|------|-------|--------|
-| 1 | Create Azure AD App Registration | Azure Portal → App registrations → New registration | ☐ |
-| 2 | Set redirect URI | `https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/callback` | ☐ |
-| 3 | Create client secret | Azure Portal → App Registration → Certificates & secrets | ☐ |
-| 4 | Enable ID tokens | Azure Portal → App Registration → Authentication → ID tokens checkbox | ☐ |
-| 5 | Add `email` + `profile` + `openid` API permissions | Azure Portal → App Registration → API permissions | ☐ |
-| 6 | Enable `xms_edov` optional claim | Azure Portal → Token configuration → Add optional claim → ID → `xms_edov` | ☐ |
-| 7 | Configure Supabase Azure provider | Supabase Dashboard → Authentication → Providers → Azure → Enable, paste Client ID + Secret + Azure Tenant URL | ☐ |
-| 8 | Verify PKCE flow | Frontend Supabase client has `flowType: 'pkce'` in config | ☐ |
-
-### Preconditions
-- All 8 setup tasks above completed
-- Test user `et@calypso-commodities.com` has a Microsoft account (same email)
-- Calypso tenant has `azure_sso` in `settings.auth_methods` (already true)
-- Frontend and backend deployed
-
-### Steps
-
-| # | Action | Expected Outcome | ✓ |
-|---|--------|------------------|---|
-| 1 | Navigate to `/login` | Step 1 displayed | ☐ |
-| 2 | Enter email: `et@calypso-commodities.com`, click Continue | Step 2 shows "Sign in to **Calypso**" with all 3 methods | ☐ |
-| 3 | Click "Sign in with Microsoft" | Browser redirects to `login.microsoftonline.com` (Microsoft login page) | ☐ |
-| 4 | Verify Microsoft login page loads | Microsoft "Sign in" form with email field, organization branding if configured | ☐ |
-| 5 | Enter Microsoft credentials (email + password or MFA) | Microsoft authenticates the user | ☐ |
-| 6 | Microsoft redirects back | Browser goes to `https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/callback` then to `https://x-courses-v2.vercel.app/auth/callback` | ☐ |
-| 7 | Verify AuthCallbackComponent | "Completing sign in..." spinner shown, Supabase exchanges PKCE code for session | ☐ |
-| 8 | Wait for redirect | Redirected to `/dashboard` | ☐ |
-| 9 | Verify authenticated session | Dashboard loads, user is logged in | ☐ |
-| 10 | Check JWT claims (browser DevTools) | `localStorage` → Supabase session → decode JWT → verify `tenant_id`, `is_tenant_admin`, etc. are present | ☐ |
-| 11 | Reload page (F5) | Session persists — still on `/dashboard` | ☐ |
-
-### Identity Linking Test
-
-If the user already signed in with email/password before, test that Supabase links identities:
-
-| # | Action | Expected Outcome | ✓ |
-|---|--------|------------------|---|
-| L1 | First: Sign in with email/password (AUTH-01) | Session created, one identity in `auth.users` | ☐ |
-| L2 | Sign out | Session cleared | ☐ |
-| L3 | Sign in with Azure SSO (steps 1-9 above) | Same `auth.users` row, but now TWO identities (email + azure) | ☐ |
-| L4 | Verify same profile | `profiles.id` unchanged — same user, same tenant, same roles | ☐ |
-| L5 | Query `auth.identities` (via Supabase Dashboard) | Two rows: `provider=email` and `provider=azure`, same `user_id` | ☐ |
-
-### SSO-Only Tenant Test
-
-Test that a tenant configured with ONLY `azure_sso` shows only the Microsoft button:
-
-| # | Action | Expected Outcome | ✓ |
-|---|--------|------------------|---|
-| S1 | Configure a test tenant with `settings.auth_methods = ['azure_sso']` | Tenant only allows SSO | ☐ |
-| S2 | Enter an email from that tenant, click Continue | Step 2 shows ONLY "Sign in with Microsoft" — no password field, no magic link | ☐ |
-| S3 | Verify `password_verification_hook` blocks password login | If someone tries `signInWithPassword` directly (e.g. via API), the hook returns error | ☐ |
-
-### Error Handling
-
-| # | Action | Expected Outcome | ✓ |
-|---|--------|------------------|---|
-| E1 | Click "Sign in with Microsoft", cancel on Microsoft login page | Redirected back to `/auth/callback` with error params, AuthCallbackComponent shows error or redirects to `/login` | ☐ |
-| E2 | Azure AD admin revokes app consent | User sees Microsoft error page "Need admin approval" — does not crash frontend | ☐ |
-| E3 | Supabase Azure provider disabled | `signInWithOAuth` returns error, frontend should show error message on login page | ☐ |
-
-### Security Verification
-
-| # | Check | How to Verify | ✓ |
-|---|-------|---------------|---|
-| SEC1 | PKCE flow used (not implicit) | Network tab: initial request to Supabase includes `code_challenge` parameter | ☐ |
-| SEC2 | `xms_edov` claim present | Decode Azure ID token (Network tab) — `xms_edov: true` means email is verified by Azure AD | ☐ |
-| SEC3 | No access token in URL fragment | After callback, URL should use `?code=` (PKCE), NOT `#access_token=` (implicit) | ☐ |
-| SEC4 | Redirect URI matches exactly | Supabase callback URL matches Azure App Registration — no open redirect | ☐ |
-
-**Notes/Learnings**:
-- Azure AD tenant URL format: `https://login.microsoftonline.com/{AZURE_TENANT_ID}` (single-tenant) or `https://login.microsoftonline.com/common` (multi-tenant)
-- `xms_edov` (Email Domain Owner Verified) prevents email impersonation — REQUIRED for security
-- PKCE flow is mandatory (`flowType: 'pkce'` in Supabase client) — implicit flow exposes tokens in URL fragments
-- Supabase Automatic Identity Linking: same email via Azure + email/password merges into one `auth.users` row with two `auth.identities`
-- The `handle_new_user()` trigger creates a profile on first SSO login (resolves tenant from email domain)
-- `password_verification_hook()` blocks password login for SSO-only tenants — even if someone discovers the API endpoint
-- After Azure setup, the `signInWithOAuth('azure')` call redirects immediately — there's no intermediate Supabase UI
 
 ---
 
