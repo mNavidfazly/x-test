@@ -46,10 +46,22 @@ export const routes: Routes = [
       },
       {
         path: 'courses',
-        loadComponent: () =>
-          import('./shared/components/stub-page.component').then(
-            (m) => m.StubPageComponent,
-          ),
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/courses/pages/course-list-page.component').then(
+                (m) => m.CourseListPageComponent,
+              ),
+          },
+          {
+            path: ':courseId',
+            loadComponent: () =>
+              import('./features/courses/pages/course-detail-page.component').then(
+                (m) => m.CourseDetailPageComponent,
+              ),
+          },
+        ],
       },
       {
         path: 'notifications',

@@ -1,6 +1,6 @@
 # X-Courses v2 — Authentication, Authorization & Multi-Tenancy
 
-> Technical reference for the database-level auth system as implemented in `supabase/migrations/00001-00013`. Frontend and backend code do not exist yet — see [Section 12](#12-frontend--backend-planned) for planned architecture.
+> Technical reference for the auth system as implemented in `supabase/migrations/00001-00017`, Angular 19 frontend, and FastAPI backend. See [Section 12](#12-frontend--backend-implemented) for frontend/backend implementation details.
 
 ---
 
@@ -17,7 +17,7 @@
 9. [Access Request System](#9-access-request-system)
 10. [Security Properties](#10-security-properties)
 11. [Known Gaps](#11-known-gaps)
-12. [Frontend & Backend (PLANNED)](#12-frontend--backend-planned)
+12. [Frontend & Backend (IMPLEMENTED)](#12-frontend--backend-implemented)
 13. [Keycloak SSO Integration](#13-keycloak-sso-integration)
 
 ---
@@ -60,11 +60,11 @@
 │  3 storage buckets with policies  [00007]                                  │
 │                                                                            │
 ├────────────────────────────────────────────────────────────────────────────┤
-│                      FRONTEND + BACKEND (PLANNED)                          │
+│                      FRONTEND + BACKEND (IMPLEMENTED)                      │
 │                                                                            │
-│  Angular 19 frontend — not yet implemented                                 │
-│  FastAPI backend — not yet implemented                                     │
-│  See Section 12 for planned architecture                                   │
+│  Angular 19 frontend — Vercel (x-courses-v2.vercel.app)                    │
+│  FastAPI backend — Railway                                                 │
+│  See Section 12 for implementation details                                 │
 └────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -657,49 +657,101 @@ From `docs/COMPREHENSIVE_AUDIT.md` and multi-provider auth security audit — re
 
 ---
 
-## 12. Frontend & Backend (PLANNED)
+## 12. Frontend & Backend (IMPLEMENTED)
 
-> **Status: NOT YET IMPLEMENTED.** The following describes the planned architecture based on project requirements. No frontend or backend code exists in this repository.
+> **Status: IMPLEMENTED.** Auth flow, layout shell, and core services are live. Deployed to Vercel (frontend) and Railway (backend).
 
-### Planned Frontend (Angular 19)
+### Frontend (Angular 19)
 
-- **Login options** — tenant-aware login page:
-  - Calypso employees + onboarded client tenants: Keycloak SSO — `supabase.auth.signInWithOAuth({ provider: 'keycloak' })`
-  - Client tenant users: Email + Password — `supabase.auth.signUp({ email, password })` / `supabase.auth.signInWithPassword({ email, password })`
-  - All users (configurable per tenant): Magic Link — `supabase.auth.signInWithOtp({ email })`
-  - Per-tenant: Frontend reads `tenants.settings.auth_methods` to determine which login options to show
-  - Domain detection: user enters email → resolve tenant → show allowed methods
-- **Login options**: Keycloak SSO, email/password, magic link (OTP). Per-tenant configuration. See Section 13.
-- **Session**: Supabase JS client with `persistSession: true`, `autoRefreshToken: true`, PKCE flow (`flowType: 'pkce'`)
-- **Route guards**: `authGuard` (any authenticated user), `adminGuard` (role-based), `publicGuard` (login page)
-- **State management**: RxJS BehaviorSubject for `currentUser$`, `isLoading$`, `isAuthenticated$`
-- **Profile loading**: Query `profiles` table after login, map `is_platform_admin`/`is_tenant_admin` to role enum
-- **OAuth callback**: Parse tokens from URL hash, call `setSession()`, clean URL
+- **Supabase client**: `SupabaseService` wraps `createClient()` with `flowType: 'pkce'`, `autoRefreshToken: true`, `persistSession: true`, `detectSessionInUrl: true`
+- **AuthService**: Signal-based (`signal()` + `computed()`). JWT claims decoded via `atob()` (no external library). Methods:
+  - `signInWithPassword(email, password)` — email + password login
+  - `signInWithOtp(email)` — magic link / OTP (`shouldCreateUser: false` prevents orphaned auth.users)
+  - `verifyOtp(email, token)` — verify 6-digit OTP code (`type: 'email'`)
+  - `verifyRecoveryOtp(email, token)` — verify password reset code (`type: 'recovery'`)
+  - `updatePassword(password)` — set new password after recovery verification (`updateUser({ password })`)
+  - `signInWithOAuth(hint?)` — Keycloak SSO with optional `kc_idp_hint`
+  - `signOut()`, `hasRole()`, `hasAnyRole()`
+- **Route guards**: Functional `CanActivateFn` style, use `toObservable()` + `filter(!loading)` for async waiting. `roleGuard()` factory for role-based `canMatch` routing.
+- **State**: Signals, not BehaviorSubjects. `currentUser`, `loading`, `isAuthenticated`, `roles` as readonly signals.
+- **ProfileService**: `effect()` watches `AuthService.currentUser()`, fetches `profiles.full_name/avatar_url` from Supabase.
 
-### Planned Backend (FastAPI)
+### Login Flow (3-Step, Tenant-Aware)
 
-- **JWT verification**: Verify Supabase JWTs using `python-jose` (HS256) with Supabase JWT secret
+```
+[1] User enters email
+         │
+         v
+[2] POST /api/auth/resolve-tenant → { tenant_name, auth_methods, idp_hint }
+         │
+         v
+[3] Show allowed auth methods for this tenant:
+    ├── "Sign in with SSO" → signInWithOAuth(hint) → Keycloak → callback
+    ├── "Sign in with password" → signInWithPassword(email, password)
+    └── "Sign in with magic link" → signInWithOtp(email) → OTP code input → verifyOtp()
+```
+
+- If tenant not found → show "Request access" link
+- `kc_idp_hint` priority: URL query param > API response > none
+- OTP input: single text field, 60-second resend cooldown
+- `shouldCreateUser: false` on `signInWithOtp()` prevents orphaned `auth.users` rows for unknown emails
+
+### Password Reset Flow (2-Step, OTP-Based)
+
+```
+[1] Enter email → POST /api/auth/reset-password (FastAPI)
+    ├── FastAPI resolves tenant, checks email_password in auth_methods
+    ├── Calls supabase.auth.reset_password_for_email(email)
+    └── Always returns same success message (prevents email enumeration)
+         │
+         v
+[2] Enter 6-digit OTP code + new password + confirm password
+    ├── verifyRecoveryOtp(email, code) → verifyOtp({ type: 'recovery' })
+    ├── updatePassword(newPassword) → updateUser({ password })
+    └── Show success: "Password has been reset successfully"
+```
+
+**Key implementation details:**
+- Supabase email templates send 6-digit OTP codes (`{{ .Token }}`), NOT magic links — the frontend must provide a code input field
+- Email pre-populated from `?email=` query param (set by login page's "Forgot password?" link)
+- Validation: code must be 6 digits, password min 6 chars, passwords must match
+- Back button returns to email step (clears code/password fields)
+
+### Password Reset Gotchas
+
+| Gotcha | Detail |
+|--------|--------|
+| **`admin.generate_link()` does NOT send emails** | It only generates a token internally and returns it in the response. You MUST use `reset_password_for_email()` to trigger actual SMTP delivery. This was a production bug — users clicked "Send reset code" and got a success message but never received the email. |
+| **`reset_password_for_email()` is the correct method** | This is the Supabase client method that triggers the email template and sends via configured SMTP. The FastAPI backend calls this, NOT `admin.generate_link()`. |
+| **Always return the same message** | Both success and failure cases return `"If an account exists for this email, you will receive a password reset link."` — prevents email enumeration attacks. |
+| **`verifyOtp({ type: 'recovery' })` establishes a session** | After successful verification, the user has an active session. `updateUser({ password })` then sets the new password on the authenticated user. These must be called in sequence. |
+| **SSO-only tenants skip silently** | If tenant's `auth_methods` doesn't include `email_password`, the backend returns the same success message but never calls Supabase. No email is sent. This is intentional — SSO users don't have passwords. |
+
+### Backend (FastAPI)
+
+- **JWT verification**: HS256 with `SUPABASE_JWT_SECRET` via `python-jose`
 - **Service role client**: Uses `service_role` key (bypasses RLS) for admin operations
-- **Planned endpoints**:
-  - `POST /api/email/invitation` — send invitation emails
-  - `POST /api/email/reminder` — send course reminder emails
-  - `POST /api/email/certificate` — send certificate emails
-  - `POST /api/certificate/generate` — generate PDF certificates
-  - `POST /api/video/signed-url` — Bunny.net video upload URLs
-  - `POST /api/quiz/webhook` — external quiz result webhook (HMAC-SHA256 auth)
-  - `GET /api/me` — debug endpoint returning JWT claims
-- **Important design consideration**: Backend will need its own RBAC layer — simply verifying the JWT is not enough. Any authenticated user would be able to call any endpoint without role checks.
-- **Tenant-aware login support**:
-  - `POST /api/auth/resolve-tenant` — resolve tenant from email domain, return allowed auth methods (public, rate-limited 10/min/IP)
-  - `POST /api/auth/reset-password` — proxy password reset through FastAPI (validates tenant allows `email_password` before calling Supabase admin API). Frontend must never call `resetPasswordForEmail()` directly
-  - Pre-invite validation: check if email already has a profile before sending invitation (prevents silent failures from duplicate invites)
+- **Implemented endpoints**:
 
-### Key Files (To Be Created)
+| Endpoint | Auth | Rate Limit | Purpose |
+|----------|------|------------|---------|
+| `GET /api/health` | None | None | Health check (pings Supabase) |
+| `POST /api/auth/resolve-tenant` | None | 10/min/IP | Resolve email → tenant + auth methods + idp_hint |
+| `POST /api/auth/reset-password` | None | 5/min/IP | Validate tenant allows email_password, send reset email via Supabase |
+
+- **Planned endpoints** (not yet implemented):
+  - `POST /api/invite` — send invitation email via SMTP
+  - `POST /api/reminders/send` — send reminder email via SMTP
+  - `POST /api/quiz-results/external` — external quiz result webhook
+
+### Key Files
 
 | Layer | Key Files |
 |-------|-----------|
-| Frontend | `auth.service.ts`, `supabase.service.ts`, `auth.guard.ts`, `admin.guard.ts`, `login.component.ts` |
-| Backend | `auth.py` (JWT verify), `email.py` (email sending), `supabase.py` (service client) |
+| Frontend | `core/services/auth.service.ts`, `core/services/supabase.service.ts`, `core/services/tenant.service.ts`, `core/services/profile.service.ts`, `core/services/api.service.ts`, `core/guards/auth.guard.ts`, `core/guards/role.guard.ts` |
+| Frontend (Auth) | `features/auth/login/login.component.ts`, `features/auth/reset-password/reset-password.component.ts`, `features/auth/access-request/access-request.component.ts`, `features/auth/auth-callback/auth-callback.component.ts` |
+| Frontend (Layout) | `layout/main-layout/main-layout.component.ts`, `layout/sidebar/sidebar.component.ts`, `layout/header/header.component.ts` |
+| Backend | `app/routers/auth.py`, `app/services/tenant.py`, `app/dependencies.py`, `app/config.py` |
 
 ---
 
