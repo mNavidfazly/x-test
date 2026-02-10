@@ -860,63 +860,85 @@ When an existing tenant that was using email/password switches to Keycloak SSO:
 | PKCE `s256` vs `S256` (Supabase #1542, open) | Disable PKCE on `calypso-xcourses` client (confidential, safe) |
 | Keycloak SPOF for SSO | HA deployment. Keep `magic_link` fallback for platform admins |
 | Custom claims from KC | Resolved — GoTrue v2.176.0 (June 2025) forwards all non-standard claims |
+| **Supabase `disable_signup` blocks SSO first login** | Supabase must have `disable_signup: false`. When a user signs in via Keycloak SSO for the first time, GoTrue needs to create a new `auth.users` row. If signups are disabled, the callback returns `error=access_denied&error_code=signup_disabled`. This is safe to enable because `handle_new_user()` controls profile creation (requires matching tenant domain) and profileless users get zero RLS access. |
+| SSO callback silent failure | When the Supabase↔KC token exchange fails, the user is silently redirected back to the login page with error params in the URL hash (`#error=...&error_code=...&error_description=...`). There is no visible error message — check the URL or browser console. |
 
 ### Unknowns to Verify with Live Keycloak
 
-After completing the configuration steps below, these must be verified with a real login:
+Status after first live SSO test (2026-02-10):
 
-1. **Does `keycloak_idp_alias` arrive in `raw_user_meta_data`?** — Check `auth.users.raw_user_meta_data` after SSO login. The mapper (step 2.6) maps the KC session's `identity_provider` to a claim.
-2. **Does Supabase forward `kc_idp_hint` query param to Keycloak?** — Check browser Network tab for the 302 redirect to KC authorization URL.
-3. **Is `scopes: 'openid'` needed or auto-included?** — Test login with and without explicit `scopes: 'openid'`. GoTrue likely auto-includes it for OIDC providers.
-4. **Does `sync_keycloak_idp_alias()` fire on identity linking?** — Create email+password user, then login with same email via KC. Check if `profiles.keycloak_idp_alias` is populated.
+1. **Does `keycloak_idp_alias` arrive in `raw_user_meta_data`?** — **NOT YET VERIFIED.** Need to query `auth.users.raw_user_meta_data` for the SSO user. The User Session Note mapper (`identity_provider` → `keycloak_idp_alias`) was configured on KC but claim arrival needs DB confirmation.
+2. **Does Supabase forward `kc_idp_hint` query param to Keycloak?** — **VERIFIED YES.** Browser Network tab confirms the 302 redirect to KC includes `kc_idp_hint` when provided via `queryParams` in `signInWithOAuth()`. When no hint is given, KC shows the default login form (email+password for the realm, or IdP selection if Home IdP Discovery is configured).
+3. **Is `scopes: 'openid'` needed or auto-included?** — **NOT YET VERIFIED.** Current code sends `scopes: 'openid'` explicitly. GoTrue's redirect includes `scope=profile+email+openid` — unclear if `openid` is auto-included or comes from the explicit param.
+4. **Does `sync_keycloak_idp_alias()` fire on identity linking?** — **NOT YET TESTED.** Requires a user who already has an email+password account to log in via KC with the same email.
 
 ### Keycloak Configuration Checklist (Manual Steps)
 
-**Step 1: Disable Azure Provider in Supabase Dashboard**
+> **Completed 2026-02-10.** All steps below have been executed against PROD Keycloak.
+
+**Step 1: Disable Azure Provider in Supabase Dashboard** — DONE
 - Path: Supabase Dashboard → Authentication → Providers → Azure → Toggle OFF
-- Zero risk (no users on Azure SSO, all code references removed)
 
-**Step 2: Register `calypso-xcourses` Client in Keycloak**
+**Step 2: Register `calypso-xcourses` Client in Keycloak** — DONE
 
-Target: `dev-auth.x-lng.com` → Realm: `customers`
+Target: `auth.x-lng.com` (PROD) → Realm: `customers`
 
-1. **Create client:** Clients → Create client
+> Note: Client was originally intended for dev KC (`dev-auth.x-lng.com`) but was accidentally created on prod. This is fine — prod is the final target anyway.
+
+1. **Create client:** Clients → Create client — DONE
    - Client type: OpenID Connect
    - Client ID: `calypso-xcourses`
    - Name: `X-Courses v2`
    - Client authentication: ON (confidential)
    - Standard flow: ON, all others OFF
 
-2. **Login settings:**
+2. **Login settings:** — DONE
    - Root URL: `https://ruhdnvtvoxxiodnyyqqf.supabase.co`
    - Valid redirect URIs: `https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/callback`
    - Valid post logout redirect URIs: `https://x-courses-v2.vercel.app/*`
    - Web origins: `https://ruhdnvtvoxxiodnyyqqf.supabase.co`
 
-3. **Disable PKCE enforcement:** Advanced tab → Proof Key for Code Exchange Code Challenge Method → blank/none/disabled (Supabase bug #1542)
+3. **Disable PKCE enforcement:** — DONE
+   - Advanced tab → Proof Key for Code Exchange Code Challenge Method → blank/none/disabled (Supabase bug #1542)
 
-4. **Copy client secret:** Credentials tab → Client secret → save securely
+4. **Copy client secret:** — DONE
+   - Credentials tab → Client secret → configured in Supabase Dashboard
 
-5. **Add protocol mapper** on `calypso-xcourses-dedicated` scope:
+5. **Add protocol mapper** on `calypso-xcourses-dedicated` scope: — DONE
    - Mapper Type: User Session Note
    - User Session Note: `identity_provider`
    - Token Claim Name: `keycloak_idp_alias`
    - Claim JSON Type: String
    - Add to ID token: ON, Add to userinfo: ON, Add to access token: OFF
 
-**Step 3: Configure Keycloak Provider in Supabase Dashboard**
+**Step 3: Configure Keycloak Provider in Supabase Dashboard** — DONE
 - Path: Authentication → Providers → Keycloak → Toggle ON
-- Keycloak URL: `https://dev-auth.x-lng.com/realms/customers`
+- Keycloak URL: `https://auth.x-lng.com/realms/customers`
 - Client ID: `calypso-xcourses`
 - Client Secret: *(from step 2.4)*
-- Verify OIDC discovery endpoint is reachable: `https://dev-auth.x-lng.com/realms/customers/.well-known/openid-configuration`
-- Verify redirect URLs include `https://x-courses-v2.vercel.app/auth/callback` and `http://localhost:4200/auth/callback`
+- OIDC discovery endpoint: `https://auth.x-lng.com/realms/customers/.well-known/openid-configuration`
+- Redirect URLs configured: `https://x-courses-v2.vercel.app/auth/callback` and `http://localhost:4200/auth/callback`
 
-**Step 4: Verify the 4 Unknowns**
-- Test with a Calypso user (IdP hint: `internal`) and an Equinor user (IdP hint: `equinor`)
-- Check `auth.users.raw_user_meta_data` for `keycloak_idp_alias` claim
-- Check browser Network tab for `kc_idp_hint` in KC authorization URL
-- Test identity linking (existing email+password user logs in via KC)
+**Step 3b: Enable Signups in Supabase** — DONE (CRITICAL)
+- Path: Supabase Dashboard → Authentication → Settings → OR via Management API
+- Set `disable_signup: false`
+- **Why:** SSO first-time login creates a new `auth.users` row. If signups are disabled, the OAuth callback fails with `error=access_denied&error_code=signup_disabled`. The user is silently redirected to the login page with no visible error.
+- **Security:** Safe because `handle_new_user()` controls profile creation (requires matching tenant domain) and profileless users get zero RLS access via JWT claims.
+
+**Step 4: Verify the 4 Unknowns** — PARTIALLY DONE
+- `kc_idp_hint` forwarding: VERIFIED (Supabase 302 includes it in KC auth URL)
+- `keycloak_idp_alias` in `raw_user_meta_data`: NOT YET VERIFIED (need DB query)
+- `scopes: 'openid'` necessity: NOT YET VERIFIED
+- Identity linking trigger: NOT YET TESTED
+
+**Step 5: Enable `keycloak_sso` for tenant** — DONE
+- Migration `00017_calypso_keycloak_sso.sql` adds `keycloak_sso` to Calypso tenant's `settings.auth_methods`
+- Verified: login page shows all 3 methods (SSO, password, magic link) for `@calypso-commodities.com`
+
+**First Live SSO Test Result (2026-02-10):** SUCCESS
+- Flow: X-Courses → Supabase → KC (`auth.x-lng.com`) → Entra ID (Microsoft MFA) → KC → Supabase → X-Courses dashboard
+- User `et@calypso-commodities.com` authenticated, profile created by `handle_new_user()`, JWT claims populated
+- Dashboard shows: email, tenant ID, learner role
 
 ---
 
@@ -938,3 +960,4 @@ Target: `dev-auth.x-lng.com` → Realm: `customers`
 | `00014_fix_hook_search_path.sql` | Fix `custom_access_token_hook` missing `SET search_path = public` |
 | `00015_keycloak_support.sql` | `profiles.keycloak_idp_alias`, extended `handle_new_user()` and `protect_profile_role_fields()`, `sync_keycloak_idp_alias()` trigger |
 | `00016_remove_azure_sso.sql` | Remove Azure provider branch from `handle_new_user()`, remove `azure_sso` from `protect_tenant_critical_fields()` valid methods, data migration strips azure_sso from tenant settings |
+| `00017_calypso_keycloak_sso.sql` | Add `keycloak_sso` to Calypso tenant's `settings.auth_methods` array |
