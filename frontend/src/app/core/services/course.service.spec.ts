@@ -540,4 +540,138 @@ describe('CourseService', () => {
       expect(supabase._mockQueryBuilder.delete).toHaveBeenCalled();
     });
   });
+
+  describe('createLecture', () => {
+    it('should insert lecture with calculated sort_order and return id', async () => {
+      // Preload courseDetail with 2 lectures (sort_order 0 and 1)
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: {
+          id: 'c1', title: 'C', description: null, thumbnail_url: null, enrollment_type: 'open',
+          lectures: [
+            { id: 'l1', title: 'L1', description: null, sort_order: 0, modules: [] },
+            { id: 'l2', title: 'L2', description: null, sort_order: 1, modules: [] },
+          ],
+        },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      await service.loadCourseDetail('c1');
+
+      // Now createLecture
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'new-lecture-id' },
+        error: null,
+      });
+
+      const result = await service.createLecture('c1', { title: 'New Lecture', description: 'Desc' });
+
+      expect(result).toEqual({ id: 'new-lecture-id' });
+      expect(supabase.client.from).toHaveBeenCalledWith('lectures');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        course_id: 'c1',
+        title: 'New Lecture',
+        description: 'Desc',
+        sort_order: 2,
+      });
+    });
+
+    it('should use sort_order 0 when no lectures exist', async () => {
+      // Preload courseDetail with 0 lectures
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: {
+          id: 'c1', title: 'C', description: null, thumbnail_url: null, enrollment_type: 'open',
+          lectures: [],
+        },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      await service.loadCourseDetail('c1');
+
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'first-lecture' },
+        error: null,
+      });
+
+      const result = await service.createLecture('c1', { title: 'First', description: null });
+
+      expect(result).toEqual({ id: 'first-lecture' });
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        course_id: 'c1',
+        title: 'First',
+        description: null,
+        sort_order: 0,
+      });
+    });
+
+    it('should throw on insert error', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'RLS violation' },
+      });
+
+      await expect(service.createLecture('c1', { title: 'X', description: null })).rejects.toThrow('RLS violation');
+    });
+  });
+
+  describe('updateLecture', () => {
+    it('should update lecture by id', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateLecture('l1', { title: 'Updated Title' });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('lectures');
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ title: 'Updated Title' });
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'l1');
+    });
+
+    it('should throw on update error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Permission denied' } }));
+
+      await expect(service.updateLecture('l1', { title: 'X' })).rejects.toThrow('Permission denied');
+    });
+  });
+
+  describe('deleteLecture', () => {
+    it('should delete lecture by id', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.deleteLecture('l1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('lectures');
+      expect(supabase._mockQueryBuilder.delete).toHaveBeenCalled();
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'l1');
+    });
+
+    it('should throw on delete error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Cannot delete' } }));
+
+      await expect(service.deleteLecture('l1')).rejects.toThrow('Cannot delete');
+    });
+  });
+
+  describe('swapLectureSortOrder', () => {
+    it('should swap sort_order of two lectures sequentially', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.swapLectureSortOrder('l1', 0, 'l2', 1);
+
+      expect(supabase.client.from).toHaveBeenCalledWith('lectures');
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 1 });
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 0 });
+    });
+
+    it('should throw on first update error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Reorder failed' } }));
+
+      await expect(service.swapLectureSortOrder('l1', 0, 'l2', 1)).rejects.toThrow('Reorder failed');
+    });
+  });
 });

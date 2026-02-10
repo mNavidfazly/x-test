@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 import {
   CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem,
-  CourseFormData, TenantSummary, TenantAssignment,
+  CourseFormData, TenantSummary, TenantAssignment, LectureFormData,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -345,6 +345,63 @@ export class CourseService {
       .eq('tenant_id', tenantId);
 
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to remove course from tenant'));
+  }
+
+  // --- Phase 3B: Lecture CRUD methods ---
+
+  async createLecture(courseId: string, data: LectureFormData): Promise<{ id: string }> {
+    const detail = this.#courseDetail();
+    const maxOrder = detail
+      ? detail.lectures.reduce((max, l) => Math.max(max, l.sort_order), -1)
+      : -1;
+
+    const { data: result, error } = await this.#supabase.client
+      .from('lectures')
+      .insert({
+        course_id: courseId,
+        title: data.title,
+        description: data.description,
+        sort_order: maxOrder + 1,
+      })
+      .select('id')
+      .single();
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to create lecture'));
+    return { id: result.id };
+  }
+
+  async updateLecture(lectureId: string, data: Partial<LectureFormData>): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('lectures')
+      .update(data)
+      .eq('id', lectureId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update lecture'));
+  }
+
+  async deleteLecture(lectureId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('lectures')
+      .delete()
+      .eq('id', lectureId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete lecture'));
+  }
+
+  async swapLectureSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
+    const resA = await this.#supabase.client
+      .from('lectures')
+      .update({ sort_order: orderB })
+      .eq('id', idA);
+
+    if (resA.error) throw new Error(this.#extractErrorMessage(resA.error, 'Failed to reorder lectures'));
+
+    const resB = await this.#supabase.client
+      .from('lectures')
+      .update({ sort_order: orderA })
+      .eq('id', idB);
+
+    if (resB.error) throw new Error(this.#extractErrorMessage(resB.error, 'Failed to reorder lectures'));
   }
 
   async #fetchModuleContent(client: SupabaseClient, moduleId: string, moduleType: string): Promise<ModuleContent> {

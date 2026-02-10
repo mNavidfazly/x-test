@@ -129,3 +129,10 @@ export interface TenantAssignment {
   tenant_id: string;
   tenant_name: string;
 }
+
+// Phase 3B: Lecture CRUD types
+
+export interface LectureFormData {
+  title: string;
+  description: string | null;
+}

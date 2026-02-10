@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Loader2, BookOpen, Pencil, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { LectureFormData } from '../../../core/models/course.model';
 import { LectureAccordionComponent } from '../components/lecture-accordion.component';
+import { LectureFormComponent } from '../components/lecture-form.component';
 
 const BADGE_STYLES: Record<string, string> = {
   open: 'bg-emerald-100 text-emerald-700',
@@ -20,7 +22,7 @@ const BADGE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-course-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, LectureAccordionComponent],
+  imports: [RouterLink, LucideAngularModule, LectureAccordionComponent, LectureFormComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -81,20 +83,66 @@ const BADGE_LABELS: Record<string, string> = {
           }
         </div>
 
+        <!-- Lecture error -->
+        @if (lectureError()) {
+          <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
+            {{ lectureError() }}
+          </div>
+        }
+
+        <!-- Add Lecture button -->
+        @if (canEdit() && !editingLectureId()) {
+          <button
+            type="button"
+            (click)="startAddLecture()"
+            class="w-full mb-4 rounded-xl border-2 border-dashed border-slate-300 py-3 text-sm font-semibold text-slate-500 hover:border-teal-400 hover:text-teal-600 hover:bg-teal-50/30 transition-all duration-200 inline-flex items-center justify-center gap-2"
+          >
+            <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon>
+            Add Lecture
+          </button>
+        }
+
+        <!-- New lecture form -->
+        @if (editingLectureId() === 'new') {
+          <div class="mb-4">
+            <app-lecture-form
+              [initialData]="editingLectureData()"
+              (save)="onSaveLecture($event)"
+              (cancel)="cancelLectureEdit()"
+            />
+          </div>
+        }
+
         <!-- Lectures -->
-        @if (courseService.courseDetail()!.lectures.length === 0) {
+        @if (courseService.courseDetail()!.lectures.length === 0 && editingLectureId() !== 'new') {
           <div class="text-center py-12">
             <lucide-icon [img]="icons.BookOpen" [size]="48" class="text-slate-300 mx-auto mb-4"></lucide-icon>
             <p class="text-sm text-slate-500">No lectures added yet.</p>
           </div>
         } @else {
           <div class="space-y-3">
-            @for (lecture of courseService.courseDetail()!.lectures; track lecture.id) {
-              <app-lecture-accordion
-                [lecture]="lecture"
-                [courseId]="courseService.courseDetail()!.id"
-                [progressMap]="courseService.courseDetail()!.progressMap"
-              />
+            @for (lecture of courseService.courseDetail()!.lectures; track lecture.id; let first = $first; let last = $last) {
+              @if (editingLectureId() === lecture.id) {
+                <app-lecture-form
+                  [initialData]="editingLectureData()"
+                  [isEditMode]="true"
+                  (save)="onSaveLecture($event)"
+                  (cancel)="cancelLectureEdit()"
+                />
+              } @else {
+                <app-lecture-accordion
+                  [lecture]="lecture"
+                  [courseId]="courseService.courseDetail()!.id"
+                  [progressMap]="courseService.courseDetail()!.progressMap"
+                  [canEdit]="canEdit()"
+                  [isFirst]="first"
+                  [isLast]="last"
+                  (edit)="startEditLecture(lecture.id)"
+                  (deleteConfirmed)="onDeleteLecture(lecture.id)"
+                  (moveUp)="onMoveLecture(lecture.id, 'up')"
+                  (moveDown)="onMoveLecture(lecture.id, 'down')"
+                />
+              }
             }
           </div>
         }
@@ -143,10 +191,15 @@ export class CourseDetailPageComponent implements OnInit {
   #auth = inject(AuthService);
   #route = inject(ActivatedRoute);
   #router = inject(Router);
-  readonly icons = { ArrowLeft, Loader2, BookOpen, Pencil, Trash2 };
+  readonly icons = { ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus };
 
   readonly confirmingDelete = signal(false);
   readonly deleting = signal(false);
+
+  // Lecture CRUD state
+  readonly editingLectureId = signal<string | null>(null);
+  readonly lectureSaving = signal(false);
+  readonly lectureError = signal('');
 
   readonly isPlatformAdmin = computed(() =>
     this.#auth.currentUser()?.claims?.is_platform_admin ?? false,
@@ -158,6 +211,13 @@ export class CourseDetailPageComponent implements OnInit {
     if (user.claims.is_platform_admin) return true;
     const cid = this.#route.snapshot.paramMap.get('courseId');
     return cid ? user.claims.lecturer_can_edit_course_ids.includes(cid) : false;
+  });
+
+  readonly editingLectureData = computed((): LectureFormData => {
+    const editId = this.editingLectureId();
+    if (!editId || editId === 'new') return { title: '', description: null };
+    const lecture = this.courseService.courseDetail()?.lectures.find(l => l.id === editId);
+    return lecture ? { title: lecture.title, description: lecture.description } : { title: '', description: null };
   });
 
   readonly badgeStyle = computed(() => {
@@ -192,6 +252,81 @@ export class CourseDetailPageComponent implements OnInit {
     const courseId = this.#route.snapshot.paramMap.get('courseId');
     if (courseId) {
       this.courseService.loadCourseDetail(courseId);
+    }
+  }
+
+  startAddLecture() {
+    this.editingLectureId.set('new');
+    this.lectureError.set('');
+  }
+
+  startEditLecture(id: string) {
+    this.editingLectureId.set(id);
+    this.lectureError.set('');
+  }
+
+  cancelLectureEdit() {
+    this.editingLectureId.set(null);
+    this.lectureError.set('');
+  }
+
+  async onSaveLecture(data: LectureFormData) {
+    const courseId = this.#route.snapshot.paramMap.get('courseId');
+    if (!courseId) return;
+
+    const editId = this.editingLectureId();
+    this.lectureSaving.set(true);
+    this.lectureError.set('');
+
+    try {
+      if (editId === 'new') {
+        await this.courseService.createLecture(courseId, data);
+      } else if (editId) {
+        await this.courseService.updateLecture(editId, data);
+      }
+      this.editingLectureId.set(null);
+      await this.courseService.loadCourseDetail(courseId);
+    } catch (err) {
+      this.lectureError.set(err instanceof Error ? err.message : 'Failed to save lecture');
+    } finally {
+      this.lectureSaving.set(false);
+    }
+  }
+
+  async onDeleteLecture(lectureId: string) {
+    const courseId = this.#route.snapshot.paramMap.get('courseId');
+    if (!courseId) return;
+
+    this.lectureError.set('');
+    try {
+      await this.courseService.deleteLecture(lectureId);
+      await this.courseService.loadCourseDetail(courseId);
+    } catch (err) {
+      this.lectureError.set(err instanceof Error ? err.message : 'Failed to delete lecture');
+    }
+  }
+
+  async onMoveLecture(lectureId: string, direction: 'up' | 'down') {
+    const courseId = this.#route.snapshot.paramMap.get('courseId');
+    const detail = this.courseService.courseDetail();
+    if (!courseId || !detail) return;
+
+    const lectures = detail.lectures;
+    const idx = lectures.findIndex(l => l.id === lectureId);
+    if (idx < 0) return;
+
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= lectures.length) return;
+
+    this.lectureError.set('');
+    try {
+      await this.courseService.swapLectureSortOrder(
+        lectures[idx].id, lectures[idx].sort_order,
+        lectures[targetIdx].id, lectures[targetIdx].sort_order,
+      );
+      await this.courseService.loadCourseDetail(courseId);
+    } catch (err) {
+      this.lectureError.set(err instanceof Error ? err.message : 'Failed to reorder lectures');
     }
   }
 

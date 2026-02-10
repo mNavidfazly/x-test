@@ -3,7 +3,7 @@ import { vi } from 'vitest';
 import {
   CourseWithProgress, CourseDetail, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
-  CourseFormData, TenantSummary,
+  CourseFormData, TenantSummary, LectureFormData,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -36,6 +36,10 @@ export function createMockCourseService(options?: {
     loadTenantAssignments: vi.fn().mockResolvedValue([]),
     assignCourseToTenant: vi.fn().mockResolvedValue(undefined),
     removeCourseFromTenant: vi.fn().mockResolvedValue(undefined),
+    createLecture: vi.fn().mockResolvedValue({ id: 'new-lecture-id' }),
+    updateLecture: vi.fn().mockResolvedValue(undefined),
+    deleteLecture: vi.fn().mockResolvedValue(undefined),
+    swapLectureSortOrder: vi.fn().mockResolvedValue(undefined),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),
@@ -167,6 +171,14 @@ export function createMockCourseFormData(overrides?: Partial<CourseFormData>): C
     enrollment_type: 'open',
     password_hash: null,
     staleness_threshold_days: null,
+    ...overrides,
+  };
+}
+
+export function createMockLectureFormData(overrides?: Partial<LectureFormData>): LectureFormData {
+  return {
+    title: 'New Lecture',
+    description: 'A lecture description',
     ...overrides,
   };
 }
