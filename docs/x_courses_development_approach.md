@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00018` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00020` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -105,7 +105,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00018                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO)
+│       └── 00001-00020                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture CRUD triggers)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -150,7 +150,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData factories
+│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData factories
 │   │   │   │
 │   │   │   ├── core/
 │   │   │   │   ├── services/
@@ -159,14 +159,14 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture)
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -191,19 +191,23 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
-│   │   │   │   │   │   ├── course-detail-page.component.ts  # Smart: ActivatedRoute params, LectureAccordions
+│   │   │   │   │   │   ├── course-detail-page.component.ts  # Smart: course detail + lecture CRUD orchestration (inline editing)
 │   │   │   │   │   │   ├── course-detail-page.component.spec.ts
+│   │   │   │   │   │   ├── course-form-page.component.ts    # Smart: create/edit course, tenant assignment, delete (Phase 3A)
+│   │   │   │   │   │   ├── course-form-page.component.spec.ts
 │   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown viewer, prev/next nav, mark-complete
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
 │   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
 │   │   │   │   │   │   ├── course-card.component.spec.ts
-│   │   │   │   │   │   ├── lecture-accordion.component.ts    # Presentational: collapsible, module list, X/Y count, courseId passthrough
+│   │   │   │   │   │   ├── lecture-accordion.component.ts    # Presentational: collapsible, module list, X/Y count, edit/delete/reorder buttons
 │   │   │   │   │   │   ├── lecture-accordion.component.spec.ts
+│   │   │   │   │   │   ├── lecture-form.component.ts         # Presentational: inline lecture create/edit form (title + description)
+│   │   │   │   │   │   ├── lecture-form.component.spec.ts
 │   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge, RouterLink for video/pdf/markdown
 │   │   │   │   │   │   ├── module-item.component.spec.ts
 │   │   │   │   │   │   ├── video-viewer.component.ts         # Presentational: HTML5 <video> with Bunny CDN URLs
@@ -212,9 +216,12 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── pdf-viewer.component.spec.ts
 │   │   │   │   │   │   ├── markdown-viewer.component.ts      # Presentational: ngx-markdown with prose styling
 │   │   │   │   │   │   ├── markdown-viewer.component.spec.ts
+│   │   │   │   │   │   ├── course-form.component.ts          # Presentational: course create/edit form (Phase 3A)
+│   │   │   │   │   │   ├── course-form.component.spec.ts
+│   │   │   │   │   │   ├── tenant-assignment.component.ts    # Presentational: assign courses to tenants (Phase 3A)
+│   │   │   │   │   │   ├── tenant-assignment.component.spec.ts
 │   │   │   │   │   │   ├── module-files-list.component.ts    # Presentational: downloadable files with human-readable sizes
 │   │   │   │   │   │   └── module-files-list.component.spec.ts
-│   │   │   │   │   └── course-form/      # Phase 3: Create/edit (Platform Admin + Lecturer with can_edit)
 │   │   │   │   │
 │   │   │   │   │                         # --- Planned (not yet built) ---
 │   │   │   │   ├── content/              # Phase 3C
@@ -281,7 +288,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
   - [x] `git init` + create `.gitignore`
   - [x] Create private GitHub repo — `TereschenkoAI/x-courses-v2`
   - [x] Push initial commit with `docs/` and `supabase/` folders
-- [x] Run database migrations — all 18 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant)
+- [x] Run database migrations — all 20 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant)
 - [ ] Configure auth:
   - [x] Keycloak SSO (for @calypso-commodities.com domain + onboarded clients) — via `calypso-xcourses` client in "customers" realm
   - [x] Enable email/password auth — enabled by default, confirmed via `config push`
@@ -457,29 +464,52 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] Assign courses to tenants (Platform Admin — manages tenant_courses)
 - [x] Delete course (Platform Admin only, cascades)
 - [x] created_by / updated_by tracking
-- [x] **Tests:** CourseFormComponent, CourseService
+- [x] **Tests:** CourseFormComponent, CourseFormPageComponent, TenantAssignmentComponent, CourseService — 223 total frontend tests
 
 #### 3B - Lecture CRUD
-- [ ] Create lecture within course
-- [ ] Edit lecture (title, description)
-- [ ] Sort ordering (drag-and-drop or up/down buttons)
-- [ ] Delete lecture (cascades modules)
-- [ ] created_by / updated_by tracking
-- [ ] **Tests:** LectureFormComponent
+- [x] Create lecture within course (auto sort_order = max + 1)
+- [x] Edit lecture (title, description) — inline editing, not separate page
+- [x] Sort ordering (up/down buttons — sequential swap via 2 Supabase UPDATEs)
+- [x] Delete lecture (cascades modules → subtables → progress → quiz attempts, with 2-step confirmation)
+- [x] created_by / updated_by tracking (migration 00020: `set_lecture_audit_fields()` trigger)
+- [x] Inline editing orchestrated by CourseDetailPageComponent (`editingLectureId` signal: 'new' | lectureId | null)
+- [x] LectureFormComponent (presentational), LectureAccordionComponent (edit/delete/reorder buttons)
+- [x] 4 CourseService methods: `createLecture`, `updateLecture`, `deleteLecture`, `swapLectureSortOrder`
+- [x] Lecturers with `can_edit` have full CRUD on lectures (unlike courses: admin-only delete)
+- [x] **Tests:** 34 new tests (8 LectureForm + 16 LectureAccordion + 7 CourseDetailPage lecture CRUD + 9 CourseService lecture methods) — 257 total frontend tests
 
-#### 3C - Module CRUD
-- [ ] Module type selection (video, PDF, markdown, quiz, exam)
-- [ ] Per-type forms:
-  - [ ] Video: video_url (Bunny CDN), thumbnail_url, duration
-  - [ ] PDF: file upload to Supabase Storage (course-files bucket), file_name, page_count
-  - [ ] Markdown: Tiptap WYSIWYG editor (exports markdown for storage in module_markdown.content), attached files (module_files)
-  - [ ] Quiz: redirects to Quiz Builder (Phase 3D)
-  - [ ] Exam: exam file upload, duration_minutes, passing_score, max_file_size, allowed_file_types
-- [ ] Sort ordering within lecture
-- [ ] "Significant update" checkbox on save → sets significant_update_at, resets affected progress
-- [ ] created_by / updated_by tracking
-- [ ] Delete module (cascades subtable)
-- [ ] **Tests:** ModuleFormComponent (per type)
+#### 3C-1 — Module CRUD: Core + Video (Complete)
+- [x] Migration 00021: `set_module_audit_fields()` trigger (auto `created_by`/`updated_by`)
+- [x] Model types: `ModuleFormData`, `VideoFormData`, `ModuleContentFormData`, `ModuleSavePayload`
+- [x] CourseService: `createModule`, `updateModule`, `deleteModule`, `swapModuleSortOrder`, `loadModuleForEdit`
+- [x] Two-step creation with rollback (module row → subtable, rollback on subtable failure)
+- [x] ModuleFormPageComponent (separate page) with type selector (all 5 types shown)
+- [x] VideoFormComponent (self-contained: title + desc + video URL + thumbnail + duration)
+- [x] Non-video types: generic form with title/description + "settings coming soon" note
+- [x] ModuleItemComponent: edit/delete/reorder buttons (canEdit), delete confirmation
+- [x] LectureAccordionComponent: "Add Module" button, module event forwarding (5 new outputs)
+- [x] CourseDetailPageComponent: module CRUD orchestration (navigate, delete, reorder)
+- [x] Routes: `courses/:courseId/modules/new`, `courses/:courseId/modules/:moduleId/edit`
+- [x] Type is immutable after creation, `lectureId` as query param for create
+- [x] **Tests:** 58 new tests (8 VideoForm + 17 ModuleFormPage + 10 ModuleItem + 7 LectureAccordion + 12 CourseService + 4 CourseDetailPage) — 315 total frontend tests
+
+#### 3C-2 — Module CRUD: File Upload + PDF + Exam
+- [ ] FileUploadComponent (shared, reusable drag-and-drop / file picker)
+- [ ] Supabase Storage integration (course-files bucket)
+- [ ] PdfFormComponent with file upload, file_name, page_count
+- [ ] ExamFormComponent: duration_minutes, passing_score, max_file_size, allowed_file_types, exam_file_url upload
+- [ ] "Significant update" checkbox on module edit → sets significant_update_at
+- [ ] CourseService: extend for PDF + Exam subtable CRUD
+- [ ] **Tests:** ~40 new
+
+#### 3C-3 — Module CRUD: Tiptap Markdown + Quiz Stub
+- [ ] Install Tiptap: @tiptap/core, @tiptap/starter-kit, @tiptap/extension-*
+- [ ] TiptapEditorComponent (shared wrapper with toolbar)
+- [ ] MarkdownFormComponent with Tiptap editor
+- [ ] ModuleFilesEditorComponent (attach/delete files for markdown modules)
+- [ ] CourseService: module_files CRUD + markdown subtable CRUD
+- [ ] Quiz stub: creates module with type=quiz, "Quiz Builder coming in Phase 3D" note
+- [ ] **Tests:** ~40 new
 
 #### 3D - Quiz Builder
 - [ ] Quiz settings: title, description, time_limit, passing_score, max_attempts, show_correct_answers, randomize_questions, randomize_answers

@@ -674,4 +674,231 @@ describe('CourseService', () => {
       await expect(service.swapLectureSortOrder('l1', 0, 'l2', 1)).rejects.toThrow('Reorder failed');
     });
   });
+
+  describe('createModule', () => {
+    const preloadCourseDetail = async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: {
+          id: 'c1', title: 'C', description: null, thumbnail_url: null, enrollment_type: 'open',
+          lectures: [{
+            id: 'l1', title: 'L1', description: null, sort_order: 0,
+            modules: [
+              { id: 'm1', title: 'M1', module_type: 'video', sort_order: 0 },
+              { id: 'm2', title: 'M2', module_type: 'pdf', sort_order: 1 },
+            ],
+          }],
+        },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      await service.loadCourseDetail('c1');
+    };
+
+    it('should insert module + video content and return id', async () => {
+      await preloadCourseDetail();
+
+      // Step 1: insert module → .select('id').single()
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'new-mod-id' },
+        error: null,
+      });
+      // Step 2: insert module_videos → .then()
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      const result = await service.createModule('c1', {
+        module: { title: 'New Video', description: 'Desc', module_type: 'video', lecture_id: 'l1' },
+        content: { type: 'video', data: { video_url: 'https://cdn/v.mp4', thumbnail_url: null, duration: 120 } },
+      });
+
+      expect(result).toEqual({ id: 'new-mod-id' });
+      expect(supabase.client.from).toHaveBeenCalledWith('modules');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        course_id: 'c1',
+        lecture_id: 'l1',
+        title: 'New Video',
+        description: 'Desc',
+        module_type: 'video',
+        sort_order: 2,
+      });
+    });
+
+    it('should calculate sort_order from loaded courseDetail', async () => {
+      await preloadCourseDetail();
+
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'mod-x' },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.createModule('c1', {
+        module: { title: 'Third Module', description: null, module_type: 'video', lecture_id: 'l1' },
+        content: { type: 'video', data: { video_url: 'v.mp4', thumbnail_url: null, duration: null } },
+      });
+
+      // Lecture l1 has modules with sort_order 0 and 1, so next should be 2
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith(
+        expect.objectContaining({ sort_order: 2 }),
+      );
+    });
+
+    it('should throw on insert error', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'RLS violation' },
+      });
+
+      await expect(service.createModule('c1', {
+        module: { title: 'X', description: null, module_type: 'video', lecture_id: 'l1' },
+        content: { type: 'video', data: { video_url: 'v.mp4', thumbnail_url: null, duration: null } },
+      })).rejects.toThrow('RLS violation');
+    });
+
+    it('should use sort_order 0 when lecture has no modules', async () => {
+      // Preload courseDetail with an empty-module lecture
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: {
+          id: 'c1', title: 'C', description: null, thumbnail_url: null, enrollment_type: 'open',
+          lectures: [{
+            id: 'l-empty', title: 'Empty Lecture', description: null, sort_order: 0,
+            modules: [],
+          }],
+        },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      await service.loadCourseDetail('c1');
+
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'first-mod' },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      const result = await service.createModule('c1', {
+        module: { title: 'First Module', description: null, module_type: 'video', lecture_id: 'l-empty' },
+        content: { type: 'video', data: { video_url: 'v.mp4', thumbnail_url: null, duration: null } },
+      });
+
+      expect(result).toEqual({ id: 'first-mod' });
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith(
+        expect.objectContaining({ sort_order: 0 }),
+      );
+    });
+  });
+
+  describe('updateModule', () => {
+    it('should update module by id', async () => {
+      // update modules → .eq('id', ...) resolves via .then()
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateModule('mod-1', {
+        module: { title: 'Updated Title', description: 'Updated Desc', module_type: 'video', lecture_id: 'l1' },
+        content: { type: 'video', data: { video_url: 'https://cdn/new.mp4', thumbnail_url: null, duration: 200 } },
+      });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('modules');
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({
+        title: 'Updated Title',
+        description: 'Updated Desc',
+      });
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'mod-1');
+    });
+
+    it('should throw on update error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Permission denied' } }));
+
+      await expect(service.updateModule('mod-1', {
+        module: { title: 'X', description: null, module_type: 'video', lecture_id: 'l1' },
+        content: { type: 'video', data: { video_url: 'v.mp4', thumbnail_url: null, duration: null } },
+      })).rejects.toThrow('Permission denied');
+    });
+  });
+
+  describe('deleteModule', () => {
+    it('should delete module by id', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.deleteModule('mod-1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('modules');
+      expect(supabase._mockQueryBuilder.delete).toHaveBeenCalled();
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'mod-1');
+    });
+
+    it('should throw on delete error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Cannot delete' } }));
+
+      await expect(service.deleteModule('mod-1')).rejects.toThrow('Cannot delete');
+    });
+  });
+
+  describe('swapModuleSortOrder', () => {
+    it('should swap sort_order of two modules', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.swapModuleSortOrder('m1', 0, 'm2', 1);
+
+      expect(supabase.client.from).toHaveBeenCalledWith('modules');
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 1 });
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 0 });
+    });
+
+    it('should throw on first update error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Reorder failed' } }));
+
+      await expect(service.swapModuleSortOrder('m1', 0, 'm2', 1)).rejects.toThrow('Reorder failed');
+    });
+  });
+
+  describe('loadModuleForEdit', () => {
+    it('should load module and convert video content to form data', async () => {
+      // Step 1: load module metadata → .single()
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-1', title: 'Video Mod', description: 'A video', module_type: 'video', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        // Step 2: fetch video content → .single()
+        .mockResolvedValueOnce({
+          data: { video_url: 'https://cdn/video.mp4', thumbnail_url: 'https://cdn/thumb.jpg', duration: 120 },
+          error: null,
+        });
+
+      const result = await service.loadModuleForEdit('mod-1');
+
+      expect(result.module.id).toBe('mod-1');
+      expect(result.module.title).toBe('Video Mod');
+      expect(result.module.module_type).toBe('video');
+      expect(result.module.description).toBe('A video');
+      expect(result.content.type).toBe('video');
+      if (result.content.type === 'video') {
+        expect(result.content.data).toEqual({
+          video_url: 'https://cdn/video.mp4',
+          thumbnail_url: 'https://cdn/thumb.jpg',
+          duration: 120,
+        });
+      }
+    });
+
+    it('should throw on load error', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'Module not found' },
+      });
+
+      await expect(service.loadModuleForEdit('bad-id')).rejects.toThrow('Module not found');
+    });
+  });
 });

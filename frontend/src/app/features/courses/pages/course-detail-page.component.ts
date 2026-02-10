@@ -141,6 +141,11 @@ const BADGE_LABELS: Record<string, string> = {
                   (deleteConfirmed)="onDeleteLecture(lecture.id)"
                   (moveUp)="onMoveLecture(lecture.id, 'up')"
                   (moveDown)="onMoveLecture(lecture.id, 'down')"
+                  (addModule)="onAddModule(lecture.id)"
+                  (editModule)="onEditModule($event)"
+                  (deleteModule)="onDeleteModule($event)"
+                  (moveModuleUp)="onMoveModule($event, lecture.id, 'up')"
+                  (moveModuleDown)="onMoveModule($event, lecture.id, 'down')"
                 />
               }
             }
@@ -327,6 +332,58 @@ export class CourseDetailPageComponent implements OnInit {
       await this.courseService.loadCourseDetail(courseId);
     } catch (err) {
       this.lectureError.set(err instanceof Error ? err.message : 'Failed to reorder lectures');
+    }
+  }
+
+  // --- Module CRUD handlers ---
+
+  onAddModule(lectureId: string) {
+    const cid = this.#route.snapshot.paramMap.get('courseId');
+    this.#router.navigate(['/courses', cid, 'modules', 'new'], { queryParams: { lectureId } });
+  }
+
+  onEditModule(moduleId: string) {
+    const cid = this.#route.snapshot.paramMap.get('courseId');
+    this.#router.navigate(['/courses', cid, 'modules', moduleId, 'edit']);
+  }
+
+  async onDeleteModule(moduleId: string) {
+    const courseId = this.#route.snapshot.paramMap.get('courseId');
+    if (!courseId) return;
+
+    this.lectureError.set('');
+    try {
+      await this.courseService.deleteModule(moduleId);
+      await this.courseService.loadCourseDetail(courseId);
+    } catch (err) {
+      this.lectureError.set(err instanceof Error ? err.message : 'Failed to delete module');
+    }
+  }
+
+  async onMoveModule(moduleId: string, lectureId: string, direction: 'up' | 'down') {
+    const courseId = this.#route.snapshot.paramMap.get('courseId');
+    const detail = this.courseService.courseDetail();
+    if (!courseId || !detail) return;
+
+    const lecture = detail.lectures.find(l => l.id === lectureId);
+    if (!lecture) return;
+
+    const modules = lecture.modules;
+    const idx = modules.findIndex(m => m.id === moduleId);
+    if (idx < 0) return;
+
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= modules.length) return;
+
+    this.lectureError.set('');
+    try {
+      await this.courseService.swapModuleSortOrder(
+        modules[idx].id, modules[idx].sort_order,
+        modules[targetIdx].id, modules[targetIdx].sort_order,
+      );
+      await this.courseService.loadCourseDetail(courseId);
+    } catch (err) {
+      this.lectureError.set(err instanceof Error ? err.message : 'Failed to reorder modules');
     }
   }
 

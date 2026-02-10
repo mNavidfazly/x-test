@@ -6,6 +6,7 @@ import {
   CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem,
   CourseFormData, TenantSummary, TenantAssignment, LectureFormData,
+  ModuleSavePayload, ModuleContentFormData,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -402,6 +403,158 @@ export class CourseService {
       .eq('id', idB);
 
     if (resB.error) throw new Error(this.#extractErrorMessage(resB.error, 'Failed to reorder lectures'));
+  }
+
+  // --- Phase 3C: Module CRUD methods ---
+
+  async createModule(courseId: string, payload: ModuleSavePayload): Promise<{ id: string }> {
+    const detail = this.#courseDetail();
+    const lecture = detail?.lectures.find(l => l.id === payload.module.lecture_id);
+    const maxOrder = lecture
+      ? lecture.modules.reduce((max, m) => Math.max(max, m.sort_order), -1)
+      : -1;
+
+    const { data: result, error } = await this.#supabase.client
+      .from('modules')
+      .insert({
+        course_id: courseId,
+        lecture_id: payload.module.lecture_id,
+        title: payload.module.title,
+        description: payload.module.description,
+        module_type: payload.module.module_type,
+        sort_order: maxOrder + 1,
+      })
+      .select('id')
+      .single();
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to create module'));
+
+    try {
+      await this.#insertModuleContent(result.id, payload.content);
+    } catch (contentErr) {
+      await this.#supabase.client.from('modules').delete().eq('id', result.id);
+      throw contentErr;
+    }
+
+    return { id: result.id };
+  }
+
+  async updateModule(moduleId: string, payload: ModuleSavePayload): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('modules')
+      .update({
+        title: payload.module.title,
+        description: payload.module.description,
+      })
+      .eq('id', moduleId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update module'));
+
+    await this.#upsertModuleContent(moduleId, payload.content);
+  }
+
+  async deleteModule(moduleId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('modules')
+      .delete()
+      .eq('id', moduleId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete module'));
+  }
+
+  async swapModuleSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
+    const resA = await this.#supabase.client
+      .from('modules')
+      .update({ sort_order: orderB })
+      .eq('id', idA);
+
+    if (resA.error) throw new Error(this.#extractErrorMessage(resA.error, 'Failed to reorder modules'));
+
+    const resB = await this.#supabase.client
+      .from('modules')
+      .update({ sort_order: orderA })
+      .eq('id', idB);
+
+    if (resB.error) throw new Error(this.#extractErrorMessage(resB.error, 'Failed to reorder modules'));
+  }
+
+  async loadModuleForEdit(moduleId: string): Promise<{ module: ModuleDetail; content: ModuleContentFormData }> {
+    const client = this.#supabase.client;
+
+    const moduleRes = await client
+      .from('modules')
+      .select('id, title, description, module_type, sort_order, lecture_id, course_id')
+      .eq('id', moduleId)
+      .single();
+
+    if (moduleRes.error) throw new Error(this.#extractErrorMessage(moduleRes.error, 'Failed to load module'));
+
+    const mod = moduleRes.data as {
+      id: string; title: string; description: string | null;
+      module_type: string; sort_order: number; lecture_id: string; course_id: string;
+    };
+
+    const module: ModuleDetail = { ...mod, module_type: mod.module_type as ModuleType };
+    const viewerContent = await this.#fetchModuleContent(client, moduleId, mod.module_type);
+    const content = this.#contentToFormData(viewerContent);
+
+    return { module, content };
+  }
+
+  async #insertModuleContent(moduleId: string, content: ModuleContentFormData): Promise<void> {
+    switch (content.type) {
+      case 'video': {
+        if (!content.data) break;
+        const { error } = await this.#supabase.client
+          .from('module_videos')
+          .insert({
+            module_id: moduleId,
+            video_url: content.data.video_url,
+            thumbnail_url: content.data.thumbnail_url,
+            duration: content.data.duration,
+          });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save video content'));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  async #upsertModuleContent(moduleId: string, content: ModuleContentFormData): Promise<void> {
+    switch (content.type) {
+      case 'video': {
+        if (!content.data) break;
+        const { error } = await this.#supabase.client
+          .from('module_videos')
+          .upsert({
+            module_id: moduleId,
+            video_url: content.data.video_url,
+            thumbnail_url: content.data.thumbnail_url,
+            duration: content.data.duration,
+          }, { onConflict: 'module_id' });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update video content'));
+        break;
+      }
+      default:
+        break;
+    }
+  }
+
+  #contentToFormData(content: ModuleContent): ModuleContentFormData {
+    switch (content.type) {
+      case 'video':
+        return {
+          type: 'video',
+          data: {
+            video_url: content.data.video_url,
+            thumbnail_url: content.data.thumbnail_url,
+            duration: content.data.duration,
+          },
+        };
+      default:
+        return { type: content.type, data: null } as ModuleContentFormData;
+    }
   }
 
   async #fetchModuleContent(client: SupabaseClient, moduleId: string, moduleType: string): Promise<ModuleContent> {

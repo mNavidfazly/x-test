@@ -79,6 +79,22 @@ export const routes: Routes = [
               ),
           },
           {
+            path: ':courseId/modules/new',
+            canActivate: [roleGuard('platform_admin', 'lecturer')],
+            loadComponent: () =>
+              import('./features/courses/pages/module-form-page.component').then(
+                (m) => m.ModuleFormPageComponent,
+              ),
+          },
+          {
+            path: ':courseId/modules/:moduleId/edit',
+            canActivate: [roleGuard('platform_admin', 'lecturer')],
+            loadComponent: () =>
+              import('./features/courses/pages/module-form-page.component').then(
+                (m) => m.ModuleFormPageComponent,
+              ),
+          },
+          {
             path: ':courseId/modules/:moduleId',
             loadComponent: () =>
               import('./features/courses/pages/module-viewer-page.component').then(

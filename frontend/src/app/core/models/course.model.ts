@@ -136,3 +136,30 @@ export interface LectureFormData {
   title: string;
   description: string | null;
 }
+
+// Phase 3C: Module CRUD types
+
+export interface ModuleFormData {
+  title: string;
+  description: string | null;
+  module_type: ModuleType;
+  lecture_id: string;
+}
+
+export interface VideoFormData {
+  video_url: string;
+  thumbnail_url: string | null;
+  duration: number | null;
+}
+
+export type ModuleContentFormData =
+  | { type: 'video'; data: VideoFormData }
+  | { type: 'pdf'; data: null }
+  | { type: 'markdown'; data: null }
+  | { type: 'quiz'; data: null }
+  | { type: 'exam'; data: null };
+
+export interface ModuleSavePayload {
+  module: ModuleFormData;
+  content: ModuleContentFormData;
+}

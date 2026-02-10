@@ -426,4 +426,97 @@ describe('CourseDetailPageComponent', () => {
 
     expect(screen.getByText('Cannot delete lecture')).toBeTruthy();
   });
+
+  // --- Module CRUD tests ---
+
+  it('should show Add Module buttons for platform admin', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    const addModuleButtons = screen.getAllByText('Add Module');
+    expect(addModuleButtons.length).toBe(2); // one per lecture
+  });
+
+  it('should hide Add Module buttons for regular learner', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.queryByText('Add Module')).toBeNull();
+  });
+
+  it('should call deleteModule and reload on confirmed module delete', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    // Click delete on first module
+    const moduleDeleteButtons = screen.getAllByTitle('Delete module');
+    fireEvent.click(moduleDeleteButtons[0]);
+
+    // Confirm module delete
+    const yesDeleteButtons = screen.getAllByText('Yes, Delete');
+    fireEvent.click(yesDeleteButtons[yesDeleteButtons.length - 1]); // last one is the module's
+    await new Promise(r => setTimeout(r));
+
+    expect(courseService.deleteModule).toHaveBeenCalledWith('mod-1');
+    expect(courseService.loadCourseDetail).toHaveBeenCalledWith('c1');
+  });
+
+  it('should show module error on delete failure', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+    courseService.deleteModule.mockRejectedValueOnce(new Error('Cannot delete module'));
+
+    const { fixture } = await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    const moduleDeleteButtons = screen.getAllByTitle('Delete module');
+    fireEvent.click(moduleDeleteButtons[0]);
+    const yesDeleteButtons = screen.getAllByText('Yes, Delete');
+    fireEvent.click(yesDeleteButtons[yesDeleteButtons.length - 1]);
+    await new Promise(r => setTimeout(r));
+    fixture.detectChanges();
+
+    expect(screen.getByText('Cannot delete module')).toBeTruthy();
+  });
 });

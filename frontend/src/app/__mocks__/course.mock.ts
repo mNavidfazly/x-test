@@ -4,6 +4,7 @@ import {
   CourseWithProgress, CourseDetail, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
   CourseFormData, TenantSummary, LectureFormData,
+  ModuleFormData, VideoFormData, ModuleSavePayload,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -40,6 +41,14 @@ export function createMockCourseService(options?: {
     updateLecture: vi.fn().mockResolvedValue(undefined),
     deleteLecture: vi.fn().mockResolvedValue(undefined),
     swapLectureSortOrder: vi.fn().mockResolvedValue(undefined),
+    createModule: vi.fn().mockResolvedValue({ id: 'new-module-id' }),
+    updateModule: vi.fn().mockResolvedValue(undefined),
+    deleteModule: vi.fn().mockResolvedValue(undefined),
+    swapModuleSortOrder: vi.fn().mockResolvedValue(undefined),
+    loadModuleForEdit: vi.fn().mockResolvedValue({
+      module: { id: 'mod-1', title: 'Test Module', description: null, module_type: 'video', sort_order: 0, lecture_id: 'lecture-1', course_id: 'course-1' },
+      content: { type: 'video', data: { video_url: 'https://cdn.bunny.net/test.mp4', thumbnail_url: null, duration: null } },
+    }),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),
@@ -189,6 +198,35 @@ export function createMockTenantSummary(overrides?: Partial<TenantSummary>): Ten
     name: 'Test Tenant',
     domain: 'test.com',
     is_master: false,
+    ...overrides,
+  };
+}
+
+// Phase 3C: Module CRUD factories
+
+export function createMockModuleFormData(overrides?: Partial<ModuleFormData>): ModuleFormData {
+  return {
+    title: 'New Module',
+    description: null,
+    module_type: 'video',
+    lecture_id: 'lecture-1',
+    ...overrides,
+  };
+}
+
+export function createMockVideoFormData(overrides?: Partial<VideoFormData>): VideoFormData {
+  return {
+    video_url: 'https://cdn.bunny.net/test-video.mp4',
+    thumbnail_url: null,
+    duration: null,
+    ...overrides,
+  };
+}
+
+export function createMockModuleSavePayload(overrides?: Partial<ModuleSavePayload>): ModuleSavePayload {
+  return {
+    module: createMockModuleFormData(),
+    content: { type: 'video', data: createMockVideoFormData() },
     ...overrides,
   };
 }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus } from 'lucide-angular';
 import { LectureWithModules, ModuleProgress } from '../../../core/models/course.model';
 import { ModuleItemComponent } from './module-item.component';
 
@@ -91,12 +91,31 @@ import { ModuleItemComponent } from './module-item.component';
       <!-- Module list -->
       @if (isOpen()) {
         <div class="border-t border-slate-100 bg-slate-50/50 px-2 py-1">
-          @for (mod of lecture().modules; track mod.id) {
+          @for (mod of lecture().modules; track mod.id; let first = $first; let last = $last) {
             <app-module-item
               [module]="mod"
               [courseId]="courseId()"
               [progress]="progressMap()[mod.id] || null"
+              [canEdit]="canEdit()"
+              [isFirst]="first"
+              [isLast]="last"
+              (edit)="editModule.emit(mod.id)"
+              (deleteConfirmed)="deleteModule.emit(mod.id)"
+              (moveUp)="moveModuleUp.emit(mod.id)"
+              (moveDown)="moveModuleDown.emit(mod.id)"
             />
+          }
+
+          <!-- Add Module button -->
+          @if (canEdit()) {
+            <button
+              type="button"
+              (click)="addModule.emit(); $event.stopPropagation()"
+              class="w-full mt-1 mb-1 rounded-lg border border-dashed border-slate-300 py-2 text-xs font-semibold text-slate-400 hover:border-teal-400 hover:text-teal-600 hover:bg-teal-50/30 transition-all duration-200 inline-flex items-center justify-center gap-1.5"
+            >
+              <lucide-icon [img]="icons.Plus" [size]="12"></lucide-icon>
+              Add Module
+            </button>
           }
         </div>
       }
@@ -111,12 +130,20 @@ export class LectureAccordionComponent {
   readonly isFirst = input(false);
   readonly isLast = input(false);
 
+  // Lecture-level outputs
   readonly edit = output<void>();
   readonly deleteConfirmed = output<void>();
   readonly moveUp = output<void>();
   readonly moveDown = output<void>();
 
-  readonly icons = { ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2 };
+  // Module-level outputs
+  readonly addModule = output<void>();
+  readonly editModule = output<string>();
+  readonly deleteModule = output<string>();
+  readonly moveModuleUp = output<string>();
+  readonly moveModuleDown = output<string>();
+
+  readonly icons = { ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus };
 
   readonly isOpen = signal(true);
   readonly confirmingDelete = signal(false);
