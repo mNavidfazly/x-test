@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 import {
   CourseWithProgress, CourseDetail, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
+  CourseFormData, TenantSummary,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -28,6 +29,13 @@ export function createMockCourseService(options?: {
     loadCourseDetail: vi.fn().mockResolvedValue(undefined),
     loadModuleViewer: vi.fn().mockResolvedValue(undefined),
     markModuleComplete: vi.fn().mockResolvedValue(undefined),
+    createCourse: vi.fn().mockResolvedValue({ id: 'new-course-id' }),
+    updateCourse: vi.fn().mockResolvedValue(undefined),
+    deleteCourse: vi.fn().mockResolvedValue(undefined),
+    loadTenants: vi.fn().mockResolvedValue([]),
+    loadTenantAssignments: vi.fn().mockResolvedValue([]),
+    assignCourseToTenant: vi.fn().mockResolvedValue(undefined),
+    removeCourseFromTenant: vi.fn().mockResolvedValue(undefined),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),
@@ -145,6 +153,30 @@ export function createMockModuleViewerData(overrides?: Partial<ModuleViewerData>
       current: 1,
       total: 3,
     },
+    ...overrides,
+  };
+}
+
+// Phase 3A: Course CRUD factories
+
+export function createMockCourseFormData(overrides?: Partial<CourseFormData>): CourseFormData {
+  return {
+    title: 'New Course',
+    description: 'A new course description',
+    thumbnail_url: null,
+    enrollment_type: 'open',
+    password_hash: null,
+    staleness_threshold_days: null,
+    ...overrides,
+  };
+}
+
+export function createMockTenantSummary(overrides?: Partial<TenantSummary>): TenantSummary {
+  return {
+    id: 'tenant-1',
+    name: 'Test Tenant',
+    domain: 'test.com',
+    is_master: false,
     ...overrides,
   };
 }

@@ -1,10 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/angular';
-import { provideRouter, ActivatedRoute } from '@angular/router';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/angular';
+import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { CourseDetailPageComponent } from './course-detail-page.component';
 import { CourseService } from '../../../core/services/course.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { LectureAccordionComponent } from '../components/lecture-accordion.component';
 import { createMockCourseService, createMockCourseDetail } from '../../../__mocks__/course.mock';
+import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 
 function mockActivatedRoute(courseId: string) {
@@ -26,6 +28,7 @@ describe('CourseDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('abc-123') },
       ],
     });
@@ -41,6 +44,7 @@ describe('CourseDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
       ],
     });
@@ -56,6 +60,7 @@ describe('CourseDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
       ],
     });
@@ -71,6 +76,7 @@ describe('CourseDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
       ],
     });
@@ -91,6 +97,7 @@ describe('CourseDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
       ],
     });
@@ -122,6 +129,7 @@ describe('CourseDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
       ],
     });
@@ -139,11 +147,115 @@ describe('CourseDetailPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
       ],
     });
 
     expect(screen.getByText('Lecture 1')).toBeTruthy();
     expect(screen.getByText('Lecture 2')).toBeTruthy();
+  });
+
+  it('should show Edit button for platform admin', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: [MockLucideIconComponent, LectureAccordionComponent],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.getByText('Edit')).toBeTruthy();
+  });
+
+  it('should show Edit button for lecturer with can_edit', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: [MockLucideIconComponent, LectureAccordionComponent],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        {
+          provide: AuthService,
+          useValue: createMockAuthService({
+            isAuthenticated: true,
+            roles: ['learner', 'lecturer'],
+            claims: { lecturer_can_edit_course_ids: ['c1'] },
+          }),
+        },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.getByText('Edit')).toBeTruthy();
+    // Lecturer should NOT see Delete
+    expect(screen.queryByText('Delete Course')).toBeNull();
+  });
+
+  it('should hide Edit button for regular learner', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: [MockLucideIconComponent, LectureAccordionComponent],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.queryByText('Edit')).toBeNull();
+    expect(screen.queryByText('Delete Course')).toBeNull();
+  });
+
+  it('should show Delete button for platform admin', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: [MockLucideIconComponent, LectureAccordionComponent],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.getByText('Delete Course')).toBeTruthy();
+  });
+
+  it('should show delete confirmation on click', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: [MockLucideIconComponent, LectureAccordionComponent],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    fireEvent.click(screen.getByText('Delete Course'));
+
+    expect(screen.getByText('Yes, Delete')).toBeTruthy();
+    expect(screen.getByText(/Are you sure/)).toBeTruthy();
   });
 });

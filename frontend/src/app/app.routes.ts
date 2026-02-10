@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -55,10 +56,26 @@ export const routes: Routes = [
               ),
           },
           {
+            path: 'new',
+            canActivate: [roleGuard('platform_admin')],
+            loadComponent: () =>
+              import('./features/courses/pages/course-form-page.component').then(
+                (m) => m.CourseFormPageComponent,
+              ),
+          },
+          {
             path: ':courseId',
             loadComponent: () =>
               import('./features/courses/pages/course-detail-page.component').then(
                 (m) => m.CourseDetailPageComponent,
+              ),
+          },
+          {
+            path: ':courseId/edit',
+            canActivate: [roleGuard('platform_admin', 'lecturer')],
+            loadComponent: () =>
+              import('./features/courses/pages/course-form-page.component').then(
+                (m) => m.CourseFormPageComponent,
               ),
           },
           {

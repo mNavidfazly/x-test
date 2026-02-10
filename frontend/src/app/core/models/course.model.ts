@@ -106,3 +106,26 @@ export interface ModuleViewerData {
     total: number;
   };
 }
+
+// Phase 3A: Course CRUD types
+
+export interface CourseFormData {
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  enrollment_type: EnrollmentType;
+  password_hash: string | null;
+  staleness_threshold_days: number | null;
+}
+
+export interface TenantSummary {
+  id: string;
+  name: string;
+  domain: string;
+  is_master: boolean;
+}
+
+export interface TenantAssignment {
+  tenant_id: string;
+  tenant_name: string;
+}

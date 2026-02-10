@@ -150,7 +150,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail factories
+│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData factories
 │   │   │   │
 │   │   │   ├── core/
 │   │   │   │   ├── services/
@@ -159,14 +159,14 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ 4 parallel queries, user_id scoping, union type casts
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -191,23 +191,33 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
 │   │   │   │   │   │   ├── course-detail-page.component.ts  # Smart: ActivatedRoute params, LectureAccordions
-│   │   │   │   │   │   └── course-detail-page.component.spec.ts
+│   │   │   │   │   │   ├── course-detail-page.component.spec.ts
+│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown viewer, prev/next nav, mark-complete
+│   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
 │   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
 │   │   │   │   │   │   ├── course-card.component.spec.ts
-│   │   │   │   │   │   ├── lecture-accordion.component.ts    # Presentational: collapsible, module list, X/Y count
+│   │   │   │   │   │   ├── lecture-accordion.component.ts    # Presentational: collapsible, module list, X/Y count, courseId passthrough
 │   │   │   │   │   │   ├── lecture-accordion.component.spec.ts
-│   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge
-│   │   │   │   │   │   └── module-item.component.spec.ts
+│   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge, RouterLink for video/pdf/markdown
+│   │   │   │   │   │   ├── module-item.component.spec.ts
+│   │   │   │   │   │   ├── video-viewer.component.ts         # Presentational: HTML5 <video> with Bunny CDN URLs
+│   │   │   │   │   │   ├── video-viewer.component.spec.ts
+│   │   │   │   │   │   ├── pdf-viewer.component.ts           # Presentational: <iframe> + DomSanitizer + download link
+│   │   │   │   │   │   ├── pdf-viewer.component.spec.ts
+│   │   │   │   │   │   ├── markdown-viewer.component.ts      # Presentational: ngx-markdown with prose styling
+│   │   │   │   │   │   ├── markdown-viewer.component.spec.ts
+│   │   │   │   │   │   ├── module-files-list.component.ts    # Presentational: downloadable files with human-readable sizes
+│   │   │   │   │   │   └── module-files-list.component.spec.ts
 │   │   │   │   │   └── course-form/      # Phase 3: Create/edit (Platform Admin + Lecturer with can_edit)
 │   │   │   │   │
 │   │   │   │   │                         # --- Planned (not yet built) ---
-│   │   │   │   ├── content/              # Phase 2B-3C
+│   │   │   │   ├── content/              # Phase 3C
 │   │   │   │   ├── progress/             # Phase 4
 │   │   │   │   ├── quizzes/              # Phase 5A
 │   │   │   │   ├── exams/                # Phase 5C-5D
@@ -408,23 +418,31 @@ Goal: Display courses, lectures, and modules with proper tenant-scoped access.
 - [x] **Tests:** 51 new tests (9 CourseService + 10 CourseCard + 6 CourseListPage + 7 CourseDetailPage + 4 LectureAccordion + 4 ModuleItem + 1 mock factory + new unauthenticated test) — 147 total frontend tests
 
 #### 2B - Module Viewers
-- [ ] Video viewer (Bunny CDN player — just render video_url from module_videos)
-- [ ] PDF viewer (display + download from Supabase Storage via file_url)
-- [ ] Markdown viewer (ngx-markdown with Prism.js syntax highlighting, render from module_markdown.content)
-- [ ] Downloadable files list (module_files — download links)
-- [ ] Module navigation (previous/next within lecture)
-- [ ] Mark-as-complete button (inserts/updates user_progress)
-- [ ] **Tests:** Each viewer component, module navigation
+- [x] Video viewer (HTML5 `<video>` with Bunny CDN URLs, poster thumbnail, duration display)
+- [x] PDF viewer (`<iframe>` + DomSanitizer `bypassSecurityTrustResourceUrl`, download button, page count)
+- [x] Markdown viewer (ngx-markdown@19.1 with Tailwind prose styling, render from module_markdown.content)
+- [x] Downloadable files list (module_files — download links with human-readable KB/MB/GB sizes)
+- [x] Module navigation (cross-lecture prev/next — flattened from courseDetail.lectures)
+- [x] Mark-as-complete button (upsert user_progress with `onConflict: 'user_id,tenant_id,module_id'`, hidden for quiz/exam due to `enforce_quiz_exam_completion` trigger)
+- [x] Quiz/exam: "Coming soon" placeholder in module viewer, non-linkable in module-item
+- [x] Route: `/courses/:courseId/modules/:moduleId` (lazy-loaded ModuleViewerPageComponent)
+- [x] CourseService: `loadModuleViewer()` (2-step: module metadata → type-specific content) + `markModuleComplete()`
+- [x] Module-item: RouterLink for video/pdf/markdown, "Coming soon" for quiz/exam
+- [x] Lecture-accordion + course-detail-page: `courseId` passthrough to module-item
+- [x] **Tests:** 33 new tests (6 CourseService + 3 VideoViewer + 3 PdfViewer + 2 MarkdownViewer + 3 ModuleFilesList + 11 ModuleViewerPage + 4 updated ModuleItem + 1 updated LectureAccordion) — 180 total frontend tests
 
 #### 2C - Content Read RLS Tests
-- [ ] Courses: tenant user sees courses via tenant_courses, cannot see unassigned courses
-- [ ] Lectures: inherits from course access
-- [ ] Modules: inherits from course access (uses denormalized course_id)
-- [ ] Module subtables: videos, pdfs, markdown, files inherit from module → course access
-- [ ] Platform admin: sees all courses
-- [ ] Lecturer: sees assigned courses (cross-tenant)
-- [ ] CSM: sees courses assigned to their tenants
-- [ ] **Tests:** ~40 RLS tests
+- [x] Courses: tenant user sees courses via tenant_courses, cannot see unassigned courses (TEN-005/006/007)
+- [x] Lectures: inherits from course access (INH-001/002)
+- [x] Modules: inherits from course access via denormalized course_id (INH-004/005)
+- [x] Module subtables: videos (INH-007/008), pdfs (INH-011/012), markdown (INH-013/014), files (INH-016/017)
+- [x] Platform admin: sees all courses, lectures, modules, subtables (ROL-011/017/019, INH-009/018)
+- [x] Lecturer: sees assigned courses cross-tenant (ROL-012/018/020, INH-010/019)
+- [x] CSM: sees courses via `courses_select_csm` (ROL-013), known gap — NO CSM SELECT on lectures/modules/subtables (INH-003/006/015)
+- [x] Tenant_courses: tenant isolation (TEN-008/009), platform admin (ROL-015), CSM (ROL-016), cross-tenant (XTA-006)
+- [x] Escalation prevention: learner cannot INSERT/UPDATE/DELETE courses (ESC-004/006/007), lectures (ESC-008/009), modules (ESC-010), tenant_courses (ESC-005)
+- [x] 4 new factory functions in `tests/setup.ts`: createModuleVideo, createModulePdf, createModuleMarkdown, createModuleFile
+- [x] **Tests:** 42 new RLS tests (16 courses + 26 content-hierarchy) — 66 total RLS tests
 
 ---
 
@@ -433,13 +451,13 @@ Goal: Display courses, lectures, and modules with proper tenant-scoped access.
 Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage course content.
 
 #### 3A - Course CRUD
-- [ ] Create course form (Platform Admin only)
-- [ ] Edit course form (Platform Admin + Lecturer with can_edit)
-- [ ] Course metadata: title, description, thumbnail, enrollment type, password (if password_protected), staleness threshold
-- [ ] Assign courses to tenants (Platform Admin — manages tenant_courses)
-- [ ] Delete course (Platform Admin only, cascades)
-- [ ] created_by / updated_by tracking
-- [ ] **Tests:** CourseFormComponent, CourseService
+- [x] Create course form (Platform Admin only)
+- [x] Edit course form (Platform Admin + Lecturer with can_edit)
+- [x] Course metadata: title, description, thumbnail, enrollment type, password (if password_protected), staleness threshold
+- [x] Assign courses to tenants (Platform Admin — manages tenant_courses)
+- [x] Delete course (Platform Admin only, cascades)
+- [x] created_by / updated_by tracking
+- [x] **Tests:** CourseFormComponent, CourseService
 
 #### 3B - Lecture CRUD
 - [ ] Create lecture within course
@@ -1032,7 +1050,7 @@ npm run test:ui             # Interactive browser UI
 **Key Files (source of truth — do NOT duplicate code examples here, they drift):**
 - `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
 - `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
-- `frontend/src/app/__mocks__/` — 9 service mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course)
+- `frontend/src/app/__mocks__/` — 9 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course)
 
 See `CLAUDE.md` § Testing for conventions and patterns.
 

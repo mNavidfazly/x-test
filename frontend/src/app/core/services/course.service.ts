@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import {
   CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem,
+  CourseFormData, TenantSummary, TenantAssignment,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -265,6 +266,85 @@ export class CourseService {
       ...viewer,
       progress: { status: 'completed', completed_at: new Date().toISOString() },
     });
+  }
+
+  // --- Phase 3A: Course CRUD methods ---
+
+  async createCourse(data: CourseFormData): Promise<{ id: string }> {
+    const { data: result, error } = await this.#supabase.client
+      .from('courses')
+      .insert({
+        title: data.title,
+        description: data.description,
+        thumbnail_url: data.thumbnail_url,
+        enrollment_type: data.enrollment_type,
+        password_hash: data.password_hash,
+        staleness_threshold_days: data.staleness_threshold_days,
+      })
+      .select('id')
+      .single();
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to create course'));
+    return { id: result.id };
+  }
+
+  async updateCourse(id: string, data: Partial<CourseFormData>): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('courses')
+      .update(data)
+      .eq('id', id);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update course'));
+  }
+
+  async deleteCourse(id: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('courses')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete course'));
+  }
+
+  async loadTenants(): Promise<TenantSummary[]> {
+    const { data, error } = await this.#supabase.client
+      .from('tenants')
+      .select('id, name, domain, is_master')
+      .order('name');
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load tenants'));
+    return (data ?? []) as TenantSummary[];
+  }
+
+  async loadTenantAssignments(courseId: string): Promise<TenantAssignment[]> {
+    const { data, error } = await this.#supabase.client
+      .from('tenant_courses')
+      .select('tenant_id, tenants(name)')
+      .eq('course_id', courseId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load tenant assignments'));
+    return (data ?? []).map((row) => ({
+      tenant_id: row.tenant_id,
+      tenant_name: (row.tenants as unknown as { name: string } | null)?.name ?? '',
+    }));
+  }
+
+  async assignCourseToTenant(courseId: string, tenantId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('tenant_courses')
+      .insert({ course_id: courseId, tenant_id: tenantId });
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to assign course to tenant'));
+  }
+
+  async removeCourseFromTenant(courseId: string, tenantId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('tenant_courses')
+      .delete()
+      .eq('course_id', courseId)
+      .eq('tenant_id', tenantId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to remove course from tenant'));
   }
 
   async #fetchModuleContent(client: SupabaseClient, moduleId: string, moduleType: string): Promise<ModuleContent> {

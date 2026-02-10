@@ -396,4 +396,148 @@ describe('CourseService', () => {
       expect(service.moduleViewer()!.progress).toBeNull();
     });
   });
+
+  describe('createCourse', () => {
+    it('should insert course and return id', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'new-id' },
+        error: null,
+      });
+
+      const result = await service.createCourse({
+        title: 'New Course',
+        description: 'Desc',
+        thumbnail_url: null,
+        enrollment_type: 'open',
+        password_hash: null,
+        staleness_threshold_days: null,
+      });
+
+      expect(result).toEqual({ id: 'new-id' });
+      expect(supabase.client.from).toHaveBeenCalledWith('courses');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalled();
+    });
+
+    it('should throw on insert error', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'RLS violation' },
+      });
+
+      await expect(service.createCourse({
+        title: 'Test',
+        description: null,
+        thumbnail_url: null,
+        enrollment_type: 'open',
+        password_hash: null,
+        staleness_threshold_days: null,
+      })).rejects.toThrow('RLS violation');
+    });
+  });
+
+  describe('updateCourse', () => {
+    it('should update course by id', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateCourse('c1', { title: 'Updated' });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('courses');
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ title: 'Updated' });
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'c1');
+    });
+
+    it('should throw on update error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Permission denied' } }));
+
+      await expect(service.updateCourse('c1', { title: 'X' })).rejects.toThrow('Permission denied');
+    });
+  });
+
+  describe('deleteCourse', () => {
+    it('should delete course by id', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.deleteCourse('c1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('courses');
+      expect(supabase._mockQueryBuilder.delete).toHaveBeenCalled();
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'c1');
+    });
+
+    it('should throw on delete error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Cannot delete' } }));
+
+      await expect(service.deleteCourse('c1')).rejects.toThrow('Cannot delete');
+    });
+  });
+
+  describe('loadTenants', () => {
+    it('should load and return tenant list', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({
+          data: [
+            { id: 't1', name: 'Alpha', domain: 'alpha.com', is_master: false },
+            { id: 't2', name: 'Calypso', domain: 'calypso-commodities.com', is_master: true },
+          ],
+          error: null,
+        }));
+
+      const tenants = await service.loadTenants();
+
+      expect(tenants).toHaveLength(2);
+      expect(tenants[0].name).toBe('Alpha');
+      expect(tenants[1].is_master).toBe(true);
+      expect(supabase.client.from).toHaveBeenCalledWith('tenants');
+    });
+
+    it('should throw on load error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'No access' } }));
+
+      await expect(service.loadTenants()).rejects.toThrow('No access');
+    });
+  });
+
+  describe('tenant assignment methods', () => {
+    it('should load tenant assignments for a course', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({
+          data: [
+            { tenant_id: 't1', tenants: { name: 'Alpha Corp' } },
+            { tenant_id: 't2', tenants: { name: 'Beta Inc' } },
+          ],
+          error: null,
+        }));
+
+      const assignments = await service.loadTenantAssignments('c1');
+
+      expect(assignments).toHaveLength(2);
+      expect(assignments[0]).toEqual({ tenant_id: 't1', tenant_name: 'Alpha Corp' });
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('course_id', 'c1');
+    });
+
+    it('should assign course to tenant', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.assignCourseToTenant('c1', 't1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('tenant_courses');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({ course_id: 'c1', tenant_id: 't1' });
+    });
+
+    it('should remove course from tenant', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.removeCourseFromTenant('c1', 't1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('tenant_courses');
+      expect(supabase._mockQueryBuilder.delete).toHaveBeenCalled();
+    });
+  });
 });

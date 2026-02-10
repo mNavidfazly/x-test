@@ -3,8 +3,10 @@ import { render, screen } from '@testing-library/angular';
 import { provideRouter } from '@angular/router';
 import { CourseListPageComponent } from './course-list-page.component';
 import { CourseService } from '../../../core/services/course.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { CourseCardComponent } from '../components/course-card.component';
 import { createMockCourseService, createMockCourseWithProgress } from '../../../__mocks__/course.mock';
+import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 
 describe('CourseListPageComponent', () => {
@@ -16,6 +18,7 @@ describe('CourseListPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
 
@@ -30,6 +33,7 @@ describe('CourseListPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
 
@@ -44,6 +48,7 @@ describe('CourseListPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
 
@@ -59,6 +64,7 @@ describe('CourseListPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
 
@@ -78,6 +84,7 @@ describe('CourseListPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
 
@@ -93,9 +100,40 @@ describe('CourseListPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
 
     expect(screen.getByText('Failed to load')).toBeTruthy();
+  });
+
+  it('should show Create Course button for platform admin', async () => {
+    const courseService = createMockCourseService();
+
+    await render(CourseListPageComponent, {
+      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+      ],
+    });
+
+    expect(screen.getByText('Create Course')).toBeTruthy();
+  });
+
+  it('should hide Create Course button for non-admin', async () => {
+    const courseService = createMockCourseService();
+
+    await render(CourseListPageComponent, {
+      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+      ],
+    });
+
+    expect(screen.queryByText('Create Course')).toBeNull();
   });
 });

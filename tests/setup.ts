@@ -504,6 +504,88 @@ export async function createLecturerAssignment(
 }
 
 // ---------------------------------------------------------------------------
+// Content Subtable Factories
+// ---------------------------------------------------------------------------
+
+export async function createModuleVideo(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { videoUrl?: string; thumbnailUrl?: string; duration?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('module_videos')
+    .insert({
+      module_id: moduleId,
+      video_url: overrides.videoUrl ?? `https://cdn.example.com/${faker.string.alphanumeric(12)}.mp4`,
+      thumbnail_url: overrides.thumbnailUrl ?? null,
+      duration: overrides.duration ?? 300,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create module_video: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createModulePdf(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { fileUrl?: string; fileName?: string; pageCount?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('module_pdfs')
+    .insert({
+      module_id: moduleId,
+      file_url: overrides.fileUrl ?? `https://storage.example.com/${faker.string.alphanumeric(12)}.pdf`,
+      file_name: overrides.fileName ?? `${faker.system.fileName()}.pdf`,
+      page_count: overrides.pageCount ?? 10,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create module_pdf: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createModuleMarkdown(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { content?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('module_markdown')
+    .insert({
+      module_id: moduleId,
+      content: overrides.content ?? `# ${faker.lorem.sentence()}\n\n${faker.lorem.paragraphs(2)}`,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create module_markdown: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createModuleFile(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { fileUrl?: string; fileName?: string; fileSize?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('module_files')
+    .insert({
+      module_id: moduleId,
+      file_url: overrides.fileUrl ?? `https://storage.example.com/${faker.string.alphanumeric(12)}.zip`,
+      file_name: overrides.fileName ?? faker.system.fileName(),
+      file_size: overrides.fileSize ?? 1024000,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create module_file: ${error.message}`);
+  return { id: data.id };
+}
+
+// ---------------------------------------------------------------------------
 // Custom Vitest Matcher: toDenyAccess
 // ---------------------------------------------------------------------------
 //

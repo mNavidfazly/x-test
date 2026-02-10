@@ -1,16 +1,27 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { LucideAngularModule, BookOpen, Loader2 } from 'lucide-angular';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { LucideAngularModule, BookOpen, Loader2, Plus } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { CourseCardComponent } from '../components/course-card.component';
 
 @Component({
   selector: 'app-course-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, CourseCardComponent],
+  imports: [RouterLink, LucideAngularModule, CourseCardComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
-      <h1 class="text-xl font-bold text-slate-900 mb-6">My Courses</h1>
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-xl font-bold text-slate-900">My Courses</h1>
+        @if (isPlatformAdmin()) {
+          <a routerLink="/courses/new"
+             class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 inline-flex items-center gap-2 text-sm">
+            <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon>
+            Create Course
+          </a>
+        }
+      </div>
 
       @if (courseService.loading()) {
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -46,8 +57,13 @@ import { CourseCardComponent } from '../components/course-card.component';
 })
 export class CourseListPageComponent implements OnInit {
   readonly courseService = inject(CourseService);
-  readonly icons = { BookOpen, Loader2 };
+  #auth = inject(AuthService);
+  readonly icons = { BookOpen, Loader2, Plus };
   readonly skeletons = [1, 2, 3, 4, 5, 6];
+
+  readonly isPlatformAdmin = computed(() =>
+    this.#auth.currentUser()?.claims?.is_platform_admin ?? false,
+  );
 
   ngOnInit() {
     this.courseService.loadCourses();
