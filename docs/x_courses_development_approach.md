@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00014` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00017` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -103,7 +103,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00014                     # Complete schema (30 tables, ~236 RLS policies, auth hooks, security hardening)
+│       └── 00001-00017                     # Complete schema (30 tables, ~236 RLS policies, auth hooks, security hardening, Keycloak SSO)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -115,6 +115,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   ├── routers/
 │   │   │   ├── __init__.py
 │   │   │   ├── health.py                 # GET /api/health
+│   │   │   ├── auth.py                   # POST /api/auth/resolve-tenant (10/min), POST /api/auth/reset-password (5/min)
 │   │   │   ├── invite.py                 # POST /api/invite
 │   │   │   ├── reminders.py              # POST /api/reminders/send
 │   │   │   └── quiz_results.py           # POST /api/quiz-results/external
@@ -122,8 +123,9 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   ├── services/
 │   │   │   ├── __init__.py
 │   │   │   ├── supabase.py               # Supabase Python client (service role)
+│   │   │   ├── tenant.py                 # Tenant resolution (email domain → tenant + auth methods + idp_hint)
 │   │   │   ├── email.py                  # Calypso SMTP client
-│   │   │   └── auth.py                   # JWT verification
+│   │   │   └── auth.py                   # JWT verification (HS256)
 │   │   │
 │   │   └── models/
 │   │       ├── __init__.py
@@ -139,33 +141,34 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── frontend/                               # Angular app (Vercel)
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── __mocks__/                # Test mocks
+│   │   │   ├── __mocks__/                # Test mocks (9 factories)
 │   │   │   │   ├── supabase.mock.ts      # Multi-tenant aware mock with JWT claims
-│   │   │   │   ├── auth.mock.ts
+│   │   │   │   ├── auth.mock.ts          # Session mock with role switching
 │   │   │   │   ├── api.mock.ts           # FastAPI client mock
 │   │   │   │   ├── toast.mock.ts
 │   │   │   │   ├── router.mock.ts
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
-│   │   │   │   └── profile.mock.ts
+│   │   │   │   ├── profile.mock.ts
+│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail factories
 │   │   │   │
 │   │   │   ├── core/
 │   │   │   │   ├── services/
 │   │   │   │   │   ├── supabase.service.ts
-│   │   │   │   │   ├── auth.service.ts   # Keycloak SSO + email/password + magic link OTP (per-tenant)
-│   │   │   │   │   ├── api.service.ts    # FastAPI client
-│   │   │   │   │   └── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
+│   │   │   │   │   ├── auth.service.ts    # Keycloak SSO + email/password + magic link OTP (per-tenant)
+│   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers)
+│   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
+│   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
+│   │   │   │   │   ├── course.service.ts  # ✅ 4 parallel queries, user_id scoping, union type casts
+│   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
-│   │   │   │   │   └── role.guard.ts     # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
+│   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
-│   │   │   │       ├── course.model.ts
-│   │   │   │       ├── module.model.ts
+│   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, union types
 │   │   │   │       ├── profile.model.ts
-│   │   │   │       ├── tenant.model.ts
-│   │   │   │       ├── quiz.model.ts
-│   │   │   │       ├── exam.model.ts
-│   │   │   │       └── ...
+│   │   │   │       └── tenant.model.ts
 │   │   │   │
 │   │   │   ├── layout/
 │   │   │   │   ├── sidebar/
@@ -185,10 +188,20 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── accept-invite/    # Set password flow
 │   │   │   │   │   └── access-request/   # Request access page
 │   │   │   │   │
-│   │   │   │   ├── courses/
-│   │   │   │   │   ├── course-list/      # Enrolled courses with progress bars
-│   │   │   │   │   ├── course-detail/    # Lecture accordion, module list
-│   │   │   │   │   └── course-form/      # Create/edit (Platform Admin + Lecturer with can_edit)
+│   │   │   │   ├── courses/               # ✅ Phase 2A complete
+│   │   │   │   │   ├── pages/
+│   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
+│   │   │   │   │   │   ├── course-list-page.component.spec.ts
+│   │   │   │   │   │   ├── course-detail-page.component.ts  # Smart: ActivatedRoute params, LectureAccordions
+│   │   │   │   │   │   └── course-detail-page.component.spec.ts
+│   │   │   │   │   ├── components/
+│   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
+│   │   │   │   │   │   ├── course-card.component.spec.ts
+│   │   │   │   │   │   ├── lecture-accordion.component.ts    # Presentational: collapsible, module list, X/Y count
+│   │   │   │   │   │   ├── lecture-accordion.component.spec.ts
+│   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge
+│   │   │   │   │   │   └── module-item.component.spec.ts
+│   │   │   │   │   └── course-form/      # Phase 3: Create/edit (Platform Admin + Lecturer with can_edit)
 │   │   │   │   │
 │   │   │   │   ├── content/
 │   │   │   │   │   ├── lecture-form/     # Lecture CRUD with sort ordering
@@ -245,7 +258,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │       └── services/
 │   │   │           └── toast.service.ts
 │   │   │
-│   │   └── test-setup.ts               # Angular TestBed initialization
+│   │   └── test-setup.mjs              # Angular TestBed initialization (MUST be .mjs, not .ts)
 │   │
 │   ├── vitest.config.mts               # Frontend test config
 │   ├── tailwind.config.js              # Tailwind v3
@@ -338,7 +351,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 - [x] Setup SMTP client (Calypso SMTP via Office 365 — `smtp.office365.com:587`, `aiosmtplib`)
 - [x] Create health check endpoint (`GET /api/health` — returns status + Supabase connectivity)
 - [x] Write Dockerfile (Python 3.11-slim, uvicorn)
-- [x] **Tests:** 11 pytest tests passing (health, auth/JWT, config validation)
+- [x] **Tests:** 46 pytest tests passing (health, auth/JWT, config, tenant service, resolve-tenant, reset-password, idp hint, auth methods)
 - [x] Commit and push `backend/` to GitHub
 - [x] Connect Railway to GitHub repo (root directory: `backend/`, deploy branch: `main`, auto-deploy on push)
 - [x] Verify connectivity to Supabase (health endpoint returns `"supabase": "connected"`)
@@ -419,16 +432,17 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 Goal: Display courses, lectures, and modules with proper tenant-scoped access.
 
 #### 2A - Course List & Detail
-- [ ] Course list page (enrolled courses for current user's tenant)
-- [ ] Progress bar per course (frontend calculation: completed_modules / total_modules)
-- [ ] Course detail page:
-  - [ ] Course metadata (title, description, thumbnail, enrollment type)
-  - [ ] Lecture accordion (sorted by sort_order)
-  - [ ] Module list within each lecture (sorted by sort_order)
-  - [ ] Module type icons (video, PDF, markdown, quiz, exam)
-  - [ ] Completion status indicators per module
-- [ ] CourseService (Supabase queries with tenant_courses join for access)
-- [ ] **Tests:** CourseListComponent, CourseDetailComponent
+- [x] Course list page (enrolled courses for current user's tenant)
+- [x] Progress bar per course (frontend calculation: completed_modules / total_modules)
+- [x] Course detail page:
+  - [x] Course metadata (title, description, thumbnail, enrollment type)
+  - [x] Lecture accordion (sorted by sort_order)
+  - [x] Module list within each lecture (sorted by sort_order)
+  - [x] Module type icons (video, PDF, markdown, quiz, exam)
+  - [x] Completion status indicators per module
+- [x] CourseService (4 parallel Supabase queries — courses, modules, user_progress, course_enrollments — with `.eq('user_id', userId)` on user-scoped tables)
+- [x] Union types at service boundary: `EnrollmentType`, `ModuleType`, `ProgressStatus` (Supabase returns `string`, cast with `as` at service layer)
+- [x] **Tests:** 51 new tests (9 CourseService + 10 CourseCard + 6 CourseListPage + 7 CourseDetailPage + 4 LectureAccordion + 4 ModuleItem + 1 mock factory + new unauthenticated test) — 147 total frontend tests
 
 #### 2B - Module Viewers
 - [ ] Video viewer (Bunny CDN player — just render video_url from module_videos)
@@ -875,6 +889,8 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 | Endpoint | Method | Purpose | Auth |
 |----------|--------|---------|------|
 | `/api/health` | GET | Health check | None |
+| `/api/auth/resolve-tenant` | POST | Resolve email domain → tenant + allowed auth methods + idp_hint | None (rate-limited 10/min/IP) |
+| `/api/auth/reset-password` | POST | Validate tenant allows email_password, then forward to Supabase admin API | None (rate-limited 5/min/IP) |
 | `/api/invite` | POST | Send invitation email (Calypso SMTP) | JWT (Tenant Admin, Platform Admin) |
 | `/api/reminders/send` | POST | Send reminder emails (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
 | `/api/quiz-results/external` | POST | External quiz results webhook | API Key / Webhook Signature |
@@ -1144,19 +1160,20 @@ export default defineConfig({
 });
 ```
 
-**test-setup.ts:**
-```typescript
+**test-setup.mjs** (MUST be `.mjs`, NOT `.ts` — Angular Vite plugin silently swallows `.ts` setupFiles):
+```javascript
 import '@angular/compiler';
 import '@analogjs/vitest-angular/setup-zone';
-import { setupTestBed } from '@analogjs/vitest-angular/setup-testbed';
+import { TestBed } from '@angular/core/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 
-setupTestBed({ zoneless: false });
+TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
 ```
 
 **Key Files:**
 - `frontend/vitest.config.mts` - Test configuration
-- `frontend/src/test-setup.ts` - Angular TestBed initialization
-- `frontend/src/app/__mocks__/` - Service mocks
+- `frontend/src/test-setup.mjs` - Angular TestBed initialization (`.mjs` required)
+- `frontend/src/app/__mocks__/` - 9 service mock factories
 
 **Supabase Mock (Multi-Tenant Aware):**
 ```typescript
@@ -1647,14 +1664,14 @@ const PERMISSION_MATRIX: MatrixRow[] = [
 ### Phase 1: Foundation
 - [x] Supabase setup + schema + RLS + multi-provider auth (Keycloak SSO + email/password + magic link)
 - [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
-- [x] FastAPI setup + deploy to Railway (11 tests, health endpoint verified)
+- [x] FastAPI setup + deploy to Railway (46 tests, health endpoint verified)
 - [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-courses-v2.vercel.app)
-- [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 8 mock factories)
+- [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 9 mock factories)
 - [x] Auth flow (Keycloak SSO + email/password + magic link OTP, per-tenant config, guards, access request) + tests (38 backend + 92 frontend)
 - [x] Layout shell (role-aware sidebar, notification bell, user menu, ProfileService, mobile responsive) + tests (25 new)
 
 ### Phase 2: Content Read
-- [ ] Course list + detail + tests
+- [x] Course list + detail + tests (147 frontend tests, 13 new files, CourseService with user-scoped queries)
 - [ ] Module viewers (video, PDF, markdown, files, navigation, mark complete) + tests
 - [ ] Content Read RLS tests (~40 tests)
 
