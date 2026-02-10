@@ -1,7 +1,11 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
-import { CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType } from '../models/course.model';
+import {
+  CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
+  ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem,
+} from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
@@ -10,11 +14,13 @@ export class CourseService {
 
   #courses = signal<CourseWithProgress[]>([]);
   #courseDetail = signal<CourseDetail | null>(null);
+  #moduleViewer = signal<ModuleViewerData | null>(null);
   #loading = signal(false);
   #error = signal('');
 
   readonly courses = this.#courses.asReadonly();
   readonly courseDetail = this.#courseDetail.asReadonly();
+  readonly moduleViewer = this.#moduleViewer.asReadonly();
   readonly loading = this.#loading.asReadonly();
   readonly error = this.#error.asReadonly();
 
@@ -162,6 +168,153 @@ export class CourseService {
     } finally {
       this.#loading.set(false);
     }
+  }
+
+  async loadModuleViewer(courseId: string, moduleId: string) {
+    this.#loading.set(true);
+    this.#error.set('');
+    this.#moduleViewer.set(null);
+
+    try {
+      const client = this.#supabase.client;
+      const userId = this.#auth.currentUser()?.id;
+
+      if (!userId) {
+        this.#error.set('Not authenticated');
+        return;
+      }
+
+      // Step 1: Fetch module metadata
+      const moduleRes = await client
+        .from('modules')
+        .select('id, title, description, module_type, sort_order, lecture_id, course_id')
+        .eq('id', moduleId)
+        .single();
+
+      if (moduleRes.error) throw moduleRes.error;
+
+      const mod = moduleRes.data as {
+        id: string; title: string; description: string | null;
+        module_type: string; sort_order: number; lecture_id: string; course_id: string;
+      };
+
+      // Step 2: Fetch content + files + progress in parallel
+      const contentPromise = this.#fetchModuleContent(client, moduleId, mod.module_type);
+      const [filesRes, progressRes] = await Promise.all([
+        client.from('module_files').select('id, file_url, file_name, file_size').eq('module_id', moduleId),
+        client.from('user_progress').select('status, completed_at').eq('module_id', moduleId).eq('user_id', userId).maybeSingle(),
+      ]);
+      const content = await contentPromise;
+
+      if (filesRes.error) throw filesRes.error;
+      if (progressRes.error) throw progressRes.error;
+
+      // Step 3: Build navigation from courseDetail
+      if (!this.#courseDetail() || this.#courseDetail()!.id !== courseId) {
+        await this.loadCourseDetail(courseId);
+      }
+      const navigation = this.#buildNavigation(moduleId);
+
+      const module: ModuleDetail = {
+        ...mod,
+        module_type: mod.module_type as ModuleType,
+      };
+
+      const files: ModuleFile[] = (filesRes.data ?? []).map((f: { id: string; file_url: string; file_name: string; file_size: number | null }) => f);
+
+      const progress: ModuleProgress | null = progressRes.data
+        ? { status: (progressRes.data as { status: string }).status as ModuleProgress['status'], completed_at: (progressRes.data as { completed_at: string | null }).completed_at }
+        : null;
+
+      this.#moduleViewer.set({ module, content, files, progress, navigation });
+    } catch (err) {
+      this.#error.set(this.#extractErrorMessage(err, 'Failed to load module'));
+    } finally {
+      this.#loading.set(false);
+    }
+  }
+
+  async markModuleComplete(moduleId: string) {
+    const viewer = this.#moduleViewer();
+    if (!viewer) return;
+
+    const userId = this.#auth.currentUser()?.id;
+    const tenantId = this.#auth.currentUser()?.claims?.tenant_id;
+    if (!userId || !tenantId) return;
+
+    const { error } = await this.#supabase.client
+      .from('user_progress')
+      .upsert({
+        user_id: userId,
+        tenant_id: tenantId,
+        course_id: viewer.module.course_id,
+        lecture_id: viewer.module.lecture_id,
+        module_id: moduleId,
+        status: 'completed' as const,
+        completed_at: new Date().toISOString(),
+        marked_by: 'user' as const,
+      }, { onConflict: 'user_id,tenant_id,module_id' });
+
+    if (error) {
+      this.#error.set(this.#extractErrorMessage(error, 'Failed to mark complete'));
+      return;
+    }
+
+    // Update local state
+    this.#moduleViewer.set({
+      ...viewer,
+      progress: { status: 'completed', completed_at: new Date().toISOString() },
+    });
+  }
+
+  async #fetchModuleContent(client: SupabaseClient, moduleId: string, moduleType: string): Promise<ModuleContent> {
+    switch (moduleType) {
+      case 'video': {
+        const res = await client.from('module_videos').select('video_url, thumbnail_url, duration').eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as { video_url: string; thumbnail_url: string | null; duration: number | null };
+        return { type: 'video', data: d };
+      }
+      case 'pdf': {
+        const res = await client.from('module_pdfs').select('file_url, file_name, page_count').eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as { file_url: string; file_name: string; page_count: number | null };
+        return { type: 'pdf', data: d };
+      }
+      case 'markdown': {
+        const res = await client.from('module_markdown').select('content').eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as { content: string };
+        return { type: 'markdown', data: d };
+      }
+      default:
+        return { type: moduleType as 'quiz' | 'exam', data: null };
+    }
+  }
+
+  #buildNavigation(moduleId: string): ModuleViewerData['navigation'] {
+    const detail = this.#courseDetail();
+    if (!detail) return { prev: null, next: null, current: 1, total: 1 };
+
+    const flatModules: ModuleNavItem[] = [];
+    for (const lecture of detail.lectures) {
+      for (const mod of lecture.modules) {
+        flatModules.push({
+          id: mod.id,
+          title: mod.title,
+          module_type: mod.module_type,
+          lectureTitle: lecture.title,
+        });
+      }
+    }
+
+    const idx = flatModules.findIndex(m => m.id === moduleId);
+    return {
+      prev: idx > 0 ? flatModules[idx - 1] : null,
+      next: idx < flatModules.length - 1 ? flatModules[idx + 1] : null,
+      current: idx + 1,
+      total: flatModules.length,
+    };
   }
 
   #extractErrorMessage(err: unknown, fallback: string): string {

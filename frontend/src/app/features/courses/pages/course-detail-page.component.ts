@@ -84,6 +84,7 @@ const BADGE_LABELS: Record<string, string> = {
             @for (lecture of courseService.courseDetail()!.lectures; track lecture.id) {
               <app-lecture-accordion
                 [lecture]="lecture"
+                [courseId]="courseService.courseDetail()!.id"
                 [progressMap]="courseService.courseDetail()!.progressMap"
               />
             }

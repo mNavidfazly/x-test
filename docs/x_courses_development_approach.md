@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00017` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00018` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -23,7 +23,7 @@ This document describes the development approach for building X-Courses v2 (Mult
 
 | Layer | Technology | Hosting |
 |-------|------------|---------|
-| **Database** | Supabase PostgreSQL + RLS (~236 policies) | Supabase Cloud |
+| **Database** | Supabase PostgreSQL + RLS (~242 policies) | Supabase Cloud |
 | **Auth** | Supabase Auth (Keycloak SSO for Calypso + onboarded clients, email/password + magic link per-tenant) | Supabase Cloud |
 | **Storage** | Supabase Storage (PDFs, files, avatars, exam submissions) | Supabase Cloud |
 | **Realtime** | Supabase Realtime (notifications) | Supabase Cloud |
@@ -57,10 +57,10 @@ This document describes the development approach for building X-Courses v2 (Mult
 ┌─────────────────────────────────────┐    ┌───────────────────────────────────┐
 │      Supabase Cloud                 │    │        FastAPI (Railway)          │
 │  ┌───────────┐  ┌───────────┐       │    │                                   │
-│  │ PostgreSQL│  │  Storage  │       │    │  POST /api/invite                 │
-│  │ + RLS     │  │ (PDFs,    │       │    │  POST /api/reminders/send         │
-│  │ + Triggers│  │  exams,   │       │    │  POST /api/quiz-results/external  │
-│  └───────────┘  │  avatars) │       │    │  GET  /api/health                 │
+│  │ PostgreSQL│  │  Storage  │       │    │  GET  /api/health                 │
+│  │ + RLS     │  │ (PDFs,    │       │    │  POST /api/auth/resolve-tenant    │
+│  │ + Triggers│  │  exams,   │       │    │  POST /api/auth/reset-password    │
+│  └───────────┘  │  avatars) │       │    │  POST /api/invite       (planned) │
 │  ┌───────────┐  └───────────┘       │    │                                   │
 │  │   Auth    │  ┌───────────┐       │    └───────────────────────────────────┘
 │  │(Keycloak+ │  │ Realtime  │       │                    │
@@ -83,9 +83,11 @@ This document describes the development approach for building X-Courses v2 (Mult
 **Key Principles:**
 - **Angular → Supabase directly** for all CRUD operations, auth, storage uploads, and Realtime subscriptions
 - **Angular → FastAPI** for:
-  - User invitations (sends email via Calypso SMTP)
-  - Reminder emails (sends via Calypso SMTP)
-  - External quiz results webhook (receives from external quiz platform)
+  - Tenant resolution (email → tenant + auth methods + IdP hint)
+  - Password reset proxy (validates tenant allows email_password)
+  - User invitations (planned — sends email via Calypso SMTP)
+  - Reminder emails (planned — sends via Calypso SMTP)
+  - External quiz results webhook (planned — receives from external quiz platform)
 - **Notifications** are created automatically via PostgreSQL triggers (SECURITY DEFINER)
 - **Videos** are hosted on Bunny CDN — only URLs are stored in the database
 - **Deployment** is git-based: push to `main` on GitHub → Vercel auto-deploys `frontend/`, Railway auto-deploys `backend/`
@@ -103,7 +105,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00017                     # Complete schema (30 tables, ~236 RLS policies, auth hooks, security hardening, Keycloak SSO)
+│       └── 00001-00018                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -115,10 +117,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   ├── routers/
 │   │   │   ├── __init__.py
 │   │   │   ├── health.py                 # GET /api/health
-│   │   │   ├── auth.py                   # POST /api/auth/resolve-tenant (10/min), POST /api/auth/reset-password (5/min)
-│   │   │   ├── invite.py                 # POST /api/invite
-│   │   │   ├── reminders.py              # POST /api/reminders/send
-│   │   │   └── quiz_results.py           # POST /api/quiz-results/external
+│   │   │   └── auth.py                   # POST /api/auth/resolve-tenant (10/min), POST /api/auth/reset-password (5/min)
+│   │   │   # Planned: invite.py (Phase 9B), reminders.py (Phase 9D), quiz_results.py (Phase 5B)
 │   │   │
 │   │   ├── services/
 │   │   │   ├── __init__.py
@@ -185,8 +185,11 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   ├── features/
 │   │   │   │   ├── auth/
 │   │   │   │   │   ├── login/            # Tenant-aware: Keycloak SSO + email/password + magic link (3-step OTP)
-│   │   │   │   │   ├── accept-invite/    # Set password flow
+│   │   │   │   │   ├── callback/         # Auth callback (handles invite links + SSO redirects)
+│   │   │   │   │   ├── reset-password/   # Password reset (pre-populates email from query param)
 │   │   │   │   │   └── access-request/   # Request access page
+│   │   │   │   │
+│   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
 │   │   │   │   ├── courses/               # ✅ Phase 2A complete
 │   │   │   │   │   ├── pages/
@@ -203,60 +206,21 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   └── module-item.component.spec.ts
 │   │   │   │   │   └── course-form/      # Phase 3: Create/edit (Platform Admin + Lecturer with can_edit)
 │   │   │   │   │
-│   │   │   │   ├── content/
-│   │   │   │   │   ├── lecture-form/     # Lecture CRUD with sort ordering
-│   │   │   │   │   ├── module-form/      # 5 module types, Tiptap editor, file uploads
-│   │   │   │   │   └── module-viewers/
-│   │   │   │   │       ├── video-viewer/     # Bunny CDN player
-│   │   │   │   │       ├── pdf-viewer/       # PDF display + download
-│   │   │   │   │       ├── markdown-viewer/  # ngx-markdown + Prism.js
-│   │   │   │   │       └── module-navigation/ # Previous/next, mark-as-complete
-│   │   │   │   │
-│   │   │   │   ├── progress/
-│   │   │   │   │   ├── progress-dashboard/  # Role-scoped views (5 variants)
-│   │   │   │   │   └── progress-tracking/   # Manual marking, frontend % calculation
-│   │   │   │   │
-│   │   │   │   ├── quizzes/
-│   │   │   │   │   ├── quiz-taking/     # 6 question type renderers, timer, randomization
-│   │   │   │   │   └── quiz-builder/    # Questions CRUD, options, correct answers
-│   │   │   │   │
-│   │   │   │   ├── exams/
-│   │   │   │   │   ├── exam-module/     # Download + timer + upload + deadline
-│   │   │   │   │   └── exam-grading/    # Lecturer: score + feedback, exam reset
-│   │   │   │   │
-│   │   │   │   ├── comments/
-│   │   │   │   │   ├── comment-list/    # Tenant-isolated, expert badges
-│   │   │   │   │   └── ask-expert/      # Modal + My Questions page
-│   │   │   │   │
-│   │   │   │   ├── issues/
-│   │   │   │   │   ├── issue-form/      # Type selection, description
-│   │   │   │   │   └── issue-dashboard/ # Role-scoped, status workflow
-│   │   │   │   │
-│   │   │   │   ├── notifications/
-│   │   │   │   │   ├── notification-bell/  # Unread count, Realtime subscription
-│   │   │   │   │   └── notification-list/  # All notifications, mark as read
-│   │   │   │   │
-│   │   │   │   └── admin/
-│   │   │   │       ├── tenants/         # CRUD, course assignment
-│   │   │   │       ├── users/           # Invite, role changes, profiles
-│   │   │   │       ├── assignments/     # CSM + Lecturer assignment management
-│   │   │   │       ├── access-requests/ # Approve/reject, domain routing
-│   │   │   │       └── staleness/       # Content staleness dashboard
+│   │   │   │   │                         # --- Planned (not yet built) ---
+│   │   │   │   ├── content/              # Phase 2B-3C
+│   │   │   │   ├── progress/             # Phase 4
+│   │   │   │   ├── quizzes/              # Phase 5A
+│   │   │   │   ├── exams/                # Phase 5C-5D
+│   │   │   │   ├── comments/             # Phase 6
+│   │   │   │   ├── issues/               # Phase 7
+│   │   │   │   ├── notifications/        # Phase 8
+│   │   │   │   └── admin/                # Phase 9
 │   │   │   │
 │   │   │   └── shared/
-│   │   │       ├── components/
-│   │   │       │   ├── stub-page.component.ts  # "Coming soon" placeholder for unbuilt feature routes
-│   │   │       │   ├── data-table/
-│   │   │       │   ├── confirmation-dialog/
-│   │   │       │   ├── loading-spinner/
-│   │   │       │   ├── empty-state/
-│   │   │       │   ├── badge/           # Role badges, status badges
-│   │   │       │   ├── file-upload/
-│   │   │       │   └── module-type-icon/
-│   │   │       ├── pipes/
-│   │   │       │   └── date-format.pipe.ts
-│   │   │       └── services/
-│   │   │           └── toast.service.ts
+│   │   │       └── components/
+│   │   │           └── stub-page.component.ts  # "Coming soon" placeholder for unbuilt feature routes
+│   │   │           # Planned (Phase 10): data-table, confirmation-dialog, loading-spinner,
+│   │   │           # empty-state, badge, file-upload, module-type-icon, toast.service, date-format.pipe
 │   │   │
 │   │   └── test-setup.mjs              # Angular TestBed initialization (MUST be .mjs, not .ts)
 │   │
@@ -307,13 +271,12 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
   - [x] `git init` + create `.gitignore`
   - [x] Create private GitHub repo — `TereschenkoAI/x-courses-v2`
   - [x] Push initial commit with `docs/` and `supabase/` folders
-- [x] Run database migrations — all 14 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes missing `SET search_path = public` on `custom_access_token_hook`)
+- [x] Run database migrations — all 18 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant)
 - [ ] Configure auth:
   - [x] Keycloak SSO (for @calypso-commodities.com domain + onboarded clients) — via `calypso-xcourses` client in "customers" realm
   - [x] Enable email/password auth — enabled by default, confirmed via `config push`
   - [x] Enable magic link auth — implicit with email provider (uses `signInWithOtp`)
-  - [x] Disable public registration — `enable_signup = false` in config.toml, pushed via `supabase config push`
-  - [x] Disable public email signup — covered by `enable_signup = false`
+  - [x] Disable public registration + email signup — `enable_signup = false` in config.toml, pushed via `supabase config push`
   - [x] Set magic link / OTP expiration to 15 minutes — `otp_expiry = 900` in config.toml
   - [x] Use OTP code template — all 4 email templates use `{{ .Token }}` (magic_link, confirmation, invite, recovery)
   - [x] Configure per-tenant auth methods in `tenants.settings` — Calypso set to `["keycloak_sso","email_password","magic_link"]`
@@ -324,7 +287,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 - [x] Verify master tenant seed data (Calypso, is_master=true, domain='calypso-commodities.com')
 - [x] Enable Realtime for `notifications` table
 - [x] Verify storage buckets created (avatars, course-files, exam-submissions)
-- [x] Enable pg_cron — 4 jobs scheduled: orphaned-users cleanup (daily 3AM), exam-deadline reminder (hourly), content-staleness check (daily midnight), cron-history cleanup (weekly)
+- [x] Enable pg_cron — 2 cron jobs defined in migrations (exam-deadline reminder hourly, content-staleness check daily). `cleanup_orphaned_auth_users` function exists (00013) but not scheduled as cron. All jobs commented out in migration files, enabled via Dashboard.
 - [x] Note credentials — `.env.example` + `.env` created, API keys retrieved via CLI
 
 #### 1B - RLS Test Infrastructure
@@ -731,7 +694,7 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [ ] **Tests:** NotificationService, NotificationBellComponent, NotificationListComponent
 
 #### 8B - Verify Notification Triggers
-All 10 trigger functions in the schema should be verified working:
+All 13 trigger functions in the schema should be verified working:
 
 | # | Trigger | Table | Event | Recipients |
 |---|---------|-------|-------|------------|
@@ -745,6 +708,9 @@ All 10 trigger functions in the schema should be verified working:
 | 8 | notify_new_exam_submission | exam_submissions | INSERT | Lecturers with can_grade |
 | 9 | notify_new_issue | issues | INSERT | Lecturers + CSMs + Platform Admins (deduplicated) |
 | 10 | notify_new_access_request | access_requests | INSERT | Tenant admins (if known domain) + Platform admins |
+| 11 | notify_issue_resolved | issues | UPDATE (status→resolved) | Reporter |
+| 12 | notify_exam_reset | exam_submissions | DELETE | Student |
+| 13 | notify_access_request_reviewed | access_requests | UPDATE (status changed) | Requester + admins |
 
 Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 | Job | Schedule | What |
@@ -891,9 +857,9 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 | `/api/health` | GET | Health check | None |
 | `/api/auth/resolve-tenant` | POST | Resolve email domain → tenant + allowed auth methods + idp_hint | None (rate-limited 10/min/IP) |
 | `/api/auth/reset-password` | POST | Validate tenant allows email_password, then forward to Supabase admin API | None (rate-limited 5/min/IP) |
-| `/api/invite` | POST | Send invitation email (Calypso SMTP) | JWT (Tenant Admin, Platform Admin) |
-| `/api/reminders/send` | POST | Send reminder emails (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
-| `/api/quiz-results/external` | POST | External quiz results webhook | API Key / Webhook Signature |
+| `/api/invite` | POST | *Planned (Phase 9B)* — Send invitation email (Calypso SMTP) | JWT (Tenant Admin, Platform Admin) |
+| `/api/reminders/send` | POST | *Planned (Phase 9D)* — Send reminder emails (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
+| `/api/quiz-results/external` | POST | *Planned (Phase 5B)* — External quiz results webhook | API Key / Webhook Signature |
 
 **Note:** All CRUD operations go directly from Angular to Supabase. FastAPI is only used for operations requiring:
 - Server-side email sending (SMTP)
@@ -902,53 +868,12 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 
 ---
 
-## 5. Supabase Direct Operations (from Angular)
+## 5. Data Flow Summary
 
-| Operation | Table(s) | Notes |
-|-----------|----------|-------|
-| Login (Keycloak SSO) | auth | Supabase Auth with Keycloak provider (Calypso + onboarded clients) |
-| Login (Email/Magic Link) | auth | Supabase Auth |
-| Accept Invite | auth | Set password |
-| List Courses | courses + tenant_courses | RLS filters by tenant |
-| Get Course Detail | courses + lectures + modules | With subtable data |
-| Create/Edit Course | courses | Platform Admin / Lecturer can_edit |
-| CRUD Lectures | lectures | Via course access |
-| CRUD Modules | modules + subtables | With type-specific subtable |
-| CRUD Quiz Questions | quiz_questions + quiz_question_options | Via quiz → module → course |
-| Enroll in Course | course_enrollments | Self-enroll or admin-enroll |
-| Track Progress | user_progress | Mark complete, auto-mark |
-| Read Progress Dashboard | user_progress | Role-scoped SELECT |
-| Take Quiz | quiz_attempts + quiz_attempt_answers | Own insert + auto-grade |
-| Submit Exam | exam_submissions | Own insert with deadline |
-| Grade Exam | exam_submissions | Lecturer UPDATE (score, feedback) |
-| CRUD Comments | comments + comment_replies | Tenant-isolated |
-| Ask Expert | expert_questions | Own INSERT |
-| Answer Expert Question | expert_questions | Lecturer UPDATE |
-| Report Issue | issues | Own INSERT |
-| Manage Issue | issues | Lecturer/Admin UPDATE |
-| Read Notifications | notifications | Own SELECT |
-| Mark Notification Read | notifications | Own UPDATE |
-| CRUD Tenants | tenants | Platform Admin |
-| Manage Tenant Courses | tenant_courses | Platform Admin |
-| CRUD CSM Assignments | csm_tenant_assignments | Platform Admin |
-| CRUD Lecturer Assignments | lecturer_course_assignments | Platform Admin |
-| Manage Access Requests | access_requests | Platform Admin / Tenant Admin |
-| Upload Files | storage (course-files, exam-submissions, avatars) | Role-based bucket policies |
-
----
-
-## 5.1 Supabase Realtime Subscriptions
-
-Angular subscribes to real-time changes for live updates:
-
-| Subscription | Table | Filter | Purpose |
-|-------------|-------|--------|---------|
-| Notifications | notifications | `user_id=eq.{currentUserId}` | New notification toasts + bell count |
-
-**Enable Realtime in Supabase:**
-```sql
-ALTER PUBLICATION supabase_realtime ADD TABLE notifications;
-```
+- **Angular → Supabase directly** for all CRUD (30 tables), auth, storage uploads, and Realtime subscriptions. RLS policies enforce access at the database level.
+- **Angular → FastAPI** only for email sending (invites, reminders), external quiz webhooks, and tenant resolution.
+- **Realtime:** Angular subscribes to `notifications` table changes filtered by `user_id=eq.{currentUserId}`.
+- See `CLAUDE.md` § Data Layer and § Multi-Tenancy for detailed patterns.
 
 ---
 
@@ -983,43 +908,20 @@ export const environment = {
 
 ---
 
-## 7. RLS Policy Summary
+## 7. RLS & Security Summary
 
-| Table | SELECT | INSERT | UPDATE | DELETE |
-|-------|--------|--------|--------|--------|
-| tenants | Own + platform admin + CSM (assigned) | Platform admin | Platform admin | Platform admin |
-| profiles | Own + tenant admin (same tenant) + platform admin + CSM (assigned) + lecturer (enrolled users) | Auto (trigger on signup) | Own + tenant admin + platform admin (role fields protected by trigger) | - |
-| courses | Via tenant_courses + platform admin + lecturer (assigned) | Platform admin | Platform admin + lecturer (can_edit) | Platform admin |
-| lectures | Via course access | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) |
-| modules | Via course access (denormalized course_id) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) |
-| module_videos/pdfs/markdown/files | Via module → course access | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) |
-| quizzes | Via module → course access | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) |
-| quiz_questions / options | Via quiz → module → course access | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) |
-| exams | Via module → course access | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) |
-| external_quiz_references | Via module → course access | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) | Platform admin + lecturer (can_edit) |
-| tenant_courses | Own tenant + platform admin + CSM (assigned) | Platform admin | - | Platform admin |
-| csm_tenant_assignments | Own + platform admin | Platform admin | - | Platform admin |
-| lecturer_course_assignments | Own + platform admin | Platform admin | Platform admin | Platform admin |
-| course_enrollments | Own + tenant admin + platform admin + CSM (assigned) + lecturer (assigned courses) | Self (with tenant_courses check) + tenant admin + platform admin | - | Tenant admin + platform admin |
-| user_progress | Own + tenant admin + platform admin + CSM (assigned) + lecturer (assigned courses) | Own (with tenant check) | Own + tenant admin + platform admin | - |
-| comments | Tenant + platform admin + CSM (assigned) + lecturer (assigned courses cross-tenant) | Own (tenant check) + lecturer (tenant_courses validated) | Own | Own + tenant admin + platform admin |
-| comment_replies | Tenant + platform admin + CSM (assigned) + lecturer (cross-tenant) | Own (tenant check) + lecturer (tenant_courses validated) | Own | Own + tenant admin + platform admin |
-| expert_questions | Own + tenant admin + platform admin + CSM (assigned) + lecturer (assigned courses) | Own (tenant check) | Lecturer (assigned courses) + platform admin | - |
-| issues | Own + tenant admin + platform admin + CSM (assigned) + lecturer (assigned courses) | Own (tenant check) | Platform admin + lecturer (assigned courses) | - |
-| quiz_attempts | Own + tenant admin + platform admin + lecturer (cross-tenant via quiz) | Own (tenant check) | Own | - |
-| quiz_attempt_answers | Own (via attempt) + platform admin + lecturer (cross-tenant) | Own (via attempt) | - | - |
-| exam_submissions | Own + tenant admin + platform admin + lecturer (can_grade, cross-tenant) | Own (tenant check) | Lecturer (can_grade) + platform admin | Lecturer (can_grade) + platform admin |
-| external_quiz_results | Own + platform admin + lecturer (cross-tenant) | Service role only (FastAPI webhook) | - | - |
-| notifications | Own | Triggers only (SECURITY DEFINER) | Own (mark as read) | - |
-| reminder_history | Tenant admin + platform admin + CSM (assigned) | Tenant admin (own tenant) + platform admin (self as sent_by) + CSM (assigned) + lecturer (via user_progress) | - | - |
-| access_requests | Platform admin + tenant admin (own tenant) | Anon (status=pending, no reviewed fields) | Platform admin + tenant admin | - |
+**~242 RLS policies** across 30 tables (source of truth: `supabase/migrations/00004_rls_policies.sql` + audit fixes in 00009-00013).
 
-**Security Features:**
-- `protect_profile_role_fields()` trigger prevents privilege escalation on profile updates
-- `enforce_platform_roles_master_tenant()` ensures platform admin flag only on master tenant
-- `enforce_master_tenant_assignment()` ensures CSM/Lecturer assignments only for master tenant users
-- `enforce_module_course_consistency()` validates denormalized course_id on modules
-- `enforce_exam_submission_course()` validates course_id on exam submissions
+**Access patterns by role:**
+- **Learner:** Own data + tenant-scoped shared content (via `tenant_courses`)
+- **Tenant Admin:** Own tenant's users, enrollments, progress, comments, issues
+- **CSM:** Assigned tenants' data (cross-tenant, read-only)
+- **Lecturer:** Assigned courses' data (cross-tenant, can_edit/can_grade flags control write access)
+- **Platform Admin:** Full CRUD on everything
+
+**9 security trigger functions:** `custom_access_token_hook`, `handle_new_user`, `password_verification_hook`, `protect_profile_role_fields`, `protect_tenant_critical_fields`, `enforce_platform_roles_master_tenant`, `enforce_master_tenant_assignment`, `enforce_module_course_consistency`, `enforce_exam_submission_course`
+
+See `CLAUDE.md` § Schema Quick Reference for the full table-by-table breakdown.
 
 ---
 
@@ -1038,8 +940,8 @@ If an auth method is not allowed for the tenant, no profile is created. Admin in
 
 ### 8.2 Per-Tenant Auth Methods
 
-All @calypso-commodities.com users use Keycloak SSO (configured via `tenants.settings.auth_methods = ["keycloak_sso"]`).
-Client tenants configure their own allowed methods (email/password, magic link, keycloak_sso, or a combination).
+Calypso (@calypso-commodities.com) supports all 3 auth methods: `["keycloak_sso","email_password","magic_link"]`.
+Client tenants configure their own allowed methods per `tenants.settings.auth_methods` (e.g., Equinor is SSO-only: `["keycloak_sso"]`).
 
 `handle_new_user()` enforces these settings at the database level — if a user authenticates via a method not allowed for their tenant, no profile is created. See `docs/AUTH_SYSTEM.md` Section 8 for the full settings schema.
 
@@ -1098,21 +1000,6 @@ Desktop-first, but must work on mobile:
 
 ---
 
-## 9. Shared Components
-
-Build these early, use everywhere:
-
-| Component | Purpose |
-|-----------|---------|
-| `DataTableComponent` | Sortable, searchable, paginated table |
-| `ConfirmationDialogComponent` | "Are you sure?" dialogs |
-| `LoadingSpinnerComponent` | Consistent loading states |
-| `EmptyStateComponent` | "No data" messages |
-| `BadgeComponent` | Role badges (🎓 Expert, 🏢 Calypso), status badges (open/resolved/etc.) |
-| `FileUploadComponent` | File upload with type/size validation |
-| `ModuleTypeIconComponent` | Icons for video/PDF/markdown/quiz/exam |
-| `ToastService` | Success/error/info toasts |
-
 ---
 
 ## 10. Testing Strategy
@@ -1142,246 +1029,16 @@ npm run test:coverage       # With coverage
 npm run test:ui             # Interactive browser UI
 ```
 
-**vitest.config.mts:**
-```typescript
-import { defineConfig } from 'vitest/config';
-import analog from '@analogjs/vite-plugin-angular';
+**Key Files (source of truth — do NOT duplicate code examples here, they drift):**
+- `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
+- `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
+- `frontend/src/app/__mocks__/` — 9 service mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course)
 
-export default defineConfig({
-  plugins: [analog()],
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    include: ['src/**/*.spec.ts'],
-    pool: 'forks',
-    testTimeout: 30000,
-    hookTimeout: 30000
-  }
-});
-```
-
-**test-setup.mjs** (MUST be `.mjs`, NOT `.ts` — Angular Vite plugin silently swallows `.ts` setupFiles):
-```javascript
-import '@angular/compiler';
-import '@analogjs/vitest-angular/setup-zone';
-import { TestBed } from '@angular/core/testing';
-import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
-
-TestBed.initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
-```
-
-**Key Files:**
-- `frontend/vitest.config.mts` - Test configuration
-- `frontend/src/test-setup.mjs` - Angular TestBed initialization (`.mjs` required)
-- `frontend/src/app/__mocks__/` - 9 service mock factories
-
-**Supabase Mock (Multi-Tenant Aware):**
-```typescript
-// frontend/src/app/__mocks__/supabase.mock.ts
-
-export function createMockSupabaseService(options?: {
-  tenantId?: string;
-  isPlatformAdmin?: boolean;
-  isTenantAdmin?: boolean;
-  csmTenantIds?: string[];
-  lecturerCourseIds?: string[];
-}) {
-  const mockQueryBuilder = {
-    select: vi.fn().mockReturnThis(),
-    insert: vi.fn().mockReturnThis(),
-    update: vi.fn().mockReturnThis(),
-    delete: vi.fn().mockReturnThis(),
-    upsert: vi.fn().mockReturnThis(),
-    eq: vi.fn().mockReturnThis(),
-    neq: vi.fn().mockReturnThis(),
-    in: vi.fn().mockReturnThis(),
-    order: vi.fn().mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({ data: null, error: null }),
-    maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-    then: vi.fn((resolve) => resolve({ data: [], error: null }))
-  };
-
-  return {
-    client: {
-      from: vi.fn().mockReturnValue(mockQueryBuilder),
-      auth: {
-        getSession: vi.fn().mockResolvedValue({
-          data: {
-            session: {
-              user: { id: 'test-user-id' },
-              access_token: 'mock-jwt',
-              // JWT claims available for role-based testing
-              _claims: {
-                tenant_id: options?.tenantId ?? 'test-tenant-id',
-                is_platform_admin: options?.isPlatformAdmin ?? false,
-                is_tenant_admin: options?.isTenantAdmin ?? false,
-                csm_tenant_ids: options?.csmTenantIds ?? [],
-                lecturer_course_ids: options?.lecturerCourseIds ?? [],
-                lecturer_can_edit_course_ids: [],
-                lecturer_can_grade_course_ids: [],
-              }
-            }
-          },
-          error: null
-        }),
-        signOut: vi.fn().mockResolvedValue({ error: null })
-      },
-      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-      channel: vi.fn().mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        subscribe: vi.fn()
-      }),
-      storage: {
-        from: vi.fn().mockReturnValue({
-          upload: vi.fn().mockResolvedValue({ data: { path: 'test/file.pdf' }, error: null }),
-          getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://test.supabase.co/file.pdf' } })
-        })
-      }
-    },
-    from: vi.fn().mockReturnValue(mockQueryBuilder),
-    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-
-    _mockQueryBuilder: mockQueryBuilder,
-    _mockQueryResponse: (data: any, error: any = null) => {
-      mockQueryBuilder.then.mockImplementationOnce((resolve: any) => resolve({ data, error }));
-    },
-    _resetMocks: () => {
-      Object.values(mockQueryBuilder).forEach((fn: any) => fn.mockClear?.());
-    }
-  };
-}
-
-export type MockSupabaseService = ReturnType<typeof createMockSupabaseService>;
-```
-
-**Mock Factory Pattern (All mocks follow this):**
-```typescript
-import { vi, type Mock } from 'vitest';
-
-// All mocks export factory + type
-export function createMockCourseService() {
-  return {
-    getCourses: vi.fn().mockResolvedValue([]),
-    getCourse: vi.fn().mockResolvedValue(null),
-    createCourse: vi.fn().mockResolvedValue({ id: 'new-course-id' }),
-    updateCourse: vi.fn().mockResolvedValue(true),
-    deleteCourse: vi.fn().mockResolvedValue(true)
-  };
-}
-export type MockCourseService = ReturnType<typeof createMockCourseService>;
-```
-
-**Component Test Pattern:**
-```typescript
-import '../../../../test-setup';
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/angular';
-import { provideRouter } from '@angular/router';
-import { CourseListComponent } from './course-list.component';
-import { CourseService } from '../services/course.service';
-import { ToastService } from '../../../shared/services/toast.service';
-import { createMockToastService } from '../../../__mocks__/toast.mock';
-import { provideLucideIcons } from '../../../__mocks__/lucide.mock';
-
-describe('CourseListComponent', () => {
-  function createMockCourse(overrides?: Partial<Course>): Course {
-    return {
-      id: 'course-1',
-      title: 'Test Course',
-      enrollment_type: 'open',
-      ...overrides
-    };
-  }
-
-  function createMockCourseService() {
-    return {
-      getCourses: vi.fn().mockResolvedValue([]),
-      deleteCourse: vi.fn().mockResolvedValue(true)
-    };
-  }
-
-  async function renderComponent(options?: { courses?: Course[] }) {
-    const mockCourseService = createMockCourseService();
-    const mockToast = createMockToastService();
-
-    mockCourseService.getCourses.mockResolvedValue(options?.courses ?? []);
-
-    const result = await render(CourseListComponent, {
-      providers: [
-        provideRouter([]),
-        provideLucideIcons(),
-        { provide: CourseService, useValue: mockCourseService },
-        { provide: ToastService, useValue: mockToast }
-      ]
-    });
-
-    await vi.waitFor(() => {
-      result.fixture.detectChanges();
-      expect(result.fixture.componentInstance.isLoading()).toBe(false);
-    }, { timeout: 2000 });
-
-    return { ...result, mockCourseService, mockToast };
-  }
-
-  it('displays courses', async () => {
-    const courses = [
-      createMockCourse({ title: 'X-LNG Advanced' }),
-      createMockCourse({ id: 'c2', title: 'X-LNG Basics' })
-    ];
-
-    await renderComponent({ courses });
-
-    expect(screen.getByText('X-LNG Advanced')).toBeTruthy();
-    expect(screen.getByText('X-LNG Basics')).toBeTruthy();
-  });
-});
-```
-
-**Service Test Pattern:**
-```typescript
-import '../../../../test-setup';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { TestBed } from '@angular/core/testing';
-import { CourseService } from './course.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
-import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
-
-describe('CourseService', () => {
-  let service: CourseService;
-  let mockSupabase: ReturnType<typeof createMockSupabaseService>;
-
-  beforeEach(() => {
-    mockSupabase = createMockSupabaseService();
-
-    TestBed.configureTestingModule({
-      providers: [
-        CourseService,
-        { provide: SupabaseService, useValue: mockSupabase }
-      ]
-    });
-
-    service = TestBed.inject(CourseService);
-  });
-
-  describe('getCourses', () => {
-    it('returns courses for the user tenant', async () => {
-      const mockCourses = [{ id: '1', title: 'X-LNG Advanced' }];
-      mockSupabase._mockQueryResponse(mockCourses);
-
-      const courses = await service.getCourses();
-
-      expect(mockSupabase.from).toHaveBeenCalledWith('courses');
-      expect(courses).toEqual(mockCourses);
-    });
-  });
-});
-```
+See `CLAUDE.md` § Testing for conventions and patterns.
 
 ### 10.3 RLS Testing
 
-**Why Branch-Based:**
-Supabase Cloud is production. Tests run against isolated branches to avoid data corruption.
+Tests run against isolated Supabase branches to avoid production data corruption.
 
 **NPM Scripts:**
 ```bash
@@ -1389,378 +1046,8 @@ npm run test:rls       # Full suite (creates branch, tests, cleanup)
 npm run test:rls:local # Local only (requires env vars)
 ```
 
-**Test Flow:**
-1. Create Supabase branch (`supabase branches create test-run-{timestamp}`)
-2. Wait for branch ready (poll until `preview_project_status === 'ACTIVE_HEALTHY'`)
-3. Apply migrations via pg.Client (bypasses snapshot lag)
-4. Get branch credentials (project_ref, anon_key, service_role_key)
-5. Run tests against branch
-6. Delete branch (always, even on failure, via finally block)
-
-**Two Client Types:**
-```typescript
-// 1. Admin Client - Bypasses RLS (for test setup only)
-export const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false }
-});
-
-// 2. Authenticated Client - RLS enforced
-export async function createClientAs(user: TestUser): Promise<SupabaseClient> {
-  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
-
-  await client.auth.signInWithPassword({
-    email: user.email,
-    password: user.password
-  });
-
-  return client;
-}
-```
-
-**Custom Matcher: toDenyAccess()**
-
-| Operation | RLS Blocks | Supabase Returns | Detection |
-|-----------|-----------|------------------|-----------|
-| SELECT | Filters silently | `{ data: [], error: null }` | `data.length === 0` |
-| INSERT | Returns error | `{ data: null, error: {...} }` | `error !== null` |
-| UPDATE | 0 rows affected | `{ data: [], error: null }` | `data.length === 0` |
-| DELETE | 0 rows affected | `{ data: [], error: null }` | `data.length === 0` |
-
-**CRITICAL:** UPDATE/DELETE must chain `.select()` to detect 0 rows!
-
-```typescript
-// SELECT: denied if empty array
-await expect(
-  client.from('courses').select('*').eq('id', unassignedCourseId)
-).toDenyAccess('select');
-
-// INSERT: denied if error
-await expect(
-  client.from('courses').insert({ title: 'Unauthorized Course' })
-).toDenyAccess('insert');
-
-// UPDATE: MUST chain .select() for row count!
-await expect(
-  client.from('courses').update({ title: 'Hacked' }).eq('id', courseId).select()
-).toDenyAccess('update');
-
-// DELETE: same pattern
-await expect(
-  client.from('courses').delete().eq('id', courseId).select()
-).toDenyAccess('delete');
-```
-
-**Permission Matrix Categories:**
-| Prefix | Name | Purpose | Example |
-|--------|------|---------|---------|
-| TEN | Tenant Isolation | Other tenant's data invisible | Santos user cannot see Equinor's progress |
-| XTA | Cross-Tenant Access | Lecturers/CSMs see assigned data | Lecturer sees progress for assigned courses across all tenants |
-| ESC | Escalation Prevention | No role self-elevation | Learner cannot set is_platform_admin=true |
-| ROL | Role-Based Access | Correct CRUD per role | Tenant Admin can read own tenant's users, not others |
-| INH | Inherited Access | Subtables inherit parent access | module_videos access follows module → course access chain |
-
-### 10.4 Test Factories
-
-**Location:** `tests/setup.ts`
-
-| Factory | Purpose |
-|---------|---------|
-| `createTenant(overrides)` | Create tenant (name, domain, is_master) |
-| `createUser(tenantId, role, overrides)` | Create auth.users + profiles entry with role flags |
-| `createCourse(overrides)` | Create course |
-| `createLecture(courseId, overrides)` | Create lecture in course |
-| `createModule(lectureId, courseId, type, overrides)` | Create module (validates denormalized course_id) |
-| `createTenantCourse(tenantId, courseId)` | Assign course to tenant |
-| `createEnrollment(userId, tenantId, courseId)` | Enroll user in course |
-| `createCSMAssignment(userId, tenantId)` | Assign CSM to tenant |
-| `createLecturerAssignment(userId, courseId, overrides)` | Assign lecturer to course (can_edit, can_grade) |
-| `createQuiz(moduleId, overrides)` | Create quiz for module |
-| `createQuizQuestion(quizId, overrides)` | Create quiz question |
-| `createExam(moduleId, overrides)` | Create exam for module |
-| `createProgress(userId, tenantId, courseId, lectureId, moduleId)` | Create progress record |
-| `createComment(userId, tenantId, moduleId, overrides)` | Create comment |
-| `createExpertQuestion(userId, tenantId, courseId, overrides)` | Create expert question |
-| `createIssue(userId, tenantId, courseId, overrides)` | Create issue |
-| `createExamSubmission(userId, tenantId, examId, courseId, overrides)` | Create exam submission |
-| `cleanupTestData()` | Delete all test data (FK dependency order) |
-
-**Factory Example:**
-```typescript
-export async function createUser(
-  tenantId: string,
-  role: 'learner' | 'tenant_admin' | 'platform_admin',
-  overrides: Partial<{ email: string; full_name: string }> = {}
-): Promise<TestUser> {
-  const email = overrides.email ?? faker.internet.email();
-  const password = 'test-password-123';
-
-  // Create auth user
-  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-    user_metadata: { tenant_id: tenantId, full_name: overrides.full_name ?? faker.person.fullName() }
-  });
-
-  if (authError) throw new Error(`Failed to create user: ${authError.message}`);
-
-  // Set role flags on profile (via direct pg to bypass protect_profile_role_fields trigger)
-  if (role !== 'learner') {
-    await setProfileRole(authData.user.id, {
-      ...(role === 'tenant_admin' && { is_tenant_admin: true }),
-      ...(role === 'platform_admin' && { is_platform_admin: true }),
-    });
-  }
-
-  return { id: authData.user.id, email, password, tenantId };
-}
-```
-
-### 10.5 What to Test When
-
-| Phase | Frontend Tests | RLS Tests |
-|-------|----------------|-----------|
-| 1 (Foundation) | Auth service, guards, layout | tenants, profiles (~15) |
-| 2 (Content Read) | Course list/detail, module viewers | courses, lectures, modules, subtables (~40) |
-| 3 (Content Write) | Course/lecture/module forms, quiz builder | Content CRUD operations (~30) |
-| 4 (Enrollment & Progress) | Enrollment, progress dashboard | enrollments, user_progress (~40) |
-| 5 (Quizzes & Exams) | Quiz taking, exam flow, grading | quiz_attempts, exam_submissions (~30) |
-| 6 (Comments & Expert) | Comments, ask expert, questions board | comments, replies, expert_questions (~35) |
-| 7 (Issue Reporting) | Issue form, issue dashboard | issues (~20) |
-| 8 (Notifications) | Bell, list, realtime | notifications (~10) |
-| 9 (Admin) | Tenant/user/assignment management | assignments, access_requests, reminder_history (~40) |
-| 10 (Polish) | Shared components | Complete permission matrix (~245 total) |
-
-### 10.6 Permission Matrix Example
-
-```typescript
-// tests/access-matrix.test.ts
-
-interface MatrixRow {
-  id: string;                      // 'TEN-001', 'XTA-002', etc.
-  description: string;
-  role: 'learner' | 'tenant_admin' | 'platform_admin' | 'csm' | 'lecturer';
-  table: string;
-  action: 'select' | 'insert' | 'update' | 'delete';
-  expected: 'allow' | 'deny';
-  setup?: {
-    targetTenant?: 'own' | 'other';
-    courseAssigned?: boolean;
-    lecturerCanEdit?: boolean;
-    lecturerCanGrade?: boolean;
-    filters?: Record<string, string>;
-    payload?: Record<string, any>;
-  };
-}
-
-const PERMISSION_MATRIX: MatrixRow[] = [
-  // Tenant Isolation
-  {
-    id: 'TEN-001',
-    description: 'Santos learner cannot see Equinor progress',
-    role: 'learner',
-    table: 'user_progress',
-    action: 'select',
-    expected: 'deny',
-    setup: { targetTenant: 'other' }
-  },
-
-  // Cross-Tenant Access
-  {
-    id: 'XTA-001',
-    description: 'Lecturer can see progress for assigned courses (cross-tenant)',
-    role: 'lecturer',
-    table: 'user_progress',
-    action: 'select',
-    expected: 'allow',
-    setup: { courseAssigned: true }
-  },
-
-  // Escalation Prevention
-  {
-    id: 'ESC-001',
-    description: 'Learner cannot set is_platform_admin on own profile',
-    role: 'learner',
-    table: 'profiles',
-    action: 'update',
-    expected: 'deny',
-    setup: {
-      payload: { is_platform_admin: true }
-    }
-  },
-
-  // Role-Based Access
-  {
-    id: 'ROL-001',
-    description: 'Lecturer without can_edit cannot update course content',
-    role: 'lecturer',
-    table: 'courses',
-    action: 'update',
-    expected: 'deny',
-    setup: { lecturerCanEdit: false }
-  },
-
-  // Inherited Access
-  {
-    id: 'INH-001',
-    description: 'module_videos access follows module → course chain',
-    role: 'learner',
-    table: 'module_videos',
-    action: 'select',
-    expected: 'allow',
-    setup: { courseAssigned: true }
-  }
-];
-```
-
-### 10.7 Testing Best Practices
-
-**DO:**
-- Write tests alongside feature code (not after)
-- Use mock factories, not inline mocks
-- Test component behavior, not implementation
-- Use `screen.getByRole()` over `getByText()` when possible
-- Test loading and error states
-- Test RLS for all CRUD operations
-- Chain `.select()` on UPDATE/DELETE for row count detection
-- Test all 5 roles for role-scoped features
-- Test cross-tenant access for lecturer and CSM
-
-**DON'T:**
-- Skip tests "to save time"
-- Test private methods directly
-- Mock too much (keep some integration)
-- Rely only on UI tests for security
-- Forget to test tenant isolation
-- Use custom JWT signing (branches have own secrets)
-- Forget that role changes require JWT refresh (test with fresh sign-in)
-
-### 10.8 Common Testing Gotchas
-
-**Frontend (Vitest + @analogjs/vitest-angular):**
-- Use `async/await` with `fixture.whenStable()` instead of `fakeAsync/tick`
-- Use `vi.fn().mockResolvedValue()` instead of `jasmine.createSpy()`
-- Tests using `TestBed.resetTestingModule()` must: (1) await `compileComponents()`, (2) provide all injected services as mocks
-- Use `vi.spyOn(obj, 'method')` instead of `spyOn(obj, 'method')`
-- Mock types: `{ methodName: Mock }` instead of `jasmine.SpyObj<Service>`
-
-**RLS:**
-- UPDATE/DELETE must chain `.select()` — otherwise can't detect 0 rows
-- Branches have own JWT secrets — use `signInWithPassword()`, not custom JWT
-- Apply migrations directly via pg.Client (snapshot lag workaround)
-- `NULL = 'value'` returns NULL, not FALSE — watch NULL handling in policies
-- Denormalized `course_id` on modules must be validated (trigger enforces this)
-- JWT claims are populated via `custom_access_token_hook` — test users need profiles + assignments created before sign-in to get correct claims
-- After creating CSM/Lecturer assignments, user must sign-out and sign-in again for claims to update
-- All SECURITY DEFINER functions called by `supabase_auth_admin` MUST have `SET search_path = public` — `supabase_auth_admin` has `search_path = auth`, so unqualified table names resolve to the wrong schema (fixed in 00014)
-- `protect_profile_role_fields()` trigger reads JWT claims via `current_setting('request.jwt.claims')` — the service role client doesn't set this GUC, so use direct pg with `set_config('request.jwt.claims', ...)` to fake platform admin context for test setup
+**Key files:** `tests/setup.ts` (factories, adminClient, createClientAs, toDenyAccess matcher), `scripts/test-runner.ts` (branch management). See `CLAUDE.md` § Testing for patterns, gotchas, and permission matrix categories (TEN/XTA/ESC/ROL/INH).
 
 ---
 
-## 11. Checklist Summary
-
-### Phase 1: Foundation
-- [x] Supabase setup + schema + RLS + multi-provider auth (Keycloak SSO + email/password + magic link)
-- [x] RLS test infrastructure setup (24 tests: 10 tenants + 14 profiles)
-- [x] FastAPI setup + deploy to Railway (46 tests, health endpoint verified)
-- [x] Angular setup + deploy to Vercel (Tailwind, Lucide, SupabaseService, ApiService — live at x-courses-v2.vercel.app)
-- [x] Frontend test infrastructure setup (Vitest 3.2, @testing-library/angular 17.4, 9 mock factories)
-- [x] Auth flow (Keycloak SSO + email/password + magic link OTP, per-tenant config, guards, access request) + tests (38 backend + 92 frontend)
-- [x] Layout shell (role-aware sidebar, notification bell, user menu, ProfileService, mobile responsive) + tests (25 new)
-
-### Phase 2: Content Read
-- [x] Course list + detail + tests (147 frontend tests, 13 new files, CourseService with user-scoped queries)
-- [ ] Module viewers (video, PDF, markdown, files, navigation, mark complete) + tests
-- [ ] Content Read RLS tests (~40 tests)
-
-### Phase 3: Content Write
-- [ ] Course CRUD + tests
-- [ ] Lecture CRUD + tests
-- [ ] Module CRUD (5 types, Tiptap, file uploads, significant update) + tests
-- [ ] Quiz Builder (6 question types) + tests
-- [ ] External Quiz Reference + tests
-- [ ] Content Write RLS tests (~30 tests)
-
-### Phase 4: Enrollment & Progress
-- [ ] Enrollment system (3 types) + tests
-- [ ] Progress tracking (manual + auto-mark) + tests
-- [ ] Progress dashboard (5 role-scoped views) + tests
-- [ ] Enrollment & Progress RLS tests (~40 tests)
-
-### Phase 5: Quizzes & Exams
-- [ ] Quiz taking (6 renderers, timer, randomize, auto-grade) + tests
-- [ ] External quiz webhook (FastAPI) + tests
-- [ ] Exam flow (download, timer, upload, deadline) + tests
-- [ ] Exam grading (lecturer, cross-tenant, reset) + tests
-- [ ] Quiz & Exam RLS tests (~30 tests)
-
-### Phase 6: Comments & Ask Expert
-- [ ] Comments (tenant-isolated, badges, replies) + tests
-- [ ] Ask Expert (modal, My Questions) + tests
-- [ ] Questions Board (lecturer dashboard) + tests
-- [ ] Comments & Expert Questions RLS tests (~35 tests)
-
-### Phase 7: Issue Reporting
-- [ ] Issue reporting UI + tests
-- [ ] Issue management (role-scoped, status workflow) + tests
-- [ ] Issue RLS tests (~20 tests)
-
-### Phase 8: Notifications
-- [ ] Notification service + bell + list + tests
-- [ ] Verify all 10 trigger functions + 2 pg_cron jobs
-- [ ] Notification RLS tests (~10 tests)
-
-### Phase 9: Admin
-- [ ] Tenant management + tests
-- [ ] User management + invite flow + tests
-- [ ] Access requests + tests
-- [ ] Reminder emails (FastAPI) + tests
-- [ ] CSM & Lecturer assignment management + tests
-- [ ] Admin RLS tests (~40 tests)
-
-### Phase 10: Polish & Final Testing
-- [ ] Error handling
-- [ ] Performance
-- [ ] Shared component tests
-- [ ] Complete RLS permission matrix (~245 total tests)
-- [ ] Test coverage review
-- [ ] Content staleness dashboard + tests
-
----
-
-## 12. Getting Started
-
-1. **Create Supabase project** (select EU region if GDPR applies)
-2. **Initialize GitHub monorepo** (`git init`, create `.gitignore`, push `docs/` + `supabase/` to private repo)
-3. **Run SQL migrations** from `supabase/migrations/00001-00014`
-4. **Configure auth:**
-   - Enable Keycloak as OAuth provider (realm URL, client ID, client secret)
-   - Enable email/password auth
-   - Disable public email signup (Auth → Providers → Email → disable "Allow new users to sign up")
-   - Set OTP expiration to 15 minutes (900 seconds)
-   - Use OTP code template (`{{ .Token }}`) instead of clickable magic link
-   - Enable magic link auth
-   - Disable public registration (invite-only via admin)
-   - Set per-tenant auth methods in `tenants.settings` (see Section 8.2)
-5. **Configure auth hooks:**
-   - Custom Access Token Hook → `public.custom_access_token_hook`
-   - Password Verification Hook → `public.password_verification_hook`
-6. **Enable Realtime** for `notifications` table
-7. **Enable pg_cron** extension in Supabase Dashboard
-8. **Verify storage buckets** (avatars, course-files, exam-submissions)
-9. **Verify seed data** (Calypso master tenant exists)
-10. **Note credentials** (URL, anon key, service role key, JWT secret)
-11. **Setup RLS test infrastructure** (scripts/test-runner.ts, tests/setup.ts)
-12. **Run initial RLS tests** to verify schema
-13. **Create FastAPI project** (see Section 2 for structure)
-14. **Configure SMTP** (Calypso SMTP host, port, credentials)
-15. **Push `backend/` to GitHub** and **connect Railway** (root directory: `backend/`, deploy branch: `main`)
-16. **Create Angular project**
-17. **Install Tailwind CSS v3 + Lucide Icons**
-18. **Setup frontend test infrastructure** (vitest, mocks, test-setup.ts)
-19. **Configure Angular environment** (supabaseUrl, supabaseAnonKey, apiUrl)
-20. **Push `frontend/` to GitHub** and **connect Vercel** (root directory: `frontend/`, deploy branch: `main`)
-21. **Create first Platform Admin user** manually in Supabase
-22. **Begin Phase 1F** - Auth flow
+*(Sections 11-12 removed — the Phase 3 checklists above serve as the canonical task tracker.)*

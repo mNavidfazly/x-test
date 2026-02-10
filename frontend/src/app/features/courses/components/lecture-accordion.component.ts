@@ -28,6 +28,7 @@ import { ModuleItemComponent } from './module-item.component';
           @for (mod of lecture().modules; track mod.id) {
             <app-module-item
               [module]="mod"
+              [courseId]="courseId()"
               [progress]="progressMap()[mod.id] || null"
             />
           }
@@ -39,6 +40,7 @@ import { ModuleItemComponent } from './module-item.component';
 export class LectureAccordionComponent {
   readonly lecture = input.required<LectureWithModules>();
   readonly progressMap = input.required<Record<string, ModuleProgress>>();
+  readonly courseId = input.required<string>();
 
   readonly chevronDown = ChevronDown;
   readonly chevronRight = ChevronRight;

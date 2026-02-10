@@ -61,6 +61,13 @@ export const routes: Routes = [
                 (m) => m.CourseDetailPageComponent,
               ),
           },
+          {
+            path: ':courseId/modules/:moduleId',
+            loadComponent: () =>
+              import('./features/courses/pages/module-viewer-page.component').then(
+                (m) => m.ModuleViewerPageComponent,
+              ),
+          },
         ],
       },
       {

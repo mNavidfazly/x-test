@@ -1,27 +1,36 @@
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
-import { CourseWithProgress, CourseDetail } from '../core/models/course.model';
+import {
+  CourseWithProgress, CourseDetail, ModuleViewerData,
+  ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
+} from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
   courses?: CourseWithProgress[];
   courseDetail?: CourseDetail | null;
+  moduleViewer?: ModuleViewerData | null;
   loading?: boolean;
   error?: string;
 }) {
   const courses = signal<CourseWithProgress[]>(options?.courses ?? []);
   const courseDetail = signal<CourseDetail | null>(options?.courseDetail ?? null);
+  const moduleViewer = signal<ModuleViewerData | null>(options?.moduleViewer ?? null);
   const loading = signal(options?.loading ?? false);
   const error = signal(options?.error ?? '');
 
   return {
     courses: courses.asReadonly(),
     courseDetail: courseDetail.asReadonly(),
+    moduleViewer: moduleViewer.asReadonly(),
     loading: loading.asReadonly(),
     error: error.asReadonly(),
     loadCourses: vi.fn().mockResolvedValue(undefined),
     loadCourseDetail: vi.fn().mockResolvedValue(undefined),
+    loadModuleViewer: vi.fn().mockResolvedValue(undefined),
+    markModuleComplete: vi.fn().mockResolvedValue(undefined),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
+    _setModuleViewer: moduleViewer.set.bind(moduleViewer),
     _setLoading: loading.set.bind(loading),
     _setError: error.set.bind(error),
   };
@@ -76,6 +85,65 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
     progressMap: {
       'mod-1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
       'mod-2': { status: 'in_progress', completed_at: null },
+    },
+    ...overrides,
+  };
+}
+
+export function createMockModuleVideo(overrides?: Partial<ModuleVideo>): ModuleVideo {
+  return {
+    video_url: 'https://cdn.bunny.net/test-video.mp4',
+    thumbnail_url: 'https://cdn.bunny.net/thumb.jpg',
+    duration: 360,
+    ...overrides,
+  };
+}
+
+export function createMockModulePdf(overrides?: Partial<ModulePdf>): ModulePdf {
+  return {
+    file_url: 'https://storage.supabase.co/test.pdf',
+    file_name: 'test-document.pdf',
+    page_count: 12,
+    ...overrides,
+  };
+}
+
+export function createMockModuleMarkdown(overrides?: Partial<ModuleMarkdownContent>): ModuleMarkdownContent {
+  return {
+    content: '# Test Markdown\n\nSome **bold** text.',
+    ...overrides,
+  };
+}
+
+export function createMockModuleFile(overrides?: Partial<ModuleFile>): ModuleFile {
+  return {
+    id: 'file-1',
+    file_url: 'https://storage.supabase.co/attachment.zip',
+    file_name: 'resources.zip',
+    file_size: 1048576,
+    ...overrides,
+  };
+}
+
+export function createMockModuleViewerData(overrides?: Partial<ModuleViewerData>): ModuleViewerData {
+  return {
+    module: {
+      id: 'mod-1',
+      title: 'Test Module',
+      description: 'A test module',
+      module_type: 'video',
+      sort_order: 0,
+      lecture_id: 'lecture-1',
+      course_id: 'course-1',
+    },
+    content: { type: 'video', data: createMockModuleVideo() },
+    files: [],
+    progress: null,
+    navigation: {
+      prev: null,
+      next: { id: 'mod-2', title: 'Next Module', module_type: 'pdf', lectureTitle: 'Lecture 1' },
+      current: 1,
+      total: 3,
     },
     ...overrides,
   };

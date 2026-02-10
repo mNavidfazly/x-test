@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
+import { provideRouter, RouterLink } from '@angular/router';
 import { LectureAccordionComponent } from './lecture-accordion.component';
 import { ModuleItemComponent } from './module-item.component';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
@@ -18,25 +19,26 @@ const mockLecture = {
 };
 
 describe('LectureAccordionComponent', () => {
-  it('should render lecture title and module count', async () => {
-    await render(LectureAccordionComponent, {
-      componentImports: [MockLucideIconComponent, ModuleItemComponent],
-      componentInputs: { lecture: mockLecture, progressMap: {} },
+  const renderAccordion = async (inputs?: Record<string, unknown>) => {
+    return render(LectureAccordionComponent, {
+      componentImports: [MockLucideIconComponent, ModuleItemComponent, RouterLink],
+      componentInputs: { lecture: mockLecture, courseId: 'c1', progressMap: {}, ...inputs },
+      providers: [provideRouter([])],
     });
+  };
+
+  it('should render lecture title and module count', async () => {
+    await renderAccordion();
 
     expect(screen.getByText('Getting Started')).toBeTruthy();
     expect(screen.getByText('0/3')).toBeTruthy();
   });
 
   it('should show completed count', async () => {
-    await render(LectureAccordionComponent, {
-      componentImports: [MockLucideIconComponent, ModuleItemComponent],
-      componentInputs: {
-        lecture: mockLecture,
-        progressMap: {
-          'm1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
-          'm2': { status: 'completed', completed_at: '2026-01-16T10:00:00Z' },
-        },
+    await renderAccordion({
+      progressMap: {
+        'm1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
+        'm2': { status: 'completed', completed_at: '2026-01-16T10:00:00Z' },
       },
     });
 
@@ -44,10 +46,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should render all modules when open', async () => {
-    await render(LectureAccordionComponent, {
-      componentImports: [MockLucideIconComponent, ModuleItemComponent],
-      componentInputs: { lecture: mockLecture, progressMap: {} },
-    });
+    await renderAccordion();
 
     expect(screen.getByText('Welcome Video')).toBeTruthy();
     expect(screen.getByText('Setup Guide')).toBeTruthy();
@@ -55,10 +54,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should collapse/expand on toggle click', async () => {
-    await render(LectureAccordionComponent, {
-      componentImports: [MockLucideIconComponent, ModuleItemComponent],
-      componentInputs: { lecture: mockLecture, progressMap: {} },
-    });
+    await renderAccordion();
 
     const user = userEvent.setup();
     const toggleButton = screen.getByRole('button');
@@ -73,5 +69,13 @@ describe('LectureAccordionComponent', () => {
     // Expand
     await user.click(toggleButton);
     expect(screen.getByText('Welcome Video')).toBeTruthy();
+  });
+
+  it('should pass courseId to module items', async () => {
+    await renderAccordion();
+
+    // Video modules should have links with courseId in the URL
+    const link = document.querySelector('a[href="/courses/c1/modules/m1"]');
+    expect(link).toBeTruthy();
   });
 });

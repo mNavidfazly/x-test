@@ -243,4 +243,157 @@ describe('CourseService', () => {
       expect(service.loading()).toBe(false);
     });
   });
+
+  describe('loadModuleViewer', () => {
+    const preloadCourseDetail = async () => {
+      const courseData = {
+        id: 'c1', title: 'Course', description: null, thumbnail_url: null, enrollment_type: 'open',
+        lectures: [{
+          id: 'l1', title: 'Lecture 1', description: null, sort_order: 0,
+          modules: [
+            { id: 'mod-1', title: 'Video Mod', module_type: 'video', sort_order: 0 },
+            { id: 'mod-2', title: 'PDF Mod', module_type: 'pdf', sort_order: 1 },
+          ],
+        }],
+      };
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({ data: courseData, error: null });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      await service.loadCourseDetail('c1');
+    };
+
+    it('should load video module viewer data', async () => {
+      await preloadCourseDetail();
+
+      // loadModuleViewer: single (module) → single (video content), then (files), maybeSingle (progress)
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-1', title: 'Video Mod', description: 'A video', module_type: 'video', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { video_url: 'https://cdn/video.mp4', thumbnail_url: null, duration: 120 },
+          error: null,
+        });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+
+      await service.loadModuleViewer('c1', 'mod-1');
+
+      const viewer = service.moduleViewer();
+      expect(viewer).not.toBeNull();
+      expect(viewer!.module.id).toBe('mod-1');
+      expect(viewer!.module.description).toBe('A video');
+      expect(viewer!.content.type).toBe('video');
+      if (viewer!.content.type === 'video') {
+        expect(viewer!.content.data.video_url).toBe('https://cdn/video.mp4');
+      }
+      expect(viewer!.navigation.prev).toBeNull();
+      expect(viewer!.navigation.next).not.toBeNull();
+      expect(viewer!.navigation.next!.id).toBe('mod-2');
+      expect(viewer!.navigation.current).toBe(1);
+      expect(viewer!.navigation.total).toBe(2);
+    });
+
+    it('should load progress when module has been completed', async () => {
+      await preloadCourseDetail();
+
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-1', title: 'Video Mod', description: null, module_type: 'video', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { video_url: 'https://cdn/v.mp4', thumbnail_url: null, duration: 60 },
+          error: null,
+        });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: { status: 'completed', completed_at: '2026-02-01T10:00:00Z' },
+        error: null,
+      });
+
+      await service.loadModuleViewer('c1', 'mod-1');
+
+      expect(service.moduleViewer()!.progress).toEqual({ status: 'completed', completed_at: '2026-02-01T10:00:00Z' });
+    });
+
+    it('should handle module load error', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'Module not found' },
+      });
+
+      await service.loadModuleViewer('c1', 'bad-id');
+
+      expect(service.error()).toBe('Module not found');
+      expect(service.moduleViewer()).toBeNull();
+      expect(service.loading()).toBe(false);
+    });
+
+    it('should error when not authenticated', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          CourseService,
+          { provide: SupabaseService, useValue: supabase },
+          { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
+        ],
+      });
+      const unauthService = TestBed.inject(CourseService);
+
+      await unauthService.loadModuleViewer('c1', 'mod-1');
+
+      expect(unauthService.error()).toBe('Not authenticated');
+      expect(unauthService.moduleViewer()).toBeNull();
+    });
+  });
+
+  describe('markModuleComplete', () => {
+    const setupViewer = async () => {
+      // Load course detail first
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'c1', title: 'C', description: null, thumbnail_url: null, enrollment_type: 'open', lectures: [{ id: 'l1', title: 'L1', description: null, sort_order: 0, modules: [{ id: 'mod-1', title: 'M1', module_type: 'video', sort_order: 0 }] }] },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      await service.loadCourseDetail('c1');
+
+      // Load module viewer
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({ data: { id: 'mod-1', title: 'M1', description: null, module_type: 'video', sort_order: 0, lecture_id: 'l1', course_id: 'c1' }, error: null })
+        .mockResolvedValueOnce({ data: { video_url: 'v.mp4', thumbnail_url: null, duration: 60 }, error: null });
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+      await service.loadModuleViewer('c1', 'mod-1');
+    };
+
+    it('should upsert progress and update local state', async () => {
+      await setupViewer();
+      expect(service.moduleViewer()!.progress).toBeNull();
+
+      // upsert resolves via the mock chain (upsert returns mockQueryBuilder, then .then is called)
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.markModuleComplete('mod-1');
+
+      expect(service.moduleViewer()!.progress).not.toBeNull();
+      expect(service.moduleViewer()!.progress!.status).toBe('completed');
+    });
+
+    it('should handle upsert error', async () => {
+      await setupViewer();
+
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Permission denied' } }));
+
+      await service.markModuleComplete('mod-1');
+
+      expect(service.error()).toBe('Permission denied');
+      expect(service.moduleViewer()!.progress).toBeNull();
+    });
+  });
 });

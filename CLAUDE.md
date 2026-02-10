@@ -119,11 +119,6 @@ Badge base:         inline-flex items-center rounded-full px-2.5 py-0.5 text-xs 
 - **Supabase Cloud:** project ref `ruhdnvtvoxxiodnyyqqf` (Frankfurt). Type generation: `supabase gen types typescript --linked > frontend/src/app/core/models/database.types.ts`.
 - **No CI/CD GitHub Actions** — deployment is purely git-based auto-deploy from hosting providers.
 
-## Development Phase Status
-
-- **DONE:** Phase 1A (schema, 14 migrations), 1B (24 RLS tests), 1C (FastAPI on Railway, 11 tests), 1D (Angular scaffold on Vercel with Tailwind + Lucide + Supabase client).
-- **NEXT:** Phase 1E (Frontend Test Infrastructure — vitest config, test-setup.ts, mock factories), then 1F (Auth Flow), 1G (Layout Shell).
-- **10 phases total:** Foundation (1) → Content Read (2) → Content Write (3) → Enrollment & Progress (4) → Quizzes & Exams (5) → Comments & Ask Expert (6) → Issue Reporting (7) → Notifications (8) → Admin (9) → Polish (10). **Strict sequential dependencies.**
 
 ## Schema Quick Reference
 

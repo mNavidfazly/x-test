@@ -23,6 +23,8 @@
     "@angular/router": "^19.2.0",
     "@supabase/supabase-js": "^2.95.3",
     "lucide-angular": "^0.563.0",
+    "ngx-markdown": "^19.1.1",
+    "prismjs": "^1.30.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
