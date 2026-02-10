@@ -45,6 +45,8 @@ export function createMockAuthService(options?: {
     signInWithPassword: vi.fn().mockResolvedValue({ data: {}, error: null }),
     signInWithOtp: vi.fn().mockResolvedValue({ data: {}, error: null }),
     verifyOtp: vi.fn().mockResolvedValue({ data: { user: {}, session: {} }, error: null }),
+    verifyRecoveryOtp: vi.fn().mockResolvedValue({ data: { user: {}, session: {} }, error: null }),
+    updatePassword: vi.fn().mockResolvedValue({ data: { user: {} }, error: null }),
     signInWithOAuth: vi.fn().mockResolvedValue({ data: {}, error: null }),
     signOut: vi.fn().mockResolvedValue(undefined),
     hasRole: vi.fn((role: UserRole) => roles.includes(role)),

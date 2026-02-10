@@ -51,6 +51,14 @@ export class AuthService {
     return this.#supabase.client.auth.verifyOtp({ email, token, type: 'email' });
   }
 
+  async verifyRecoveryOtp(email: string, token: string) {
+    return this.#supabase.client.auth.verifyOtp({ email, token, type: 'recovery' });
+  }
+
+  async updatePassword(password: string) {
+    return this.#supabase.client.auth.updateUser({ password });
+  }
+
   async signInWithOAuth(hint?: string) {
     const options: Record<string, unknown> = {
       redirectTo: `${window.location.origin}/auth/callback`,
