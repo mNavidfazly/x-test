@@ -892,14 +892,16 @@ describe('CourseService', () => {
       }
     });
 
-    it('should load module and convert PDF content to form data', async () => {
+    // PDF file_url is a storage path in the DB — #fetchModuleContent resolves it
+    // to a signed URL via createSignedUrl() so the viewer can display it securely.
+    it('should load module and convert PDF content to form data with signed URL', async () => {
       supabase._mockQueryBuilder.single
         .mockResolvedValueOnce({
           data: { id: 'mod-2', title: 'PDF Mod', description: null, module_type: 'pdf', sort_order: 1, lecture_id: 'l1', course_id: 'c1' },
           error: null,
         })
         .mockResolvedValueOnce({
-          data: { file_url: 'https://storage/test.pdf', file_name: 'test.pdf', page_count: 10 },
+          data: { file_url: 'course-1/123-test.pdf', file_name: 'test.pdf', page_count: 10 },
           error: null,
         });
 
@@ -908,15 +910,17 @@ describe('CourseService', () => {
       expect(result.module.module_type).toBe('pdf');
       expect(result.content.type).toBe('pdf');
       if (result.content.type === 'pdf') {
+        // file_url should be a signed URL (from mock: createSignedUrl returns signedUrl)
         expect(result.content.data).toEqual({
-          file_url: 'https://storage/test.pdf',
+          file_url: expect.stringContaining('sign'),
           file_name: 'test.pdf',
           page_count: 10,
         });
       }
     });
 
-    it('should load module and convert exam content to form data', async () => {
+    // exam_file_url is optional — when present, it's resolved to a signed URL.
+    it('should load module and convert exam content to form data with signed URL', async () => {
       supabase._mockQueryBuilder.single
         .mockResolvedValueOnce({
           data: { id: 'mod-3', title: 'Exam Mod', description: 'Final exam', module_type: 'exam', sort_order: 2, lecture_id: 'l1', course_id: 'c1' },
@@ -930,7 +934,7 @@ describe('CourseService', () => {
             passing_score: 70,
             max_file_size: 52428800,
             allowed_file_types: ['application/pdf'],
-            exam_file_url: 'https://storage/exam.pdf',
+            exam_file_url: 'course-1/456-exam.pdf',
           },
           error: null,
         });
@@ -947,7 +951,8 @@ describe('CourseService', () => {
           passing_score: 70,
           max_file_size: 52428800,
           allowed_file_types: ['application/pdf'],
-          exam_file_url: 'https://storage/exam.pdf',
+          // exam_file_url resolved to signed URL
+          exam_file_url: expect.stringContaining('sign'),
         });
       }
     });

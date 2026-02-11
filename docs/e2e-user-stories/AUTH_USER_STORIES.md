@@ -22,17 +22,18 @@ Manual E2E testing scenarios for the tenant-aware authentication flow. These sto
 | **Production** | https://x-courses-v2.vercel.app | https://x-courses-v2-production.up.railway.app |
 | **Local Dev** | http://localhost:4200 | http://localhost:8000 |
 
-### Test User Setup
+### Test Users
 
-Before running stories, ensure a test user exists with a known password:
+> Full setup instructions: [TEST_USERS.md](TEST_USERS.md)
 
-```bash
-# Set password for existing user via Supabase Management API
-curl -X PUT "https://ruhdnvtvoxxiodnyyqqf.supabase.co/auth/v1/admin/users/{USER_ID}" \
-  -H "Authorization: Bearer SERVICE_ROLE_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"password": "TestPassword123!"}'
-```
+All test users use password: `TestUser123!`
+
+| # | Email | Role | Tenant | Used In |
+|---|-------|------|--------|---------|
+| 1 | `et@calypso-commodities.com` | **Platform Admin** | Calypso (master) | AUTH-01, AUTH-02, AUTH-03 |
+| 2 | `learner@calypso-commodities.com` | **Learner** | Calypso (master) | AUTH-01 (alternate) |
+| 3 | `admin@calypsoclient.com` | **Tenant Admin** | Calypso Client | AUTH-01 (cross-tenant) |
+| 4 | `learner@calypsoclient.com` | **Learner** | Calypso Client | AUTH-04 (access request) |
 
 ## Status Legend
 
@@ -347,6 +348,7 @@ Expected: `status = 'pending'`, `domain = 'calypso-commodities.com'` (extracted 
 
 | Document | Purpose |
 |----------|---------|
+| `docs/e2e-user-stories/TEST_USERS.md` | Test user accounts, passwords, setup instructions |
 | `docs/AUTH_SYSTEM.md` | Full auth architecture, JWT claims, multi-provider flows |
 | `docs/x_courses_development_approach.md` | Phase 1F completion details |
 | `docs/STYLING_GUIDE.md` | Calypso design tokens for UI verification |

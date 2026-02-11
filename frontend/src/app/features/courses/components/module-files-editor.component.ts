@@ -80,12 +80,9 @@ export class ModuleFilesEditorComponent implements OnInit {
 
       if (error) throw new Error(error.message);
 
-      const { data: urlData } = this.#supabase.client.storage
-        .from('course-files')
-        .getPublicUrl(data.path);
-
+      // Store the storage path (not a public URL) — signed URLs are generated at view time
       await this.#courseService.addModuleFile(this.moduleId(), {
-        file_url: urlData.publicUrl,
+        file_url: data.path,
         file_name: file.name,
         file_size: file.size,
       });
@@ -100,15 +97,10 @@ export class ModuleFilesEditorComponent implements OnInit {
 
   async onDeleteFile(file: ModuleFile) {
     try {
-      // Extract storage path from file URL
-      const marker = '/object/public/course-files/';
-      const markerIndex = file.file_url.indexOf(marker);
-      if (markerIndex >= 0) {
-        const storagePath = file.file_url.substring(markerIndex + marker.length);
-        await this.#supabase.client.storage
-          .from('course-files')
-          .remove([storagePath]);
-      }
+      // file_url stores the storage path directly — delete from bucket
+      await this.#supabase.client.storage
+        .from('course-files')
+        .remove([file.file_url]);
 
       await this.#courseService.deleteModuleFile(file.id);
       await this.#loadFiles();

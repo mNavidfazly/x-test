@@ -223,7 +223,14 @@ export class CourseService {
         module_type: mod.module_type as ModuleType,
       };
 
-      const files: ModuleFile[] = (filesRes.data ?? []).map((f: { id: string; file_url: string; file_name: string; file_size: number | null }) => f);
+      // module_files store storage paths — resolve to signed URLs for downloading
+      const rawFiles = (filesRes.data ?? []) as { id: string; file_url: string; file_name: string; file_size: number | null }[];
+      const files: ModuleFile[] = await Promise.all(
+        rawFiles.map(async (f) => ({
+          ...f,
+          file_url: await this.#getSignedUrl(f.file_url),
+        })),
+      );
 
       const progress: ModuleProgress | null = progressRes.data
         ? { status: (progressRes.data as { status: string }).status as ModuleProgress['status'], completed_at: (progressRes.data as { completed_at: string | null }).completed_at }
@@ -708,6 +715,8 @@ export class CourseService {
         const res = await client.from('module_pdfs').select('file_url, file_name, page_count').eq('module_id', moduleId).single();
         if (res.error) throw res.error;
         const d = res.data as { file_url: string; file_name: string; page_count: number | null };
+        // file_url stores a storage path — resolve to a signed URL for viewing
+        d.file_url = await this.#getSignedUrl(d.file_url);
         return { type: 'pdf', data: d };
       }
       case 'markdown': {
@@ -723,11 +732,25 @@ export class CourseService {
           .single();
         if (res.error) throw res.error;
         const d = res.data as ExamContent;
+        // exam_file_url is optional — resolve to signed URL if present
+        if (d.exam_file_url) {
+          d.exam_file_url = await this.#getSignedUrl(d.exam_file_url);
+        }
         return { type: 'exam', data: d };
       }
       default:
         return { type: moduleType as 'quiz', data: null };
     }
+  }
+
+  // Generate a signed URL from a storage path. The course-files bucket is private,
+  // so we create time-limited signed URLs (1 hour) for viewing/downloading.
+  async #getSignedUrl(storagePath: string): Promise<string> {
+    const { data, error } = await this.#supabase.client.storage
+      .from('course-files')
+      .createSignedUrl(storagePath, 3600);
+    if (error) throw new Error(`Failed to generate signed URL: ${error.message}`);
+    return data.signedUrl;
   }
 
   #buildNavigation(moduleId: string): ModuleViewerData['navigation'] {

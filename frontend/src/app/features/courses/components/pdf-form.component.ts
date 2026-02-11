@@ -144,11 +144,8 @@ export class PdfFormComponent implements OnInit {
 
         if (error) throw new Error(error.message);
 
-        const { data: urlData } = this.#supabase.client.storage
-          .from('course-files')
-          .getPublicUrl(data.path);
-
-        this.pdfForm.file_url = urlData.publicUrl;
+        // Store the storage path (not a public URL) — signed URLs are generated at view time
+        this.pdfForm.file_url = data.path;
         this.pdfForm.file_name = this.#selectedFile.name;
       } catch (err) {
         this.uploadError.set(err instanceof Error ? err.message : 'Upload failed');

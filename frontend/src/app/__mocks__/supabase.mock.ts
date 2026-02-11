@@ -69,9 +69,12 @@ export function createMockSupabaseService(options?: {
             data: { path: 'test/file.pdf' },
             error: null,
           }),
-          getPublicUrl: vi.fn().mockReturnValue({
-            data: { publicUrl: 'https://test.supabase.co/file.pdf' },
+          // Signed URLs for private bucket — upload stores path, read generates signed URL
+          createSignedUrl: vi.fn().mockResolvedValue({
+            data: { signedUrl: 'https://test.supabase.co/storage/v1/object/sign/course-files/test/file.pdf?token=abc' },
+            error: null,
           }),
+          remove: vi.fn().mockResolvedValue({ data: [], error: null }),
         }),
       },
     },

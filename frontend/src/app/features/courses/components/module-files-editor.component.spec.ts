@@ -9,9 +9,10 @@ import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 
+// file_url now stores the storage path (not a public URL) — signed URLs are generated at view time
 const mockFiles = [
-  { id: 'f1', file_url: 'https://test.supabase.co/storage/v1/object/public/course-files/course-1/123-notes.pdf', file_name: 'notes.pdf', file_size: 102400 },
-  { id: 'f2', file_url: 'https://test.supabase.co/storage/v1/object/public/course-files/course-1/456-data.csv', file_name: 'data.csv', file_size: null },
+  { id: 'f1', file_url: 'course-1/123-notes.pdf', file_name: 'notes.pdf', file_size: 102400 },
+  { id: 'f2', file_url: 'course-1/456-data.csv', file_name: 'data.csv', file_size: null },
 ];
 
 function setupMocks(options?: { files?: typeof mockFiles; loadError?: boolean }) {
@@ -23,11 +24,6 @@ function setupMocks(options?: { files?: typeof mockFiles; loadError?: boolean })
   } else {
     courseService.loadModuleFiles.mockResolvedValue(options?.files ?? mockFiles);
   }
-
-  // Add remove method to storage mock (not present in base mock)
-  const storageBucket = supabase.client.storage.from('course-files');
-  (storageBucket as Record<string, unknown>).remove = vi.fn().mockResolvedValue({ data: null, error: null });
-  supabase.client.storage.from = vi.fn().mockReturnValue(storageBucket);
 
   return { courseService, supabase };
 }
@@ -93,7 +89,9 @@ describe('ModuleFilesEditorComponent', () => {
     expect(screen.getByText('Loading files...')).toBeTruthy();
   });
 
-  it('should upload file on selection then refresh file list', async () => {
+  // Upload stores the storage path (data.path) in module_files.file_url,
+  // NOT a public URL. The private bucket stays secure; signed URLs are generated at read time.
+  it('should upload file and store storage path (not public URL)', async () => {
     const { courseService, supabase } = setupMocks();
     await renderComponent(courseService, supabase);
 
@@ -114,10 +112,10 @@ describe('ModuleFilesEditorComponent', () => {
 
     const storageBucket = supabase.client.storage.from('course-files');
     expect(storageBucket.upload).toHaveBeenCalled();
-    expect(storageBucket.getPublicUrl).toHaveBeenCalled();
 
+    // Verify: stored value is the path from data.path, NOT a public URL
     expect(courseService.addModuleFile).toHaveBeenCalledWith('mod-1', {
-      file_url: expect.any(String),
+      file_url: 'test/file.pdf', // matches mock upload response data.path
       file_name: 'upload.txt',
       file_size: 5,
     });
@@ -150,7 +148,9 @@ describe('ModuleFilesEditorComponent', () => {
     expect(screen.getByText('Storage quota exceeded')).toBeTruthy();
   });
 
-  it('should call deleteModuleFile on trash click', async () => {
+  // Delete uses file_url directly as storage path (no URL parsing needed).
+  // Old code extracted path from public URL; now file_url IS the path.
+  it('should delete file from storage using stored path', async () => {
     const { courseService, supabase } = setupMocks();
     await renderComponent(courseService, supabase);
 
@@ -162,7 +162,8 @@ describe('ModuleFilesEditorComponent', () => {
     await new Promise(r => setTimeout(r));
 
     const storageBucket = supabase.client.storage.from('course-files');
-    expect((storageBucket as Record<string, unknown>).remove).toHaveBeenCalledWith(['course-1/123-notes.pdf']);
+    // file_url IS the storage path — passed directly to remove()
+    expect(storageBucket.remove).toHaveBeenCalledWith(['course-1/123-notes.pdf']);
     expect(courseService.deleteModuleFile).toHaveBeenCalledWith('f1');
   });
 

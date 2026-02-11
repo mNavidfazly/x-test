@@ -239,4 +239,5 @@ These rules are NOT covered in other sections and cause hard-to-debug failures:
 3. **Never create SECURITY DEFINER functions without `SET search_path = public`** — `supabase_auth_admin` has `search_path=auth`, causing 500 errors on every auth operation.
 4. **Never insert notifications from application code** — only database triggers create notifications. There are 13 trigger functions with deduplication and exception handling.
 5. **Never set `modules.course_id` independently** — it must match `lectures.course_id` (enforced by `enforce_module_course_consistency()` trigger). Setting it wrong silently breaks RLS.
+6. **Never use public Supabase Storage URLs** — always use signed (private) URLs via `createSignedUrl()` or `createSignedUrls()`. Public URLs bypass RLS and expose files to anyone with the link. All three buckets (`avatars`, `course-files`, `exam-submissions`) must remain **private**.
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/angular';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
 import { ModuleViewerPageComponent } from './module-viewer-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { createMockCourseService, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, MockCourseService } from '../../../__mocks__/course.mock';
@@ -14,21 +15,15 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
 
 describe('ModuleViewerPageComponent', () => {
   let mockCourseService: MockCourseService;
-
-  const mockRoute = {
-    snapshot: {
-      paramMap: {
-        get: (key: string) => {
-          if (key === 'courseId') return 'course-1';
-          if (key === 'moduleId') return 'mod-1';
-          return null;
-        },
-      },
-    },
-  };
+  // BehaviorSubject emits synchronously, matching real ActivatedRoute.paramMap behavior.
+  // This lets us simulate in-app navigation (param changes) without full page reloads.
+  let paramMap$: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(() => {
     mockCourseService = createMockCourseService();
+    paramMap$ = new BehaviorSubject(
+      convertToParamMap({ courseId: 'course-1', moduleId: 'mod-1' }),
+    );
   });
 
   const renderPage = async (options?: { viewer?: ReturnType<typeof createMockModuleViewerData> | null }) => {
@@ -40,7 +35,9 @@ describe('ModuleViewerPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
-        { provide: ActivatedRoute, useValue: mockRoute },
+        // Provide paramMap as an observable — the component uses toSignal(route.paramMap)
+        // to reactively respond to route param changes (e.g. Next/Previous navigation).
+        { provide: ActivatedRoute, useValue: { paramMap: paramMap$ } },
         provideMarkdown(),
       ],
     });
@@ -116,6 +113,8 @@ describe('ModuleViewerPageComponent', () => {
     expect(screen.getByText('2 of 3 modules')).toBeTruthy();
   });
 
+  // canMarkComplete() only returns true for video/pdf/markdown — quiz and exam
+  // modules use their own completion mechanisms (grading, submissions).
   it('should show mark complete button for video/pdf/markdown', async () => {
     const viewer = createMockModuleViewerData(); // video type, no progress
     await renderPage({ viewer });
@@ -143,9 +142,33 @@ describe('ModuleViewerPageComponent', () => {
     expect(screen.queryByText('Mark as complete')).toBeNull();
   });
 
+  // The component uses toSignal(route.paramMap) + effect() so that loadModuleViewer
+  // fires on initial render. This replaced the old ngOnInit approach.
   it('should call loadModuleViewer on init', async () => {
     await renderPage();
 
     expect(mockCourseService.loadModuleViewer).toHaveBeenCalledWith('course-1', 'mod-1');
+  });
+
+  // BUG FIX TEST: Previously the component used snapshot.paramMap.get() in ngOnInit,
+  // which is a ONE-TIME read. When Angular reuses the component for same-route
+  // navigation (clicking Next/Previous), ngOnInit doesn't fire again and the
+  // viewer shows stale content. The fix uses toSignal(route.paramMap) + effect()
+  // to reactively re-load when the route params change.
+  it('should reload module viewer when route params change (client-side navigation)', async () => {
+    const { fixture } = await renderPage();
+
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledWith('course-1', 'mod-1');
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(1);
+
+    // Simulate clicking "Next" — Angular changes the URL params but reuses the component
+    paramMap$.next(convertToParamMap({ courseId: 'course-1', moduleId: 'mod-2' }));
+
+    // Flush the effect (zoneless change detection needs a microtask tick)
+    await new Promise(r => setTimeout(r));
+    fixture.detectChanges();
+
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledWith('course-1', 'mod-2');
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(2);
   });
 });

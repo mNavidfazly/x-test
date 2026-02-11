@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { VideoViewerComponent } from '../components/video-viewer.component';
@@ -14,7 +15,7 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-5xl mx-auto">
-      <a [routerLink]="['/courses', courseId]" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
+      <a [routerLink]="['/courses', courseId()]" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
         <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
         Back to course
       </a>
@@ -72,7 +73,7 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
         <div class="flex items-center justify-between border-t border-slate-200 pt-4 mt-6">
           <div>
             @if (courseService.moduleViewer()!.navigation.prev; as prev) {
-              <a [routerLink]="['/courses', courseId, 'modules', prev.id]"
+              <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
                  class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                 <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
                 Previous
@@ -100,7 +101,7 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
 
           <div>
             @if (courseService.moduleViewer()!.navigation.next; as next) {
-              <a [routerLink]="['/courses', courseId, 'modules', next.id]"
+              <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
                  class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                 Next
                 <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
@@ -112,13 +113,17 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
     </div>
   `,
 })
-export class ModuleViewerPageComponent implements OnInit {
+export class ModuleViewerPageComponent {
   readonly courseService = inject(CourseService);
   #route = inject(ActivatedRoute);
 
   readonly icons = { ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen };
 
-  courseId = '';
+  // Reactive route params — toSignal converts the paramMap observable to a signal
+  // so the effect below fires on every param change (e.g. Next/Previous navigation).
+  readonly #params = toSignal(this.#route.paramMap);
+  readonly courseId = computed(() => this.#params()?.get('courseId') ?? '');
+  readonly #moduleId = computed(() => this.#params()?.get('moduleId') ?? '');
 
   readonly canMarkComplete = computed(() => {
     const viewer = this.courseService.moduleViewer();
@@ -131,12 +136,17 @@ export class ModuleViewerPageComponent implements OnInit {
     return this.courseService.moduleViewer()?.progress?.status === 'completed';
   });
 
-  ngOnInit() {
-    this.courseId = this.#route.snapshot.paramMap.get('courseId') ?? '';
-    const moduleId = this.#route.snapshot.paramMap.get('moduleId') ?? '';
-    if (this.courseId && moduleId) {
-      this.courseService.loadModuleViewer(this.courseId, moduleId);
-    }
+  constructor() {
+    // Effect re-runs whenever courseId or moduleId signals change,
+    // triggering a fresh data load. This fixes the stale navigation bug
+    // where clicking Next/Previous changed the URL but didn't reload content.
+    effect(() => {
+      const cId = this.courseId();
+      const mId = this.#moduleId();
+      if (cId && mId) {
+        this.courseService.loadModuleViewer(cId, mId);
+      }
+    });
   }
 
   onMarkComplete() {
