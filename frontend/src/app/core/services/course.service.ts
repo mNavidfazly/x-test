@@ -491,7 +491,7 @@ export class CourseService {
       .from('module_files')
       .select('id, file_url, file_name, file_size')
       .eq('module_id', moduleId)
-      .order('created_at', { ascending: true });
+      .order('file_name', { ascending: true });
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load module files'));
     return (data ?? []) as ModuleFile[];
   }
