@@ -223,13 +223,17 @@ export class CourseService {
         module_type: mod.module_type as ModuleType,
       };
 
-      // module_files store storage paths — resolve to signed URLs for downloading
+      // module_files store storage paths — resolve to signed URLs for downloading.
+      // Files whose storage objects have been deleted will return null and are filtered out.
       const rawFiles = (filesRes.data ?? []) as { id: string; file_url: string; file_name: string; file_size: number | null }[];
-      const files: ModuleFile[] = await Promise.all(
+      const resolvedFiles = await Promise.all(
         rawFiles.map(async (f) => ({
           ...f,
           file_url: await this.#getSignedUrl(f.file_url),
         })),
+      );
+      const files: ModuleFile[] = resolvedFiles.filter(
+        (f): f is ModuleFile => f.file_url !== null,
       );
 
       const progress: ModuleProgress | null = progressRes.data
@@ -741,8 +745,10 @@ export class CourseService {
         const res = await client.from('module_pdfs').select('file_url, file_name, page_count').eq('module_id', moduleId).single();
         if (res.error) throw res.error;
         const d = res.data as { file_url: string; file_name: string; page_count: number | null };
-        // file_url stores a storage path — resolve to a signed URL for viewing
-        d.file_url = await this.#getSignedUrl(d.file_url);
+        // file_url stores a storage path — resolve to a signed URL for viewing.
+        // If the file was deleted from storage, set to empty string (viewer shows "File not found").
+        const pdfSignedUrl = await this.#getSignedUrl(d.file_url);
+        d.file_url = pdfSignedUrl ?? '';
         return { type: 'pdf', data: d };
       }
       case 'markdown': {
@@ -758,7 +764,8 @@ export class CourseService {
           .single();
         if (res.error) throw res.error;
         const d = res.data as ExamContent;
-        // exam_file_url is optional — resolve to signed URL if present
+        // exam_file_url is optional — resolve to signed URL if present.
+        // If the file was deleted from storage, clear it (exam renders without the file).
         if (d.exam_file_url) {
           d.exam_file_url = await this.#getSignedUrl(d.exam_file_url);
         }
@@ -771,11 +778,15 @@ export class CourseService {
 
   // Generate a signed URL from a storage path. The course-files bucket is private,
   // so we create time-limited signed URLs (1 hour) for viewing/downloading.
-  async #getSignedUrl(storagePath: string): Promise<string> {
+  // Returns null if the file no longer exists in storage (graceful degradation).
+  async #getSignedUrl(storagePath: string): Promise<string | null> {
     const { data, error } = await this.#supabase.client.storage
       .from('course-files')
       .createSignedUrl(storagePath, 3600);
-    if (error) throw new Error(`Failed to generate signed URL: ${error.message}`);
+    if (error) {
+      console.warn(`Signed URL failed for "${storagePath}": ${error.message}`);
+      return null;
+    }
     return data.signedUrl;
   }
 

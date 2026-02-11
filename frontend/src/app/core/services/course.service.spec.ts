@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { CourseService } from './course.service';
 import { SupabaseService } from './supabase.service';
@@ -348,6 +348,57 @@ describe('CourseService', () => {
 
       expect(unauthService.error()).toBe('Not authenticated');
       expect(unauthService.moduleViewer()).toBeNull();
+    });
+
+    it('should filter out module_files whose storage objects are missing', async () => {
+      await preloadCourseDetail();
+
+      // module metadata → single
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-1', title: 'Video Mod', description: null, module_type: 'video', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        // video content → single
+        .mockResolvedValueOnce({
+          data: { video_url: 'https://cdn/video.mp4', thumbnail_url: null, duration: 120 },
+          error: null,
+        });
+
+      // module_files → two files, one will fail signed URL
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({
+          data: [
+            { id: 'f1', file_url: 'course-1/good-file.pdf', file_name: 'good-file.pdf', file_size: 1024 },
+            { id: 'f2', file_url: 'course-1/deleted-file.pdf', file_name: 'deleted-file.pdf', file_size: 2048 },
+          ],
+          error: null,
+        }));
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+
+      // Mock createSignedUrl: succeed for first, fail for second
+      const storageMock = supabase.client.storage.from('course-files');
+      storageMock.createSignedUrl = vi.fn()
+        .mockResolvedValueOnce({ data: { signedUrl: 'https://signed/good-file.pdf' }, error: null })
+        .mockResolvedValueOnce({ data: null, error: { message: 'Object not found' } });
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await service.loadModuleViewer('c1', 'mod-1');
+
+      const viewer = service.moduleViewer();
+      expect(viewer).not.toBeNull();
+      // Only the good file should remain
+      expect(viewer!.files).toHaveLength(1);
+      expect(viewer!.files[0].file_name).toBe('good-file.pdf');
+      expect(viewer!.files[0].file_url).toBe('https://signed/good-file.pdf');
+
+      // Should have warned about the missing file
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('deleted-file.pdf'),
+        // any extra args from console.warn
+      );
+      warnSpy.mockRestore();
     });
   });
 
@@ -955,6 +1006,79 @@ describe('CourseService', () => {
           exam_file_url: expect.stringContaining('sign'),
         });
       }
+    });
+
+    it('should return empty file_url for PDF when storage file is missing', async () => {
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-pdf', title: 'PDF Mod', description: null, module_type: 'pdf', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { file_url: 'course-1/deleted.pdf', file_name: 'deleted.pdf', page_count: 5 },
+          error: null,
+        });
+
+      // Mock createSignedUrl to fail (file deleted from storage)
+      const storageMock = supabase.client.storage.from('course-files');
+      storageMock.createSignedUrl = vi.fn().mockResolvedValueOnce({
+        data: null,
+        error: { message: 'Object not found' },
+      });
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const result = await service.loadModuleForEdit('mod-pdf');
+
+      expect(result.content.type).toBe('pdf');
+      if (result.content.type === 'pdf') {
+        // file_url should be empty string when file is missing
+        expect(result.content.data.file_url).toBe('');
+        expect(result.content.data.file_name).toBe('deleted.pdf');
+      }
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('deleted.pdf'));
+      warnSpy.mockRestore();
+    });
+
+    it('should clear exam_file_url when storage file is missing', async () => {
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-exam', title: 'Exam Mod', description: null, module_type: 'exam', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: {
+            title: 'Final Exam',
+            description: 'Exam',
+            duration_minutes: 90,
+            passing_score: 70,
+            max_file_size: 52428800,
+            allowed_file_types: ['application/pdf'],
+            exam_file_url: 'course-1/deleted-exam.pdf',
+          },
+          error: null,
+        });
+
+      // Mock createSignedUrl to fail
+      const storageMock = supabase.client.storage.from('course-files');
+      storageMock.createSignedUrl = vi.fn().mockResolvedValueOnce({
+        data: null,
+        error: { message: 'Object not found' },
+      });
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const result = await service.loadModuleForEdit('mod-exam');
+
+      expect(result.content.type).toBe('exam');
+      if (result.content.type === 'exam') {
+        // exam_file_url should be null when file is missing (optional field)
+        expect(result.content.data.exam_file_url).toBeNull();
+      }
+
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('deleted-exam.pdf'));
+      warnSpy.mockRestore();
     });
 
     it('should throw on load error', async () => {
