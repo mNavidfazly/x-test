@@ -7,6 +7,7 @@ import {
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem,
   CourseFormData, TenantSummary, TenantAssignment, LectureFormData,
   ModuleSavePayload, ModuleContentFormData,
+  PdfFormData, ExamFormData, ExamContent, ModulePdf,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -440,12 +441,17 @@ export class CourseService {
   }
 
   async updateModule(moduleId: string, payload: ModuleSavePayload): Promise<void> {
+    const updateData: Record<string, unknown> = {
+      title: payload.module.title,
+      description: payload.module.description,
+    };
+    if (payload.significantUpdate) {
+      updateData['significant_update_at'] = new Date().toISOString();
+    }
+
     const { error } = await this.#supabase.client
       .from('modules')
-      .update({
-        title: payload.module.title,
-        description: payload.module.description,
-      })
+      .update(updateData)
       .eq('id', moduleId);
 
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update module'));
@@ -516,6 +522,33 @@ export class CourseService {
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save video content'));
         break;
       }
+      case 'pdf': {
+        if (!content.data) break;
+        const d = content.data as PdfFormData;
+        const { error } = await this.#supabase.client
+          .from('module_pdfs')
+          .insert({ module_id: moduleId, file_url: d.file_url, file_name: d.file_name, page_count: d.page_count });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save PDF content'));
+        break;
+      }
+      case 'exam': {
+        if (!content.data) break;
+        const d = content.data as ExamFormData;
+        const { error } = await this.#supabase.client
+          .from('exams')
+          .insert({
+            module_id: moduleId,
+            title: d.title,
+            description: d.description,
+            duration_minutes: d.duration_minutes,
+            passing_score: d.passing_score,
+            max_file_size: d.max_file_size,
+            allowed_file_types: d.allowed_file_types,
+            exam_file_url: d.exam_file_url,
+          });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save exam content'));
+        break;
+      }
       default:
         break;
     }
@@ -536,6 +569,38 @@ export class CourseService {
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update video content'));
         break;
       }
+      case 'pdf': {
+        if (!content.data) break;
+        const d = content.data as PdfFormData;
+        const { error } = await this.#supabase.client
+          .from('module_pdfs')
+          .upsert({
+            module_id: moduleId,
+            file_url: d.file_url,
+            file_name: d.file_name,
+            page_count: d.page_count,
+          }, { onConflict: 'module_id' });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update PDF content'));
+        break;
+      }
+      case 'exam': {
+        if (!content.data) break;
+        const d = content.data as ExamFormData;
+        const { error } = await this.#supabase.client
+          .from('exams')
+          .upsert({
+            module_id: moduleId,
+            title: d.title,
+            description: d.description,
+            duration_minutes: d.duration_minutes,
+            passing_score: d.passing_score,
+            max_file_size: d.max_file_size,
+            allowed_file_types: d.allowed_file_types,
+            exam_file_url: d.exam_file_url,
+          }, { onConflict: 'module_id' });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update exam content'));
+        break;
+      }
       default:
         break;
     }
@@ -552,6 +617,28 @@ export class CourseService {
             duration: content.data.duration,
           },
         };
+      case 'pdf': {
+        const d = content.data as ModulePdf;
+        return {
+          type: 'pdf',
+          data: { file_url: d.file_url, file_name: d.file_name, page_count: d.page_count },
+        };
+      }
+      case 'exam': {
+        const d = content.data as ExamContent;
+        return {
+          type: 'exam',
+          data: {
+            title: d.title,
+            description: d.description,
+            duration_minutes: d.duration_minutes,
+            passing_score: d.passing_score,
+            max_file_size: d.max_file_size,
+            allowed_file_types: d.allowed_file_types,
+            exam_file_url: d.exam_file_url,
+          },
+        };
+      }
       default:
         return { type: content.type, data: null } as ModuleContentFormData;
     }
@@ -577,8 +664,17 @@ export class CourseService {
         const d = res.data as { content: string };
         return { type: 'markdown', data: d };
       }
+      case 'exam': {
+        const res = await client.from('exams')
+          .select('title, description, duration_minutes, passing_score, max_file_size, allowed_file_types, exam_file_url')
+          .eq('module_id', moduleId)
+          .single();
+        if (res.error) throw res.error;
+        const d = res.data as ExamContent;
+        return { type: 'exam', data: d };
+      }
       default:
-        return { type: moduleType as 'quiz' | 'exam', data: null };
+        return { type: moduleType as 'quiz', data: null };
     }
   }
 

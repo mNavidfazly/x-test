@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00020` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00022` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -30,7 +30,7 @@ This document describes the development approach for building X-Courses v2 (Mult
 | **Scheduled Jobs** | pg_cron (exam deadlines, content staleness) | Supabase Cloud |
 | **Frontend** | Angular 19 + Tailwind CSS v3 + Lucide Icons | Vercel |
 | **Backend API** | FastAPI (Python 3.11+) | Railway |
-| **Video** | Bunny CDN (streaming URLs, not Supabase Storage) | Bunny CDN |
+| **Video** | Bunny Stream (TUS resumable upload, iframe embed with token auth, encoding webhook) | Bunny CDN |
 | **Email** | Calypso SMTP (direct SMTP, not Resend) | Calypso Infrastructure |
 | **SSO** | Keycloak SSO (via `calypso-xcourses` client in "customers" realm) for Calypso + onboarded client tenants | Keycloak |
 | **Source Control** | GitHub (monorepo) | GitHub |
@@ -76,7 +76,7 @@ This document describes the development approach for building X-Courses v2 (Mult
           ▲
           │
     ┌──────────┐
-    │ Bunny CDN│  (Video streaming - external URLs stored in module_videos)
+    │ Bunny CDN│  (Video streaming — TUS upload via FastAPI init, iframe embed with token auth)
     └──────────┘
 ```
 
@@ -88,8 +88,9 @@ This document describes the development approach for building X-Courses v2 (Mult
   - User invitations (planned — sends email via Calypso SMTP)
   - Reminder emails (planned — sends via Calypso SMTP)
   - External quiz results webhook (planned — receives from external quiz platform)
+  - Bunny Stream video upload init + embed URL signing + encoding webhook
 - **Notifications** are created automatically via PostgreSQL triggers (SECURITY DEFINER)
-- **Videos** are hosted on Bunny CDN — only URLs are stored in the database
+- **Videos** are hosted on Bunny Stream — uploaded via TUS (browser → Bunny directly), embedded via token-signed iframe URLs. FastAPI handles upload init, embed signing, and encoding webhooks
 - **Deployment** is git-based: push to `main` on GitHub → Vercel auto-deploys `frontend/`, Railway auto-deploys `backend/`
 
 ---
@@ -105,7 +106,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00020                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture CRUD triggers)
+│       └── 00001-00022                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -118,6 +119,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   ├── __init__.py
 │   │   │   ├── health.py                 # GET /api/health
 │   │   │   └── auth.py                   # POST /api/auth/resolve-tenant (10/min), POST /api/auth/reset-password (5/min)
+│   │   │   ├── video.py                 # POST /api/video/init-upload, GET /api/video/{id}/status, POST /api/video/webhook
 │   │   │   # Planned: invite.py (Phase 9B), reminders.py (Phase 9D), quiz_results.py (Phase 5B)
 │   │   │
 │   │   ├── services/
@@ -125,7 +127,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   ├── supabase.py               # Supabase Python client (service role)
 │   │   │   ├── tenant.py                 # Tenant resolution (email domain → tenant + auth methods + idp_hint)
 │   │   │   ├── email.py                  # Calypso SMTP client
-│   │   │   └── auth.py                   # JWT verification (HS256)
+│   │   │   ├── auth.py                   # JWT verification (HS256)
+│   │   │   └── bunny.py                  # Bunny Stream API client (create video, TUS signature, embed token, status, delete)
 │   │   │
 │   │   └── models/
 │   │       ├── __init__.py
@@ -150,7 +153,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData factories
+│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData factories
 │   │   │   │
 │   │   │   ├── core/
 │   │   │   │   ├── services/
@@ -159,14 +162,14 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture)
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam)
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, ExamContent, ModuleSavePayload, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -191,7 +194,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -199,6 +202,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── course-detail-page.component.spec.ts
 │   │   │   │   │   │   ├── course-form-page.component.ts    # Smart: create/edit course, tenant assignment, delete (Phase 3A)
 │   │   │   │   │   │   ├── course-form-page.component.spec.ts
+│   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector, video/pdf/exam forms (Phase 3C)
+│   │   │   │   │   │   ├── module-form-page.component.spec.ts
 │   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown viewer, prev/next nav, mark-complete
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
@@ -220,6 +225,12 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── course-form.component.spec.ts
 │   │   │   │   │   │   ├── tenant-assignment.component.ts    # Presentational: assign courses to tenants (Phase 3A)
 │   │   │   │   │   │   ├── tenant-assignment.component.spec.ts
+│   │   │   │   │   │   ├── video-form.component.ts           # Presentational: video module form (title + desc + URL + thumbnail + duration) (Phase 3C-1)
+│   │   │   │   │   │   ├── video-form.component.spec.ts
+│   │   │   │   │   │   ├── pdf-form.component.ts             # Presentational: PDF module form (title + desc + file upload + page_count) (Phase 3C-2)
+│   │   │   │   │   │   ├── pdf-form.component.spec.ts
+│   │   │   │   │   │   ├── exam-form.component.ts            # Presentational: exam module form (settings + constraints + exam file upload) (Phase 3C-2)
+│   │   │   │   │   │   ├── exam-form.component.spec.ts
 │   │   │   │   │   │   ├── module-files-list.component.ts    # Presentational: downloadable files with human-readable sizes
 │   │   │   │   │   │   └── module-files-list.component.spec.ts
 │   │   │   │   │
@@ -235,9 +246,11 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │
 │   │   │   └── shared/
 │   │   │       └── components/
-│   │   │           └── stub-page.component.ts  # "Coming soon" placeholder for unbuilt feature routes
+│   │   │           ├── stub-page.component.ts  # "Coming soon" placeholder for unbuilt feature routes
+│   │   │           ├── file-upload.component.ts       # ✅ Presentational: drag-and-drop file picker, client-side validation (Phase 3C-2)
+│   │   │           └── file-upload.component.spec.ts
 │   │   │           # Planned (Phase 10): data-table, confirmation-dialog, loading-spinner,
-│   │   │           # empty-state, badge, file-upload, module-type-icon, toast.service, date-format.pipe
+│   │   │           # empty-state, badge, module-type-icon, toast.service, date-format.pipe
 │   │   │
 │   │   └── test-setup.mjs              # Angular TestBed initialization (MUST be .mjs, not .ts)
 │   │
@@ -493,14 +506,18 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] Type is immutable after creation, `lectureId` as query param for create
 - [x] **Tests:** 58 new tests (8 VideoForm + 17 ModuleFormPage + 10 ModuleItem + 7 LectureAccordion + 12 CourseService + 4 CourseDetailPage) — 315 total frontend tests
 
-#### 3C-2 — Module CRUD: File Upload + PDF + Exam
-- [ ] FileUploadComponent (shared, reusable drag-and-drop / file picker)
-- [ ] Supabase Storage integration (course-files bucket)
-- [ ] PdfFormComponent with file upload, file_name, page_count
-- [ ] ExamFormComponent: duration_minutes, passing_score, max_file_size, allowed_file_types, exam_file_url upload
-- [ ] "Significant update" checkbox on module edit → sets significant_update_at
-- [ ] CourseService: extend for PDF + Exam subtable CRUD
-- [ ] **Tests:** ~40 new
+#### 3C-2 — Module CRUD: File Upload + PDF + Exam (Complete)
+- [x] FileUploadComponent (shared, presentational drag-and-drop / file picker — no SupabaseService, parent handles upload)
+- [x] Supabase Storage integration (course-files bucket, upload on save not on file select, path: `course-files/{courseId}/{timestamp}-{filename}`)
+- [x] PdfFormComponent with file upload, file_name, page_count (optional)
+- [x] ExamFormComponent: title + desc + duration_minutes, passing_score, max_file_size (MB display → bytes on save), allowed_file_types checkboxes, optional exam_file_url upload
+- [x] Exam title sync: module title and exam title kept in sync on save
+- [x] `significantUpdate` flag on `ModuleSavePayload` → sets `significant_update_at` on module row
+- [x] CourseService: extend `#insertModuleContent`, `#upsertModuleContent`, `#contentToFormData`, `#fetchModuleContent` for PDF + Exam
+- [x] ModuleFormPageComponent: PDF + Exam get dedicated forms, generic form only for markdown + quiz
+- [x] Model types: `PdfFormData`, `ExamFormData`, `ExamContent`, updated `ModuleContentFormData` union
+- [x] Mock factories: `createMockPdfFormData()`, `createMockExamFormData()`
+- [x] **Tests:** 40 new tests (8 FileUpload + 8 PdfForm + 10 ExamForm + 6 ModuleFormPage + 8 CourseService) — 355 total frontend tests
 
 #### 3C-3 — Module CRUD: Tiptap Markdown + Quiz Stub
 - [ ] Install Tiptap: @tiptap/core, @tiptap/starter-kit, @tiptap/extension-*
@@ -510,6 +527,20 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [ ] CourseService: module_files CRUD + markdown subtable CRUD
 - [ ] Quiz stub: creates module with type=quiz, "Quiz Builder coming in Phase 3D" note
 - [ ] **Tests:** ~40 new
+
+#### 3C-4 — Bunny Stream Integration
+> Detailed implementation plan: [docs/BUNNY_STREAM_PLAN.md](BUNNY_STREAM_PLAN.md)
+- [ ] Migration 00022: Replace `video_url`/`thumbnail_url`/`duration` with `bunny_video_id`, `bunny_library_id`, `encoding_status`, auto-populated `duration`/`thumbnail_url`, `original_filename`
+- [ ] Backend: Add `bunny_api_key`, `bunny_library_id`, `bunny_cdn_hostname`, `bunny_token_key` to Settings
+- [ ] Backend: `services/bunny.py` — create_video, generate_tus_signature, generate_embed_token, get_video_status, delete_video, build_thumbnail_url
+- [ ] Backend: `routers/video.py` — `POST /api/video/init-upload` (JWT, creates video + returns TUS credentials), `GET /api/video/{id}/status` (returns signed embed URL + encoding status), `POST /api/video/webhook` (encoding status callback)
+- [ ] Frontend: Install `tus-js-client`, create BunnyUploadService (TUS upload + progress signals)
+- [ ] Frontend: Rewrite VideoFormComponent — file picker + upload progress bar (replaces URL text inputs)
+- [ ] Frontend: Rewrite VideoViewerComponent — Bunny iframe embed with token-signed URLs + encoding status states (replaces native `<video>`)
+- [ ] Frontend: Update ModuleFormPageComponent, CourseService private methods, mock factories
+- [ ] Bunny dashboard: Enable token authentication on library, set allowed referers (`x-courses-v2.vercel.app`, `localhost:4200`)
+- [ ] Configure Bunny webhook URL in Bunny dashboard → `https://{railway-domain}/api/video/webhook`
+- [ ] **Tests:** ~12 backend (pytest) + ~20 frontend (vitest)
 
 #### 3D - Quiz Builder
 - [ ] Quiz settings: title, description, time_limit, passing_score, max_attempts, show_correct_answers, randomize_questions, randomize_answers
@@ -908,11 +939,15 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 | `/api/invite` | POST | *Planned (Phase 9B)* — Send invitation email (Calypso SMTP) | JWT (Tenant Admin, Platform Admin) |
 | `/api/reminders/send` | POST | *Planned (Phase 9D)* — Send reminder emails (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
 | `/api/quiz-results/external` | POST | *Planned (Phase 5B)* — External quiz results webhook | API Key / Webhook Signature |
+| `/api/video/init-upload` | POST | Create Bunny video + return TUS upload credentials | JWT (Platform Admin, Lecturer with can_edit) |
+| `/api/video/{id}/status` | GET | Poll Bunny encoding progress + return signed embed URL | JWT (any authenticated) |
+| `/api/video/webhook` | POST | Bunny encoding status callback | None (validates library_id) |
 
 **Note:** All CRUD operations go directly from Angular to Supabase. FastAPI is only used for operations requiring:
 - Server-side email sending (SMTP)
 - External system integration (webhook)
 - Service-role database operations (user creation via invite)
+- Bunny Stream API key operations (video upload init, embed URL signing, encoding webhook)
 
 ---
 
@@ -1010,12 +1045,19 @@ Course content (courses, lectures, modules, subtables) has **no tenant_id**. Con
 - A course assigned to Santos and Equinor has identical content for both
 - User-generated data (progress, comments, quiz attempts, exam submissions, issues) **has tenant_id** for isolation
 
-### 8.5 Videos on Bunny CDN
+### 8.5 Videos on Bunny Stream
 
-Videos are **not** stored in Supabase Storage. They're hosted on Bunny CDN:
-- `module_videos.video_url` contains the Bunny streaming URL
-- `module_videos.thumbnail_url` contains the thumbnail
-- Upload workflow is outside scope (admin uploads to Bunny, pastes URL)
+Videos are uploaded to Bunny Stream via TUS resumable uploads and embedded via Bunny's iframe player:
+- `module_videos.bunny_video_id` — Bunny video GUID (used for embed URL + API calls)
+- `module_videos.bunny_library_id` — Bunny library ID
+- `module_videos.encoding_status` — 0=Queued, 1=Processing, 2=Encoding, 3=Finished, 5=Failed
+- `module_videos.duration` / `thumbnail_url` — auto-populated by webhook after encoding
+- `module_videos.original_filename` — original upload filename for display
+- Upload: Angular → FastAPI `POST /api/video/init-upload` (create video + sign TUS credentials) → browser uploads directly to Bunny via tus-js-client
+- Playback: `<iframe src="https://iframe.mediadelivery.net/embed/{library_id}/{video_id}?token={hash}&expires={ts}">` (token-signed, expires after 4h)
+- Encoding webhook: Bunny → FastAPI `POST /api/video/webhook` → updates module_videos via service-role Supabase client
+- Security: Bunny API key is server-side only (FastAPI), never exposed to frontend. Embed URLs use token authentication (SHA256 signed, time-limited). Referer restriction configured in Bunny dashboard.
+- Orphan cleanup: Upload without Save leaves video in Bunny — future cleanup cron, not in scope
 
 ### 8.6 No AI Chat
 

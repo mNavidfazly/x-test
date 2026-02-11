@@ -80,12 +80,22 @@ export interface ModuleFile {
   file_size: number | null;
 }
 
+export interface ExamContent {
+  title: string;
+  description: string | null;
+  duration_minutes: number;
+  passing_score: number;
+  max_file_size: number;
+  allowed_file_types: string[];
+  exam_file_url: string | null;
+}
+
 export type ModuleContent =
   | { type: 'video'; data: ModuleVideo }
   | { type: 'pdf'; data: ModulePdf }
   | { type: 'markdown'; data: ModuleMarkdownContent }
   | { type: 'quiz'; data: null }
-  | { type: 'exam'; data: null };
+  | { type: 'exam'; data: ExamContent };
 
 export interface ModuleNavItem {
   id: string;
@@ -152,14 +162,31 @@ export interface VideoFormData {
   duration: number | null;
 }
 
+export interface PdfFormData {
+  file_url: string;
+  file_name: string;
+  page_count: number | null;
+}
+
+export interface ExamFormData {
+  title: string;
+  description: string | null;
+  duration_minutes: number;
+  passing_score: number;
+  max_file_size: number;
+  allowed_file_types: string[];
+  exam_file_url: string | null;
+}
+
 export type ModuleContentFormData =
   | { type: 'video'; data: VideoFormData }
-  | { type: 'pdf'; data: null }
+  | { type: 'pdf'; data: PdfFormData }
   | { type: 'markdown'; data: null }
   | { type: 'quiz'; data: null }
-  | { type: 'exam'; data: null };
+  | { type: 'exam'; data: ExamFormData };
 
 export interface ModuleSavePayload {
   module: ModuleFormData;
   content: ModuleContentFormData;
+  significantUpdate?: boolean;
 }

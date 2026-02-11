@@ -7,9 +7,14 @@ import { RouterLink } from '@angular/router';
 import { ModuleFormPageComponent } from './module-form-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { SupabaseService } from '../../../core/services/supabase.service';
 import { VideoFormComponent } from '../components/video-form.component';
+import { PdfFormComponent } from '../components/pdf-form.component';
+import { ExamFormComponent } from '../components/exam-form.component';
+import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 import { createMockCourseService } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
+import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 
 @Component({ selector: 'app-dummy', template: '', standalone: true })
@@ -27,7 +32,7 @@ function mockActivatedRoute(
   };
 }
 
-const defaultImports = [MockLucideIconComponent, VideoFormComponent, FormsModule, RouterLink];
+const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, FileUploadComponent, FormsModule, RouterLink];
 
 /** Helper: render in create mode (no moduleId, with courseId + lectureId) */
 async function renderCreateMode(overrides?: {
@@ -49,6 +54,7 @@ async function renderCreateMode(overrides?: {
       provideRouter([]),
       { provide: CourseService, useValue: courseService },
       { provide: AuthService, useValue: authService },
+      { provide: SupabaseService, useValue: createMockSupabaseService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute(
@@ -86,6 +92,7 @@ async function renderEditMode(overrides?: {
       provideRouter([]),
       { provide: CourseService, useValue: courseService },
       { provide: AuthService, useValue: authService },
+      { provide: SupabaseService, useValue: createMockSupabaseService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute({ courseId, moduleId }),
@@ -150,10 +157,10 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByLabelText('Video URL')).toBeTruthy();
   });
 
-  it('should show generic form for non-video type (pdf)', async () => {
+  it('should show generic form for non-video, non-pdf, non-exam type (quiz)', async () => {
     const { fixture } = await renderCreateMode();
 
-    fireEvent.click(screen.getByText('PDF'));
+    fireEvent.click(screen.getByText('Quiz'));
     fixture.detectChanges();
 
     // Generic form has Title/Description fields + a Create Module button
@@ -186,6 +193,7 @@ describe('ModuleFormPageComponent', () => {
         provideRouter([{ path: '**', component: DummyComponent }]),
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: authService },
+        { provide: SupabaseService, useValue: createMockSupabaseService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(
@@ -313,6 +321,7 @@ describe('ModuleFormPageComponent', () => {
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: authService },
+        { provide: SupabaseService, useValue: createMockSupabaseService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(
@@ -331,19 +340,19 @@ describe('ModuleFormPageComponent', () => {
 
   // --- Generic form save ---
 
-  it('should save generic module (pdf) with title and description', async () => {
+  it('should save generic module (quiz) with title and description', async () => {
     const { fixture, courseService } = await renderCreateMode();
 
-    // Select PDF type
-    fireEvent.click(screen.getByText('PDF'));
+    // Select Quiz type (still uses generic form)
+    fireEvent.click(screen.getByText('Quiz'));
     fixture.detectChanges();
 
     // Fill in generic form
     const titleInput = screen.getByLabelText('Title') as HTMLInputElement;
-    fireEvent.input(titleInput, { target: { value: 'PDF Handbook' } });
+    fireEvent.input(titleInput, { target: { value: 'Quiz Module' } });
 
     const descInput = screen.getByLabelText('Description') as HTMLTextAreaElement;
-    fireEvent.input(descInput, { target: { value: 'Course handbook' } });
+    fireEvent.input(descInput, { target: { value: 'A quiz' } });
     fixture.detectChanges();
 
     // Click Create Module button
@@ -354,9 +363,9 @@ describe('ModuleFormPageComponent', () => {
       'course-1',
       expect.objectContaining({
         module: expect.objectContaining({
-          title: 'PDF Handbook',
-          description: 'Course handbook',
-          module_type: 'pdf',
+          title: 'Quiz Module',
+          description: 'A quiz',
+          module_type: 'quiz',
           lecture_id: 'lecture-1',
         }),
       }),
@@ -369,5 +378,95 @@ describe('ModuleFormPageComponent', () => {
     await renderCreateMode();
 
     expect(screen.getByText('Back to course')).toBeTruthy();
+  });
+
+  // --- PDF form ---
+
+  it('should show PDF form when PDF type selected', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('PDF'));
+    fixture.detectChanges();
+
+    // PdfFormComponent renders "PDF File" label and page count
+    expect(screen.getByText('PDF File')).toBeTruthy();
+    expect(screen.getByLabelText('Page count')).toBeTruthy();
+  });
+
+  it('should load PDF data in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-pdf', title: 'PDF Module', description: 'A PDF', module_type: 'pdf', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'pdf', data: { file_url: 'https://storage/doc.pdf', file_name: 'doc.pdf', page_count: 15 } },
+    });
+
+    const { fixture } = await renderEditMode({ courseService, moduleId: 'mod-pdf' });
+
+    expect(courseService.loadModuleForEdit).toHaveBeenCalledWith('mod-pdf');
+    // PDF form should be visible with pre-populated data
+    expect(screen.getByText('PDF File')).toBeTruthy();
+    expect(screen.getByText('doc.pdf')).toBeTruthy();
+  });
+
+  // --- Exam form ---
+
+  it('should show Exam form when Exam type selected', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('Exam'));
+    fixture.detectChanges();
+
+    // ExamFormComponent renders exam-specific sections
+    expect(screen.getByText('Exam Settings')).toBeTruthy();
+    expect(screen.getByLabelText('Duration (minutes)')).toBeTruthy();
+    expect(screen.getByLabelText('Passing score (%)')).toBeTruthy();
+    expect(screen.getByText('Submission Requirements')).toBeTruthy();
+  });
+
+  it('should load Exam data in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-exam', title: 'Final Exam', description: 'End exam', module_type: 'exam', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: {
+        type: 'exam',
+        data: {
+          title: 'Final Exam',
+          description: 'End exam',
+          duration_minutes: 90,
+          passing_score: 75,
+          max_file_size: 52428800,
+          allowed_file_types: ['application/pdf'],
+          exam_file_url: null,
+        },
+      },
+    });
+
+    await renderEditMode({ courseService, moduleId: 'mod-exam' });
+
+    expect(courseService.loadModuleForEdit).toHaveBeenCalledWith('mod-exam');
+    // Exam form should be visible
+    expect(screen.getByText('Exam Settings')).toBeTruthy();
+    expect((screen.getByLabelText('Duration (minutes)') as HTMLInputElement).value).toBe('90');
+    expect((screen.getByLabelText('Passing score (%)') as HTMLInputElement).value).toBe('75');
+  });
+
+  // --- No "coming soon" for PDF and Exam ---
+
+  it('should not show "coming soon" note for PDF type', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('PDF'));
+    fixture.detectChanges();
+
+    expect(screen.queryByText(/Additional settings for this module type/)).toBeNull();
+  });
+
+  it('should not show "coming soon" note for Exam type', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('Exam'));
+    fixture.detectChanges();
+
+    expect(screen.queryByText(/Additional settings for this module type/)).toBeNull();
   });
 });

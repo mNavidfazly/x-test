@@ -892,6 +892,66 @@ describe('CourseService', () => {
       }
     });
 
+    it('should load module and convert PDF content to form data', async () => {
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-2', title: 'PDF Mod', description: null, module_type: 'pdf', sort_order: 1, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { file_url: 'https://storage/test.pdf', file_name: 'test.pdf', page_count: 10 },
+          error: null,
+        });
+
+      const result = await service.loadModuleForEdit('mod-2');
+
+      expect(result.module.module_type).toBe('pdf');
+      expect(result.content.type).toBe('pdf');
+      if (result.content.type === 'pdf') {
+        expect(result.content.data).toEqual({
+          file_url: 'https://storage/test.pdf',
+          file_name: 'test.pdf',
+          page_count: 10,
+        });
+      }
+    });
+
+    it('should load module and convert exam content to form data', async () => {
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-3', title: 'Exam Mod', description: 'Final exam', module_type: 'exam', sort_order: 2, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: {
+            title: 'Final Exam',
+            description: 'End of course exam',
+            duration_minutes: 90,
+            passing_score: 70,
+            max_file_size: 52428800,
+            allowed_file_types: ['application/pdf'],
+            exam_file_url: 'https://storage/exam.pdf',
+          },
+          error: null,
+        });
+
+      const result = await service.loadModuleForEdit('mod-3');
+
+      expect(result.module.module_type).toBe('exam');
+      expect(result.content.type).toBe('exam');
+      if (result.content.type === 'exam') {
+        expect(result.content.data).toEqual({
+          title: 'Final Exam',
+          description: 'End of course exam',
+          duration_minutes: 90,
+          passing_score: 70,
+          max_file_size: 52428800,
+          allowed_file_types: ['application/pdf'],
+          exam_file_url: 'https://storage/exam.pdf',
+        });
+      }
+    });
+
     it('should throw on load error', async () => {
       supabase._mockQueryBuilder.single.mockResolvedValueOnce({
         data: null,
@@ -899,6 +959,170 @@ describe('CourseService', () => {
       });
 
       await expect(service.loadModuleForEdit('bad-id')).rejects.toThrow('Module not found');
+    });
+  });
+
+  describe('createModule with PDF content', () => {
+    it('should insert module + PDF content and return id', async () => {
+      // insert module → .select('id').single()
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'new-pdf-mod' },
+        error: null,
+      });
+      // insert module_pdfs → .then()
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      const result = await service.createModule('c1', {
+        module: { title: 'PDF Module', description: null, module_type: 'pdf', lecture_id: 'l1' },
+        content: { type: 'pdf', data: { file_url: 'https://storage/doc.pdf', file_name: 'doc.pdf', page_count: 5 } },
+      });
+
+      expect(result).toEqual({ id: 'new-pdf-mod' });
+      expect(supabase.client.from).toHaveBeenCalledWith('module_pdfs');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        module_id: 'new-pdf-mod',
+        file_url: 'https://storage/doc.pdf',
+        file_name: 'doc.pdf',
+        page_count: 5,
+      });
+    });
+  });
+
+  describe('createModule with Exam content', () => {
+    it('should insert module + exam content and return id', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'new-exam-mod' },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      const result = await service.createModule('c1', {
+        module: { title: 'Exam Module', description: null, module_type: 'exam', lecture_id: 'l1' },
+        content: {
+          type: 'exam',
+          data: {
+            title: 'Final Exam',
+            description: 'Course exam',
+            duration_minutes: 60,
+            passing_score: 70,
+            max_file_size: 52428800,
+            allowed_file_types: ['application/pdf', 'application/zip'],
+            exam_file_url: null,
+          },
+        },
+      });
+
+      expect(result).toEqual({ id: 'new-exam-mod' });
+      expect(supabase.client.from).toHaveBeenCalledWith('exams');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        module_id: 'new-exam-mod',
+        title: 'Final Exam',
+        description: 'Course exam',
+        duration_minutes: 60,
+        passing_score: 70,
+        max_file_size: 52428800,
+        allowed_file_types: ['application/pdf', 'application/zip'],
+        exam_file_url: null,
+      });
+    });
+  });
+
+  describe('updateModule with significantUpdate', () => {
+    it('should set significant_update_at when significantUpdate is true', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateModule('mod-1', {
+        module: { title: 'Updated', description: null, module_type: 'video', lecture_id: 'l1' },
+        content: { type: 'video', data: { video_url: 'v.mp4', thumbnail_url: null, duration: null } },
+        significantUpdate: true,
+      });
+
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Updated',
+          description: null,
+          significant_update_at: expect.any(String),
+        }),
+      );
+    });
+
+    it('should not set significant_update_at when significantUpdate is false', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateModule('mod-1', {
+        module: { title: 'Updated', description: null, module_type: 'video', lecture_id: 'l1' },
+        content: { type: 'video', data: { video_url: 'v.mp4', thumbnail_url: null, duration: null } },
+      });
+
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({
+        title: 'Updated',
+        description: null,
+      });
+    });
+  });
+
+  describe('updateModule with PDF content', () => {
+    it('should upsert PDF content on update', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateModule('mod-2', {
+        module: { title: 'Updated PDF', description: null, module_type: 'pdf', lecture_id: 'l1' },
+        content: { type: 'pdf', data: { file_url: 'https://storage/new.pdf', file_name: 'new.pdf', page_count: 20 } },
+      });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('module_pdfs');
+      expect(supabase._mockQueryBuilder.upsert).toHaveBeenCalledWith(
+        {
+          module_id: 'mod-2',
+          file_url: 'https://storage/new.pdf',
+          file_name: 'new.pdf',
+          page_count: 20,
+        },
+        { onConflict: 'module_id' },
+      );
+    });
+  });
+
+  describe('updateModule with Exam content', () => {
+    it('should upsert exam content on update', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateModule('mod-3', {
+        module: { title: 'Updated Exam', description: null, module_type: 'exam', lecture_id: 'l1' },
+        content: {
+          type: 'exam',
+          data: {
+            title: 'Updated Exam',
+            description: null,
+            duration_minutes: 120,
+            passing_score: 80,
+            max_file_size: 104857600,
+            allowed_file_types: ['application/pdf'],
+            exam_file_url: 'https://storage/exam-v2.pdf',
+          },
+        },
+      });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('exams');
+      expect(supabase._mockQueryBuilder.upsert).toHaveBeenCalledWith(
+        {
+          module_id: 'mod-3',
+          title: 'Updated Exam',
+          description: null,
+          duration_minutes: 120,
+          passing_score: 80,
+          max_file_size: 104857600,
+          allowed_file_types: ['application/pdf'],
+          exam_file_url: 'https://storage/exam-v2.pdf',
+        },
+        { onConflict: 'module_id' },
+      );
     });
   });
 });

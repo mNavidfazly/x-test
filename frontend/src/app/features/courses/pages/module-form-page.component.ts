@@ -5,7 +5,9 @@ import { FormsModule } from '@angular/forms';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { VideoFormComponent } from '../components/video-form.component';
-import { ModuleType, ModuleFormData, VideoFormData, ModuleSavePayload, ModuleContentFormData } from '../../../core/models/course.model';
+import { PdfFormComponent } from '../components/pdf-form.component';
+import { ExamFormComponent } from '../components/exam-form.component';
+import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, ModuleSavePayload, ModuleContentFormData } from '../../../core/models/course.model';
 
 interface TypeOption {
   value: ModuleType;
@@ -17,7 +19,7 @@ interface TypeOption {
 @Component({
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, FormsModule, VideoFormComponent],
+  imports: [RouterLink, LucideAngularModule, FormsModule, VideoFormComponent, PdfFormComponent, ExamFormComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-2xl">
@@ -73,8 +75,32 @@ interface TypeOption {
           />
         }
 
-        <!-- Generic form for non-video types -->
-        @if (selectedType() && selectedType() !== 'video') {
+        <!-- PDF form -->
+        @if (selectedType() === 'pdf') {
+          <app-pdf-form
+            [initialModuleData]="moduleFormData()"
+            [initialPdfData]="pdfFormData()"
+            [isEditMode]="isEditMode()"
+            [courseId]="courseId()"
+            (save)="onSave($event)"
+            (cancel)="onCancel()"
+          />
+        }
+
+        <!-- Exam form -->
+        @if (selectedType() === 'exam') {
+          <app-exam-form
+            [initialModuleData]="moduleFormData()"
+            [initialExamData]="examFormData()"
+            [isEditMode]="isEditMode()"
+            [courseId]="courseId()"
+            (save)="onSave($event)"
+            (cancel)="onCancel()"
+          />
+        }
+
+        <!-- Generic form for markdown and quiz types -->
+        @if (selectedType() === 'markdown' || selectedType() === 'quiz') {
           <div class="space-y-5">
             <div>
               <label for="genericTitle" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
@@ -157,6 +183,15 @@ export class ModuleFormPageComponent implements OnInit {
   });
   readonly videoFormData = signal<VideoFormData>({
     video_url: '', thumbnail_url: null, duration: null,
+  });
+  readonly pdfFormData = signal<PdfFormData>({
+    file_url: '', file_name: '', page_count: null,
+  });
+  readonly examFormData = signal<ExamFormData>({
+    title: '', description: null, duration_minutes: 60,
+    passing_score: 70, max_file_size: 52428800,
+    allowed_file_types: ['application/pdf', 'application/zip'],
+    exam_file_url: null,
   });
 
   genericForm = { title: '', description: null as string | null };
@@ -246,6 +281,12 @@ export class ModuleFormPageComponent implements OnInit {
       });
       if (content.type === 'video' && content.data) {
         this.videoFormData.set(content.data);
+      }
+      if (content.type === 'pdf' && content.data) {
+        this.pdfFormData.set(content.data);
+      }
+      if (content.type === 'exam' && content.data) {
+        this.examFormData.set(content.data);
       }
       this.genericForm = { title: module.title, description: module.description };
     } catch (err) {

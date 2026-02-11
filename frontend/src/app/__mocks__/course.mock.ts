@@ -4,7 +4,7 @@ import {
   CourseWithProgress, CourseDetail, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
   CourseFormData, TenantSummary, LectureFormData,
-  ModuleFormData, VideoFormData, ModuleSavePayload,
+  ModuleFormData, VideoFormData, PdfFormData, ExamFormData, ModuleSavePayload,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -219,6 +219,28 @@ export function createMockVideoFormData(overrides?: Partial<VideoFormData>): Vid
     video_url: 'https://cdn.bunny.net/test-video.mp4',
     thumbnail_url: null,
     duration: null,
+    ...overrides,
+  };
+}
+
+export function createMockPdfFormData(overrides?: Partial<PdfFormData>): PdfFormData {
+  return {
+    file_url: 'https://test.supabase.co/course-files/c1/test.pdf',
+    file_name: 'test-document.pdf',
+    page_count: 12,
+    ...overrides,
+  };
+}
+
+export function createMockExamFormData(overrides?: Partial<ExamFormData>): ExamFormData {
+  return {
+    title: 'Test Exam',
+    description: 'A test exam',
+    duration_minutes: 60,
+    passing_score: 70,
+    max_file_size: 52428800,
+    allowed_file_types: ['application/pdf', 'application/zip'],
+    exam_file_url: null,
     ...overrides,
   };
 }
