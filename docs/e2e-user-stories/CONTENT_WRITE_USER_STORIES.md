@@ -90,14 +90,14 @@ All test users use password: `TestUser123!`
 | CW-08 | Create Exam Module | Platform Admin | ✅ Passed | 2026-02-11 |
 | CW-09 | Edit Module & Manage File Attachments | Platform Admin | ✅ Passed | 2026-02-11 |
 | CW-10 | Permission Denial for Unauthorized Users | Learner / TA / CSM / Lecturer | ⚠️ Partial | 2026-02-11 |
-| CW-11 | Markdown Create-to-View Round-Trip | Platform Admin | ❌ Failed | 2026-02-11 |
-| CW-12 | Video Create-to-View Round-Trip | Platform Admin | ⚠️ Partial | 2026-02-11 |
-| CW-13 | PDF Create-to-View Round-Trip | Platform Admin | ⚠️ Partial | 2026-02-11 |
+| CW-11 | Markdown Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-11 |
+| CW-12 | Video Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-11 |
+| CW-13 | PDF Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-11 |
 | CW-14 | Exam Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-11 |
-| CW-15 | Full Course Structure Round-Trip | Platform Admin | ⚠️ Partial | 2026-02-11 |
-| CW-16 | File Attachments Visible in Viewer | Platform Admin | ⏳ Not Tested | — |
-| CW-17 | Edit Module Content, Verify Updated Viewer | Platform Admin | ⏳ Not Tested | — |
-| CW-18 | Signed URL Security for Private Storage | Platform Admin | ⏳ Not Tested | — |
+| CW-15 | Full Course Structure Round-Trip | Platform Admin | ✅ Passed | 2026-02-11 |
+| CW-16 | File Attachments Visible in Viewer | Platform Admin | ✅ Passed | 2026-02-11 |
+| CW-17 | Edit Module Content, Verify Updated Viewer | Platform Admin | ✅ Passed | 2026-02-11 |
+| CW-18 | Signed URL Security for Private Storage | Platform Admin | ✅ Passed | 2026-02-11 |
 
 ---
 
@@ -436,7 +436,7 @@ All test users use password: `TestUser123!`
 - Storage path: `course-files/{courseId}/{timestamp}-{filename}` where timestamp prevents name collisions
 - FileUploadComponent is purely presentational — it validates and emits the `File` object; the parent PdfFormComponent handles actual Supabase Storage upload
 - `maxSizeMB` defaults to 50 (displayed in the drop zone hint), converted to bytes for comparison
-- The `file_url` stored in `module_pdfs` is the Supabase Storage public URL
+- The `file_url` stored in `module_pdfs` is the storage path (e.g., `{courseId}/{timestamp}-{filename}`), NOT a full URL. Signed URLs are generated at view time via `CourseService.#getSignedUrl()`
 
 ---
 
@@ -683,10 +683,10 @@ All test users use password: `TestUser123!`
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ❌ Failed |
+| **Status** | ✅ Passed |
 | **Tester** | Claude (Playwright MCP) |
 
-**FAILURE:** `NullInjectorError: R3InjectorError(Standalone[n])[n -> n -> n]: No provider for n!` — The `ngx-markdown` `MarkdownComponent` is missing its required provider (`provideMarkdown()` or `MarkdownService`). The entire module viewer page breaks when navigating to a markdown module: no content renders, no prev/next navigation, no "Mark as complete" button. The write path (Tiptap editor, create module) works fine — only the read/view path is broken. **Root cause:** Missing `provideMarkdown()` in app config or component providers.
+**PASSED (re-test after fix):** Markdown viewer renders correctly after adding `provideMarkdown()` to `app.config.ts`. All content formatting preserved through Tiptap → markdown → ngx-markdown round-trip: H2 heading, bold text, bullet list, code block. Navigation ("Previous"/"Next"), "Mark as complete" button, and module counter ("2 of 4 modules") all functional. Previous failure was `NullInjectorError` — now resolved.
 
 **Purpose**: Verify that a markdown module created with formatted content in the Tiptap WYSIWYG editor renders correctly in the module viewer via ngx-markdown.
 
@@ -727,10 +727,10 @@ All test users use password: `TestUser123!`
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ⚠️ Partial |
+| **Status** | ✅ Passed |
 | **Tester** | Claude (Playwright MCP) |
 
-**PARTIAL:** Video viewer page renders correctly: title "Welcome Video", counter "1 of 4 modules", duration "9:56", "Mark as complete" button, "Next" link (no "Previous" for first module). However, client-side navigation via "Next" link does NOT re-render the page — URL changes but content stays stale. Full page reload works. The `<video>` element cannot be verified via Playwright accessibility snapshot (media elements not fully exposed).
+**PASSED (re-test after fix):** Video viewer renders correctly: title "Welcome Video", counter "1 of 4 modules", duration "9:56", "Mark as complete" button, "Next" link. Client-side navigation now works after replacing `snapshot.paramMap.get()` with `toSignal(route.paramMap)` + `effect()`. The `<video>` element cannot be fully verified via Playwright accessibility snapshot (media elements not exposed), but page structure and navigation are confirmed working.
 
 **Purpose**: Verify that a video module created with URL, thumbnail, and duration renders correctly in the video viewer with correct `<video>` element attributes.
 
@@ -770,10 +770,10 @@ All test users use password: `TestUser123!`
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ⚠️ Partial |
+| **Status** | ✅ Passed |
 | **Tester** | Claude (Playwright MCP) |
 
-**PARTIAL:** PDF viewer page structure renders correctly: title "Study Guide", counter "3 of 4 modules", "1 pages" text, "Download PDF" link with correct Supabase Storage URL, iframe element present, "Previous"/"Next" links and "Mark as complete" button all functional. However, the iframe shows `{"statusCode":"404","error":"Bucket not found","message":"Bucket not found"}` — the `course-files` storage bucket is either not created or not public in the Supabase Cloud project. File upload succeeded (row exists in `module_pdfs`) but the actual file is not accessible.
+**PASSED (re-test after fix):** PDF viewer renders correctly with signed URLs. Old "Study Guide" module (with stale public URL) was deleted, new "Study Guide v2" created with fixed upload code. Download link and iframe src both use signed URLs (`/object/sign/course-files/...?token=...`). The `course-files` bucket remains private for security — `CourseService.#getSignedUrl()` generates 1-hour signed URLs at view time. Previous failure was 404 "Bucket not found" when using `getPublicUrl()` on a private bucket.
 
 **Purpose**: Verify that a PDF module created with file upload renders correctly in the PDF viewer with an iframe, page count display, and a working download link.
 
@@ -853,7 +853,7 @@ All test users use password: `TestUser123!`
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ⚠️ Partial |
+| **Status** | ✅ Passed |
 | **Tester** | Claude (Playwright MCP) |
 
 **Purpose**: Verify that a complete course structure with multiple lectures and mixed module types renders correctly on the detail page and supports sequential prev/next module navigation across lecture boundaries.
@@ -899,9 +899,11 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude (Playwright MCP) |
+
+**PASSED:** Uploaded "e2e-attachment.txt" (60 B) via ModuleFilesEditorComponent on "Course Overview" edit page. Viewer showed "Downloadable Files" section with file name, size, and signed URL download link (`/object/sign/...?token=...`). After deleting the file in edit mode, the "Downloadable Files" section disappeared from the viewer (conditional `@if` works). Full upload → view → delete → verify-gone cycle completed.
 
 **Purpose**: Verify that file attachments uploaded via the ModuleFilesEditorComponent in edit mode appear in the module viewer as downloadable files via ModuleFilesListComponent.
 
@@ -938,9 +940,11 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude (Playwright MCP) |
+
+**PASSED:** Edited "Course Overview" markdown module — added paragraph "UPDATED VIA E2E TEST - Content freshness verified" between the bullet list and code block in the Tiptap editor. Saved, navigated to viewer. The new paragraph rendered correctly via ngx-markdown. No stale data — `loadModuleViewer` fetches fresh content on every navigation.
 
 **Purpose**: Verify that after editing a module's content (not just title), the module viewer shows the updated content without stale data.
 
@@ -982,9 +986,11 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude (Playwright MCP) |
+
+**PASSED:** All signed URL security criteria verified: (1) PDF iframe src uses `/object/sign/` pattern, NOT `/object/public/`. (2) JWT token present in `?token=...` query param. (3) Token decodes to stored path `course-files/{courseId}/{timestamp}-{filename}` — NOT a full URL. (4) Token expires exactly 1 hour after issuance (iat→exp = 3600s). (5) Public URL pattern (`/object/public/course-files/...`) returns 404 "Bucket not found" — bucket is private. (6) Module file download links also use signed URLs.
 
 **Purpose**: Verify that the `course-files` storage bucket is private and that PDF/exam/module files are served via time-limited signed URLs (not public URLs). This validates the security fix where `file_url` columns store storage paths and `CourseService.#getSignedUrl()` generates signed URLs at view time.
 
@@ -1040,6 +1046,8 @@ All test users use password: `TestUser123!`
 |------|--------|------------------|------|------|-------|
 | 2026-02-11 | Claude (Playwright MCP) | CW-01 through CW-10 | 9 full, 1 partial | 0 | All CRUD flows verified. CW-10 partial: Learner fully tested (UI + route guards), Tenant Admin/CSM/Lecturer(read-only) not individually tested due to session switching overhead. Platform Admin password reset via Admin API before testing. Test users created via Admin API + SQL (6 new users + 1 client tenant). |
 | 2026-02-11 | Claude (Playwright MCP) | CW-11 through CW-15 | 1 pass, 3 partial, 1 fail | 1 | **3 critical bugs found:** (1) Markdown viewer NullInjectorError — `ngx-markdown` provider missing, entire page breaks; (2) PDF viewer storage 404 — `course-files` bucket not found; (3) Client-side module navigation doesn't re-render — URL changes but content stays stale. CW-14 (exam) fully passed. CW-12 (video) partial — viewer renders but nav broken. CW-15 partial — course creation and structure OK, navigation and viewers partially broken. |
+| 2026-02-11 | Claude (Playwright MCP) | CW-11, CW-12, CW-13, CW-15 (re-test) | 4 pass | 0 | **All 3 bugs fixed, re-tested successfully.** CW-11: Markdown viewer renders after `provideMarkdown()` fix. CW-12/CW-15: Client-side navigation works after `toSignal(route.paramMap)` + `effect()` fix. CW-13: PDF viewer loads via signed URL after switching from `getPublicUrl()` to `createSignedUrl()`. Old PDF module with stale URL deleted and recreated. |
+| 2026-02-11 | Claude (Playwright MCP) | CW-16, CW-17, CW-18 | 3 pass | 0 | CW-16: File upload → viewer display → delete → verify gone. CW-17: Edit markdown content → viewer shows updated text. CW-18: Signed URL JWT decoded (path not URL, 1hr expiry), public URL 404 confirmed. **All 18 CW stories complete (17 pass, 1 partial CW-10).** |
 
 ---
 

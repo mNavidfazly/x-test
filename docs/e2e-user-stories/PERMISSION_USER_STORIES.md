@@ -85,19 +85,19 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PM-01 | Lecturer (can_edit) Full Content CRUD | Lecturer (can_edit) | ⏳ Not Tested | — |
-| PM-02 | Lecturer Boundary — Assigned vs Unassigned | Lecturer (can_edit) | ⏳ Not Tested | — |
-| PM-03 | Learner Cannot Mutate Content via Direct API | Learner (Calypso) | ⏳ Not Tested | — |
-| PM-04 | Tenant Admin Cannot Write Content via Direct API | Tenant Admin | ⏳ Not Tested | — |
-| PM-05 | CSM Cannot Write Content via Direct API | CSM | ⏳ Not Tested | — |
-| PM-06 | Read-Only Lecturer Cannot Write via Direct API | Lecturer (read-only) | ⏳ Not Tested | — |
-| PM-07 | Lecturer (can_edit) Cannot Delete Course or Manage Tenants | Lecturer (can_edit) | ⏳ Not Tested | — |
-| PM-08 | Read-Only Lecturer URL Navigation Redirect | Lecturer (read-only) | ⏳ Not Tested | — |
-| PM-09 | Learner Route Guard Denial — All Write Routes | Learner (both tenants) | ⏳ Not Tested | — |
-| PM-10 | Cross-Tenant Content Visibility Enforcement | Learner (Calypso Client) | ⏳ Not Tested | — |
-| PM-11 | Cross-Tenant User Data Isolation | Learner (Calypso) | ⏳ Not Tested | — |
-| PM-12 | Tenant Admin Route Guard Denial | Tenant Admin | ⏳ Not Tested | — |
-| PM-13 | Full Permission Denial Matrix — All 4 Non-Write Roles | Learner / TA / CSM / Lecturer (read-only) | ⏳ Not Tested | — |
+| PM-01 | Lecturer (can_edit) Full Content CRUD | Lecturer (can_edit) | ✅ Passed | 2026-02-11 |
+| PM-02 | Lecturer Boundary — Assigned vs Unassigned | Lecturer (can_edit) | ✅ Passed | 2026-02-11 |
+| PM-03 | Learner Cannot Mutate Content via Direct API | Learner (Calypso) | ✅ Passed | 2026-02-11 |
+| PM-04 | Tenant Admin Cannot Write Content via Direct API | Tenant Admin | ✅ Passed | 2026-02-11 |
+| PM-05 | CSM Cannot Write Content via Direct API | CSM | ✅ Passed | 2026-02-11 |
+| PM-06 | Read-Only Lecturer Cannot Write via Direct API | Lecturer (read-only) | ✅ Passed | 2026-02-11 |
+| PM-07 | Lecturer (can_edit) Cannot Delete Course or Manage Tenants | Lecturer (can_edit) | ✅ Passed | 2026-02-11 |
+| PM-08 | Read-Only Lecturer URL Navigation Redirect | Lecturer (read-only) | ✅ Passed | 2026-02-11 |
+| PM-09 | Learner Route Guard Denial — All Write Routes | Learner (both tenants) | ✅ Passed | 2026-02-11 |
+| PM-10 | Cross-Tenant Content Visibility Enforcement | Learner (Calypso Client) | ⚠️ Partial | 2026-02-11 |
+| PM-11 | Cross-Tenant User Data Isolation | Learner (Calypso) | ✅ Passed | 2026-02-11 |
+| PM-12 | Tenant Admin Route Guard Denial | Tenant Admin | ✅ Passed | 2026-02-11 |
+| PM-13 | Full Permission Denial Matrix — All 4 Non-Write Roles | Learner / TA / CSM / Lecturer (read-only) | ✅ Passed | 2026-02-11 |
 
 ---
 
@@ -105,9 +105,11 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Verified during CW-04. Lecturer (can_edit) successfully created, edited, reordered, and deleted lectures and modules on assigned course. All write UI visible. No course delete or tenant assignment sections shown.
 
 **Purpose**: Verify that a Lecturer with `can_edit` permission can perform full lecture and module CRUD on an assigned course, while being correctly denied course deletion and tenant assignment.
 
@@ -161,9 +163,11 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Verified during CR-13. Assigned course (CW01): full write UI (Edit, Add Lecture, Add Module, pencil/trash/reorder icons). Non-assigned course (E2E): read-only, zero write UI. Direct URL `/courses/:unassignedId/edit` redirects to `/courses`.
 
 **Purpose**: Verify that the same lecturer sees full edit UI on assigned courses but zero edit UI on unassigned courses, and that direct URL navigation to edit routes for unassigned courses results in redirect.
 
@@ -206,9 +210,18 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — All 6 direct API mutations blocked:
+- Course INSERT: 403 RLS violation
+- Course UPDATE: 200, 0 rows affected
+- Course DELETE: 200, empty array
+- Lecture INSERT: 403 RLS violation
+- Lecture UPDATE: 200, 0 rows
+- Module DELETE: 200, empty array
+- Data verified unchanged after all attempts.
 
 **Purpose**: Verify that RLS policies deny all content write operations when executed directly via the Supabase client from a Learner's browser session, proving that UI hiding alone is not the security boundary.
 
@@ -249,9 +262,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — All 5 direct API mutations blocked:
+- Lecture INSERT: 403 RLS violation
+- Module UPDATE: 200, 0 rows
+- Lecture DELETE: 200, 0 rows
+- **tenant_courses self-assign INSERT: 403 RLS violation** (critical — TA cannot add courses to own tenant)
+- Course INSERT: 403 RLS violation
 
 **Purpose**: Verify that RLS policies deny all content write operations and tenant_courses self-assignment when executed by a Tenant Admin via the Supabase client, proving that user management privileges do not leak into content management.
 
@@ -288,9 +308,15 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — All 4 write mutations blocked, read intact:
+- Course INSERT: 403 RLS violation
+- Module UPDATE: 200, 0 rows
+- Lecture DELETE: 200, 0 rows
+- Read check: 200, 3 courses returned (read access preserved)
 
 **Purpose**: Verify that RLS policies deny all content write operations when executed by a CSM, despite the CSM having elevated cross-tenant READ access — proving that broad read privileges do not leak into write privileges.
 
@@ -326,9 +352,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Most critical security test. All writes blocked despite having `lecturer_course_ids`:
+- Course UPDATE: 200, 0 rows (RLS checks `lecturer_can_edit_course_ids`, which is EMPTY)
+- Lecture INSERT: 403 RLS violation
+- Lecture DELETE: 200, 0 rows
+- Read check: works fine (read access via `lecturer_course_ids` intact)
+- Confirms RLS correctly uses `lecturer_can_edit_course_ids` not `lecturer_course_ids` for write policies.
 
 **Purpose**: Verify that a Lecturer with read-only assignment (`can_edit = false`) is denied all write operations at the RLS level, testing the most subtle permission boundary — `lecturer_course_ids` vs `lecturer_can_edit_course_ids`.
 
@@ -366,9 +399,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Escalation boundary enforced:
+- Course DELETE: 200, 0 rows (no delete policy for lecturer)
+- tenant_courses INSERT: 403 RLS violation (cannot assign courses to tenants)
+- tenant_courses DELETE: 200, 0 rows
+- Course title verified unchanged after all attempts
+- Edit access still works (can_edit UPDATE succeeds)
 
 **Purpose**: Verify the escalation boundary between content editing and admin operations — a Lecturer with `can_edit` can modify course content but cannot delete courses or manage tenant assignments, even via direct API calls.
 
@@ -408,9 +448,15 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Two-layer defense confirmed:
+- `/courses/:courseId/edit` → redirected to `/courses` (guard passes, component canEdit blocks)
+- `/courses/:courseId/modules/new` → redirected to `/courses/:courseId`
+- `/courses/:courseId/modules/:moduleId/edit` → redirected to `/courses/:courseId`
+- Normal read access works — course detail loads fully with no edit buttons
 
 **Purpose**: Verify that a Lecturer without `can_edit` is redirected when navigating directly to edit/create URLs — testing the component-level canEdit redirect that operates AFTER the route guard passes.
 
@@ -447,9 +493,15 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Calypso learner tested (Client learner covered in CR-12):
+- `/courses/new` → `/dashboard` (roleGuard blocks)
+- `/courses/:id/edit` → `/dashboard`
+- `/courses/:id/modules/new` → `/dashboard`
+- `/courses/:id/modules/:id/edit` → `/dashboard`
 
 **Purpose**: Verify that route guards block Learners (from both tenants) from navigating to any content write route, with immediate redirect to the root/dashboard.
 
@@ -497,9 +549,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ⚠️ Partial |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PARTIAL** — RLS mechanism works correctly but cannot fully test exclusion:
+- Client learner sees 3 courses (all 3 are assigned to both tenants via tenant_courses)
+- API query returns only courses matching tenant assignment (correct)
+- Non-existent course ID returns empty array (correct RLS behavior)
+- **Cannot test actual exclusion** because no Calypso-only course exists — all 3 courses are assigned to both tenants
+- To fully test: create a course assigned ONLY to Calypso, verify Client learner cannot see it
 
 **Purpose**: Verify that RLS correctly restricts content visibility to courses assigned to the user's tenant via `tenant_courses`, and that a user from one tenant cannot access content from another tenant's courses.
 
@@ -540,9 +599,17 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Complete user data isolation verified:
+- `profiles` query: 1 row (own profile only, email: learner@calypso-commodities.com)
+- `user_progress` query: 1 row (own progress on Study Guide v2 module)
+- `course_enrollments` query: 0 rows (no enrollments)
+- `notifications` query: 0 rows (own only)
+- `profiles` with `neq` own ID: 0 rows (cannot enumerate other users)
+- `user_progress` with `neq` own ID: 0 rows (cannot see others' progress)
 
 **Purpose**: Verify that tenant-scoped user data (profiles, progress, enrollments) is isolated by RLS — a user from one tenant cannot read another tenant's user data.
 
@@ -579,9 +646,17 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — Verified during CR-12 and PM-13:
+- No "Create Course" button on course list
+- No edit UI on course detail (no Edit, Add Lecture, Add Module, pencil/trash/reorder icons)
+- `/courses/new` → `/dashboard`
+- `/courses/:id/edit` → `/dashboard`
+- `/courses/:id/modules/new` → `/dashboard`
+- `/courses/:id/modules/:id/edit` → `/dashboard`
 
 **Purpose**: Verify that route guards block Tenant Admins from accessing content write routes, and that no content write UI is visible — confirming that user management privileges do not extend to content management.
 
@@ -619,9 +694,19 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-11 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Code (Playwright MCP) |
+
+**PASSED** — 44/44 checks across 4 roles:
+- **Learner**: 11/11 — no write UI, all 4 routes → `/dashboard`
+- **Tenant Admin**: 11/11 — no write UI, all 4 routes → `/dashboard`
+- **CSM**: 11/11 — no write UI, all 4 routes → `/dashboard`
+- **Read-Only Lecturer**: 11/11 — no write UI, `/courses/new` → `/dashboard` (roleGuard), edit/module routes → `/courses` or `/courses/:courseId` (component canEdit check)
+
+KEY FINDING: Redirect destination differs by defense layer:
+- Learner/TA/CSM: roleGuard blocks → `/dashboard`
+- Read-Only Lecturer: roleGuard passes, component canEdit blocks → `/courses` or `/courses/:courseId`
 
 **Purpose**: Comprehensive verification of UI visibility and route guard enforcement across ALL 4 non-write roles, checking all 10 permission entry points per role. This supersedes the incomplete CW-10 by testing each role individually and systematically.
 
@@ -757,7 +842,7 @@ If time is limited, execute tests in this priority order:
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|------------------|------|------|-------|
-| — | — | — | — | — | — |
+| 2026-02-11 | Claude Code (Playwright MCP) | PM-01 through PM-13 (all 13) | 12 | 0 | 1 partial (PM-10: no Calypso-only course to test exclusion). Direct API tests used `fetch()` with user JWT against PostgREST REST API. All RLS policies correctly enforced. Most critical test (PM-06: read-only lecturer) confirmed `lecturer_can_edit_course_ids` is used for write policies, not `lecturer_course_ids`. |
 
 ---
 

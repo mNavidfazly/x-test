@@ -75,6 +75,7 @@ export function createMockSupabaseService(options?: {
             error: null,
           }),
           remove: vi.fn().mockResolvedValue({ data: [], error: null }),
+          list: vi.fn().mockResolvedValue({ data: [], error: null }),
         }),
       },
     },

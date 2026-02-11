@@ -307,12 +307,17 @@ export class CourseService {
   }
 
   async deleteCourse(id: string): Promise<void> {
+    // Collect storage paths BEFORE delete (CASCADE will remove DB rows)
+    const storagePaths = await this.#listCourseStoragePaths(id);
+
     const { error } = await this.#supabase.client
       .from('courses')
       .delete()
       .eq('id', id);
 
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete course'));
+
+    await this.#removeStorageFiles(storagePaths);
   }
 
   async loadTenants(): Promise<TenantSummary[]> {
@@ -389,12 +394,28 @@ export class CourseService {
   }
 
   async deleteLecture(lectureId: string): Promise<void> {
+    // Collect storage paths from ALL modules in this lecture before CASCADE
+    const { data: modules } = await this.#supabase.client
+      .from('modules')
+      .select('id')
+      .eq('lecture_id', lectureId);
+
+    const storagePaths: string[] = [];
+    if (modules) {
+      const pathArrays = await Promise.all(
+        modules.map((m: { id: string }) => this.#collectModuleStoragePaths(m.id)),
+      );
+      for (const paths of pathArrays) storagePaths.push(...paths);
+    }
+
     const { error } = await this.#supabase.client
       .from('lectures')
       .delete()
       .eq('id', lectureId);
 
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete lecture'));
+
+    await this.#removeStorageFiles(storagePaths);
   }
 
   async swapLectureSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
@@ -467,12 +488,17 @@ export class CourseService {
   }
 
   async deleteModule(moduleId: string): Promise<void> {
+    // Collect storage paths BEFORE delete (CASCADE will remove subtable rows)
+    const storagePaths = await this.#collectModuleStoragePaths(moduleId);
+
     const { error } = await this.#supabase.client
       .from('modules')
       .delete()
       .eq('id', moduleId);
 
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete module'));
+
+    await this.#removeStorageFiles(storagePaths);
   }
 
   async swapModuleSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
@@ -776,6 +802,63 @@ export class CourseService {
       current: idx + 1,
       total: flatModules.length,
     };
+  }
+
+  // --- Storage cleanup helpers (DI-07 fix) ---
+
+  async #removeStorageFiles(paths: string[]): Promise<void> {
+    if (paths.length === 0) return;
+    try {
+      const { error } = await this.#supabase.client.storage
+        .from('course-files')
+        .remove(paths);
+      if (error) console.warn('Storage cleanup failed:', error.message);
+    } catch (err) {
+      console.warn('Storage cleanup error:', err);
+    }
+  }
+
+  async #collectModuleStoragePaths(moduleId: string): Promise<string[]> {
+    const client = this.#supabase.client;
+    const paths: string[] = [];
+
+    const [pdfRes, filesRes, examRes] = await Promise.all([
+      client.from('module_pdfs').select('file_url').eq('module_id', moduleId).maybeSingle(),
+      client.from('module_files').select('file_url').eq('module_id', moduleId),
+      client.from('exams').select('exam_file_url').eq('module_id', moduleId).maybeSingle(),
+    ]);
+
+    if (pdfRes.data?.file_url) paths.push(pdfRes.data.file_url as string);
+    if (filesRes.data) {
+      for (const f of filesRes.data) {
+        if ((f as { file_url: string }).file_url) paths.push((f as { file_url: string }).file_url);
+      }
+    }
+    if (examRes.data?.exam_file_url) paths.push(examRes.data.exam_file_url as string);
+
+    return paths;
+  }
+
+  async #listCourseStoragePaths(courseId: string): Promise<string[]> {
+    const paths: string[] = [];
+    let offset = 0;
+    const limit = 100;
+
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await this.#supabase.client.storage
+        .from('course-files')
+        .list(courseId, { limit, offset });
+
+      if (error || !data || data.length === 0) break;
+      for (const file of data) {
+        paths.push(`${courseId}/${file.name}`);
+      }
+      if (data.length < limit) break;
+      offset += limit;
+    }
+
+    return paths;
   }
 
   #extractErrorMessage(err: unknown, fallback: string): string {
