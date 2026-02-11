@@ -144,7 +144,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── frontend/                               # Angular app (Vercel)
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── __mocks__/                # Test mocks (9 factories)
+│   │   │   ├── __mocks__/                # Test mocks (10 factories)
 │   │   │   │   ├── supabase.mock.ts      # Multi-tenant aware mock with JWT claims
 │   │   │   │   ├── auth.mock.ts          # Session mock with role switching
 │   │   │   │   ├── api.mock.ts           # FastAPI client mock
@@ -153,7 +153,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   └── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData factories
+│   │   │   │   ├── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData factories
+│   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
 │   │   │   │   ├── services/
@@ -162,14 +163,14 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam)
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown), module_files CRUD
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, ExamContent, ModuleSavePayload, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExamContent, ModuleSavePayload, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -194,7 +195,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -202,7 +203,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── course-detail-page.component.spec.ts
 │   │   │   │   │   │   ├── course-form-page.component.ts    # Smart: create/edit course, tenant assignment, delete (Phase 3A)
 │   │   │   │   │   │   ├── course-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector, video/pdf/exam forms (Phase 3C)
+│   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector, video/pdf/exam/markdown forms + module files editor (Phase 3C)
 │   │   │   │   │   │   ├── module-form-page.component.spec.ts
 │   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown viewer, prev/next nav, mark-complete
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
@@ -231,6 +232,10 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── pdf-form.component.spec.ts
 │   │   │   │   │   │   ├── exam-form.component.ts            # Presentational: exam module form (settings + constraints + exam file upload) (Phase 3C-2)
 │   │   │   │   │   │   ├── exam-form.component.spec.ts
+│   │   │   │   │   │   ├── markdown-form.component.ts       # Presentational: markdown module form (title + desc + Tiptap WYSIWYG editor) (Phase 3C-3)
+│   │   │   │   │   │   ├── markdown-form.component.spec.ts
+│   │   │   │   │   │   ├── module-files-editor.component.ts  # Smart-lite: file attachment upload/delete for modules (edit mode only) (Phase 3C-3)
+│   │   │   │   │   │   ├── module-files-editor.component.spec.ts
 │   │   │   │   │   │   ├── module-files-list.component.ts    # Presentational: downloadable files with human-readable sizes
 │   │   │   │   │   │   └── module-files-list.component.spec.ts
 │   │   │   │   │
@@ -248,7 +253,9 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │       └── components/
 │   │   │           ├── stub-page.component.ts  # "Coming soon" placeholder for unbuilt feature routes
 │   │   │           ├── file-upload.component.ts       # ✅ Presentational: drag-and-drop file picker, client-side validation (Phase 3C-2)
-│   │   │           └── file-upload.component.spec.ts
+│   │   │           ├── file-upload.component.spec.ts
+│   │   │           ├── tiptap-editor.component.ts     # ✅ Shared: Tiptap v2 WYSIWYG wrapper with toolbar (B/I/S/H2/H3/lists/code/undo/redo) (Phase 3C-3)
+│   │   │           └── tiptap-editor.component.spec.ts
 │   │   │           # Planned (Phase 10): data-table, confirmation-dialog, loading-spinner,
 │   │   │           # empty-state, badge, module-type-icon, toast.service, date-format.pipe
 │   │   │
@@ -514,19 +521,24 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] Exam title sync: module title and exam title kept in sync on save
 - [x] `significantUpdate` flag on `ModuleSavePayload` → sets `significant_update_at` on module row
 - [x] CourseService: extend `#insertModuleContent`, `#upsertModuleContent`, `#contentToFormData`, `#fetchModuleContent` for PDF + Exam
-- [x] ModuleFormPageComponent: PDF + Exam get dedicated forms, generic form only for markdown + quiz
+- [x] ModuleFormPageComponent: PDF + Exam get dedicated forms, generic form narrowed (markdown + quiz at 3C-2 → quiz-only after 3C-3)
 - [x] Model types: `PdfFormData`, `ExamFormData`, `ExamContent`, updated `ModuleContentFormData` union
 - [x] Mock factories: `createMockPdfFormData()`, `createMockExamFormData()`
 - [x] **Tests:** 40 new tests (8 FileUpload + 8 PdfForm + 10 ExamForm + 6 ModuleFormPage + 8 CourseService) — 355 total frontend tests
 
-#### 3C-3 — Module CRUD: Tiptap Markdown + Quiz Stub
-- [ ] Install Tiptap: @tiptap/core, @tiptap/starter-kit, @tiptap/extension-*
-- [ ] TiptapEditorComponent (shared wrapper with toolbar)
-- [ ] MarkdownFormComponent with Tiptap editor
-- [ ] ModuleFilesEditorComponent (attach/delete files for markdown modules)
-- [ ] CourseService: module_files CRUD + markdown subtable CRUD
-- [ ] Quiz stub: creates module with type=quiz, "Quiz Builder coming in Phase 3D" note
-- [ ] **Tests:** ~40 new
+#### 3C-3 — Module CRUD: Tiptap Markdown + Module Files + Quiz Stub (Complete)
+- [x] Install Tiptap: @tiptap/core, @tiptap/starter-kit, @tiptap/extension-link, @tiptap/extension-code-block-lowlight, tiptap-markdown, ngx-tiptap@12 (Angular 19), lowlight, highlight.js
+- [x] TiptapEditorComponent (shared WYSIWYG wrapper with toolbar: B/I/S/H2/H3/BulletList/OrderedList/CodeBlock/Undo/Redo)
+- [x] MarkdownFormComponent (presentational: title + desc + Tiptap editor, follows VideoForm pattern)
+- [x] ModuleFilesEditorComponent (smart-lite: attach/delete files for ALL module types, edit mode only, immediate upload on file select)
+- [x] MockTiptapEditorComponent (textarea fallback for tests — avoids Tiptap DOM issues in test env)
+- [x] CourseService: module_files CRUD (`loadModuleFiles`, `addModuleFile`, `deleteModuleFile`) + markdown subtable CRUD in `#insertModuleContent`, `#upsertModuleContent`, `#contentToFormData`
+- [x] ModuleFormPageComponent: dedicated markdown form + module files editor for all types in edit mode + quiz stub narrowed to quiz-only
+- [x] Quiz stub: creates module with type=quiz, "Quiz Builder coming in Phase 3D" note
+- [x] Model types: `MarkdownFormData`, updated `ModuleContentFormData` union for markdown
+- [x] Mock factories: `createMockMarkdownFormData()`, mock service methods for module files
+- [x] `editor.storage['markdown']` — bracket notation required (TS index signature), CommonJS warning from `markdown-it-task-lists` is harmless
+- [x] **Tests:** 38 new tests (6 TiptapEditor + 8 MarkdownForm + 8 ModuleFilesEditor + 9 CourseService + 7 ModuleFormPage) — 393 total frontend tests
 
 #### 3C-4 — Bunny Stream Integration
 > Detailed implementation plan: [docs/BUNNY_STREAM_PLAN.md](BUNNY_STREAM_PLAN.md)
@@ -1122,7 +1134,7 @@ npm run test:ui             # Interactive browser UI
 **Key Files (source of truth — do NOT duplicate code examples here, they drift):**
 - `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
 - `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
-- `frontend/src/app/__mocks__/` — 9 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course)
+- `frontend/src/app/__mocks__/` — 10 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course, tiptap)
 
 See `CLAUDE.md` § Testing for conventions and patterns.
 

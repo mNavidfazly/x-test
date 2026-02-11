@@ -7,7 +7,9 @@ import { AuthService } from '../../../core/services/auth.service';
 import { VideoFormComponent } from '../components/video-form.component';
 import { PdfFormComponent } from '../components/pdf-form.component';
 import { ExamFormComponent } from '../components/exam-form.component';
-import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, ModuleSavePayload, ModuleContentFormData } from '../../../core/models/course.model';
+import { MarkdownFormComponent } from '../components/markdown-form.component';
+import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
+import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ModuleSavePayload, ModuleContentFormData } from '../../../core/models/course.model';
 
 interface TypeOption {
   value: ModuleType;
@@ -19,7 +21,7 @@ interface TypeOption {
 @Component({
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, FormsModule, VideoFormComponent, PdfFormComponent, ExamFormComponent],
+  imports: [RouterLink, LucideAngularModule, FormsModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, ModuleFilesEditorComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-2xl">
@@ -99,8 +101,19 @@ interface TypeOption {
           />
         }
 
-        <!-- Generic form for markdown and quiz types -->
-        @if (selectedType() === 'markdown' || selectedType() === 'quiz') {
+        <!-- Markdown form -->
+        @if (selectedType() === 'markdown') {
+          <app-markdown-form
+            [initialModuleData]="moduleFormData()"
+            [initialMarkdownData]="markdownFormData()"
+            [isEditMode]="isEditMode()"
+            (save)="onSave($event)"
+            (cancel)="onCancel()"
+          />
+        }
+
+        <!-- Generic form for quiz type -->
+        @if (selectedType() === 'quiz') {
           <div class="space-y-5">
             <div>
               <label for="genericTitle" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
@@ -125,7 +138,7 @@ interface TypeOption {
             </div>
 
             <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
-              Additional settings for this module type will be available in a future update.
+              Quiz Builder coming in Phase 3D.
             </div>
 
             <div class="flex items-center gap-3 pt-2">
@@ -146,6 +159,14 @@ interface TypeOption {
               </button>
             </div>
           </div>
+        }
+
+        <!-- Module files editor (edit mode only, all types) -->
+        @if (isEditMode() && moduleId()) {
+          <app-module-files-editor
+            [moduleId]="moduleId()"
+            [courseId]="courseId()"
+          />
         }
       }
     </div>
@@ -193,6 +214,7 @@ export class ModuleFormPageComponent implements OnInit {
     allowed_file_types: ['application/pdf', 'application/zip'],
     exam_file_url: null,
   });
+  readonly markdownFormData = signal<MarkdownFormData>({ content: '' });
 
   genericForm = { title: '', description: null as string | null };
 
@@ -287,6 +309,9 @@ export class ModuleFormPageComponent implements OnInit {
       }
       if (content.type === 'exam' && content.data) {
         this.examFormData.set(content.data);
+      }
+      if (content.type === 'markdown' && content.data) {
+        this.markdownFormData.set(content.data);
       }
       this.genericForm = { title: module.title, description: module.description };
     } catch (err) {

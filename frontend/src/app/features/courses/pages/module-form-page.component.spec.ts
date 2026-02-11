@@ -11,6 +11,8 @@ import { SupabaseService } from '../../../core/services/supabase.service';
 import { VideoFormComponent } from '../components/video-form.component';
 import { PdfFormComponent } from '../components/pdf-form.component';
 import { ExamFormComponent } from '../components/exam-form.component';
+import { MarkdownFormComponent } from '../components/markdown-form.component';
+import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 import { createMockCourseService } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
@@ -32,7 +34,7 @@ function mockActivatedRoute(
   };
 }
 
-const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, FileUploadComponent, FormsModule, RouterLink];
+const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
 
 /** Helper: render in create mode (no moduleId, with courseId + lectureId) */
 async function renderCreateMode(overrides?: {
@@ -157,7 +159,7 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByLabelText('Video URL')).toBeTruthy();
   });
 
-  it('should show generic form for non-video, non-pdf, non-exam type (quiz)', async () => {
+  it('should show generic form for quiz type', async () => {
     const { fixture } = await renderCreateMode();
 
     fireEvent.click(screen.getByText('Quiz'));
@@ -168,15 +170,13 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByLabelText('Description')).toBeTruthy();
   });
 
-  it('should show "settings coming soon" note for non-video types', async () => {
+  it('should show "Quiz Builder coming in Phase 3D" note for quiz type', async () => {
     const { fixture } = await renderCreateMode();
 
-    fireEvent.click(screen.getByText('Rich Text'));
+    fireEvent.click(screen.getByText('Quiz'));
     fixture.detectChanges();
 
-    expect(
-      screen.getByText(/Additional settings for this module type will be available in a future update/),
-    ).toBeTruthy();
+    expect(screen.getByText(/Quiz Builder coming in Phase 3D/)).toBeTruthy();
   });
 
   // --- Permission redirect ---
@@ -458,7 +458,7 @@ describe('ModuleFormPageComponent', () => {
     fireEvent.click(screen.getByText('PDF'));
     fixture.detectChanges();
 
-    expect(screen.queryByText(/Additional settings for this module type/)).toBeNull();
+    expect(screen.queryByText(/Quiz Builder coming in Phase 3D/)).toBeNull();
   });
 
   it('should not show "coming soon" note for Exam type', async () => {
@@ -467,6 +467,103 @@ describe('ModuleFormPageComponent', () => {
     fireEvent.click(screen.getByText('Exam'));
     fixture.detectChanges();
 
-    expect(screen.queryByText(/Additional settings for this module type/)).toBeNull();
+    expect(screen.queryByText(/Quiz Builder coming in Phase 3D/)).toBeNull();
+  });
+
+  // --- Markdown form ---
+
+  it('should show markdown form when Rich Text type selected', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('Rich Text'));
+    fixture.detectChanges();
+
+    // MarkdownFormComponent renders Title, Description, Content label, and Create Module button
+    expect(screen.getByLabelText('Title')).toBeTruthy();
+    expect(screen.getByLabelText('Description')).toBeTruthy();
+    expect(screen.getByText('Content')).toBeTruthy();
+  });
+
+  it('should not show generic form for Rich Text type', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('Rich Text'));
+    fixture.detectChanges();
+
+    expect(screen.queryByText(/Quiz Builder coming in Phase 3D/)).toBeNull();
+  });
+
+  it('should load markdown data in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-md', title: 'Markdown Module', description: 'Some notes', module_type: 'markdown', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'markdown', data: { content: '# Hello World' } },
+    });
+
+    const { fixture } = await renderEditMode({ courseService, moduleId: 'mod-md' });
+
+    expect(courseService.loadModuleForEdit).toHaveBeenCalledWith('mod-md');
+    // Markdown form should be visible with pre-populated title
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Markdown Module');
+    expect((screen.getByLabelText('Description') as HTMLTextAreaElement).value).toBe('Some notes');
+    expect(screen.getByText('Save Changes')).toBeTruthy();
+  });
+
+  it('should call createModule with markdown content on save', async () => {
+    const { fixture, courseService } = await renderCreateMode();
+
+    // Select Rich Text type
+    fireEvent.click(screen.getByText('Rich Text'));
+    fixture.detectChanges();
+
+    // Fill in the title
+    const titleInput = screen.getByLabelText('Title') as HTMLInputElement;
+    fireEvent.input(titleInput, { target: { value: 'My Article' } });
+    fixture.detectChanges();
+
+    // Click Create Module button
+    fireEvent.click(screen.getByText('Create Module'));
+    await new Promise((r) => setTimeout(r));
+
+    expect(courseService.createModule).toHaveBeenCalledWith(
+      'course-1',
+      expect.objectContaining({
+        module: expect.objectContaining({
+          title: 'My Article',
+          module_type: 'markdown',
+          lecture_id: 'lecture-1',
+        }),
+        content: expect.objectContaining({ type: 'markdown' }),
+      }),
+    );
+  });
+
+  // --- Module files editor ---
+
+  it('should show module files editor in edit mode', async () => {
+    await renderEditMode();
+
+    // ModuleFilesEditorComponent renders "Attached Files" heading
+    expect(screen.getByText('Attached Files')).toBeTruthy();
+  });
+
+  it('should not show module files editor in create mode', async () => {
+    await renderCreateMode();
+
+    expect(screen.queryByText('Attached Files')).toBeNull();
+  });
+
+  it('should show module files editor for all types in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-md', title: 'MD Module', description: null, module_type: 'markdown', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'markdown', data: { content: '# Some markdown text' } },
+    });
+
+    await renderEditMode({ courseService, moduleId: 'mod-md' });
+
+    // Both the markdown form and the files editor should be visible
+    expect(screen.getByLabelText('Title')).toBeTruthy();
+    expect(screen.getByText('Attached Files')).toBeTruthy();
   });
 });

@@ -178,10 +178,14 @@ export interface ExamFormData {
   exam_file_url: string | null;
 }
 
+export interface MarkdownFormData {
+  content: string;
+}
+
 export type ModuleContentFormData =
   | { type: 'video'; data: VideoFormData }
   | { type: 'pdf'; data: PdfFormData }
-  | { type: 'markdown'; data: null }
+  | { type: 'markdown'; data: MarkdownFormData }
   | { type: 'quiz'; data: null }
   | { type: 'exam'; data: ExamFormData };
 

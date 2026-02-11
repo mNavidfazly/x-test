@@ -4,7 +4,7 @@ import {
   CourseWithProgress, CourseDetail, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
   CourseFormData, TenantSummary, LectureFormData,
-  ModuleFormData, VideoFormData, PdfFormData, ExamFormData, ModuleSavePayload,
+  ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ModuleSavePayload,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -49,6 +49,9 @@ export function createMockCourseService(options?: {
       module: { id: 'mod-1', title: 'Test Module', description: null, module_type: 'video', sort_order: 0, lecture_id: 'lecture-1', course_id: 'course-1' },
       content: { type: 'video', data: { video_url: 'https://cdn.bunny.net/test.mp4', thumbnail_url: null, duration: null } },
     }),
+    loadModuleFiles: vi.fn().mockResolvedValue([]),
+    addModuleFile: vi.fn().mockResolvedValue(undefined),
+    deleteModuleFile: vi.fn().mockResolvedValue(undefined),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),
@@ -241,6 +244,13 @@ export function createMockExamFormData(overrides?: Partial<ExamFormData>): ExamF
     max_file_size: 52428800,
     allowed_file_types: ['application/pdf', 'application/zip'],
     exam_file_url: null,
+    ...overrides,
+  };
+}
+
+export function createMockMarkdownFormData(overrides?: Partial<MarkdownFormData>): MarkdownFormData {
+  return {
+    content: '# Test Content\n\nSome markdown text.',
     ...overrides,
   };
 }

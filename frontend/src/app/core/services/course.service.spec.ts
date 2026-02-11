@@ -1125,4 +1125,142 @@ describe('CourseService', () => {
       );
     });
   });
+
+  describe('createModule with Markdown content', () => {
+    it('should insert module + markdown content and return id', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'new-markdown-mod' },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      const result = await service.createModule('c1', {
+        module: { title: 'Markdown Module', description: 'A markdown module', module_type: 'markdown', lecture_id: 'l1' },
+        content: { type: 'markdown', data: { content: '# Hello World\n\nSome markdown text' } },
+      });
+
+      expect(result).toEqual({ id: 'new-markdown-mod' });
+      expect(supabase.client.from).toHaveBeenCalledWith('module_markdown');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        module_id: 'new-markdown-mod',
+        content: '# Hello World\n\nSome markdown text',
+      });
+    });
+  });
+
+  describe('updateModule with Markdown content', () => {
+    it('should upsert markdown content on update', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateModule('mod-md', {
+        module: { title: 'Updated Markdown', description: null, module_type: 'markdown', lecture_id: 'l1' },
+        content: { type: 'markdown', data: { content: '# Updated content' } },
+      });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('module_markdown');
+      expect(supabase._mockQueryBuilder.upsert).toHaveBeenCalledWith(
+        {
+          module_id: 'mod-md',
+          content: '# Updated content',
+        },
+        { onConflict: 'module_id' },
+      );
+    });
+  });
+
+  describe('loadModuleForEdit with Markdown content', () => {
+    it('should load module and convert markdown content to form data', async () => {
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-md', title: 'Markdown Mod', description: 'Notes', module_type: 'markdown', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { content: '# Hello' },
+          error: null,
+        });
+
+      const result = await service.loadModuleForEdit('mod-md');
+
+      expect(result.module.id).toBe('mod-md');
+      expect(result.module.title).toBe('Markdown Mod');
+      expect(result.module.module_type).toBe('markdown');
+      expect(result.module.description).toBe('Notes');
+      expect(result.content.type).toBe('markdown');
+      if (result.content.type === 'markdown') {
+        expect(result.content.data).toEqual({ content: '# Hello' });
+      }
+    });
+  });
+
+  describe('loadModuleFiles', () => {
+    it('should load and return module files', async () => {
+      const mockFiles = [
+        { id: 'f1', file_url: 'https://storage/file1.pdf', file_name: 'file1.pdf', file_size: 1024 },
+        { id: 'f2', file_url: 'https://storage/file2.zip', file_name: 'file2.zip', file_size: 2048 },
+      ];
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: mockFiles, error: null }));
+
+      const result = await service.loadModuleFiles('mod-1');
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({ id: 'f1', file_url: 'https://storage/file1.pdf', file_name: 'file1.pdf', file_size: 1024 });
+      expect(result[1]).toEqual({ id: 'f2', file_url: 'https://storage/file2.zip', file_name: 'file2.zip', file_size: 2048 });
+      expect(supabase.client.from).toHaveBeenCalledWith('module_files');
+    });
+
+    it('should throw on load error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Failed to load' } }));
+
+      await expect(service.loadModuleFiles('mod-1')).rejects.toThrow('Failed to load');
+    });
+  });
+
+  describe('addModuleFile', () => {
+    it('should insert a module file', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.addModuleFile('mod-1', { file_url: 'https://storage/new-file.pdf', file_name: 'new-file.pdf', file_size: 1024 });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('module_files');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        module_id: 'mod-1',
+        file_url: 'https://storage/new-file.pdf',
+        file_name: 'new-file.pdf',
+        file_size: 1024,
+      });
+    });
+
+    it('should throw on insert error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Upload failed' } }));
+
+      await expect(service.addModuleFile('mod-1', { file_url: 'https://storage/f.pdf', file_name: 'f.pdf', file_size: 512 })).rejects.toThrow('Upload failed');
+    });
+  });
+
+  describe('deleteModuleFile', () => {
+    it('should delete a module file by id', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.deleteModuleFile('file-1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('module_files');
+      expect(supabase._mockQueryBuilder.delete).toHaveBeenCalled();
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'file-1');
+    });
+
+    it('should throw on delete error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Cannot delete file' } }));
+
+      await expect(service.deleteModuleFile('file-1')).rejects.toThrow('Cannot delete file');
+    });
+  });
 });

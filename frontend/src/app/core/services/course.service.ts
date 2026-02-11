@@ -7,7 +7,7 @@ import {
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem,
   CourseFormData, TenantSummary, TenantAssignment, LectureFormData,
   ModuleSavePayload, ModuleContentFormData,
-  PdfFormData, ExamFormData, ExamContent, ModulePdf,
+  PdfFormData, ExamFormData, ExamContent, ModulePdf, MarkdownFormData, ModuleMarkdownContent,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -484,6 +484,33 @@ export class CourseService {
     if (resB.error) throw new Error(this.#extractErrorMessage(resB.error, 'Failed to reorder modules'));
   }
 
+  // --- Module files methods ---
+
+  async loadModuleFiles(moduleId: string): Promise<ModuleFile[]> {
+    const { data, error } = await this.#supabase.client
+      .from('module_files')
+      .select('id, file_url, file_name, file_size')
+      .eq('module_id', moduleId)
+      .order('created_at', { ascending: true });
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load module files'));
+    return (data ?? []) as ModuleFile[];
+  }
+
+  async addModuleFile(moduleId: string, file: { file_url: string; file_name: string; file_size: number | null }): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('module_files')
+      .insert({ module_id: moduleId, ...file });
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to add module file'));
+  }
+
+  async deleteModuleFile(fileId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('module_files')
+      .delete()
+      .eq('id', fileId);
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete module file'));
+  }
+
   async loadModuleForEdit(moduleId: string): Promise<{ module: ModuleDetail; content: ModuleContentFormData }> {
     const client = this.#supabase.client;
 
@@ -549,6 +576,15 @@ export class CourseService {
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save exam content'));
         break;
       }
+      case 'markdown': {
+        if (!content.data) break;
+        const d = content.data as MarkdownFormData;
+        const { error } = await this.#supabase.client
+          .from('module_markdown')
+          .insert({ module_id: moduleId, content: d.content });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save markdown content'));
+        break;
+      }
       default:
         break;
     }
@@ -601,6 +637,15 @@ export class CourseService {
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update exam content'));
         break;
       }
+      case 'markdown': {
+        if (!content.data) break;
+        const d = content.data as MarkdownFormData;
+        const { error } = await this.#supabase.client
+          .from('module_markdown')
+          .upsert({ module_id: moduleId, content: d.content }, { onConflict: 'module_id' });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update markdown content'));
+        break;
+      }
       default:
         break;
     }
@@ -637,6 +682,13 @@ export class CourseService {
             allowed_file_types: d.allowed_file_types,
             exam_file_url: d.exam_file_url,
           },
+        };
+      }
+      case 'markdown': {
+        const d = content.data as ModuleMarkdownContent;
+        return {
+          type: 'markdown',
+          data: { content: d.content } as MarkdownFormData,
         };
       }
       default:
