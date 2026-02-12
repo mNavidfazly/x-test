@@ -356,7 +356,7 @@ export async function createUser(
 
 export async function createCourse(
   tracker: TestDataTracker,
-  overrides: { title?: string; createdBy?: string } = {},
+  overrides: { title?: string; createdBy?: string; enrollmentType?: string; passwordHash?: string } = {},
 ): Promise<{ id: string; title: string }> {
   const title = overrides.title ?? `Test Course ${faker.string.alphanumeric(6)}`;
 
@@ -366,6 +366,8 @@ export async function createCourse(
       title,
       description: faker.lorem.sentence(),
       ...(overrides.createdBy && { created_by: overrides.createdBy }),
+      ...(overrides.enrollmentType && { enrollment_type: overrides.enrollmentType }),
+      ...(overrides.passwordHash && { password_hash: overrides.passwordHash }),
     })
     .select()
     .single();
@@ -457,6 +459,33 @@ export async function createEnrollment(
   if (error) throw new Error(`Failed to create enrollment: ${error.message}`);
 
   tracker.trackEnrollment(data.id);
+  return { id: data.id };
+}
+
+export async function createUserProgress(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  courseId: string,
+  lectureId: string,
+  moduleId: string,
+  overrides: { status?: string; markedBy?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('user_progress')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      course_id: courseId,
+      lecture_id: lectureId,
+      module_id: moduleId,
+      status: overrides.status ?? 'not_started',
+      ...(overrides.markedBy && { marked_by: overrides.markedBy }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create user_progress: ${error.message}`);
   return { id: data.id };
 }
 

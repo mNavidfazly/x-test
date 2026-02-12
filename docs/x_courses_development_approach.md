@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00026` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00027` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -106,7 +106,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00026                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers)
+│       └── 00001-00027                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers, reminder_history lecturer SELECT fix)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -313,7 +313,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │       ├── access-requests.test.ts
 │       ├── assignments.test.ts         # CSM + lecturer assignments
 │       ├── tenant-courses.test.ts
-│       └── content-write.test.ts      # CW-001 to CW-048: content write permissions (Phase 3F)
+│       ├── content-write.test.ts      # CW-001 to CW-048: content write permissions (Phase 3F)
+│       └── enrollment-progress.test.ts # EP-001 to EP-048: enrollment + progress RLS (Phase 4D)
 │
 ├── scripts/
 │   └── test-runner.ts                  # Supabase branch management for RLS tests
@@ -333,7 +334,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
   - [x] `git init` + create `.gitignore`
   - [x] Create private GitHub repo — `TereschenkoAI/x-courses-v2`
   - [x] Push initial commit with `docs/` and `supabase/` folders
-- [x] Run database migrations — all 26 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant; 00019-00021 course/lecture/module CRUD triggers; 00022-00023 search_path + immutable fields fixes; 00024 Bunny Stream support; 00025 external_quiz enum value; 00026 progress tracking triggers + admin INSERT policies)
+- [x] Run database migrations — all 27 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant; 00019-00021 course/lecture/module CRUD triggers; 00022-00023 search_path + immutable fields fixes; 00024 Bunny Stream support; 00025 external_quiz enum value; 00026 progress tracking triggers + admin INSERT policies; 00027 reminder_history lecturer SELECT fix)
 - [ ] Configure auth:
   - [x] Keycloak SSO (for @calypso-commodities.com domain + onboarded clients) — via `calypso-xcourses` client in "customers" realm
   - [x] Enable email/password auth — enabled by default, confirmed via `config push`
@@ -669,13 +670,18 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] E2E verified: 12 stories (PD-01 to PD-12), 11 pass + 1 partial (SMTP timeout locally), 0 bugs found
 - [x] **Tests:** 25 new frontend (8 ProgressService + 14 ProgressDashboardPage + 3 mock factories) + 9 new backend (reminder endpoint) — 566 total frontend, 69 total backend, build OK
 
-#### 4D - Enrollment & Progress RLS Tests
-- [ ] Enrollments: self-enroll only in own tenant + assigned courses, tenant admin can enroll in own tenant
-- [ ] Progress: own progress read/write, tenant admin reads own tenant, CSM reads assigned tenants
-- [ ] Progress: lecturer reads assigned courses (cross-tenant)
-- [ ] Progress: platform admin reads all
-- [ ] Escalation: learner cannot write other user's progress
-- [ ] **Tests:** ~40 RLS tests
+#### 4D - Enrollment & Progress RLS Tests (Complete)
+- [x] Enrollments SELECT: own, tenant admin, platform admin, CSM, lecturer + cross-tenant isolation (10 tests)
+- [x] Enrollments INSERT: self-enroll open course, enrollment_type enforcement (invite_only/password_protected blocked), TA own tenant, PA any (8 tests)
+- [x] Enrollments DELETE: TA own tenant, PA any, learner/CSM denied (5 tests)
+- [x] enroll_with_password RPC: correct password, wrong password rejected, cross-tenant rejected (3 tests)
+- [x] Progress SELECT: own, TA own tenant, PA all, CSM assigned tenants, lecturer assigned courses cross-tenant (10 tests)
+- [x] Progress INSERT: own, TA own tenant (admin mark), PA any + user_id/tenant_id enforcement (5 tests)
+- [x] Progress UPDATE: own, TA own tenant, PA any + cross-tenant denied (5 tests)
+- [x] Progress DELETE: no policies exist — even PA cannot delete (1 test)
+- [x] Trigger: enforce_quiz_exam_completion blocks non-admin quiz completion (1 test)
+- [x] Bug found + fixed: missing `reminder_history_select_lecturer` policy (migration 00027)
+- [x] **Tests:** 48 new RLS tests (EP-001 to EP-048), 162 total RLS tests, all passing
 
 ---
 
@@ -1208,7 +1214,10 @@ npm run test:rls       # Full suite (creates branch, tests, cleanup)
 npm run test:rls:local # Local only (requires env vars)
 ```
 
-**Key files:** `tests/setup.ts` (factories, adminClient, createClientAs, toDenyAccess matcher), `scripts/test-runner.ts` (branch management). See `CLAUDE.md` § Testing for patterns, gotchas, and permission matrix categories (TEN/XTA/ESC/ROL/INH).
+**Key files:** `tests/setup.ts` (factories, adminClient, createClientAs, toDenyAccess matcher), `scripts/test-runner.ts` (branch management). See `CLAUDE.md` § Testing for patterns, gotchas, and permission matrix categories (TEN/XTA/ESC/ROL/INH/CW/EP).
+
+**162 total RLS tests** across 6 files:
+- `tenants.test.ts` (10), `profiles.test.ts` (14), `courses.test.ts` (16), `content-hierarchy.test.ts` (26), `content-write.test.ts` (48), `enrollment-progress.test.ts` (48)
 
 ---
 
