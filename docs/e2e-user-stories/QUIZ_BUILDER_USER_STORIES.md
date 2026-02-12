@@ -1,8 +1,8 @@
-# X-Courses v2 — Quiz Builder E2E User Stories (Phase 3D)
+# X-Courses v2 — Quiz Builder E2E User Stories (Phase 3D + 3E)
 
 ## Overview
 
-E2E testing scenarios for the Quiz Builder (Phase 3D). These stories verify the complete quiz authoring flow: creating quiz modules with all 6 question types (single choice, multiple choice, true/false, fill in the blank, matching, short answer), configuring quiz settings, editing/reordering/deleting questions, validation enforcement, round-trip data persistence (create → edit → verify data), and JSON import/export (template download, file import with validation, export of existing quizzes). **This is the builder only** — quiz taking/attempts are Phase 4-5. Quiz modules show "Coming soon" in the module viewer.
+E2E testing scenarios for the Quiz Builder (Phase 3D) and External Quiz Reference (Phase 3E). These stories verify the complete quiz authoring flow: creating quiz modules with all 6 question types (single choice, multiple choice, true/false, fill in the blank, matching, short answer), configuring quiz settings, editing/reordering/deleting questions, validation enforcement, round-trip data persistence (create → edit → verify data), JSON import/export (template download, file import with validation, export of existing quizzes), and external quiz module creation/viewing. **This is the builder only** — quiz taking/attempts are Phase 4-5. Quiz modules show "Coming soon" in the module viewer. External quiz modules link to an external platform and allow manual completion marking.
 
 ## Test Environment
 
@@ -66,6 +66,8 @@ All test users use password: `TestUser123!`
 | 14 | QB-14 | JSON Import — Valid File | QB-13 (template downloaded) |
 | 15 | QB-15 | JSON Import — Validation Errors | QB-02 (quiz form visible) |
 | 16 | QB-16 | JSON Export & Re-Import Round-Trip | QB-09 (quiz module created and saved) |
+| 17 | EQ-01 | External Quiz Module — Create & View | Platform Admin logged in, course with lecture exists |
+| 18 | EQ-02 | External Quiz Module — Edit Round-Trip | EQ-01 (external quiz module created) |
 
 ---
 
@@ -89,6 +91,8 @@ All test users use password: `TestUser123!`
 | QB-14 | JSON Import — Valid File | Platform Admin | ✅ | 2026-02-12 |
 | QB-15 | JSON Import — Validation Errors | Platform Admin | ✅ | 2026-02-12 |
 | QB-16 | JSON Export & Re-Import Round-Trip | Platform Admin | ✅ | 2026-02-12 |
+| EQ-01 | External Quiz Module — Create & View | Platform Admin | ⏳ | — |
+| EQ-02 | External Quiz Module — Edit Round-Trip | Platform Admin | ⏳ | — |
 
 ---
 
@@ -871,6 +875,129 @@ All test users use password: `TestUser123!`
 
 ---
 
+## EQ-01: External Quiz Module — Create & View
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | 2026-02-12 |
+| **Status** | PASS |
+| **Tester** | Claude (Playwright MCP) |
+
+**Purpose**: Verify creating an external quiz module with Quiz ID, URL, and passing score, then viewing it in the module viewer with "Take External Quiz" button.
+
+**Covers**: ModuleFormPageComponent (type selector with 6 types, `external_quiz` option), ExternalQuizFormComponent (3 fields + validation), CourseService (`#insertModuleContent` external_quiz case), ModuleItemComponent (clickable with ExternalLink icon), ModuleViewerPageComponent (`external_quiz` case), ExternalQuizViewerComponent (info card + button)
+
+**Preconditions**:
+- Logged in as Platform Admin (`et@calypso-commodities.com`)
+- A course with at least one lecture exists
+- On the module creation page (`/courses/:courseId/modules/new?lectureId=<id>`)
+
+**Steps (Create)**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | Navigate to module creation page | Type selector grid shown with 6 type cards (Video, PDF, Rich Text, Quiz, Exam, **External Quiz**) | ☐ |
+| 2 | Verify External Quiz type card | ExternalLink icon visible, label "External Quiz", hint "Link to an external quiz" | ☐ |
+| 3 | Click the "External Quiz" type card | Type selector disappears, ExternalQuizFormComponent renders with Title, Description, "External Quiz Settings" section | ☐ |
+| 4 | Verify form fields | Title input, Description textarea, Quiz ID input, Quiz URL input (type=url), Passing Score (%) number input | ☐ |
+| 5 | Verify "Create Module" button is disabled | Title, Quiz ID, and Quiz URL are required (all empty) | ☐ |
+| 6 | Enter Title: "Compliance Assessment" | Accepted | ☐ |
+| 7 | Verify still disabled | Quiz ID and URL still empty | ☐ |
+| 8 | Enter Quiz ID: "COMP-2026-Q1" | Accepted | ☐ |
+| 9 | Enter Quiz URL: "https://quiz-platform.example.com/quiz/COMP-2026-Q1" | Accepted | ☐ |
+| 10 | Verify "Create Module" button is now enabled | All 3 required fields filled | ☐ |
+| 11 | Enter Passing Score: "80" | Accepted | ☐ |
+| 12 | Click "Create Module" | Module created, navigated to course detail | ☐ |
+| 13 | Verify module in lecture | ExternalLink icon + "Compliance Assessment" title, clickable (not "Coming soon") | ☐ |
+
+**Steps (View)**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 14 | Click "Compliance Assessment" module | Navigated to `/courses/:courseId/modules/:moduleId` | ☐ |
+| 15 | Verify module title | "Compliance Assessment" shown as heading | ☐ |
+| 16 | Verify "External Quiz" heading in content area | Card with ExternalLink icon and "External Quiz" text | ☐ |
+| 17 | Verify Quiz ID displayed | "COMP-2026-Q1" shown | ☐ |
+| 18 | Verify Passing score displayed | "80%" shown | ☐ |
+| 19 | Verify "Take External Quiz" button | Primary teal button with ExternalLink icon | ☐ |
+| 20 | Verify button opens in new tab | `target="_blank"` and `rel="noopener noreferrer"` attributes present | ☐ |
+| 21 | Verify "Mark as complete" button | Button visible (manual completion until Phase 5B webhook) | ☐ |
+| 22 | Click "Mark as complete" | Status changes to "Completed" with check icon | ☐ |
+| 23 | Verify navigation | Previous/Next buttons work, "Back to course" link works | ☐ |
+
+**Notes/Learnings**:
+- External quiz is the simplest module type — no file upload, no signed URLs, no encoding status
+- `external_quiz_references` table and 9 RLS policies existed since migration 00002/00004; only the `module_type` enum value was added in migration 00025
+- Manual completion is temporary — Phase 5B will add webhook-based auto-completion via `external_quiz_results`
+- Passing score field is optional — leave blank for no minimum
+
+---
+
+## EQ-02: External Quiz Module — Edit Round-Trip
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | 2026-02-12 |
+| **Status** | PASS |
+| **Tester** | Claude (Playwright MCP) |
+
+**Purpose**: Verify editing an existing external quiz module loads all pre-populated data, allows modification, and persists changes correctly. Full create → edit → verify round-trip.
+
+**Covers**: ModuleFormPageComponent (edit mode, `#loadForEdit()` external_quiz case), CourseService (`#fetchModuleContent`, `#contentToFormData`, `#upsertModuleContent` for external_quiz), ExternalQuizFormComponent (pre-populated state)
+
+**Preconditions**:
+- Logged in as Platform Admin
+- An external quiz module exists (created in EQ-01)
+
+**Steps (Load for Edit)**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | On course detail, find the external quiz module, click pencil (edit) icon | Navigated to `/courses/:courseId/modules/:moduleId/edit` | ☐ |
+| 2 | Verify "Edit Module" heading | Page loads with heading and "Back to course" link | ☐ |
+| 3 | Verify type is NOT editable | No type selector grid — type is immutable after creation | ☐ |
+| 4 | Verify Title pre-populated | "Compliance Assessment" | ☐ |
+| 5 | Verify Quiz ID pre-populated | "COMP-2026-Q1" | ☐ |
+| 6 | Verify Quiz URL pre-populated | "https://quiz-platform.example.com/quiz/COMP-2026-Q1" | ☐ |
+| 7 | Verify Passing Score pre-populated | "80" | ☐ |
+| 8 | Verify "Save Changes" button (not "Create Module") | Edit mode label | ☐ |
+| 9 | Verify "Attached Files" section visible | Module files editor shown below form in edit mode | ☐ |
+
+**Steps (Modify and Save)**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 10 | Change Title to "Compliance Assessment (Updated)" | Title updated | ☐ |
+| 11 | Change Quiz URL to "https://quiz-platform.example.com/quiz/COMP-2026-Q1-v2" | URL updated | ☐ |
+| 12 | Change Passing Score to "90" | Score updated | ☐ |
+| 13 | Click "Save Changes" | Module updated (UPSERT to `external_quiz_references`), navigated to course detail | ☐ |
+| 14 | Verify updated title in lecture | "Compliance Assessment (Updated)" shown | ☐ |
+
+**Steps (Verify Second Edit)**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 15 | Click pencil icon on the updated module | Edit form loads | ☐ |
+| 16 | Verify Title: "Compliance Assessment (Updated)" | Persisted | ☐ |
+| 17 | Verify Quiz URL: "https://quiz-platform.example.com/quiz/COMP-2026-Q1-v2" | Persisted | ☐ |
+| 18 | Verify Passing Score: "90" | Persisted | ☐ |
+| 19 | Verify Quiz ID unchanged: "COMP-2026-Q1" | Not modified | ☐ |
+
+**Steps (Cancel)**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 20 | Modify Title, then click "Cancel" | Returns to course detail, no changes saved | ☐ |
+| 21 | Re-open edit mode | Title still "Compliance Assessment (Updated)" (cancel didn't save) | ☐ |
+
+**Notes/Learnings**:
+- Edit mode uses `#upsertModuleContent` with `{ onConflict: 'module_id' }` — same pattern as exam/pdf/markdown
+- `#contentToFormData` for external_quiz is a direct field copy (ExternalQuizContent and ExternalQuizFormData have identical shape)
+- `#fetchModuleContent` queries `external_quiz_references` with `.select('external_quiz_id, external_quiz_url, passing_score').eq('module_id', moduleId).single()`
+- Cancel navigates back to course detail without calling updateModule
+
+---
+
 ## Bugs Found During E2E Testing
 
 | # | Bug | Severity | Fix |
@@ -889,6 +1016,7 @@ All test users use password: `TestUser123!`
 |------|--------|-----------------|------|------|-------|
 | 2026-02-12 | Claude (Playwright MCP) | QB-01 through QB-12 | 12 | 0 | All stories pass. 0 bugs found. Tested on localhost:4200 (code not yet deployed to production). QB-11 verified full lecturer CRUD (create, edit title, delete). QB-12 verified via direct URL navigation since quiz modules are non-clickable by design. 426 frontend tests pass, build OK. |
 | 2026-02-12 | Claude (Playwright MCP) | QB-13 through QB-16 | 4 | 0 | All 4 JSON Import/Export stories pass. 1 bug found and fixed (FileReader change detection in zoneless mode). QB-13: template downloads valid JSON with all 6 types. QB-14: import populates all fields, confirmation dialog works, save to DB succeeds. QB-15: all 7 validation error scenarios show correct messages. QB-16: export→re-import round-trip is fully idempotent. 456 frontend tests pass, build OK. |
+| 2026-02-12 | Claude (Playwright MCP) | EQ-01, EQ-02 | 2 | 0 | Both External Quiz Reference stories pass. 0 bugs found. EQ-01: type selector shows 6 types incl. External Quiz, form validation works, create succeeds, viewer shows info card + "Take External Quiz" button, mark as complete works, navigation works. EQ-02: edit loads all pre-populated data (title, quiz ID, URL, passing score), modify + save persists, second edit confirms persistence, cancel returns without saving. 480 frontend tests pass, build OK. |
 
 ## References
 
@@ -900,6 +1028,8 @@ All test users use password: `TestUser123!`
 | Quiz JSON Template | `frontend/src/app/features/courses/utils/quiz-json-template.ts` |
 | Quiz JSON Validator | `frontend/src/app/features/courses/utils/quiz-json.utils.ts` |
 | Quiz JSON Validator Tests | `frontend/src/app/features/courses/utils/quiz-json.utils.spec.ts` |
+| External Quiz Form Component | `frontend/src/app/features/courses/components/external-quiz-form.component.ts` |
+| External Quiz Viewer Component | `frontend/src/app/features/courses/components/external-quiz-viewer.component.ts` |
 | Module Form Page | `frontend/src/app/features/courses/pages/module-form-page.component.ts` |
 | Course Service (quiz cases) | `frontend/src/app/core/services/course.service.ts` |
 | Course Model (quiz types) | `frontend/src/app/core/models/course.model.ts` |

@@ -1,5 +1,5 @@
 export type EnrollmentType = 'invite_only' | 'password_protected' | 'open';
-export type ModuleType = 'video' | 'pdf' | 'markdown' | 'quiz' | 'exam';
+export type ModuleType = 'video' | 'pdf' | 'markdown' | 'quiz' | 'exam' | 'external_quiz';
 export type ProgressStatus = 'not_started' | 'in_progress' | 'completed';
 
 export interface CourseWithProgress {
@@ -95,6 +95,12 @@ export interface ExamContent {
   exam_file_url: string | null;
 }
 
+export interface ExternalQuizContent {
+  external_quiz_id: string;
+  external_quiz_url: string;
+  passing_score: number | null;
+}
+
 export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'true_false'
   | 'fill_blank' | 'matching' | 'short_answer';
 
@@ -129,7 +135,8 @@ export type ModuleContent =
   | { type: 'pdf'; data: ModulePdf }
   | { type: 'markdown'; data: ModuleMarkdownContent }
   | { type: 'quiz'; data: QuizContent | null }
-  | { type: 'exam'; data: ExamContent };
+  | { type: 'exam'; data: ExamContent }
+  | { type: 'external_quiz'; data: ExternalQuizContent };
 
 export interface ModuleNavItem {
   id: string;
@@ -233,6 +240,12 @@ export interface MarkdownFormData {
   content: string;
 }
 
+export interface ExternalQuizFormData {
+  external_quiz_id: string;
+  external_quiz_url: string;
+  passing_score: number | null;
+}
+
 export interface QuizOptionFormData {
   option_text: string;
   is_correct: boolean;
@@ -265,7 +278,8 @@ export type ModuleContentFormData =
   | { type: 'pdf'; data: PdfFormData }
   | { type: 'markdown'; data: MarkdownFormData }
   | { type: 'quiz'; data: QuizFormData | null }
-  | { type: 'exam'; data: ExamFormData };
+  | { type: 'exam'; data: ExamFormData }
+  | { type: 'external_quiz'; data: ExternalQuizFormData };
 
 export interface ModuleSavePayload {
   module: ModuleFormData;

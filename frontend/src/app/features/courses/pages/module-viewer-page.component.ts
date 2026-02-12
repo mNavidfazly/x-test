@@ -7,11 +7,12 @@ import { VideoViewerComponent } from '../components/video-viewer.component';
 import { PdfViewerComponent } from '../components/pdf-viewer.component';
 import { MarkdownViewerComponent } from '../components/markdown-viewer.component';
 import { ModuleFilesListComponent } from '../components/module-files-list.component';
+import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
 
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ModuleFilesListComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-5xl mx-auto">
@@ -51,6 +52,9 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
             }
             @case ('markdown') {
               <app-markdown-viewer [content]="$any(courseService.moduleViewer()!.content.data).content" />
+            }
+            @case ('external_quiz') {
+              <app-external-quiz-viewer [content]="$any(courseService.moduleViewer()!.content.data)" />
             }
             @default {
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
@@ -129,7 +133,7 @@ export class ModuleViewerPageComponent {
     const viewer = this.courseService.moduleViewer();
     if (!viewer) return false;
     const t = viewer.module.module_type;
-    return t === 'video' || t === 'pdf' || t === 'markdown';
+    return t === 'video' || t === 'pdf' || t === 'markdown' || t === 'external_quiz';
   });
 
   readonly isCompleted = computed(() => {

@@ -10,6 +10,7 @@ import {
   ModuleSavePayload, ModuleContentFormData,
   PdfFormData, ExamFormData, ExamContent, ModulePdf, MarkdownFormData, ModuleMarkdownContent,
   QuizFormData, QuizContent, QuizQuestionType, QuizQuestionFormData,
+  ExternalQuizFormData, ExternalQuizContent,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -658,6 +659,20 @@ export class CourseService {
         await this.#insertQuizQuestions(quizRow.id, d.questions);
         break;
       }
+      case 'external_quiz': {
+        if (!content.data) break;
+        const d = content.data as ExternalQuizFormData;
+        const { error } = await this.#supabase.client
+          .from('external_quiz_references')
+          .insert({
+            module_id: moduleId,
+            external_quiz_id: d.external_quiz_id,
+            external_quiz_url: d.external_quiz_url,
+            passing_score: d.passing_score,
+          });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save external quiz reference'));
+        break;
+      }
       default:
         break;
     }
@@ -739,6 +754,20 @@ export class CourseService {
         await this.#insertQuizQuestions(quizRow.id, d.questions);
         break;
       }
+      case 'external_quiz': {
+        if (!content.data) break;
+        const d = content.data as ExternalQuizFormData;
+        const { error } = await this.#supabase.client
+          .from('external_quiz_references')
+          .upsert({
+            module_id: moduleId,
+            external_quiz_id: d.external_quiz_id,
+            external_quiz_url: d.external_quiz_url,
+            passing_score: d.passing_score,
+          }, { onConflict: 'module_id' });
+        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update external quiz reference'));
+        break;
+      }
       default:
         break;
     }
@@ -813,6 +842,17 @@ export class CourseService {
           } as QuizFormData,
         };
       }
+      case 'external_quiz': {
+        const d = content.data as ExternalQuizContent;
+        return {
+          type: 'external_quiz',
+          data: {
+            external_quiz_id: d.external_quiz_id,
+            external_quiz_url: d.external_quiz_url,
+            passing_score: d.passing_score,
+          },
+        };
+      }
       default:
         return { type: (content as ModuleContent).type, data: null } as ModuleContentFormData;
     }
@@ -882,6 +922,13 @@ export class CourseService {
             })),
           } as QuizContent,
         };
+      }
+      case 'external_quiz': {
+        const res = await client.from('external_quiz_references')
+          .select('external_quiz_id, external_quiz_url, passing_score')
+          .eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        return { type: 'external_quiz', data: res.data as ExternalQuizContent };
       }
       default:
         return { type: moduleType as ModuleType, data: null } as ModuleContent;

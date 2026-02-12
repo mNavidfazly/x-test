@@ -6,7 +6,7 @@ import { BehaviorSubject, EMPTY } from 'rxjs';
 import { ModuleViewerPageComponent } from './module-viewer-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
-import { createMockCourseService, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, MockCourseService } from '../../../__mocks__/course.mock';
+import { createMockCourseService, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, MockCourseService } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
 import { provideMarkdown } from 'ngx-markdown';
@@ -14,6 +14,7 @@ import { VideoViewerComponent } from '../components/video-viewer.component';
 import { PdfViewerComponent } from '../components/pdf-viewer.component';
 import { MarkdownViewerComponent } from '../components/markdown-viewer.component';
 import { ModuleFilesListComponent } from '../components/module-files-list.component';
+import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
 
 function createMockBunnyUploadService() {
   return {
@@ -47,7 +48,7 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setModuleViewer(options.viewer);
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ModuleFilesListComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
@@ -103,6 +104,27 @@ describe('ModuleViewerPageComponent', () => {
 
     expect(screen.getByText('MD Module')).toBeTruthy();
     expect(document.querySelector('.prose')).toBeTruthy();
+  });
+
+  it('should render external quiz viewer for external_quiz module', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'External Quiz Module', description: null, module_type: 'external_quiz', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'external_quiz', data: createMockExternalQuizContent() },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.getByText('External Quiz Module')).toBeTruthy();
+    expect(screen.getByText('Take External Quiz')).toBeTruthy();
+  });
+
+  it('should show mark complete button for external_quiz module', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'EQ', description: null, module_type: 'external_quiz', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'external_quiz', data: createMockExternalQuizContent() },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.getByText('Mark as complete')).toBeTruthy();
   });
 
   it('should show coming soon for quiz module', async () => {

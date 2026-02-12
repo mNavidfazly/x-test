@@ -14,6 +14,7 @@ import { PdfFormComponent } from '../components/pdf-form.component';
 import { ExamFormComponent } from '../components/exam-form.component';
 import { MarkdownFormComponent } from '../components/markdown-form.component';
 import { QuizFormComponent } from '../components/quiz-form.component';
+import { ExternalQuizFormComponent } from '../components/external-quiz-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 import { createMockCourseService } from '../../../__mocks__/course.mock';
@@ -50,7 +51,7 @@ function mockActivatedRoute(
   };
 }
 
-const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
+const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
 
 /** Helper: render in create mode (no moduleId, with courseId + lectureId) */
 async function renderCreateMode(overrides?: {
@@ -156,7 +157,7 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.queryByText('Choose a module type:')).toBeNull();
   });
 
-  it('should show all 5 type options', async () => {
+  it('should show all 6 type options', async () => {
     await renderCreateMode();
 
     expect(screen.getByText('Video')).toBeTruthy();
@@ -164,6 +165,7 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByText('Rich Text')).toBeTruthy();
     expect(screen.getByText('Quiz')).toBeTruthy();
     expect(screen.getByText('Exam')).toBeTruthy();
+    expect(screen.getByText('External Quiz')).toBeTruthy();
   });
 
   // --- Type selection ---
@@ -524,6 +526,43 @@ describe('ModuleFormPageComponent', () => {
         content: expect.objectContaining({ type: 'markdown' }),
       }),
     );
+  });
+
+  // --- External Quiz form ---
+
+  it('should show External Quiz form when External Quiz type selected', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('External Quiz'));
+    fixture.detectChanges();
+
+    expect(screen.getByText('External Quiz Settings')).toBeTruthy();
+    expect(screen.getByLabelText('Quiz ID')).toBeTruthy();
+    expect(screen.getByLabelText('Quiz URL')).toBeTruthy();
+    expect(screen.getByLabelText('Passing Score (%)')).toBeTruthy();
+  });
+
+  it('should load External Quiz data in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-eq', title: 'EQ Module', description: 'Link to quiz', module_type: 'external_quiz', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: {
+        type: 'external_quiz',
+        data: {
+          external_quiz_id: 'EXT-001',
+          external_quiz_url: 'https://quiz.example.com/001',
+          passing_score: 80,
+        },
+      },
+    });
+
+    await renderEditMode({ courseService, moduleId: 'mod-eq' });
+
+    expect(courseService.loadModuleForEdit).toHaveBeenCalledWith('mod-eq');
+    expect(screen.getByText('External Quiz Settings')).toBeTruthy();
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('EQ Module');
+    expect((screen.getByLabelText('Quiz ID') as HTMLInputElement).value).toBe('EXT-001');
+    expect((screen.getByLabelText('Quiz URL') as HTMLInputElement).value).toBe('https://quiz.example.com/001');
   });
 
   // --- Module files editor ---

@@ -1397,4 +1397,94 @@ describe('CourseService', () => {
       await expect(service.deleteModuleFile('file-1')).rejects.toThrow('Cannot delete file');
     });
   });
+
+  describe('createModule with External Quiz content', () => {
+    it('should insert module + external_quiz_references and return id', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: { id: 'new-eq-mod' },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      const result = await service.createModule('c1', {
+        module: { title: 'External Quiz Module', description: null, module_type: 'external_quiz', lecture_id: 'l1' },
+        content: {
+          type: 'external_quiz',
+          data: {
+            external_quiz_id: 'EXT-001',
+            external_quiz_url: 'https://quiz.example.com/001',
+            passing_score: 70,
+          },
+        },
+      });
+
+      expect(result).toEqual({ id: 'new-eq-mod' });
+      expect(supabase.client.from).toHaveBeenCalledWith('external_quiz_references');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        module_id: 'new-eq-mod',
+        external_quiz_id: 'EXT-001',
+        external_quiz_url: 'https://quiz.example.com/001',
+        passing_score: 70,
+      });
+    });
+  });
+
+  describe('updateModule with External Quiz content', () => {
+    it('should upsert external_quiz_references on update', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.updateModule('mod-eq', {
+        module: { title: 'Updated External Quiz', description: 'Updated', module_type: 'external_quiz', lecture_id: 'l1' },
+        content: {
+          type: 'external_quiz',
+          data: {
+            external_quiz_id: 'EXT-002',
+            external_quiz_url: 'https://quiz.example.com/002',
+            passing_score: null,
+          },
+        },
+      });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('external_quiz_references');
+      expect(supabase._mockQueryBuilder.upsert).toHaveBeenCalledWith(
+        {
+          module_id: 'mod-eq',
+          external_quiz_id: 'EXT-002',
+          external_quiz_url: 'https://quiz.example.com/002',
+          passing_score: null,
+        },
+        { onConflict: 'module_id' },
+      );
+    });
+  });
+
+  describe('loadModuleForEdit with External Quiz content', () => {
+    it('should load module and convert external quiz content to form data', async () => {
+      supabase._mockQueryBuilder.single
+        .mockResolvedValueOnce({
+          data: { id: 'mod-eq', title: 'EQ Module', description: 'Quiz link', module_type: 'external_quiz', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: { external_quiz_id: 'EXT-100', external_quiz_url: 'https://quiz.example.com/100', passing_score: 90 },
+          error: null,
+        });
+
+      const result = await service.loadModuleForEdit('mod-eq');
+
+      expect(result.module.id).toBe('mod-eq');
+      expect(result.module.title).toBe('EQ Module');
+      expect(result.module.module_type).toBe('external_quiz');
+      expect(result.content.type).toBe('external_quiz');
+      if (result.content.type === 'external_quiz') {
+        expect(result.content.data).toEqual({
+          external_quiz_id: 'EXT-100',
+          external_quiz_url: 'https://quiz.example.com/100',
+          passing_score: 90,
+        });
+      }
+    });
+  });
 });

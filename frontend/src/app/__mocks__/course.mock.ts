@@ -6,6 +6,7 @@ import {
   CourseFormData, TenantSummary, LectureFormData,
   ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData,
   QuizFormData, QuizContent, ModuleSavePayload,
+  ExternalQuizFormData, ExternalQuizContent,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -313,6 +314,24 @@ export function createMockQuizContent(overrides?: Partial<QuizContent>): QuizCon
         ],
       },
     ],
+    ...overrides,
+  };
+}
+
+export function createMockExternalQuizContent(overrides?: Partial<ExternalQuizContent>): ExternalQuizContent {
+  return {
+    external_quiz_id: 'EXT-QUIZ-001',
+    external_quiz_url: 'https://quiz-platform.example.com/quiz/EXT-QUIZ-001',
+    passing_score: 70,
+    ...overrides,
+  };
+}
+
+export function createMockExternalQuizFormData(overrides?: Partial<ExternalQuizFormData>): ExternalQuizFormData {
+  return {
+    external_quiz_id: 'EXT-QUIZ-001',
+    external_quiz_url: 'https://quiz-platform.example.com/quiz/EXT-QUIZ-001',
+    passing_score: 70,
     ...overrides,
   };
 }

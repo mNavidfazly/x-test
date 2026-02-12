@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, LucideIconData, Video, FileText, Type, HelpCircle, ClipboardCheck, Check, Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, LucideIconData, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, Check, Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-angular';
 import { ModuleSummary, ModuleProgress } from '../../../core/models/course.model';
 
 const TYPE_ICONS: Record<string, LucideIconData> = {
@@ -9,9 +9,10 @@ const TYPE_ICONS: Record<string, LucideIconData> = {
   markdown: Type,
   quiz: HelpCircle,
   exam: ClipboardCheck,
+  external_quiz: ExternalLink,
 };
 
-const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown']);
+const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz']);
 
 @Component({
   selector: 'app-module-item',

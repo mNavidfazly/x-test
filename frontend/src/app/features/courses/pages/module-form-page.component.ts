@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Loader2, Video, FileText, Type, HelpCircle, ClipboardCheck, LucideIconData } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Loader2, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, LucideIconData } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { VideoFormComponent } from '../components/video-form.component';
@@ -8,8 +8,9 @@ import { PdfFormComponent } from '../components/pdf-form.component';
 import { ExamFormComponent } from '../components/exam-form.component';
 import { MarkdownFormComponent } from '../components/markdown-form.component';
 import { QuizFormComponent } from '../components/quiz-form.component';
+import { ExternalQuizFormComponent } from '../components/external-quiz-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
-import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, QuizFormData, ModuleSavePayload } from '../../../core/models/course.model';
+import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, QuizFormData, ExternalQuizFormData, ModuleSavePayload } from '../../../core/models/course.model';
 
 interface TypeOption {
   value: ModuleType;
@@ -21,7 +22,7 @@ interface TypeOption {
 @Component({
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ModuleFilesEditorComponent],
+  imports: [RouterLink, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, ModuleFilesEditorComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-2xl">
@@ -124,6 +125,17 @@ interface TypeOption {
           />
         }
 
+        <!-- External Quiz form -->
+        @if (selectedType() === 'external_quiz') {
+          <app-external-quiz-form
+            [initialModuleData]="moduleFormData()"
+            [initialExternalQuizData]="externalQuizFormData()"
+            [isEditMode]="isEditMode()"
+            (save)="onSave($event)"
+            (cancel)="onCancel()"
+          />
+        }
+
         <!-- Module files editor (edit mode only, all types) -->
         @if (isEditMode() && moduleId()) {
           <app-module-files-editor
@@ -183,6 +195,9 @@ export class ModuleFormPageComponent implements OnInit {
     max_attempts: null, show_correct_answers: true,
     randomize_questions: false, randomize_answers: false, questions: [],
   });
+  readonly externalQuizFormData = signal<ExternalQuizFormData>({
+    external_quiz_id: '', external_quiz_url: '', passing_score: null,
+  });
 
   readonly availableTypes: TypeOption[] = [
     { value: 'video', label: 'Video', hint: 'Upload a video', icon: Video },
@@ -190,6 +205,7 @@ export class ModuleFormPageComponent implements OnInit {
     { value: 'markdown', label: 'Rich Text', hint: 'Write with a rich text editor', icon: Type },
     { value: 'quiz', label: 'Quiz', hint: 'Interactive quiz', icon: HelpCircle },
     { value: 'exam', label: 'Exam', hint: 'Graded exam submission', icon: ClipboardCheck },
+    { value: 'external_quiz', label: 'External Quiz', hint: 'Link to an external quiz', icon: ExternalLink },
   ];
 
   async ngOnInit() {
@@ -264,6 +280,9 @@ export class ModuleFormPageComponent implements OnInit {
       }
       if (content.type === 'quiz' && content.data) {
         this.quizFormData.set(content.data);
+      }
+      if (content.type === 'external_quiz' && content.data) {
+        this.externalQuizFormData.set(content.data);
       }
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'Failed to load module');
