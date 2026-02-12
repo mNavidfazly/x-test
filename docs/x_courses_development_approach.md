@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00024` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00025` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -106,7 +106,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00024                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields)
+│       └── 00001-00025                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -153,7 +153,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData factories
+│   │   │   │   ├── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -163,7 +163,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers, get/post/delete)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown), module_files CRUD, Bunny video cleanup on delete
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete
 │   │   │   │   │   ├── bunny-upload.service.ts  # ✅ BunnyUploadService (TUS upload via tus-js-client, progress signals, pollStatus, deleteVideo)
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
@@ -171,7 +171,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExamContent, ModuleSavePayload, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -196,7 +196,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -204,9 +204,9 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── course-detail-page.component.spec.ts
 │   │   │   │   │   │   ├── course-form-page.component.ts    # Smart: create/edit course, tenant assignment, delete (Phase 3A)
 │   │   │   │   │   │   ├── course-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector, video/pdf/exam/markdown forms + module files editor (Phase 3C)
+│   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector (6 types), video/pdf/exam/markdown/quiz/external_quiz forms + module files editor (Phase 3C-3E)
 │   │   │   │   │   │   ├── module-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown viewer, prev/next nav, mark-complete
+│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz viewer, prev/next nav, mark-complete
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
 │   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
@@ -215,7 +215,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── lecture-accordion.component.spec.ts
 │   │   │   │   │   │   ├── lecture-form.component.ts         # Presentational: inline lecture create/edit form (title + description)
 │   │   │   │   │   │   ├── lecture-form.component.spec.ts
-│   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge, RouterLink for video/pdf/markdown
+│   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge, RouterLink for video/pdf/markdown/external_quiz
 │   │   │   │   │   │   ├── module-item.component.spec.ts
 │   │   │   │   │   │   ├── video-viewer.component.ts         # Smart-lite: Bunny iframe embed with token-signed URLs, 3 encoding states (processing/ready/failed), polling
 │   │   │   │   │   │   ├── video-viewer.component.spec.ts
@@ -240,7 +240,11 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── module-files-list.component.ts    # Presentational: downloadable files with human-readable sizes
 │   │   │   │   │   │   ├── module-files-list.component.spec.ts
 │   │   │   │   │   │   ├── quiz-form.component.ts            # Presentational: quiz builder — 6 question types, inline CRUD, JSON import/export (Phase 3D)
-│   │   │   │   │   │   └── quiz-form.component.spec.ts
+│   │   │   │   │   │   ├── quiz-form.component.spec.ts
+│   │   │   │   │   │   ├── external-quiz-form.component.ts   # Presentational: external quiz form — quiz_id, quiz_url, passing_score (Phase 3E)
+│   │   │   │   │   │   ├── external-quiz-form.component.spec.ts
+│   │   │   │   │   │   ├── external-quiz-viewer.component.ts  # Presentational: info card + "Take External Quiz" button (Phase 3E)
+│   │   │   │   │   │   └── external-quiz-viewer.component.spec.ts
 │   │   │   │   │   ├── utils/
 │   │   │   │   │   │   ├── quiz-json-template.ts             # Quiz JSON template constant (all 6 types) (Phase 3D)
 │   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
@@ -315,7 +319,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
   - [x] `git init` + create `.gitignore`
   - [x] Create private GitHub repo — `TereschenkoAI/x-courses-v2`
   - [x] Push initial commit with `docs/` and `supabase/` folders
-- [x] Run database migrations — all 24 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant; 00019-00021 course/lecture/module CRUD triggers; 00022-00023 search_path + immutable fields fixes; 00024 Bunny Stream support)
+- [x] Run database migrations — all 25 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant; 00019-00021 course/lecture/module CRUD triggers; 00022-00023 search_path + immutable fields fixes; 00024 Bunny Stream support; 00025 external_quiz enum value)
 - [ ] Configure auth:
   - [x] Keycloak SSO (for @calypso-commodities.com domain + onboarded clients) — via `calypso-xcourses` client in "customers" realm
   - [x] Enable email/password auth — enabled by default, confirmed via `config push`
@@ -577,10 +581,16 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] E2E verified: 16 stories (QB-01 to QB-16) all pass, 1 bug found and fixed (FileReader change detection in zoneless mode)
 - [x] **Tests:** QuizFormComponent (23 tests), quiz-json.utils (23 tests) — 456 total frontend tests, build OK
 
-#### 3E - External Quiz Reference
-- [ ] External quiz reference form: external_quiz_id, external_quiz_url, passing_score
-- [ ] Display "Take External Quiz" button in module viewer
-- [ ] **Tests:** ExternalQuizRefComponent
+#### 3E - External Quiz Reference (Complete)
+- [x] Migration 00025: `ALTER TYPE module_type ADD VALUE IF NOT EXISTS 'external_quiz'` (table + 9 RLS policies already existed since 00002/00004)
+- [x] ExternalQuizFormComponent: 3 fields (quiz_id, quiz_url, passing_score) + title/description — simplest module type, no file upload, no signed URLs
+- [x] ExternalQuizViewerComponent: info card with quiz ID, passing score, "Take External Quiz" button (`target="_blank"`)
+- [x] CourseService: 4 switch cases (insert/upsert/fetch/toFormData) — follows exam pattern
+- [x] ModuleItemComponent: ExternalLink icon + added to `LINKABLE_TYPES` (clickable from course detail)
+- [x] ModuleViewerPageComponent: `@case ('external_quiz')` + added to `canMarkComplete` (manual completion until Phase 5B webhook)
+- [x] ModuleFormPageComponent: type selector (6th option), form wiring, edit mode loading
+- [x] E2E verified: 2 stories (EQ-01 create+view, EQ-02 edit round-trip) all pass, 0 bugs found
+- [x] **Tests:** 24 new tests (11 ExternalQuizForm + 6 ExternalQuizViewer + 3 CourseService + 2 ModuleFormPage + 2 ModuleViewerPage) — 480 total frontend tests, build OK
 
 #### 3F - Content Write RLS Tests
 - [ ] Platform Admin can INSERT/UPDATE/DELETE courses, lectures, modules, subtables

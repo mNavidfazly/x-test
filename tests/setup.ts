@@ -510,14 +510,15 @@ export async function createLecturerAssignment(
 export async function createModuleVideo(
   tracker: TestDataTracker,
   moduleId: string,
-  overrides: { videoUrl?: string; thumbnailUrl?: string; duration?: number } = {},
+  overrides: { bunnyVideoId?: string; bunnyLibraryId?: number; encodingStatus?: number; duration?: number } = {},
 ): Promise<{ id: string }> {
   const { data, error } = await adminClient
     .from('module_videos')
     .insert({
       module_id: moduleId,
-      video_url: overrides.videoUrl ?? `https://cdn.example.com/${faker.string.alphanumeric(12)}.mp4`,
-      thumbnail_url: overrides.thumbnailUrl ?? null,
+      bunny_video_id: overrides.bunnyVideoId ?? faker.string.uuid(),
+      bunny_library_id: overrides.bunnyLibraryId ?? 123456,
+      encoding_status: overrides.encodingStatus ?? 4,
       duration: overrides.duration ?? 300,
     })
     .select()
@@ -582,6 +583,107 @@ export async function createModuleFile(
     .single();
 
   if (error) throw new Error(`Failed to create module_file: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createQuiz(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { title?: string; passingScore?: number; timeLimit?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('quizzes')
+    .insert({
+      module_id: moduleId,
+      title: overrides.title ?? `Test Quiz ${faker.string.alphanumeric(6)}`,
+      passing_score: overrides.passingScore ?? 70,
+      ...(overrides.timeLimit !== undefined && { time_limit: overrides.timeLimit }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create quiz: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createQuizQuestion(
+  tracker: TestDataTracker,
+  quizId: string,
+  overrides: { questionText?: string; questionType?: string; points?: number; sortOrder?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('quiz_questions')
+    .insert({
+      quiz_id: quizId,
+      question_text: overrides.questionText ?? faker.lorem.sentence(),
+      question_type: overrides.questionType ?? 'single_choice',
+      points: overrides.points ?? 1,
+      sort_order: overrides.sortOrder ?? 0,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create quiz_question: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createQuizQuestionOption(
+  tracker: TestDataTracker,
+  questionId: string,
+  overrides: { optionText?: string; isCorrect?: boolean; sortOrder?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('quiz_question_options')
+    .insert({
+      question_id: questionId,
+      option_text: overrides.optionText ?? faker.lorem.word(),
+      is_correct: overrides.isCorrect ?? false,
+      sort_order: overrides.sortOrder ?? 0,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create quiz_question_option: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createExam(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { title?: string; durationMinutes?: number; passingScore?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('exams')
+    .insert({
+      module_id: moduleId,
+      title: overrides.title ?? `Test Exam ${faker.string.alphanumeric(6)}`,
+      duration_minutes: overrides.durationMinutes ?? 60,
+      passing_score: overrides.passingScore ?? 70,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create exam: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createExternalQuizReference(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { externalQuizId?: string; externalQuizUrl?: string; passingScore?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('external_quiz_references')
+    .insert({
+      module_id: moduleId,
+      external_quiz_id: overrides.externalQuizId ?? `EXT-${faker.string.alphanumeric(8)}`,
+      external_quiz_url: overrides.externalQuizUrl ?? `https://quiz.example.com/${faker.string.alphanumeric(10)}`,
+      ...(overrides.passingScore !== undefined && { passing_score: overrides.passingScore }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create external_quiz_reference: ${error.message}`);
   return { id: data.id };
 }
 
