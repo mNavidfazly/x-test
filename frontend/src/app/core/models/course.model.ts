@@ -36,13 +36,41 @@ export interface CourseDetail {
   description: string | null;
   thumbnail_url: string | null;
   enrollment_type: EnrollmentType;
+  isEnrolled: boolean;
   lectures: LectureWithModules[];
   progressMap: Record<string, ModuleProgress>;
 }
 
+export interface EnrolledUser {
+  id: string;
+  user_id: string;
+  email: string;
+  full_name: string | null;
+  enrolled_at: string;
+}
+
+export type MarkedByType = 'user' | 'system' | 'admin';
+
 export interface ModuleProgress {
   status: ProgressStatus;
   completed_at: string | null;
+}
+
+export interface UserProgressRecord {
+  module_id: string;
+  status: ProgressStatus;
+  completed_at: string | null;
+  marked_by: MarkedByType | null;
+}
+
+export interface UserProgressSummary {
+  user_id: string;
+  tenant_id: string;
+  email: string;
+  full_name: string | null;
+  completed: number;
+  total: number;
+  modules: Record<string, UserProgressRecord>;
 }
 
 // Phase 2B: Module Viewer types

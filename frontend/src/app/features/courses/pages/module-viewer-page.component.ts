@@ -132,6 +132,8 @@ export class ModuleViewerPageComponent {
   readonly canMarkComplete = computed(() => {
     const viewer = this.courseService.moduleViewer();
     if (!viewer) return false;
+    const detail = this.courseService.courseDetail();
+    if (!detail?.isEnrolled) return false;
     const t = viewer.module.module_type;
     return t === 'video' || t === 'pdf' || t === 'markdown' || t === 'external_quiz';
   });

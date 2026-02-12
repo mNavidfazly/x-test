@@ -593,4 +593,37 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByLabelText('Title')).toBeTruthy();
     expect(screen.getByText('Attached Files')).toBeTruthy();
   });
+
+  // --- Significant update checkbox ---
+
+  it('should show significant update checkbox in edit mode', async () => {
+    await renderEditMode();
+
+    expect(screen.getByText('This is a significant update')).toBeTruthy();
+    expect(screen.getByText(/Resets learner progress/)).toBeTruthy();
+  });
+
+  it('should hide significant update checkbox in create mode', async () => {
+    await renderCreateMode();
+
+    expect(screen.queryByText('This is a significant update')).toBeNull();
+  });
+
+  it('should pass significantUpdate flag to updateModule', async () => {
+    const { fixture, courseService } = await renderEditMode({ moduleId: 'mod-1' });
+
+    // Check the significant update checkbox
+    const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
+    fireEvent.click(checkbox);
+    fixture.detectChanges();
+
+    // Save
+    fireEvent.click(screen.getByText('Save Changes'));
+    await new Promise((r) => setTimeout(r));
+
+    expect(courseService.updateModule).toHaveBeenCalledWith(
+      'mod-1',
+      expect.objectContaining({ significantUpdate: true }),
+    );
+  });
 });

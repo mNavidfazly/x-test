@@ -11,6 +11,7 @@ import {
   PdfFormData, ExamFormData, ExamContent, ModulePdf, MarkdownFormData, ModuleMarkdownContent,
   QuizFormData, QuizContent, QuizQuestionType, QuizQuestionFormData,
   ExternalQuizFormData, ExternalQuizContent,
+  EnrolledUser, UserProgressSummary, UserProgressRecord, MarkedByType,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -119,7 +120,7 @@ export class CourseService {
         return;
       }
 
-      const [courseRes, progressRes] = await Promise.all([
+      const [courseRes, progressRes, enrollmentRes] = await Promise.all([
         client
           .from('courses')
           .select('id, title, description, thumbnail_url, enrollment_type, lectures(id, title, description, sort_order, modules(id, title, module_type, sort_order))')
@@ -132,10 +133,17 @@ export class CourseService {
           .select('module_id, status, completed_at')
           .eq('course_id', courseId)
           .eq('user_id', userId),
+        client
+          .from('course_enrollments')
+          .select('id')
+          .eq('course_id', courseId)
+          .eq('user_id', userId)
+          .maybeSingle(),
       ]);
 
       if (courseRes.error) throw courseRes.error;
       if (progressRes.error) throw progressRes.error;
+      if (enrollmentRes.error) throw enrollmentRes.error;
 
       const course = courseRes.data as {
         id: string;
@@ -164,6 +172,7 @@ export class CourseService {
         description: course.description,
         thumbnail_url: course.thumbnail_url,
         enrollment_type: course.enrollment_type as EnrollmentType,
+        isEnrolled: !!enrollmentRes.data,
         lectures: (course.lectures ?? []).map(l => ({
           ...l,
           modules: l.modules.map(m => ({ ...m, module_type: m.module_type as ModuleType })),
@@ -283,6 +292,169 @@ export class CourseService {
       ...viewer,
       progress: { status: 'completed', completed_at: new Date().toISOString() },
     });
+  }
+
+  // --- Phase 4A: Enrollment methods ---
+
+  async enrollInOpenCourse(courseId: string): Promise<void> {
+    const userId = this.#auth.currentUser()?.id;
+    const tenantId = this.#auth.currentUser()?.claims?.tenant_id;
+    if (!userId || !tenantId) throw new Error('Not authenticated');
+
+    const { error } = await this.#supabase.client
+      .from('course_enrollments')
+      .insert({ user_id: userId, tenant_id: tenantId, course_id: courseId });
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to enroll'));
+    await this.loadCourseDetail(courseId);
+  }
+
+  async enrollWithPassword(courseId: string, password: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .rpc('enroll_with_password', { p_course_id: courseId, p_password: password });
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to enroll'));
+    await this.loadCourseDetail(courseId);
+  }
+
+  async adminEnrollUser(userId: string, tenantId: string, courseId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('course_enrollments')
+      .insert({ user_id: userId, tenant_id: tenantId, course_id: courseId });
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to enroll user'));
+  }
+
+  async unenrollUser(enrollmentId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('course_enrollments')
+      .delete()
+      .eq('id', enrollmentId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to unenroll user'));
+  }
+
+  async loadEnrolledUsers(courseId: string): Promise<EnrolledUser[]> {
+    const { data, error } = await this.#supabase.client
+      .from('course_enrollments')
+      .select('id, user_id, enrolled_at, profiles(email, full_name)')
+      .eq('course_id', courseId)
+      .order('enrolled_at', { ascending: false });
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load enrolled users'));
+
+    return (data ?? []).map((row) => {
+      const profile = row.profiles as unknown as { email: string; full_name: string | null } | null;
+      return {
+        id: row.id,
+        user_id: row.user_id,
+        email: profile?.email ?? '',
+        full_name: profile?.full_name ?? null,
+        enrolled_at: row.enrolled_at,
+      };
+    });
+  }
+
+  async lookupUserByEmail(email: string, tenantId: string): Promise<{ id: string; full_name: string | null } | null> {
+    const { data, error } = await this.#supabase.client
+      .from('profiles')
+      .select('id, full_name')
+      .eq('email', email)
+      .eq('tenant_id', tenantId)
+      .maybeSingle();
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to look up user'));
+    return data ? { id: data.id, full_name: data.full_name } : null;
+  }
+
+  // --- Phase 4B: Progress admin methods ---
+
+  async loadCourseProgressAdmin(courseId: string): Promise<UserProgressSummary[]> {
+    const client = this.#supabase.client;
+
+    const [enrollmentsRes, progressRes] = await Promise.all([
+      client
+        .from('course_enrollments')
+        .select('user_id, tenant_id, profiles(email, full_name)')
+        .eq('course_id', courseId),
+      client
+        .from('user_progress')
+        .select('user_id, module_id, status, completed_at, marked_by')
+        .eq('course_id', courseId),
+    ]);
+
+    if (enrollmentsRes.error) throw new Error(this.#extractErrorMessage(enrollmentsRes.error, 'Failed to load enrollments'));
+    if (progressRes.error) throw new Error(this.#extractErrorMessage(progressRes.error, 'Failed to load progress'));
+
+    const detail = this.#courseDetail();
+    const totalModules = detail
+      ? detail.lectures.reduce((sum, l) => sum + l.modules.length, 0)
+      : 0;
+
+    const progressByUser = new Map<string, UserProgressRecord[]>();
+    for (const p of (progressRes.data ?? [])) {
+      const rec = p as { user_id: string; module_id: string; status: string; completed_at: string | null; marked_by: string | null };
+      const list = progressByUser.get(rec.user_id) ?? [];
+      list.push({
+        module_id: rec.module_id,
+        status: rec.status as UserProgressRecord['status'],
+        completed_at: rec.completed_at,
+        marked_by: rec.marked_by as MarkedByType | null,
+      });
+      progressByUser.set(rec.user_id, list);
+    }
+
+    return (enrollmentsRes.data ?? []).map((row) => {
+      const profile = row.profiles as unknown as { email: string; full_name: string | null } | null;
+      const records = progressByUser.get(row.user_id) ?? [];
+      const modules: Record<string, UserProgressRecord> = {};
+      let completed = 0;
+      for (const r of records) {
+        modules[r.module_id] = r;
+        if (r.status === 'completed') completed++;
+      }
+      return {
+        user_id: row.user_id,
+        tenant_id: row.tenant_id,
+        email: profile?.email ?? '',
+        full_name: profile?.full_name ?? null,
+        completed,
+        total: totalModules,
+        modules,
+      };
+    });
+  }
+
+  async adminMarkModuleComplete(userId: string, tenantId: string, courseId: string, lectureId: string, moduleId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('user_progress')
+      .upsert({
+        user_id: userId,
+        tenant_id: tenantId,
+        course_id: courseId,
+        lecture_id: lectureId,
+        module_id: moduleId,
+        status: 'completed' as const,
+        completed_at: new Date().toISOString(),
+        marked_by: 'admin' as const,
+      }, { onConflict: 'user_id,tenant_id,module_id' });
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to mark module complete'));
+  }
+
+  async adminResetModuleProgress(userId: string, moduleId: string): Promise<void> {
+    const { error } = await this.#supabase.client
+      .from('user_progress')
+      .update({
+        status: 'not_started' as const,
+        completed_at: null,
+        marked_by: null,
+        notes: 'Reset by admin',
+      })
+      .eq('user_id', userId)
+      .eq('module_id', moduleId);
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to reset module progress'));
   }
 
   // --- Phase 3A: Course CRUD methods ---

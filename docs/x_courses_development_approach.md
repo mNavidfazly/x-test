@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00025` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00026` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -102,11 +102,11 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── docs/
 │   ├── learning-platform-requirements.md
 │   ├── x_courses_development_approach.md    # This document
-│   └── e2e-user-stories/
+│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress = 98 total)
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00025                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum)
+│       └── 00001-00026                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -153,7 +153,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData factories
+│   │   │   │   ├── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -163,7 +163,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers, get/post/delete)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete, enrollment (enroll/unenroll/adminEnroll/loadEnrolled/lookupUser), progress admin (loadCourseProgressAdmin/adminMarkModuleComplete/adminResetModuleProgress)
 │   │   │   │   │   ├── bunny-upload.service.ts  # ✅ BunnyUploadService (TUS upload via tus-js-client, progress signals, pollStatus, deleteVideo)
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
@@ -171,7 +171,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, EnrolledUser, MarkedByType, UserProgressRecord, UserProgressSummary, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -196,17 +196,17 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
-│   │   │   │   │   │   ├── course-detail-page.component.ts  # Smart: course detail + lecture CRUD orchestration (inline editing)
+│   │   │   │   │   │   ├── course-detail-page.component.ts  # Smart: course detail + lecture CRUD orchestration (inline editing) + enrollment CTA + enrollment manager + progress manager
 │   │   │   │   │   │   ├── course-detail-page.component.spec.ts
 │   │   │   │   │   │   ├── course-form-page.component.ts    # Smart: create/edit course, tenant assignment, delete (Phase 3A)
 │   │   │   │   │   │   ├── course-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector (6 types), video/pdf/exam/markdown/quiz/external_quiz forms + module files editor (Phase 3C-3E)
+│   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector (6 types), video/pdf/exam/markdown/quiz/external_quiz forms + module files editor + significant update checkbox (Phase 3C-4B)
 │   │   │   │   │   │   ├── module-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz viewer, prev/next nav, mark-complete
+│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz viewer, prev/next nav, mark-complete (gated by enrollment)
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
 │   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
@@ -244,15 +244,20 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── external-quiz-form.component.ts   # Presentational: external quiz form — quiz_id, quiz_url, passing_score (Phase 3E)
 │   │   │   │   │   │   ├── external-quiz-form.component.spec.ts
 │   │   │   │   │   │   ├── external-quiz-viewer.component.ts  # Presentational: info card + "Take External Quiz" button (Phase 3E)
-│   │   │   │   │   │   └── external-quiz-viewer.component.spec.ts
+│   │   │   │   │   │   ├── external-quiz-viewer.component.spec.ts
+│   │   │   │   │   │   ├── enrollment-cta.component.ts        # Presentational: 3 enrollment states (open/password/invite) + enrolled badge (Phase 4A)
+│   │   │   │   │   │   ├── enrollment-cta.component.spec.ts
+│   │   │   │   │   │   ├── enrollment-manager.component.ts    # Smart-lite: admin enrollment panel — enrolled users table, add by email, unenroll (Phase 4A)
+│   │   │   │   │   │   ├── enrollment-manager.component.spec.ts
+│   │   │   │   │   │   ├── progress-manager.component.ts      # Smart-lite: admin progress panel — user progress accordion, mark complete/reset per module (Phase 4B)
+│   │   │   │   │   │   └── progress-manager.component.spec.ts
 │   │   │   │   │   ├── utils/
 │   │   │   │   │   │   ├── quiz-json-template.ts             # Quiz JSON template constant (all 6 types) (Phase 3D)
 │   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
 │   │   │   │   │   │   └── quiz-json.utils.spec.ts
 │   │   │   │   │
 │   │   │   │   │                         # --- Planned (not yet built) ---
-│   │   │   │   ├── content/              # Phase 3C
-│   │   │   │   ├── progress/             # Phase 4
+│   │   │   │   ├── progress/             # Phase 4C (4B admin progress built inside courses/)
 │   │   │   │   ├── quizzes/              # Phase 5A
 │   │   │   │   ├── exams/                # Phase 5C-5D
 │   │   │   │   ├── comments/             # Phase 6
@@ -299,7 +304,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │       ├── reminder-history.test.ts
 │       ├── access-requests.test.ts
 │       ├── assignments.test.ts         # CSM + lecturer assignments
-│       └── tenant-courses.test.ts
+│       ├── tenant-courses.test.ts
+│       └── content-write.test.ts      # CW-001 to CW-048: content write permissions (Phase 3F)
 │
 ├── scripts/
 │   └── test-runner.ts                  # Supabase branch management for RLS tests
@@ -319,7 +325,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
   - [x] `git init` + create `.gitignore`
   - [x] Create private GitHub repo — `TereschenkoAI/x-courses-v2`
   - [x] Push initial commit with `docs/` and `supabase/` folders
-- [x] Run database migrations — all 25 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant; 00019-00021 course/lecture/module CRUD triggers; 00022-00023 search_path + immutable fields fixes; 00024 Bunny Stream support; 00025 external_quiz enum value)
+- [x] Run database migrations — all 26 applied via `supabase db push` (jwt helpers moved from `auth` to `public` schema for Cloud compatibility; 00014 fixes search_path; 00015-00017 Keycloak SSO; 00018 Equinor tenant; 00019-00021 course/lecture/module CRUD triggers; 00022-00023 search_path + immutable fields fixes; 00024 Bunny Stream support; 00025 external_quiz enum value; 00026 progress tracking triggers + admin INSERT policies)
 - [ ] Configure auth:
   - [x] Keycloak SSO (for @calypso-commodities.com domain + onboarded clients) — via `calypso-xcourses` client in "customers" realm
   - [x] Enable email/password auth — enabled by default, confirmed via `config push`
@@ -608,29 +614,35 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 
 ### Phase 4: Enrollment & Progress
 
-#### 4A - Enrollment System
-- [ ] Enrollment flow based on course enrollment_type:
-  - [ ] **Open:** Self-enroll button (validates course assigned to user's tenant via tenant_courses)
-  - [ ] **Password protected:** Password input modal before enrollment
-  - [ ] **Invite only:** Enrolled by Tenant Admin or Platform Admin (insert into course_enrollments)
-- [ ] Enrollment service (Supabase direct)
-- [ ] Tenant Admin: can enroll users in their tenant
-- [ ] Platform Admin: can enroll any user
-- [ ] Unenroll functionality (Tenant Admin, Platform Admin)
-- [ ] **Tests:** EnrollmentService, enrollment components
+#### 4A - Enrollment System (Complete)
+- [x] NO migrations — all DB infrastructure already existed (course_enrollments table, enroll_with_password RPC, 10 RLS policies)
+- [x] Enrollment flow based on course enrollment_type:
+  - [x] **Open:** Self-enroll button (direct INSERT into course_enrollments, RLS policy `ce_insert_self` validates tenant_courses assignment + open enrollment_type)
+  - [x] **Password protected:** Password input with error handling, calls `enroll_with_password()` RPC (server-side bcrypt comparison)
+  - [x] **Invite only:** Info card ("requires administrator invitation"), Tenant Admin/Platform Admin enroll users via EnrollmentManager
+- [x] EnrollmentCtaComponent (presentational): 4 states — open button, password input, invite-only info, enrolled badge. Hidden when canEdit. `setError()` method for parent error propagation
+- [x] EnrollmentManagerComponent (smart-lite): admin panel for PA/TA — enrolled users table, add by email (lookupUserByEmail → adminEnrollUser), unenroll button
+- [x] CourseService: 6 new methods — `enrollInOpenCourse`, `enrollWithPassword`, `adminEnrollUser`, `unenrollUser`, `loadEnrolledUsers`, `lookupUserByEmail`
+- [x] `CourseDetail.isEnrolled` added, `loadCourseDetail` gets 3rd parallel query (maybeSingle on course_enrollments)
+- [x] Module viewer: `canMarkComplete` now checks `courseDetail()?.isEnrolled` — unenrolled users can view content but cannot track progress
+- [x] CourseDetailPageComponent: enrollment CTA between header and lectures, enrollment manager before delete section, `canManageEnrollments()` computed (PA/TA)
+- [x] Cross-tenant isolation: TA sees only own tenant's enrolled users, PA sees all tenants
+- [x] E2E verified: 11 stories (EN-01 to EN-11) all pass, 1 bug found and fixed (enrollment error feedback via `setError()` + `viewChild`)
+- [x] **Tests:** 38 new tests (10 EnrollmentCta + 10 EnrollmentManager + 8 CourseService + 6 CourseDetailPage + 2 ModuleViewerPage enrollment gating + 2 EnrollmentCta in parent) — 518 total frontend tests, build OK
 
-#### 4B - Progress Tracking
-- [ ] Mark module as complete (user_progress INSERT/UPDATE)
-- [ ] Auto-mark on quiz pass (quiz_attempts.passed = true → insert progress as completed, marked_by = 'system')
-- [ ] Auto-mark on exam pass (exam_submissions.score >= passing_score → insert progress as completed, marked_by = 'system')
-- [ ] Frontend progress calculation:
-  ```typescript
-  const totalModules = course.lectures.flatMap(l => l.modules).length;
-  const completedModules = userProgress.filter(p => p.status === 'completed').length;
-  const percentage = (completedModules / totalModules) * 100;
-  ```
-- [ ] Admin progress override (Tenant Admin, Platform Admin can mark any user's progress)
-- [ ] **Tests:** ProgressService, progress tracking components
+#### 4B - Progress Tracking (Complete)
+- [x] Migration 00026: 2 admin INSERT policies (`progress_insert_platform_admin`, `progress_insert_tenant_admin`) + 3 SECURITY DEFINER trigger functions:
+  - [x] `auto_mark_quiz_completed()` — AFTER UPDATE on quiz_attempts when `passed` changes to true
+  - [x] `auto_mark_exam_completed()` — AFTER UPDATE on exam_submissions when `score` first set and >= `passing_score`
+  - [x] `reset_progress_on_significant_update()` — AFTER UPDATE on modules when `significant_update_at` changes, resets completed progress for that module
+- [x] Model types: `MarkedByType`, `UserProgressRecord`, `UserProgressSummary`
+- [x] CourseService: 3 new methods — `loadCourseProgressAdmin` (2 parallel queries: enrollments + progress), `adminMarkModuleComplete` (upsert with `marked_by='admin'`), `adminResetModuleProgress` (update to `not_started`)
+- [x] ProgressManagerComponent (smart-lite): user progress accordion with per-user progress bars, expand to see module-level status badges, Mark Complete / Reset buttons per module
+- [x] Course detail page integration: ProgressManagerComponent after EnrollmentManager, gated by `canManageEnrollments()` (PA/TA only)
+- [x] Significant update checkbox on module edit form (edit mode only): amber box with "This is a significant update" checkbox, sets `significant_update_at` on save → triggers progress reset cascade
+- [x] Cross-tenant isolation: TA sees only own tenant's users, PA sees all tenants
+- [x] E2E verified: 11 stories (PT-01 to PT-11) all pass, 0 bugs found. 2 deferred (PT-12/PT-13 — quiz/exam auto-mark needs Phase 5A/5B)
+- [x] **Tests:** 23 new tests (6 CourseService + 10 ProgressManager + 3 CourseDetailPage + 4 ModuleFormPage) — 541 total frontend tests, build OK
 
 #### 4C - Progress Dashboard
 - [ ] Role-scoped views:
@@ -1050,6 +1062,8 @@ export const environment = {
 
 **9 security trigger functions:** `custom_access_token_hook`, `handle_new_user`, `password_verification_hook`, `protect_profile_role_fields`, `protect_tenant_critical_fields`, `enforce_platform_roles_master_tenant`, `enforce_master_tenant_assignment`, `enforce_module_course_consistency`, `enforce_exam_submission_course`
 
+**3 progress tracking triggers (00026):** `auto_mark_quiz_completed` (on quiz_attempts), `auto_mark_exam_completed` (on exam_submissions), `reset_progress_on_significant_update` (on modules) — all SECURITY DEFINER with `SET search_path = public`
+
 See `CLAUDE.md` § Schema Quick Reference for the full table-by-table breakdown.
 
 ---
@@ -1169,7 +1183,7 @@ npm run test:ui             # Interactive browser UI
 **Key Files (source of truth — do NOT duplicate code examples here, they drift):**
 - `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
 - `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
-- `frontend/src/app/__mocks__/` — 10 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course, tiptap)
+- `frontend/src/app/__mocks__/` — 10 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin], tiptap)
 
 See `CLAUDE.md` § Testing for conventions and patterns.
 

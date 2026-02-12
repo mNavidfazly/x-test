@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
@@ -6,6 +6,9 @@ import { AuthService } from '../../../core/services/auth.service';
 import { LectureFormData } from '../../../core/models/course.model';
 import { LectureAccordionComponent } from '../components/lecture-accordion.component';
 import { LectureFormComponent } from '../components/lecture-form.component';
+import { EnrollmentCtaComponent } from '../components/enrollment-cta.component';
+import { EnrollmentManagerComponent } from '../components/enrollment-manager.component';
+import { ProgressManagerComponent } from '../components/progress-manager.component';
 
 const BADGE_STYLES: Record<string, string> = {
   open: 'bg-emerald-100 text-emerald-700',
@@ -22,7 +25,7 @@ const BADGE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-course-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, LectureAccordionComponent, LectureFormComponent],
+  imports: [RouterLink, LucideAngularModule, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -82,6 +85,19 @@ const BADGE_LABELS: Record<string, string> = {
             </div>
           }
         </div>
+
+        <!-- Enrollment CTA -->
+        @if (!canEdit()) {
+          <div class="mb-6">
+            <app-enrollment-cta
+              [enrollmentType]="courseService.courseDetail()!.enrollment_type"
+              [isEnrolled]="courseService.courseDetail()!.isEnrolled"
+              [canEdit]="canEdit()"
+              (enroll)="onEnroll()"
+              (enrollWithPassword)="onEnrollWithPassword($event)"
+            />
+          </div>
+        }
 
         <!-- Lecture error -->
         @if (lectureError()) {
@@ -152,6 +168,26 @@ const BADGE_LABELS: Record<string, string> = {
           </div>
         }
 
+        <!-- Enrollment Manager (TA/PA only) -->
+        @if (canManageEnrollments()) {
+          <div class="mt-8 pt-6 border-t border-slate-200">
+            <app-enrollment-manager
+              [courseId]="courseService.courseDetail()!.id"
+              [enrollmentType]="courseService.courseDetail()!.enrollment_type"
+            />
+          </div>
+        }
+
+        <!-- Progress Manager (TA/PA only) -->
+        @if (canManageEnrollments()) {
+          <div class="mt-8 pt-6 border-t border-slate-200">
+            <app-progress-manager
+              [courseId]="courseService.courseDetail()!.id"
+              [lectures]="courseService.courseDetail()!.lectures"
+            />
+          </div>
+        }
+
         @if (isPlatformAdmin()) {
           <div class="mt-8 pt-6 border-t border-slate-200">
             @if (!confirmingDelete()) {
@@ -198,6 +234,8 @@ export class CourseDetailPageComponent implements OnInit {
   #router = inject(Router);
   readonly icons = { ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus };
 
+  private readonly enrollmentCta = viewChild(EnrollmentCtaComponent);
+
   readonly confirmingDelete = signal(false);
   readonly deleting = signal(false);
 
@@ -209,6 +247,12 @@ export class CourseDetailPageComponent implements OnInit {
   readonly isPlatformAdmin = computed(() =>
     this.#auth.currentUser()?.claims?.is_platform_admin ?? false,
   );
+
+  readonly canManageEnrollments = computed(() => {
+    const user = this.#auth.currentUser();
+    if (!user) return false;
+    return user.claims.is_platform_admin || user.claims.is_tenant_admin;
+  });
 
   readonly canEdit = computed(() => {
     const user = this.#auth.currentUser();
@@ -257,6 +301,26 @@ export class CourseDetailPageComponent implements OnInit {
     const courseId = this.#route.snapshot.paramMap.get('courseId');
     if (courseId) {
       this.courseService.loadCourseDetail(courseId);
+    }
+  }
+
+  async onEnroll() {
+    const courseId = this.#route.snapshot.paramMap.get('courseId');
+    if (!courseId) return;
+    try {
+      await this.courseService.enrollInOpenCourse(courseId);
+    } catch (err) {
+      this.enrollmentCta()?.setError(err instanceof Error ? err.message : 'Enrollment failed');
+    }
+  }
+
+  async onEnrollWithPassword(password: string) {
+    const courseId = this.#route.snapshot.paramMap.get('courseId');
+    if (!courseId) return;
+    try {
+      await this.courseService.enrollWithPassword(courseId, password);
+    } catch (err) {
+      this.enrollmentCta()?.setError(err instanceof Error ? err.message : 'Enrollment failed');
     }
   }
 

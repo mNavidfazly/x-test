@@ -6,7 +6,7 @@ import { BehaviorSubject, EMPTY } from 'rxjs';
 import { ModuleViewerPageComponent } from './module-viewer-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
-import { createMockCourseService, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, MockCourseService } from '../../../__mocks__/course.mock';
+import { createMockCourseService, createMockCourseDetail, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, MockCourseService } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
 import { provideMarkdown } from 'ngx-markdown';
@@ -43,9 +43,16 @@ describe('ModuleViewerPageComponent', () => {
     );
   });
 
-  const renderPage = async (options?: { viewer?: ReturnType<typeof createMockModuleViewerData> | null }) => {
+  const renderPage = async (options?: {
+    viewer?: ReturnType<typeof createMockModuleViewerData> | null;
+    isEnrolled?: boolean;
+  }) => {
     if (options?.viewer !== undefined) {
       mockCourseService._setModuleViewer(options.viewer);
+    }
+    // canMarkComplete now checks courseDetail().isEnrolled — set default enrolled=true
+    if (options?.isEnrolled !== undefined || options?.viewer !== undefined) {
+      mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
       componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent],
@@ -210,5 +217,21 @@ describe('ModuleViewerPageComponent', () => {
 
     expect(mockCourseService.loadModuleViewer).toHaveBeenCalledWith('course-1', 'mod-2');
     expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(2);
+  });
+
+  // --- Enrollment gating tests ---
+
+  it('should hide mark complete when not enrolled', async () => {
+    const viewer = createMockModuleViewerData(); // video type
+    await renderPage({ viewer, isEnrolled: false });
+
+    expect(screen.queryByText('Mark as complete')).toBeNull();
+  });
+
+  it('should show mark complete when enrolled + eligible type', async () => {
+    const viewer = createMockModuleViewerData(); // video type, no progress
+    await renderPage({ viewer, isEnrolled: true });
+
+    expect(screen.getByText('Mark as complete')).toBeTruthy();
   });
 });

@@ -67,6 +67,22 @@ interface TypeOption {
           </div>
         }
 
+        <!-- Significant update checkbox (edit mode only) -->
+        @if (isEditMode() && selectedType()) {
+          <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <label class="flex items-center gap-2 text-sm text-amber-800 cursor-pointer">
+              <input
+                type="checkbox"
+                [checked]="significantUpdate()"
+                (change)="significantUpdate.set($any($event.target).checked)"
+                class="rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+              />
+              <span class="font-medium">This is a significant update</span>
+            </label>
+            <p class="text-xs text-amber-600 mt-1 ml-6">Resets learner progress for this module. Use for content changes, not typo fixes.</p>
+          </div>
+        }
+
         <!-- Video form -->
         @if (selectedType() === 'video') {
           <app-video-form
@@ -160,6 +176,7 @@ export class ModuleFormPageComponent implements OnInit {
   readonly errorMessage = signal('');
 
   readonly selectedType = signal<ModuleType | null>(null);
+  readonly significantUpdate = signal(false);
 
   readonly courseId = computed(() => this.#route.snapshot.paramMap.get('courseId') ?? '');
   readonly moduleId = computed(() => this.#route.snapshot.paramMap.get('moduleId') ?? '');
@@ -239,6 +256,7 @@ export class ModuleFormPageComponent implements OnInit {
     this.errorMessage.set('');
     try {
       if (this.isEditMode()) {
+        payload.significantUpdate = this.significantUpdate();
         await this.#courseService.updateModule(this.moduleId(), payload);
       } else {
         await this.#courseService.createModule(this.courseId(), payload);

@@ -6,6 +6,9 @@ import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { LectureAccordionComponent } from '../components/lecture-accordion.component';
 import { LectureFormComponent } from '../components/lecture-form.component';
+import { EnrollmentCtaComponent } from '../components/enrollment-cta.component';
+import { EnrollmentManagerComponent } from '../components/enrollment-manager.component';
+import { ProgressManagerComponent } from '../components/progress-manager.component';
 import { createMockCourseService, createMockCourseDetail } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
@@ -20,7 +23,7 @@ function mockActivatedRoute(courseId: string) {
   };
 }
 
-const defaultImports = [MockLucideIconComponent, LectureAccordionComponent, LectureFormComponent];
+const defaultImports = [MockLucideIconComponent, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent];
 
 describe('CourseDetailPageComponent', () => {
   it('should call loadCourseDetail with route param', async () => {
@@ -518,5 +521,171 @@ describe('CourseDetailPageComponent', () => {
     fixture.detectChanges();
 
     expect(screen.getByText('Cannot delete module')).toBeTruthy();
+  });
+
+  // --- Enrollment tests ---
+
+  it('should show enrollment CTA when not enrolled and not editor', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail({ isEnrolled: false, enrollment_type: 'open' }),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.getByRole('button', { name: /enroll now/i })).toBeTruthy();
+  });
+
+  it('should show enrolled badge when already enrolled', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail({ isEnrolled: true }),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.getByText("You're enrolled")).toBeTruthy();
+  });
+
+  it('should hide enrollment CTA when canEdit is true', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail({ isEnrolled: false }),
+    });
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(screen.queryByRole('button', { name: /enroll now/i })).toBeNull();
+  });
+
+  it('should show enrollment manager for platform admin', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    const { container } = await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(container.querySelector('app-enrollment-manager')).toBeTruthy();
+  });
+
+  it('should show enrollment manager for tenant admin', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    const { container } = await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_tenant_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(container.querySelector('app-enrollment-manager')).toBeTruthy();
+  });
+
+  it('should hide enrollment manager for regular learner', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    const { container } = await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(container.querySelector('app-enrollment-manager')).toBeNull();
+  });
+
+  // --- Progress Manager tests ---
+
+  it('should show progress manager for platform admin', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    const { container } = await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(container.querySelector('app-progress-manager')).toBeTruthy();
+  });
+
+  it('should show progress manager for tenant admin', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    const { container } = await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_tenant_admin: true } }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(container.querySelector('app-progress-manager')).toBeTruthy();
+  });
+
+  it('should hide progress manager for regular learner', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail(),
+    });
+
+    const { container } = await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+      ],
+    });
+
+    expect(container.querySelector('app-progress-manager')).toBeNull();
   });
 });

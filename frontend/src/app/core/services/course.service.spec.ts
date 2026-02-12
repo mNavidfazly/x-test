@@ -1487,4 +1487,318 @@ describe('CourseService', () => {
       }
     });
   });
+
+  // --- Phase 4A: Enrollment methods ---
+
+  describe('loadCourseDetail enrollment', () => {
+    it('should set isEnrolled true when enrollment exists', async () => {
+      const courseData = {
+        id: 'c1', title: 'Course', description: null, thumbnail_url: null,
+        enrollment_type: 'open', lectures: [],
+      };
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({ data: courseData, error: null });
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: unknown[]; error: null }) => void) => resolve({ data: [], error: null }),
+      );
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: { id: 'enr-1' }, error: null });
+
+      await service.loadCourseDetail('c1');
+
+      expect(service.courseDetail()!.isEnrolled).toBe(true);
+    });
+
+    it('should set isEnrolled false when no enrollment', async () => {
+      const courseData = {
+        id: 'c1', title: 'Course', description: null, thumbnail_url: null,
+        enrollment_type: 'open', lectures: [],
+      };
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({ data: courseData, error: null });
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: unknown[]; error: null }) => void) => resolve({ data: [], error: null }),
+      );
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+
+      await service.loadCourseDetail('c1');
+
+      expect(service.courseDetail()!.isEnrolled).toBe(false);
+    });
+  });
+
+  describe('enrollInOpenCourse', () => {
+    it('should insert enrollment and reload course detail', async () => {
+      // Insert returns via then
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: unknown; error: null }) => void) => resolve({ data: null, error: null }),
+      );
+
+      // loadCourseDetail will be called after insert — mock the course+progress+enrollment
+      supabase._mockQueryBuilder.single.mockResolvedValue({
+        data: { id: 'c1', title: 'Course', description: null, thumbnail_url: null, enrollment_type: 'open', lectures: [] },
+        error: null,
+      });
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValue({ data: { id: 'enr-1' }, error: null });
+
+      await service.enrollInOpenCourse('c1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('course_enrollments');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        user_id: 'test-user-id',
+        tenant_id: 'test-tenant-id',
+        course_id: 'c1',
+      });
+    });
+
+    it('should throw on insert error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: null; error: { message: string } }) => void) =>
+          resolve({ data: null, error: { message: 'Already enrolled' } }),
+      );
+
+      await expect(service.enrollInOpenCourse('c1')).rejects.toThrow('Already enrolled');
+    });
+  });
+
+  describe('enrollWithPassword', () => {
+    it('should call RPC and reload course detail', async () => {
+      supabase.client.rpc = vi.fn().mockResolvedValue({ data: null, error: null });
+
+      // loadCourseDetail will be called after RPC
+      supabase._mockQueryBuilder.single.mockResolvedValue({
+        data: { id: 'c1', title: 'Course', description: null, thumbnail_url: null, enrollment_type: 'password_protected', lectures: [] },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: unknown[]; error: null }) => void) => resolve({ data: [], error: null }),
+      );
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValue({ data: { id: 'enr-1' }, error: null });
+
+      await service.enrollWithPassword('c1', 'secret123');
+
+      expect(supabase.client.rpc).toHaveBeenCalledWith('enroll_with_password', {
+        p_course_id: 'c1',
+        p_password: 'secret123',
+      });
+    });
+
+    it('should throw on RPC error', async () => {
+      supabase.client.rpc = vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: 'Invalid password' },
+      });
+
+      await expect(service.enrollWithPassword('c1', 'wrong')).rejects.toThrow('Invalid password');
+    });
+  });
+
+  describe('adminEnrollUser', () => {
+    it('should insert enrollment for specified user', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: unknown; error: null }) => void) => resolve({ data: null, error: null }),
+      );
+
+      await service.adminEnrollUser('user-2', 'tenant-2', 'c1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('course_enrollments');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+        user_id: 'user-2',
+        tenant_id: 'tenant-2',
+        course_id: 'c1',
+      });
+    });
+  });
+
+  describe('unenrollUser', () => {
+    it('should delete enrollment by ID', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: unknown; error: null }) => void) => resolve({ data: null, error: null }),
+      );
+
+      await service.unenrollUser('enr-1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('course_enrollments');
+      expect(supabase._mockQueryBuilder.delete).toHaveBeenCalled();
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'enr-1');
+    });
+  });
+
+  describe('loadEnrolledUsers', () => {
+    it('should return mapped enrolled users', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation(
+        (resolve: (value: { data: unknown; error: null }) => void) => resolve({
+          data: [
+            { id: 'enr-1', user_id: 'u1', enrolled_at: '2026-01-10T00:00:00Z', profiles: { email: 'a@test.com', full_name: 'User A' } },
+            { id: 'enr-2', user_id: 'u2', enrolled_at: '2026-01-11T00:00:00Z', profiles: { email: 'b@test.com', full_name: null } },
+          ],
+          error: null,
+        }),
+      );
+
+      const result = await service.loadEnrolledUsers('c1');
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toEqual({
+        id: 'enr-1', user_id: 'u1', email: 'a@test.com', full_name: 'User A', enrolled_at: '2026-01-10T00:00:00Z',
+      });
+      expect(result[1]).toEqual({
+        id: 'enr-2', user_id: 'u2', email: 'b@test.com', full_name: null, enrolled_at: '2026-01-11T00:00:00Z',
+      });
+    });
+  });
+
+  describe('lookupUserByEmail', () => {
+    it('should return user when found', async () => {
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: { id: 'u1', full_name: 'Found User' },
+        error: null,
+      });
+
+      const result = await service.lookupUserByEmail('found@test.com', 'tenant-1');
+
+      expect(result).toEqual({ id: 'u1', full_name: 'Found User' });
+      expect(supabase.client.from).toHaveBeenCalledWith('profiles');
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('email', 'found@test.com');
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('tenant_id', 'tenant-1');
+    });
+
+    it('should return null when user not found', async () => {
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      const result = await service.lookupUserByEmail('missing@test.com', 'tenant-1');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  // --- Phase 4B: Progress admin methods ---
+
+  describe('loadCourseProgressAdmin', () => {
+    const preloadCourseDetail = async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: {
+          id: 'c1', title: 'C', description: null, thumbnail_url: null, enrollment_type: 'open',
+          lectures: [{
+            id: 'l1', title: 'L1', description: null, sort_order: 0,
+            modules: [
+              { id: 'mod-1', title: 'M1', module_type: 'video', sort_order: 0 },
+              { id: 'mod-2', title: 'M2', module_type: 'pdf', sort_order: 1 },
+            ],
+          }],
+        },
+        error: null,
+      });
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown[]; error: null }) => void) =>
+        resolve({ data: [], error: null }));
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({ data: null, error: null });
+      await service.loadCourseDetail('c1');
+    };
+
+    it('should return combined user + progress data', async () => {
+      await preloadCourseDetail();
+
+      let callCount = 0;
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) => {
+        callCount++;
+        if (callCount === 1) {
+          // enrollments
+          return resolve({
+            data: [
+              { user_id: 'u1', tenant_id: 't1', profiles: { email: 'a@test.com', full_name: 'User A' } },
+              { user_id: 'u2', tenant_id: 't1', profiles: { email: 'b@test.com', full_name: null } },
+            ],
+            error: null,
+          });
+        }
+        // progress
+        return resolve({
+          data: [
+            { user_id: 'u1', module_id: 'mod-1', status: 'completed', completed_at: '2026-01-15T10:00:00Z', marked_by: 'user' },
+          ],
+          error: null,
+        });
+      });
+
+      const result = await service.loadCourseProgressAdmin('c1');
+
+      expect(result).toHaveLength(2);
+      expect(result[0].user_id).toBe('u1');
+      expect(result[0].email).toBe('a@test.com');
+      expect(result[0].completed).toBe(1);
+      expect(result[0].total).toBe(2);
+      expect(result[0].modules['mod-1']).toEqual({
+        module_id: 'mod-1', status: 'completed', completed_at: '2026-01-15T10:00:00Z', marked_by: 'user',
+      });
+
+      expect(result[1].user_id).toBe('u2');
+      expect(result[1].completed).toBe(0);
+      expect(result[1].modules).toEqual({});
+    });
+
+    it('should throw on enrollments error', async () => {
+      await preloadCourseDetail();
+
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'RLS denied' } }));
+
+      await expect(service.loadCourseProgressAdmin('c1')).rejects.toThrow('RLS denied');
+    });
+  });
+
+  describe('adminMarkModuleComplete', () => {
+    it('should upsert progress with marked_by=admin', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.adminMarkModuleComplete('u1', 't1', 'c1', 'l1', 'mod-1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('user_progress');
+      expect(supabase._mockQueryBuilder.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user_id: 'u1',
+          tenant_id: 't1',
+          course_id: 'c1',
+          lecture_id: 'l1',
+          module_id: 'mod-1',
+          status: 'completed',
+          marked_by: 'admin',
+        }),
+        { onConflict: 'user_id,tenant_id,module_id' },
+      );
+    });
+
+    it('should throw on upsert error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Permission denied' } }));
+
+      await expect(service.adminMarkModuleComplete('u1', 't1', 'c1', 'l1', 'mod-1')).rejects.toThrow('Permission denied');
+    });
+  });
+
+  describe('adminResetModuleProgress', () => {
+    it('should update progress to not_started', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
+        resolve({ data: null, error: null }));
+
+      await service.adminResetModuleProgress('u1', 'mod-1');
+
+      expect(supabase.client.from).toHaveBeenCalledWith('user_progress');
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({
+        status: 'not_started',
+        completed_at: null,
+        marked_by: null,
+        notes: 'Reset by admin',
+      });
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('user_id', 'u1');
+      expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('module_id', 'mod-1');
+    });
+
+    it('should throw on update error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Cannot reset' } }));
+
+      await expect(service.adminResetModuleProgress('u1', 'mod-1')).rejects.toThrow('Cannot reset');
+    });
+  });
 });

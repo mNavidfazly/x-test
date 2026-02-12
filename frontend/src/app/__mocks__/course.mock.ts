@@ -7,6 +7,7 @@ import {
   ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData,
   QuizFormData, QuizContent, ModuleSavePayload,
   ExternalQuizFormData, ExternalQuizContent,
+  EnrolledUser, UserProgressSummary,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -54,6 +55,15 @@ export function createMockCourseService(options?: {
     loadModuleFiles: vi.fn().mockResolvedValue([]),
     addModuleFile: vi.fn().mockResolvedValue(undefined),
     deleteModuleFile: vi.fn().mockResolvedValue(undefined),
+    enrollInOpenCourse: vi.fn().mockResolvedValue(undefined),
+    enrollWithPassword: vi.fn().mockResolvedValue(undefined),
+    adminEnrollUser: vi.fn().mockResolvedValue(undefined),
+    unenrollUser: vi.fn().mockResolvedValue(undefined),
+    loadEnrolledUsers: vi.fn().mockResolvedValue([]),
+    lookupUserByEmail: vi.fn().mockResolvedValue(null),
+    loadCourseProgressAdmin: vi.fn().mockResolvedValue([]),
+    adminMarkModuleComplete: vi.fn().mockResolvedValue(undefined),
+    adminResetModuleProgress: vi.fn().mockResolvedValue(undefined),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),
@@ -87,6 +97,7 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
     description: 'A test course description',
     thumbnail_url: null,
     enrollment_type: 'open',
+    isEnrolled: true,
     lectures: [
       {
         id: 'lecture-1',
@@ -340,6 +351,35 @@ export function createMockModuleSavePayload(overrides?: Partial<ModuleSavePayloa
   return {
     module: createMockModuleFormData(),
     content: { type: 'video', data: createMockVideoFormData() },
+    ...overrides,
+  };
+}
+
+// Phase 4A: Enrollment factories
+
+export function createMockUserProgressSummary(overrides?: Partial<UserProgressSummary>): UserProgressSummary {
+  return {
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    email: 'learner@test.com',
+    full_name: 'Test Learner',
+    completed: 2,
+    total: 5,
+    modules: {
+      'mod-1': { module_id: 'mod-1', status: 'completed', completed_at: '2026-01-15T10:00:00Z', marked_by: 'user' },
+      'mod-2': { module_id: 'mod-2', status: 'completed', completed_at: '2026-01-16T10:00:00Z', marked_by: 'system' },
+    },
+    ...overrides,
+  };
+}
+
+export function createMockEnrolledUser(overrides?: Partial<EnrolledUser>): EnrolledUser {
+  return {
+    id: 'enrollment-1',
+    user_id: 'user-1',
+    email: 'learner@test.com',
+    full_name: 'Test Learner',
+    enrolled_at: '2026-01-15T10:00:00Z',
     ...overrides,
   };
 }
