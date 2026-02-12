@@ -238,7 +238,13 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── module-files-editor.component.ts  # Smart-lite: file attachment upload/delete for modules (edit mode only) (Phase 3C-3)
 │   │   │   │   │   │   ├── module-files-editor.component.spec.ts
 │   │   │   │   │   │   ├── module-files-list.component.ts    # Presentational: downloadable files with human-readable sizes
-│   │   │   │   │   │   └── module-files-list.component.spec.ts
+│   │   │   │   │   │   ├── module-files-list.component.spec.ts
+│   │   │   │   │   │   ├── quiz-form.component.ts            # Presentational: quiz builder — 6 question types, inline CRUD, JSON import/export (Phase 3D)
+│   │   │   │   │   │   └── quiz-form.component.spec.ts
+│   │   │   │   │   ├── utils/
+│   │   │   │   │   │   ├── quiz-json-template.ts             # Quiz JSON template constant (all 6 types) (Phase 3D)
+│   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
+│   │   │   │   │   │   └── quiz-json.utils.spec.ts
 │   │   │   │   │
 │   │   │   │   │                         # --- Planned (not yet built) ---
 │   │   │   │   ├── content/              # Phase 3C
@@ -558,14 +564,18 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] E2E verified: full round-trip (upload 21.5MB MP4 → encode → signed iframe playback → delete with Bunny cleanup)
 - [x] **Tests:** 14 backend (pytest) + ~20 frontend (vitest) — 60 total backend, 413 total frontend
 
-#### 3D - Quiz Builder
-- [ ] Quiz settings: title, description, time_limit, passing_score, max_attempts, show_correct_answers, randomize_questions, randomize_answers
-- [ ] Questions CRUD:
-  - [ ] 6 question types: single_choice, multiple_choice, true_false, fill_blank, matching, short_answer
-  - [ ] Question text, points, sort_order
-  - [ ] Options CRUD (for choice-based types): option_text, is_correct, sort_order
-  - [ ] Correct answer (for fill_blank, short_answer)
-- [ ] **Tests:** QuizBuilderComponent, QuestionFormComponent
+#### 3D - Quiz Builder (Complete)
+- [x] Quiz settings: title, description, time_limit (seconds in DB, minutes in UI), passing_score, max_attempts, show_correct_answers, randomize_questions, randomize_answers
+- [x] Questions CRUD:
+  - [x] 6 question types: single_choice, multiple_choice, true_false, fill_blank, matching, short_answer
+  - [x] Question text, points, sort_order — inline editing with reordering (move up/down)
+  - [x] Options CRUD (for choice-based types): option_text, is_correct (radio for single, checkbox for multi), sort_order
+  - [x] Correct answer text input (for fill_blank, short_answer)
+  - [x] Matching pairs editor with add/remove (for matching type)
+- [x] Quiz JSON Import/Export: Template download (all 6 types), file import with `validateQuizJson()` validation, export for round-trip editing
+- [x] CourseService: 4 quiz switch cases + `#insertQuizQuestions` helper, delete-and-reinsert strategy for updates
+- [x] E2E verified: 16 stories (QB-01 to QB-16) all pass, 1 bug found and fixed (FileReader change detection in zoneless mode)
+- [x] **Tests:** QuizFormComponent (23 tests), quiz-json.utils (23 tests) — 456 total frontend tests, build OK
 
 #### 3E - External Quiz Reference
 - [ ] External quiz reference form: external_quiz_id, external_quiz_url, passing_score
