@@ -592,14 +592,17 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] E2E verified: 2 stories (EQ-01 create+view, EQ-02 edit round-trip) all pass, 0 bugs found
 - [x] **Tests:** 24 new tests (11 ExternalQuizForm + 6 ExternalQuizViewer + 3 CourseService + 2 ModuleFormPage + 2 ModuleViewerPage) — 480 total frontend tests, build OK
 
-#### 3F - Content Write RLS Tests
-- [ ] Platform Admin can INSERT/UPDATE/DELETE courses, lectures, modules, subtables
-- [ ] Lecturer with can_edit can INSERT/UPDATE/DELETE on assigned courses
-- [ ] Lecturer without can_edit cannot write content
-- [ ] Regular tenant user cannot write content
-- [ ] CSM cannot write content
-- [ ] Tenant Admin cannot write content
-- [ ] **Tests:** ~30 RLS tests
+#### 3F - Content Write RLS Tests (Complete)
+- [x] Platform Admin can INSERT/UPDATE/DELETE courses, lectures, modules, subtables (CW-001 to CW-012)
+- [x] Lecturer with can_edit can INSERT/UPDATE/DELETE on assigned courses (CW-013 to CW-022)
+- [x] Lecturer (can_edit) escalation boundaries — cannot INSERT/DELETE courses or tenant_courses (CW-023 to CW-026)
+- [x] Lecturer without can_edit cannot write content (CW-027 to CW-032)
+- [x] Tenant Admin cannot write content (CW-033 to CW-037)
+- [x] CSM cannot write content (CW-038 to CW-042)
+- [x] Learner cannot INSERT subtables — module_videos, module_pdfs, quizzes, quiz_questions, exams, external_quiz_references (CW-043 to CW-048)
+- [x] Fixed `createModuleVideo` factory for Bunny Stream schema (bunny_video_id, bunny_library_id, encoding_status)
+- [x] Added 5 new factories: createQuiz, createQuizQuestion, createQuizQuestionOption, createExam, createExternalQuizReference
+- [x] **Tests:** 48 new RLS tests (CW-001 to CW-048) — 114 total RLS tests, all pass
 
 ---
 
