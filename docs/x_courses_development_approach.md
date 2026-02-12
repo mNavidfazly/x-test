@@ -86,7 +86,7 @@ This document describes the development approach for building X-Courses v2 (Mult
   - Tenant resolution (email → tenant + auth methods + IdP hint)
   - Password reset proxy (validates tenant allows email_password)
   - User invitations (planned — sends email via Calypso SMTP)
-  - Reminder emails (planned — sends via Calypso SMTP)
+  - Reminder emails (sends via Calypso SMTP + logs to `reminder_history`)
   - External quiz results webhook (planned — receives from external quiz platform)
   - Bunny Stream video upload init + embed URL signing + encoding webhook
 - **Notifications** are created automatically via PostgreSQL triggers (SECURITY DEFINER)
@@ -102,7 +102,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── docs/
 │   ├── learning-platform-requirements.md
 │   ├── x_courses_development_approach.md    # This document
-│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress = 98 total)
+│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress + 12 dashboard = 110 total)
 │
 ├── supabase/
 │   └── migrations/
@@ -118,9 +118,10 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   ├── routers/
 │   │   │   ├── __init__.py
 │   │   │   ├── health.py                 # GET /api/health
-│   │   │   └── auth.py                   # POST /api/auth/resolve-tenant (10/min), POST /api/auth/reset-password (5/min)
+│   │   │   ├── auth.py                   # POST /api/auth/resolve-tenant (10/min), POST /api/auth/reset-password (5/min)
 │   │   │   ├── video.py                 # POST /api/video/init-upload, GET /api/video/{id}/status, POST /api/video/webhook, DELETE /api/video/{id}
-│   │   │   # Planned: invite.py (Phase 9B), reminders.py (Phase 9D), quiz_results.py (Phase 5B)
+│   │   │   ├── reminder.py              # POST /api/reminders/send (PA/TA/CSM/Lecturer auth, sends email + inserts reminder_history)
+│   │   │   # Planned: invite.py (Phase 9B), quiz_results.py (Phase 5B)
 │   │   │
 │   │   ├── services/
 │   │   │   ├── __init__.py
@@ -153,7 +154,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary factories
+│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -165,13 +166,15 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
 │   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete, enrollment (enroll/unenroll/adminEnroll/loadEnrolled/lookupUser), progress admin (loadCourseProgressAdmin/adminMarkModuleComplete/adminResetModuleProgress)
 │   │   │   │   │   ├── bunny-upload.service.ts  # ✅ BunnyUploadService (TUS upload via tus-js-client, progress signals, pollStatus, deleteVideo)
+│   │   │   │   │   ├── progress.service.ts       # ✅ ProgressService (4 parallel queries + client-side aggregation, sendReminders via ApiService)
+│   │   │   │   │   ├── progress.service.spec.ts
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, EnrolledUser, MarkedByType, UserProgressRecord, UserProgressSummary, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, EnrolledUser, MarkedByType, UserProgressRecord, UserProgressSummary, DashboardUserProgress, DashboardCourseProgress, DashboardCourseSummary, ReminderRequest, ReminderResponse, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -196,7 +199,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -256,8 +259,13 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
 │   │   │   │   │   │   └── quiz-json.utils.spec.ts
 │   │   │   │   │
+│   │   │   │   │
+│   │   │   │   ├── analytics/               # ✅ Phase 4C complete
+│   │   │   │   │   └── pages/
+│   │   │   │   │       ├── progress-dashboard-page.component.ts    # Smart: cross-course progress dashboard, filters, summary stats, bulk reminders
+│   │   │   │   │       └── progress-dashboard-page.component.spec.ts
+│   │   │   │   │
 │   │   │   │   │                         # --- Planned (not yet built) ---
-│   │   │   │   ├── progress/             # Phase 4C (4B admin progress built inside courses/)
 │   │   │   │   ├── quizzes/              # Phase 5A
 │   │   │   │   ├── exams/                # Phase 5C-5D
 │   │   │   │   ├── comments/             # Phase 6
@@ -368,7 +376,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 - [x] Setup SMTP client (Calypso SMTP via Office 365 — `smtp.office365.com:587`, `aiosmtplib`)
 - [x] Create health check endpoint (`GET /api/health` — returns status + Supabase connectivity)
 - [x] Write Dockerfile (Python 3.11-slim, uvicorn)
-- [x] **Tests:** 60 pytest tests passing (health, auth/JWT, config, tenant service, resolve-tenant, reset-password, idp hint, auth methods, video upload/status/webhook/delete)
+- [x] **Tests:** 69 pytest tests passing (health, auth/JWT, config, tenant service, resolve-tenant, reset-password, idp hint, auth methods, video upload/status/webhook/delete, reminder send)
 - [x] Commit and push `backend/` to GitHub
 - [x] Connect Railway to GitHub repo (root directory: `backend/`, deploy branch: `main`, auto-deploy on push)
 - [x] Verify connectivity to Supabase (health endpoint returns `"supabase": "connected"`)
@@ -572,7 +580,7 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] Bunny dashboard: Token authentication enabled, allowed referers set (`x-courses-v2.vercel.app`, `localhost:4200`)
 - [x] Bunny webhook URL configured → `https://{railway-domain}/api/video/webhook`
 - [x] E2E verified: full round-trip (upload 21.5MB MP4 → encode → signed iframe playback → delete with Bunny cleanup)
-- [x] **Tests:** 14 backend (pytest) + ~20 frontend (vitest) — 60 total backend, 413 total frontend
+- [x] **Tests:** 14 backend (pytest) + ~20 frontend (vitest) — 413 total frontend (backend count at time of 3C-4: 60)
 
 #### 3D - Quiz Builder (Complete)
 - [x] Quiz settings: title, description, time_limit (seconds in DB, minutes in UI), passing_score, max_attempts, show_correct_answers, randomize_questions, randomize_answers
@@ -644,19 +652,22 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] E2E verified: 11 stories (PT-01 to PT-11) all pass, 0 bugs found. 2 deferred (PT-12/PT-13 — quiz/exam auto-mark needs Phase 5A/5B)
 - [x] **Tests:** 23 new tests (6 CourseService + 10 ProgressManager + 3 CourseDetailPage + 4 ModuleFormPage) — 541 total frontend tests, build OK
 
-#### 4C - Progress Dashboard
-- [ ] Role-scoped views:
-  - [ ] **Learner:** Own progress only (My Courses page with progress bars)
-  - [ ] **Tenant Admin:** All users in their tenant, all courses, filter/search
-  - [ ] **CSM:** All users in assigned tenants, all courses
-  - [ ] **Lecturer:** All users (cross-tenant) for assigned courses only
-  - [ ] **Platform Admin:** Everyone, everything, filter by tenant/course
-- [ ] Dashboard features:
-  - [ ] User list with progress percentage
-  - [ ] Filter by course, progress range, last active date
-  - [ ] Last active = MAX(user_progress.updated_at)
-  - [ ] Bulk select users for reminder emails
-- [ ] **Tests:** ProgressDashboardComponent (role-scoped rendering)
+#### 4C - Progress Dashboard (Complete)
+- [x] ProgressService (separate from CourseService): 4 parallel Supabase queries (courses, enrollments, progress, modules) + optional 5th for PA/CSM tenant names, client-side aggregation
+- [x] ProgressDashboardPageComponent at `/analytics/progress`:
+  - [x] Role-scoped data via RLS: PA sees all, TA sees own tenant, Lecturer sees assigned courses cross-tenant, CSM sees assigned tenants
+  - [x] User table with per-course mini progress bars, overall %, last active (relative dates), email, name
+  - [x] Summary stat cards: Total Users, Avg Progress, Completed (100%), At Risk (<25%)
+  - [x] Filters: search (email + name), course dropdown, progress range (min-max %), clear filters
+  - [x] Checkbox selection with Select All, "Send Reminder (N)" button
+  - [x] Bulk reminder panel: custom message textarea, Send/Cancel, loading state
+  - [x] Tenant column visible for PA/CSM only (`showTenantColumn` computed)
+  - [x] Learner blocked by `roleGuard('tenant_admin', 'csm', 'lecturer', 'platform_admin')`
+- [x] Backend `POST /api/reminders/send` (reminder.py): PA/TA/CSM/Lecturer authorization, sends email via SMTP, inserts `reminder_history` (trigger auto-creates notification)
+- [x] Sidebar: Added `platform_admin` to Analytics section roles
+- [x] Route: `analytics/progress` with roleGuard (replaced stub)
+- [x] E2E verified: 12 stories (PD-01 to PD-12), 11 pass + 1 partial (SMTP timeout locally), 0 bugs found
+- [x] **Tests:** 25 new frontend (8 ProgressService + 14 ProgressDashboardPage + 3 mock factories) + 9 new backend (reminder endpoint) — 566 total frontend, 69 total backend, build OK
 
 #### 4D - Enrollment & Progress RLS Tests
 - [ ] Enrollments: self-enroll only in own tenant + assigned courses, tenant admin can enroll in own tenant
@@ -892,19 +903,19 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
   - [ ] Unknown domain → routed to Platform Admin
 - [ ] **Tests:** AccessRequestComponent
 
-#### 9D - Reminder Emails
-- [ ] FastAPI endpoint: `POST /api/reminders/send`
-- [ ] Request body: `{ user_ids: [], course_id? }`
-- [ ] Verify sender authorization:
-  - [ ] Tenant Admin: can remind users in own tenant
-  - [ ] CSM: can remind users in assigned tenants
-  - [ ] Lecturer: can remind users on assigned courses (cross-tenant)
-  - [ ] Platform Admin: can remind anyone
-- [ ] Send generic reminder email via Calypso SMTP
-- [ ] Insert into reminder_history (sent_by enforced by RLS)
-- [ ] Auto-notification via trigger (notify_reminder_sent → learner)
-- [ ] Integration with Progress Dashboard (bulk select → send reminder)
-- [ ] **Tests:** pytest endpoint tests, ReminderService
+#### 9D - Reminder Emails (Complete — built as part of Phase 4C)
+- [x] FastAPI endpoint: `POST /api/reminders/send` (backend/app/routers/reminder.py)
+- [x] Request body: `{ user_ids: [], course_id?, message }`
+- [x] Sender authorization:
+  - [x] Tenant Admin: can remind users in own tenant
+  - [x] CSM: can remind users in assigned tenants
+  - [x] Lecturer: can remind users on assigned courses (cross-tenant)
+  - [x] Platform Admin: can remind anyone
+- [x] Send HTML reminder email via Calypso SMTP (aiosmtplib)
+- [x] Insert into reminder_history (service role, trigger auto-creates notification)
+- [x] Auto-notification via trigger (notify_reminder_sent → learner)
+- [x] Integration with Progress Dashboard (bulk select → send reminder)
+- [x] **Tests:** 9 pytest endpoint tests (auth, authorization, send flow, partial failure)
 
 #### 9E - CSM & Lecturer Assignment Management
 - [ ] CSM assignments page (Platform Admin only):
@@ -988,7 +999,7 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 | `/api/auth/resolve-tenant` | POST | Resolve email domain → tenant + allowed auth methods + idp_hint | None (rate-limited 10/min/IP) |
 | `/api/auth/reset-password` | POST | Validate tenant allows email_password, then forward to Supabase admin API | None (rate-limited 5/min/IP) |
 | `/api/invite` | POST | *Planned (Phase 9B)* — Send invitation email (Calypso SMTP) | JWT (Tenant Admin, Platform Admin) |
-| `/api/reminders/send` | POST | *Planned (Phase 9D)* — Send reminder emails (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
+| `/api/reminders/send` | POST | Send reminder emails + log to `reminder_history` (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
 | `/api/quiz-results/external` | POST | *Planned (Phase 5B)* — External quiz results webhook | API Key / Webhook Signature |
 | `/api/video/init-upload` | POST | Create Bunny video + return TUS upload credentials | JWT (Platform Admin, Lecturer with can_edit) |
 | `/api/video/{id}/status` | GET | Poll Bunny encoding progress + return signed embed URL | JWT (any authenticated) |
@@ -1183,7 +1194,7 @@ npm run test:ui             # Interactive browser UI
 **Key Files (source of truth — do NOT duplicate code examples here, they drift):**
 - `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
 - `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
-- `frontend/src/app/__mocks__/` — 10 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin], tiptap)
+- `frontend/src/app/__mocks__/` — 10 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin + dashboard progress], tiptap)
 
 See `CLAUDE.md` § Testing for conventions and patterns.
 

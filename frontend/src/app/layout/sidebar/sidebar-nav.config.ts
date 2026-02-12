@@ -54,7 +54,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: 'Analytics',
-    roles: ['tenant_admin', 'csm', 'lecturer'],
+    roles: ['tenant_admin', 'csm', 'lecturer', 'platform_admin'],
     items: [
       { label: 'Progress Dashboard', route: '/analytics/progress', icon: BarChart3 },
     ],

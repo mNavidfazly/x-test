@@ -8,7 +8,9 @@ import {
   QuizFormData, QuizContent, ModuleSavePayload,
   ExternalQuizFormData, ExternalQuizContent,
   EnrolledUser, UserProgressSummary,
+  DashboardUserProgress, DashboardCourseSummary,
 } from '../core/models/course.model';
+import { of } from 'rxjs';
 
 export function createMockCourseService(options?: {
   courses?: CourseWithProgress[];
@@ -380,6 +382,49 @@ export function createMockEnrolledUser(overrides?: Partial<EnrolledUser>): Enrol
     email: 'learner@test.com',
     full_name: 'Test Learner',
     enrolled_at: '2026-01-15T10:00:00Z',
+    ...overrides,
+  };
+}
+
+// Phase 4C: Progress Dashboard factories
+
+export function createMockProgressService(options?: {
+  users?: DashboardUserProgress[];
+  courses?: DashboardCourseSummary[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const users = signal<DashboardUserProgress[]>(options?.users ?? []);
+  const courses = signal<DashboardCourseSummary[]>(options?.courses ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    users: users.asReadonly(),
+    courses: courses.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadDashboardData: vi.fn().mockResolvedValue(undefined),
+    sendReminders: vi.fn().mockReturnValue(of({ sent: 1, failed: 0 })),
+    _setUsers: users.set.bind(users),
+    _setCourses: courses.set.bind(courses),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockProgressService = ReturnType<typeof createMockProgressService>;
+
+export function createMockDashboardUserProgress(overrides?: Partial<DashboardUserProgress>): DashboardUserProgress {
+  return {
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    email: 'learner@test.com',
+    full_name: 'Test Learner',
+    tenant_name: 'Test Tenant',
+    courses: [{ course_id: 'c1', course_title: 'Test Course', completed: 3, total: 5, percent: 60 }],
+    overallPercent: 60,
+    lastActive: '2026-02-10T10:00:00Z',
     ...overrides,
   };
 }

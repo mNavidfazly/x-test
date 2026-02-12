@@ -33,3 +33,11 @@ frontend/.angular/
 # Supabase local
 .supabase/
 supabase/.temp/
+
+# Playwright MCP artifacts
+.playwright-mcp/
+
+# E2E test screenshots & media at repo root
+*.png
+*.mp4
+*.pdf

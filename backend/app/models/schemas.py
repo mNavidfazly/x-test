@@ -65,3 +65,14 @@ class WebhookPayload(BaseModel):
     VideoLibraryId: int
     VideoGuid: str
     Status: int
+
+
+class SendRemindersRequest(BaseModel):
+    user_ids: List[str]
+    course_id: Optional[str] = None
+    message: str
+
+
+class SendRemindersResponse(BaseModel):
+    sent: int
+    failed: int

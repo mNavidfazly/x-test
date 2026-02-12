@@ -13,6 +13,7 @@ os.environ.setdefault("BUNNY_API_KEY", "test-bunny-api-key")
 os.environ.setdefault("BUNNY_LIBRARY_ID", "12345")
 os.environ.setdefault("BUNNY_CDN_HOSTNAME", "vz-test.b-cdn.net")
 os.environ.setdefault("BUNNY_TOKEN_KEY", "test-bunny-token-key")
+os.environ.setdefault("FRONTEND_URL", "http://localhost:4200")
 
 from app.config import Settings, get_settings
 from app.dependencies import get_supabase

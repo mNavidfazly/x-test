@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     smtp_password: str
     from_email: str = "noreply@calypso-commodities.com"
 
+    frontend_url: str = "http://localhost:4200"
     cors_origins: list[str] = ["http://localhost:4200"]
 
     bunny_api_key: str = ""

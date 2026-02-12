@@ -139,10 +139,11 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'analytics/:path',
+        path: 'analytics/progress',
+        canActivate: [roleGuard('tenant_admin', 'csm', 'lecturer', 'platform_admin')],
         loadComponent: () =>
-          import('./shared/components/stub-page.component').then(
-            (m) => m.StubPageComponent,
+          import('./features/analytics/pages/progress-dashboard-page.component').then(
+            (m) => m.ProgressDashboardPageComponent,
           ),
       },
       {

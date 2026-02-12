@@ -314,3 +314,40 @@ export interface ModuleSavePayload {
   content: ModuleContentFormData;
   significantUpdate?: boolean;
 }
+
+// Phase 4C: Progress Dashboard types
+
+export interface DashboardCourseSummary {
+  id: string;
+  title: string;
+}
+
+export interface DashboardCourseProgress {
+  course_id: string;
+  course_title: string;
+  completed: number;
+  total: number;
+  percent: number;
+}
+
+export interface DashboardUserProgress {
+  user_id: string;
+  tenant_id: string;
+  email: string;
+  full_name: string | null;
+  tenant_name: string | null;
+  courses: DashboardCourseProgress[];
+  overallPercent: number;
+  lastActive: string | null;
+}
+
+export interface ReminderRequest {
+  user_ids: string[];
+  course_id: string | null;
+  message: string;
+}
+
+export interface ReminderResponse {
+  sent: number;
+  failed: number;
+}
