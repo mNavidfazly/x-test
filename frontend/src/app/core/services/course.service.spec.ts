@@ -1,8 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { EMPTY } from 'rxjs';
 import { CourseService } from './course.service';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { BunnyUploadService } from './bunny-upload.service';
 import { createMockSupabaseService } from '../../__mocks__/supabase.mock';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 
@@ -18,6 +20,7 @@ describe('CourseService', () => {
         CourseService,
         { provide: SupabaseService, useValue: supabase },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, userId: 'test-user-id' }) },
+        { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
       ],
     });
     service = TestBed.inject(CourseService);
@@ -137,6 +140,7 @@ describe('CourseService', () => {
           CourseService,
           { provide: SupabaseService, useValue: supabase },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
+          { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
         ],
       });
       const unauthService = TestBed.inject(CourseService);
@@ -340,6 +344,7 @@ describe('CourseService', () => {
           CourseService,
           { provide: SupabaseService, useValue: supabase },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
+          { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
         ],
       });
       const unauthService = TestBed.inject(CourseService);
@@ -923,7 +928,7 @@ describe('CourseService', () => {
         })
         // Step 2: fetch video content → .single()
         .mockResolvedValueOnce({
-          data: { video_url: 'https://cdn/video.mp4', thumbnail_url: 'https://cdn/thumb.jpg', duration: 120 },
+          data: { bunny_video_id: 'test-guid', bunny_library_id: 12345, encoding_status: 3, duration: 120, thumbnail_url: null, original_filename: 'video.mp4' },
           error: null,
         });
 
@@ -936,9 +941,9 @@ describe('CourseService', () => {
       expect(result.content.type).toBe('video');
       if (result.content.type === 'video') {
         expect(result.content.data).toEqual({
-          video_url: 'https://cdn/video.mp4',
-          thumbnail_url: 'https://cdn/thumb.jpg',
-          duration: 120,
+          bunny_video_id: 'test-guid',
+          bunny_library_id: 12345,
+          original_filename: 'video.mp4',
         });
       }
     });

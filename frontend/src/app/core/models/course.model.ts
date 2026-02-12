@@ -57,10 +57,15 @@ export interface ModuleDetail {
   course_id: string;
 }
 
+export type BunnyEncodingStatus = 0 | 1 | 2 | 3 | 4 | 5;
+
 export interface ModuleVideo {
-  video_url: string;
-  thumbnail_url: string | null;
+  bunny_video_id: string;
+  bunny_library_id: number;
+  encoding_status: BunnyEncodingStatus;
   duration: number | null;
+  thumbnail_url: string | null;
+  original_filename: string | null;
 }
 
 export interface ModulePdf {
@@ -90,11 +95,40 @@ export interface ExamContent {
   exam_file_url: string | null;
 }
 
+export type QuizQuestionType = 'single_choice' | 'multiple_choice' | 'true_false'
+  | 'fill_blank' | 'matching' | 'short_answer';
+
+export interface QuizContent {
+  id: string;
+  title: string;
+  description: string | null;
+  time_limit: number | null;
+  passing_score: number;
+  max_attempts: number | null;
+  show_correct_answers: boolean;
+  randomize_questions: boolean;
+  randomize_answers: boolean;
+  questions: {
+    id: string;
+    question_text: string;
+    question_type: QuizQuestionType;
+    points: number;
+    sort_order: number;
+    correct_answer: string | null;
+    options: {
+      id: string;
+      option_text: string;
+      is_correct: boolean;
+      sort_order: number;
+    }[];
+  }[];
+}
+
 export type ModuleContent =
   | { type: 'video'; data: ModuleVideo }
   | { type: 'pdf'; data: ModulePdf }
   | { type: 'markdown'; data: ModuleMarkdownContent }
-  | { type: 'quiz'; data: null }
+  | { type: 'quiz'; data: QuizContent | null }
   | { type: 'exam'; data: ExamContent };
 
 export interface ModuleNavItem {
@@ -157,9 +191,26 @@ export interface ModuleFormData {
 }
 
 export interface VideoFormData {
-  video_url: string;
-  thumbnail_url: string | null;
+  bunny_video_id: string;
+  bunny_library_id: number;
+  original_filename: string | null;
+}
+
+export interface BunnyUploadCredentials {
+  video_id: string;
+  library_id: number;
+  auth_signature: string;
+  auth_expire: number;
+  tus_endpoint: string;
+}
+
+export interface BunnyVideoStatus {
+  video_id: string;
+  status: number;
+  encode_progress: number;
   duration: number | null;
+  thumbnail_url: string | null;
+  embed_url: string | null;
 }
 
 export interface PdfFormData {
@@ -182,11 +233,38 @@ export interface MarkdownFormData {
   content: string;
 }
 
+export interface QuizOptionFormData {
+  option_text: string;
+  is_correct: boolean;
+  sort_order: number;
+}
+
+export interface QuizQuestionFormData {
+  question_text: string;
+  question_type: QuizQuestionType;
+  points: number;
+  sort_order: number;
+  options: QuizOptionFormData[];
+  correct_answer: string | null;
+}
+
+export interface QuizFormData {
+  title: string;
+  description: string | null;
+  time_limit: number | null;
+  passing_score: number;
+  max_attempts: number | null;
+  show_correct_answers: boolean;
+  randomize_questions: boolean;
+  randomize_answers: boolean;
+  questions: QuizQuestionFormData[];
+}
+
 export type ModuleContentFormData =
   | { type: 'video'; data: VideoFormData }
   | { type: 'pdf'; data: PdfFormData }
   | { type: 'markdown'; data: MarkdownFormData }
-  | { type: 'quiz'; data: null }
+  | { type: 'quiz'; data: QuizFormData | null }
   | { type: 'exam'; data: ExamFormData };
 
 export interface ModuleSavePayload {

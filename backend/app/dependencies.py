@@ -24,7 +24,7 @@ def get_current_user(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> UserClaims:
     try:
-        return decode_jwt(credentials.credentials, settings.supabase_jwt_secret)
+        return decode_jwt(credentials.credentials, settings.supabase_jwt_secret, settings.supabase_url)
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

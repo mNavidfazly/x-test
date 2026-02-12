@@ -612,8 +612,10 @@ All test users use password: `TestUser123!`
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ⚠️ Partial |
+| **Status** | ✅ Passed |
 | **Tester** | Claude (Playwright MCP) |
+
+**PASSED (re-test):** All 23 steps verified across 4 roles. **Learner** (steps 1-10): no Create/Edit/Add buttons, `/courses/new` → `/dashboard`, `/courses/:id/edit` → `/dashboard`, `/modules/new` → `/dashboard`. **Tenant Admin** (steps 11-14): no edit UI, `/courses/new` → `/dashboard`. **CSM** (steps 15-17): no edit UI, read-only view. **Lecturer read-only** (steps 18-23): no edit UI on assigned course, `/courses/:id/edit` → `/courses`, `/modules/new` → `/courses/:id`. Two-layer defense confirmed: roleGuard (route level) + canEdit signal (component level) with different redirect targets per role.
 
 **Purpose**: Verify that users without content write permissions (Learner, Tenant Admin, CSM, Lecturer without can_edit) cannot access write functionality — both via route guards and UI element visibility.
 
@@ -795,7 +797,7 @@ All test users use password: `TestUser123!`
 | 5 | Click "Create Module" | File uploaded to Supabase Storage, module + module_pdfs created, redirected | ☐ |
 | 6 | Click the module title to navigate to viewer | Navigated to module viewer page | ☐ |
 | 7 | Verify `<iframe>` element is present | iframe rendered with `class="w-full h-[80vh]"` | ☐ |
-| 8 | Verify iframe `src` contains a valid Supabase Storage URL | URL starts with `https://ruhdnvtvoxxiodnyyqqf.supabase.co/storage/v1/object/public/course-files/` | ☐ |
+| 8 | Verify iframe `src` contains a valid Supabase Storage signed URL | URL contains `/object/sign/course-files/` and includes a `?token=` query parameter (signed URL from private bucket) | ☐ |
 | 9 | Verify page count displays "1 pages" | Text present above the iframe | ☐ |
 | 10 | Verify "Download PDF" link is present with `download` attribute | FileDown icon + "Download PDF" text, `href` matches `file_url` | ☐ |
 | 11 | Verify "Mark as complete" button is present | PDF type allows manual completion | ☐ |
@@ -803,7 +805,7 @@ All test users use password: `TestUser123!`
 **Notes/Learnings**:
 - PDF viewing relies on `DomSanitizer.bypassSecurityTrustResourceUrl()` to whitelist the Supabase Storage URL for iframe embedding
 - The download link uses a raw `href` binding — if `file_url` is null or empty, the link leads nowhere
-- Supabase Storage URLs are public for the `course-files` bucket; if bucket policies change, the iframe would show a 403
+- The `course-files` bucket is **private** — `CourseService.#getSignedUrl()` generates 1-hour signed URLs via `createSignedUrl(path, 3600)`. If signed URL expires, the iframe shows a 403
 
 ---
 
@@ -1037,6 +1039,7 @@ All test users use password: `TestUser123!`
 - **FIXED (CW-11/CW-15): Markdown Viewer — NullInjectorError.** Added `provideMarkdown()` to `app.config.ts`. Tests passed locally because they provided it individually, but the runtime app was missing it. **Fix:** 2-line change in `app.config.ts`.
 - **FIXED (CW-13/CW-15): PDF Viewer — Storage bucket 404.** The `course-files` bucket is PRIVATE. Code was using `getPublicUrl()` which only works for public buckets. **Fix:** Upload stores `data.path` (storage path) in DB; `CourseService.#getSignedUrl()` generates 1-hour signed URLs at view time. Bucket stays private for security. Changed: pdf-form, exam-form, module-files-editor (upload), CourseService (read), supabase.mock (test mock). See CW-18 for verification.
 - **FIXED (CW-15): Client-side navigation stale content.** `snapshot.paramMap.get()` in `ngOnInit` is a one-time read — `ngOnInit` doesn't re-fire when Angular reuses the component for same-route navigation. **Fix:** Replaced with `toSignal(route.paramMap)` + `effect()` in `module-viewer-page.component.ts`. New test verifies reactive param changes.
+- **BUG (CW-14/CW-15 re-test): Module viewer crashes when module_files references missing storage files.** `loadModuleViewer` queries `module_files`, calls `#getSignedUrl(path)` for each, and if the storage file was deleted (e.g., via previous CW-09 test or cascade delete), `createSignedUrl()` returns `{error: "Object not found"}`. The error propagates up and crashes the entire viewer with "Failed to generate signed URL: Object not found" — content and navigation are not rendered at all. **Root cause:** `#getSignedUrl` throws on error instead of returning null/fallback. **Impact:** Any module with stale file attachment records becomes completely unviewable. **Suggested fix:** Make `#getSignedUrl` graceful — return null on error, filter out null URLs from the files list, and `console.warn` the missing file. Alternatively, catch errors in `loadModuleViewer`'s module_files mapping and skip broken entries.
 
 ---
 
@@ -1048,6 +1051,7 @@ All test users use password: `TestUser123!`
 | 2026-02-11 | Claude (Playwright MCP) | CW-11 through CW-15 | 1 pass, 3 partial, 1 fail | 1 | **3 critical bugs found:** (1) Markdown viewer NullInjectorError — `ngx-markdown` provider missing, entire page breaks; (2) PDF viewer storage 404 — `course-files` bucket not found; (3) Client-side module navigation doesn't re-render — URL changes but content stays stale. CW-14 (exam) fully passed. CW-12 (video) partial — viewer renders but nav broken. CW-15 partial — course creation and structure OK, navigation and viewers partially broken. |
 | 2026-02-11 | Claude (Playwright MCP) | CW-11, CW-12, CW-13, CW-15 (re-test) | 4 pass | 0 | **All 3 bugs fixed, re-tested successfully.** CW-11: Markdown viewer renders after `provideMarkdown()` fix. CW-12/CW-15: Client-side navigation works after `toSignal(route.paramMap)` + `effect()` fix. CW-13: PDF viewer loads via signed URL after switching from `getPublicUrl()` to `createSignedUrl()`. Old PDF module with stale URL deleted and recreated. |
 | 2026-02-11 | Claude (Playwright MCP) | CW-16, CW-17, CW-18 | 3 pass | 0 | CW-16: File upload → viewer display → delete → verify gone. CW-17: Edit markdown content → viewer shows updated text. CW-18: Signed URL JWT decoded (path not URL, 1hr expiry), public URL 404 confirmed. **All 18 CW stories complete (17 pass, 1 partial CW-10).** |
+| 2026-02-11 | Claude (Playwright MCP) | CW-01 through CW-18 (full re-run) | 16 pass, 2 partial | 0 | **Full re-run of all 18 CW stories.** CW-01 through CW-09: all CRUD flows re-verified (course, lecture, module create/edit/delete/reorder, all 5 types). CW-10: **upgraded to PASSED** — all 4 roles tested (Learner, Tenant Admin, CSM, Lecturer read-only), all 23 steps verified, route guards and UI hiding both confirmed. CW-11 (markdown), CW-12 (video), CW-13 (PDF), CW-15 (sequential nav), CW-17 (edit freshness), CW-18 (signed URL security): all passed. **CW-14 (exam) partial:** CW01 course blocked by stale module_files bug (Bug 7), exam module deleted from new course in CW-09. **CW-16 (file attachments) partial:** same stale data bug on CW01 course; functionality confirmed during CW-09 but viewer-side re-verification blocked. **1 new bug found (Bug 7):** `#getSignedUrl` crashes entire module viewer when `module_files` references deleted storage files. |
 
 ---
 

@@ -1,15 +1,15 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Loader2, Video, FileText, Type, HelpCircle, ClipboardCheck, LucideIconData } from 'lucide-angular';
-import { FormsModule } from '@angular/forms';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { VideoFormComponent } from '../components/video-form.component';
 import { PdfFormComponent } from '../components/pdf-form.component';
 import { ExamFormComponent } from '../components/exam-form.component';
 import { MarkdownFormComponent } from '../components/markdown-form.component';
+import { QuizFormComponent } from '../components/quiz-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
-import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ModuleSavePayload, ModuleContentFormData } from '../../../core/models/course.model';
+import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, QuizFormData, ModuleSavePayload } from '../../../core/models/course.model';
 
 interface TypeOption {
   value: ModuleType;
@@ -21,7 +21,7 @@ interface TypeOption {
 @Component({
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, FormsModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, ModuleFilesEditorComponent],
+  imports: [RouterLink, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ModuleFilesEditorComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-2xl">
@@ -72,6 +72,7 @@ interface TypeOption {
             [initialModuleData]="moduleFormData()"
             [initialVideoData]="videoFormData()"
             [isEditMode]="isEditMode()"
+            [courseId]="courseId()"
             (save)="onSave($event)"
             (cancel)="onCancel()"
           />
@@ -112,53 +113,15 @@ interface TypeOption {
           />
         }
 
-        <!-- Generic form for quiz type -->
+        <!-- Quiz form -->
         @if (selectedType() === 'quiz') {
-          <div class="space-y-5">
-            <div>
-              <label for="genericTitle" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
-              <input
-                id="genericTitle"
-                type="text"
-                [(ngModel)]="genericForm.title"
-                placeholder="Module title"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
-              />
-            </div>
-
-            <div>
-              <label for="genericDescription" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
-              <textarea
-                id="genericDescription"
-                [(ngModel)]="genericForm.description"
-                placeholder="Module description (optional)"
-                rows="2"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200 resize-none"
-              ></textarea>
-            </div>
-
-            <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
-              Quiz Builder coming in Phase 3D.
-            </div>
-
-            <div class="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                (click)="onSaveGeneric()"
-                [disabled]="!genericForm.title.trim()"
-                class="bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ isEditMode() ? 'Save Changes' : 'Create Module' }}
-              </button>
-              <button
-                type="button"
-                (click)="onCancel()"
-                class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-all duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
+          <app-quiz-form
+            [initialModuleData]="moduleFormData()"
+            [initialQuizData]="quizFormData()"
+            [isEditMode]="isEditMode()"
+            (save)="onSave($event)"
+            (cancel)="onCancel()"
+          />
         }
 
         <!-- Module files editor (edit mode only, all types) -->
@@ -203,7 +166,7 @@ export class ModuleFormPageComponent implements OnInit {
     title: '', description: null, module_type: 'video', lecture_id: '',
   });
   readonly videoFormData = signal<VideoFormData>({
-    video_url: '', thumbnail_url: null, duration: null,
+    bunny_video_id: '', bunny_library_id: 0, original_filename: null,
   });
   readonly pdfFormData = signal<PdfFormData>({
     file_url: '', file_name: '', page_count: null,
@@ -215,11 +178,14 @@ export class ModuleFormPageComponent implements OnInit {
     exam_file_url: null,
   });
   readonly markdownFormData = signal<MarkdownFormData>({ content: '' });
-
-  genericForm = { title: '', description: null as string | null };
+  readonly quizFormData = signal<QuizFormData>({
+    title: '', description: null, time_limit: null, passing_score: 70,
+    max_attempts: null, show_correct_answers: true,
+    randomize_questions: false, randomize_answers: false, questions: [],
+  });
 
   readonly availableTypes: TypeOption[] = [
-    { value: 'video', label: 'Video', hint: 'Link to an external video', icon: Video },
+    { value: 'video', label: 'Video', hint: 'Upload a video', icon: Video },
     { value: 'pdf', label: 'PDF', hint: 'Upload a PDF document', icon: FileText },
     { value: 'markdown', label: 'Rich Text', hint: 'Write with a rich text editor', icon: Type },
     { value: 'quiz', label: 'Quiz', hint: 'Interactive quiz', icon: HelpCircle },
@@ -269,23 +235,6 @@ export class ModuleFormPageComponent implements OnInit {
     }
   }
 
-  async onSaveGeneric() {
-    if (!this.genericForm.title.trim()) return;
-    const type = this.selectedType();
-    if (!type) return;
-
-    const payload: ModuleSavePayload = {
-      module: {
-        title: this.genericForm.title,
-        description: this.genericForm.description,
-        module_type: type,
-        lecture_id: this.moduleFormData().lecture_id,
-      },
-      content: { type, data: null } as ModuleContentFormData,
-    };
-    await this.onSave(payload);
-  }
-
   onCancel() {
     this.#router.navigate(['/courses', this.courseId()]);
   }
@@ -313,7 +262,9 @@ export class ModuleFormPageComponent implements OnInit {
       if (content.type === 'markdown' && content.data) {
         this.markdownFormData.set(content.data);
       }
-      this.genericForm = { title: module.title, description: module.description };
+      if (content.type === 'quiz' && content.data) {
+        this.quizFormData.set(content.data);
+      }
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'Failed to load module');
     } finally {

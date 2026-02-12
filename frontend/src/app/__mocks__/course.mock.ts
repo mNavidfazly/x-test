@@ -4,7 +4,8 @@ import {
   CourseWithProgress, CourseDetail, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
   CourseFormData, TenantSummary, LectureFormData,
-  ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ModuleSavePayload,
+  ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData,
+  QuizFormData, QuizContent, ModuleSavePayload,
 } from '../core/models/course.model';
 
 export function createMockCourseService(options?: {
@@ -47,7 +48,7 @@ export function createMockCourseService(options?: {
     swapModuleSortOrder: vi.fn().mockResolvedValue(undefined),
     loadModuleForEdit: vi.fn().mockResolvedValue({
       module: { id: 'mod-1', title: 'Test Module', description: null, module_type: 'video', sort_order: 0, lecture_id: 'lecture-1', course_id: 'course-1' },
-      content: { type: 'video', data: { video_url: 'https://cdn.bunny.net/test.mp4', thumbnail_url: null, duration: null } },
+      content: { type: 'video', data: { bunny_video_id: 'test-guid', bunny_library_id: 12345, original_filename: null } },
     }),
     loadModuleFiles: vi.fn().mockResolvedValue([]),
     addModuleFile: vi.fn().mockResolvedValue(undefined),
@@ -116,9 +117,12 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
 
 export function createMockModuleVideo(overrides?: Partial<ModuleVideo>): ModuleVideo {
   return {
-    video_url: 'https://cdn.bunny.net/test-video.mp4',
-    thumbnail_url: 'https://cdn.bunny.net/thumb.jpg',
+    bunny_video_id: 'test-guid',
+    bunny_library_id: 12345,
+    encoding_status: 3,
     duration: 360,
+    thumbnail_url: 'https://cdn.test.com/thumb.jpg',
+    original_filename: 'test-video.mp4',
     ...overrides,
   };
 }
@@ -219,9 +223,9 @@ export function createMockModuleFormData(overrides?: Partial<ModuleFormData>): M
 
 export function createMockVideoFormData(overrides?: Partial<VideoFormData>): VideoFormData {
   return {
-    video_url: 'https://cdn.bunny.net/test-video.mp4',
-    thumbnail_url: null,
-    duration: null,
+    bunny_video_id: 'test-guid',
+    bunny_library_id: 12345,
+    original_filename: null,
     ...overrides,
   };
 }
@@ -251,6 +255,64 @@ export function createMockExamFormData(overrides?: Partial<ExamFormData>): ExamF
 export function createMockMarkdownFormData(overrides?: Partial<MarkdownFormData>): MarkdownFormData {
   return {
     content: '# Test Content\n\nSome markdown text.',
+    ...overrides,
+  };
+}
+
+export function createMockQuizFormData(overrides?: Partial<QuizFormData>): QuizFormData {
+  return {
+    title: 'Test Quiz',
+    description: 'A test quiz',
+    time_limit: 600, // 10 minutes in seconds
+    passing_score: 70,
+    max_attempts: 3,
+    show_correct_answers: true,
+    randomize_questions: false,
+    randomize_answers: false,
+    questions: [
+      {
+        question_text: 'What is 2 + 2?',
+        question_type: 'single_choice',
+        points: 1,
+        sort_order: 0,
+        correct_answer: null,
+        options: [
+          { option_text: '3', is_correct: false, sort_order: 0 },
+          { option_text: '4', is_correct: true, sort_order: 1 },
+          { option_text: '5', is_correct: false, sort_order: 2 },
+        ],
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export function createMockQuizContent(overrides?: Partial<QuizContent>): QuizContent {
+  return {
+    id: 'quiz-1',
+    title: 'Test Quiz',
+    description: 'A test quiz',
+    time_limit: 600,
+    passing_score: 70,
+    max_attempts: 3,
+    show_correct_answers: true,
+    randomize_questions: false,
+    randomize_answers: false,
+    questions: [
+      {
+        id: 'q-1',
+        question_text: 'What is 2 + 2?',
+        question_type: 'single_choice',
+        points: 1,
+        sort_order: 0,
+        correct_answer: null,
+        options: [
+          { id: 'o-1', option_text: '3', is_correct: false, sort_order: 0 },
+          { id: 'o-2', option_text: '4', is_correct: true, sort_order: 1 },
+          { id: 'o-3', option_text: '5', is_correct: false, sort_order: 2 },
+        ],
+      },
+    ],
     ...overrides,
   };
 }

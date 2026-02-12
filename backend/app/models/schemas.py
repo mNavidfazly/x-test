@@ -37,3 +37,31 @@ class ResetPasswordRequest(BaseModel):
 
 class ResetPasswordResponse(BaseModel):
     message: str
+
+
+class InitUploadRequest(BaseModel):
+    title: str
+    course_id: str
+
+
+class InitUploadResponse(BaseModel):
+    video_id: str
+    library_id: int
+    auth_signature: str
+    auth_expire: int
+    tus_endpoint: str
+
+
+class VideoStatusResponse(BaseModel):
+    video_id: str
+    status: int
+    encode_progress: int
+    duration: Optional[int] = None
+    thumbnail_url: Optional[str] = None
+    embed_url: Optional[str] = None
+
+
+class WebhookPayload(BaseModel):
+    VideoLibraryId: int
+    VideoGuid: str
+    Status: int

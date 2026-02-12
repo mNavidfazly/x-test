@@ -3,7 +3,7 @@ import time
 import pytest
 from jose import jwt
 
-from app.services.auth import ALGORITHM, decode_jwt
+from app.services.auth import decode_jwt
 
 SECRET = "test-jwt-secret-that-is-long-enough-for-hs256"
 
@@ -28,7 +28,7 @@ def _make_token(
     }
     if claims:
         payload.update(claims)
-    return jwt.encode(payload, secret, algorithm=ALGORITHM)
+    return jwt.encode(payload, secret, algorithm="HS256")
 
 
 def test_decode_valid_token() -> None:

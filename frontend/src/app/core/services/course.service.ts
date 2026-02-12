@@ -2,18 +2,21 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
+import { BunnyUploadService } from './bunny-upload.service';
 import {
   CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
-  ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem,
+  ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem, ModuleVideo,
   CourseFormData, TenantSummary, TenantAssignment, LectureFormData,
   ModuleSavePayload, ModuleContentFormData,
   PdfFormData, ExamFormData, ExamContent, ModulePdf, MarkdownFormData, ModuleMarkdownContent,
+  QuizFormData, QuizContent, QuizQuestionType, QuizQuestionFormData,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
 export class CourseService {
   #supabase = inject(SupabaseService);
   #auth = inject(AuthService);
+  #bunnyUpload = inject(BunnyUploadService);
 
   #courses = signal<CourseWithProgress[]>([]);
   #courseDetail = signal<CourseDetail | null>(null);
@@ -311,8 +314,11 @@ export class CourseService {
   }
 
   async deleteCourse(id: string): Promise<void> {
-    // Collect storage paths BEFORE delete (CASCADE will remove DB rows)
-    const storagePaths = await this.#listCourseStoragePaths(id);
+    // Collect storage paths and Bunny video IDs BEFORE delete (CASCADE will remove DB rows)
+    const [storagePaths, bunnyVideoIds] = await Promise.all([
+      this.#listCourseStoragePaths(id),
+      this.#collectCourseBunnyVideoIds(id),
+    ]);
 
     const { error } = await this.#supabase.client
       .from('courses')
@@ -322,6 +328,7 @@ export class CourseService {
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete course'));
 
     await this.#removeStorageFiles(storagePaths);
+    this.#cleanupBunnyVideos(bunnyVideoIds);
   }
 
   async loadTenants(): Promise<TenantSummary[]> {
@@ -398,18 +405,25 @@ export class CourseService {
   }
 
   async deleteLecture(lectureId: string): Promise<void> {
-    // Collect storage paths from ALL modules in this lecture before CASCADE
+    // Collect storage paths and Bunny video IDs from ALL modules in this lecture before CASCADE
     const { data: modules } = await this.#supabase.client
       .from('modules')
       .select('id')
       .eq('lecture_id', lectureId);
 
     const storagePaths: string[] = [];
+    const bunnyVideoIds: string[] = [];
     if (modules) {
-      const pathArrays = await Promise.all(
-        modules.map((m: { id: string }) => this.#collectModuleStoragePaths(m.id)),
+      const results = await Promise.all(
+        modules.map(async (m: { id: string }) => ({
+          paths: await this.#collectModuleStoragePaths(m.id),
+          videos: await this.#collectBunnyVideoIds(m.id),
+        })),
       );
-      for (const paths of pathArrays) storagePaths.push(...paths);
+      for (const r of results) {
+        storagePaths.push(...r.paths);
+        bunnyVideoIds.push(...r.videos);
+      }
     }
 
     const { error } = await this.#supabase.client
@@ -420,6 +434,7 @@ export class CourseService {
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete lecture'));
 
     await this.#removeStorageFiles(storagePaths);
+    this.#cleanupBunnyVideos(bunnyVideoIds);
   }
 
   async swapLectureSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
@@ -492,8 +507,11 @@ export class CourseService {
   }
 
   async deleteModule(moduleId: string): Promise<void> {
-    // Collect storage paths BEFORE delete (CASCADE will remove subtable rows)
-    const storagePaths = await this.#collectModuleStoragePaths(moduleId);
+    // Collect storage paths and Bunny video IDs BEFORE delete (CASCADE will remove subtable rows)
+    const [storagePaths, bunnyVideoIds] = await Promise.all([
+      this.#collectModuleStoragePaths(moduleId),
+      this.#collectBunnyVideoIds(moduleId),
+    ]);
 
     const { error } = await this.#supabase.client
       .from('modules')
@@ -503,6 +521,7 @@ export class CourseService {
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete module'));
 
     await this.#removeStorageFiles(storagePaths);
+    this.#cleanupBunnyVideos(bunnyVideoIds);
   }
 
   async swapModuleSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
@@ -579,9 +598,9 @@ export class CourseService {
           .from('module_videos')
           .insert({
             module_id: moduleId,
-            video_url: content.data.video_url,
-            thumbnail_url: content.data.thumbnail_url,
-            duration: content.data.duration,
+            bunny_video_id: content.data.bunny_video_id,
+            bunny_library_id: content.data.bunny_library_id,
+            original_filename: content.data.original_filename,
           });
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save video content'));
         break;
@@ -622,6 +641,23 @@ export class CourseService {
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save markdown content'));
         break;
       }
+      case 'quiz': {
+        if (!content.data) break;
+        const d = content.data as QuizFormData;
+        const { data: quizRow, error: quizErr } = await this.#supabase.client
+          .from('quizzes')
+          .insert({
+            module_id: moduleId,
+            title: d.title, description: d.description,
+            time_limit: d.time_limit, passing_score: d.passing_score,
+            max_attempts: d.max_attempts, show_correct_answers: d.show_correct_answers,
+            randomize_questions: d.randomize_questions, randomize_answers: d.randomize_answers,
+          })
+          .select('id').single();
+        if (quizErr) throw new Error(this.#extractErrorMessage(quizErr, 'Failed to save quiz'));
+        await this.#insertQuizQuestions(quizRow.id, d.questions);
+        break;
+      }
       default:
         break;
     }
@@ -635,9 +671,9 @@ export class CourseService {
           .from('module_videos')
           .upsert({
             module_id: moduleId,
-            video_url: content.data.video_url,
-            thumbnail_url: content.data.thumbnail_url,
-            duration: content.data.duration,
+            bunny_video_id: content.data.bunny_video_id,
+            bunny_library_id: content.data.bunny_library_id,
+            original_filename: content.data.original_filename,
           }, { onConflict: 'module_id' });
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update video content'));
         break;
@@ -683,6 +719,26 @@ export class CourseService {
         if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update markdown content'));
         break;
       }
+      case 'quiz': {
+        if (!content.data) break;
+        const d = content.data as QuizFormData;
+        const { data: quizRow, error: quizErr } = await this.#supabase.client
+          .from('quizzes')
+          .upsert({
+            module_id: moduleId,
+            title: d.title, description: d.description,
+            time_limit: d.time_limit, passing_score: d.passing_score,
+            max_attempts: d.max_attempts, show_correct_answers: d.show_correct_answers,
+            randomize_questions: d.randomize_questions, randomize_answers: d.randomize_answers,
+          }, { onConflict: 'module_id' })
+          .select('id').single();
+        if (quizErr) throw new Error(this.#extractErrorMessage(quizErr, 'Failed to update quiz'));
+        // Delete existing questions (CASCADE deletes options)
+        await this.#supabase.client.from('quiz_questions').delete().eq('quiz_id', quizRow.id);
+        // Re-insert all questions + options
+        await this.#insertQuizQuestions(quizRow.id, d.questions);
+        break;
+      }
       default:
         break;
     }
@@ -694,9 +750,9 @@ export class CourseService {
         return {
           type: 'video',
           data: {
-            video_url: content.data.video_url,
-            thumbnail_url: content.data.thumbnail_url,
-            duration: content.data.duration,
+            bunny_video_id: content.data.bunny_video_id,
+            bunny_library_id: content.data.bunny_library_id,
+            original_filename: content.data.original_filename,
           },
         };
       case 'pdf': {
@@ -728,18 +784,48 @@ export class CourseService {
           data: { content: d.content } as MarkdownFormData,
         };
       }
+      case 'quiz': {
+        if (!content.data) return { type: 'quiz', data: null };
+        const q = content.data as QuizContent;
+        return {
+          type: 'quiz',
+          data: {
+            title: q.title,
+            description: q.description,
+            time_limit: q.time_limit,
+            passing_score: q.passing_score,
+            max_attempts: q.max_attempts,
+            show_correct_answers: q.show_correct_answers,
+            randomize_questions: q.randomize_questions,
+            randomize_answers: q.randomize_answers,
+            questions: q.questions.map(qn => ({
+              question_text: qn.question_text,
+              question_type: qn.question_type as QuizQuestionType,
+              points: qn.points,
+              sort_order: qn.sort_order,
+              correct_answer: qn.correct_answer,
+              options: qn.options.map(o => ({
+                option_text: o.option_text,
+                is_correct: o.is_correct,
+                sort_order: o.sort_order,
+              })),
+            })),
+          } as QuizFormData,
+        };
+      }
       default:
-        return { type: content.type, data: null } as ModuleContentFormData;
+        return { type: (content as ModuleContent).type, data: null } as ModuleContentFormData;
     }
   }
 
   async #fetchModuleContent(client: SupabaseClient, moduleId: string, moduleType: string): Promise<ModuleContent> {
     switch (moduleType) {
       case 'video': {
-        const res = await client.from('module_videos').select('video_url, thumbnail_url, duration').eq('module_id', moduleId).single();
+        const res = await client.from('module_videos')
+          .select('bunny_video_id, bunny_library_id, encoding_status, duration, thumbnail_url, original_filename')
+          .eq('module_id', moduleId).single();
         if (res.error) throw res.error;
-        const d = res.data as { video_url: string; thumbnail_url: string | null; duration: number | null };
-        return { type: 'video', data: d };
+        return { type: 'video', data: res.data as ModuleVideo };
       }
       case 'pdf': {
         const res = await client.from('module_pdfs').select('file_url, file_name, page_count').eq('module_id', moduleId).single();
@@ -771,8 +857,34 @@ export class CourseService {
         }
         return { type: 'exam', data: d };
       }
+      case 'quiz': {
+        const quizRes = await client.from('quizzes')
+          .select('id, title, description, time_limit, passing_score, max_attempts, show_correct_answers, randomize_questions, randomize_answers')
+          .eq('module_id', moduleId).maybeSingle();
+        if (quizRes.error) throw quizRes.error;
+        if (!quizRes.data) return { type: 'quiz', data: null };
+
+        const questionsRes = await client.from('quiz_questions')
+          .select('id, question_text, question_type, points, sort_order, correct_answer, quiz_question_options(id, option_text, is_correct, sort_order)')
+          .eq('quiz_id', quizRes.data.id)
+          .order('sort_order');
+        if (questionsRes.error) throw questionsRes.error;
+
+        return {
+          type: 'quiz',
+          data: {
+            ...quizRes.data,
+            questions: (questionsRes.data ?? []).map(q => ({
+              ...q,
+              question_type: q.question_type as QuizQuestionType,
+              options: ((q as Record<string, unknown>)['quiz_question_options'] as { id: string; option_text: string; is_correct: boolean; sort_order: number }[] ?? [])
+                .sort((a, b) => a.sort_order - b.sort_order),
+            })),
+          } as QuizContent,
+        };
+      }
       default:
-        return { type: moduleType as 'quiz', data: null };
+        return { type: moduleType as ModuleType, data: null } as ModuleContent;
     }
   }
 
@@ -850,6 +962,36 @@ export class CourseService {
     return paths;
   }
 
+  async #collectBunnyVideoIds(moduleId: string): Promise<string[]> {
+    const { data } = await this.#supabase.client
+      .from('module_videos')
+      .select('bunny_video_id')
+      .eq('module_id', moduleId);
+    if (!data) return [];
+    return data
+      .map((v: { bunny_video_id: string }) => v.bunny_video_id)
+      .filter((id: string) => !!id);
+  }
+
+  #cleanupBunnyVideos(videoIds: string[]): void {
+    for (const id of videoIds) {
+      this.#bunnyUpload.deleteVideo(id).subscribe({
+        error: () => console.warn('Bunny video cleanup failed for', id),
+      });
+    }
+  }
+
+  async #collectCourseBunnyVideoIds(courseId: string): Promise<string[]> {
+    const { data } = await this.#supabase.client
+      .from('module_videos')
+      .select('bunny_video_id, modules!inner(course_id)')
+      .eq('modules.course_id', courseId);
+    if (!data) return [];
+    return data
+      .map((v: { bunny_video_id: string }) => v.bunny_video_id)
+      .filter((id: string) => !!id);
+  }
+
   async #listCourseStoragePaths(courseId: string): Promise<string[]> {
     const paths: string[] = [];
     let offset = 0;
@@ -870,6 +1012,35 @@ export class CourseService {
     }
 
     return paths;
+  }
+
+  async #insertQuizQuestions(quizId: string, questions: QuizQuestionFormData[]): Promise<void> {
+    for (const q of questions) {
+      const { data: qRow, error: qErr } = await this.#supabase.client
+        .from('quiz_questions')
+        .insert({
+          quiz_id: quizId,
+          question_text: q.question_text,
+          question_type: q.question_type,
+          points: q.points,
+          sort_order: q.sort_order,
+          correct_answer: q.correct_answer,
+        })
+        .select('id').single();
+      if (qErr) throw new Error(this.#extractErrorMessage(qErr, 'Failed to save question'));
+
+      if (q.options.length > 0) {
+        const { error: oErr } = await this.#supabase.client
+          .from('quiz_question_options')
+          .insert(q.options.map(o => ({
+            question_id: qRow.id,
+            option_text: o.option_text,
+            is_correct: o.is_correct,
+            sort_order: o.sort_order,
+          })));
+        if (oErr) throw new Error(this.#extractErrorMessage(oErr, 'Failed to save options'));
+      }
+    }
   }
 
   #extractErrorMessage(err: unknown, fallback: string): string {

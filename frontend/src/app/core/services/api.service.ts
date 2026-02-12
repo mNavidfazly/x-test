@@ -37,4 +37,12 @@ export class ApiService {
       ),
     );
   }
+
+  delete<T>(path: string): Observable<T> {
+    return this.getAuthHeaders().pipe(
+      switchMap((headers) =>
+        this.http.delete<T>(`${this.baseUrl}${path}`, { headers }),
+      ),
+    );
+  }
 }

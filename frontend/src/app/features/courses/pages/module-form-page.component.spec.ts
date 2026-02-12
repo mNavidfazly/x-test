@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { provideRouter, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,16 +8,32 @@ import { ModuleFormPageComponent } from './module-form-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
 import { VideoFormComponent } from '../components/video-form.component';
 import { PdfFormComponent } from '../components/pdf-form.component';
 import { ExamFormComponent } from '../components/exam-form.component';
 import { MarkdownFormComponent } from '../components/markdown-form.component';
+import { QuizFormComponent } from '../components/quiz-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 import { createMockCourseService } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+
+function createMockBunnyUploadService() {
+  return {
+    uploading: signal(false),
+    progress: signal(0),
+    error: signal(''),
+    uploadedVideoId: signal<string | null>(null),
+    uploadedLibraryId: signal(0),
+    initAndUpload: vi.fn(),
+    pollStatus: vi.fn(),
+    abort: vi.fn(),
+    reset: vi.fn(),
+  };
+}
 
 @Component({ selector: 'app-dummy', template: '', standalone: true })
 class DummyComponent {}
@@ -34,7 +50,7 @@ function mockActivatedRoute(
   };
 }
 
-const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
+const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
 
 /** Helper: render in create mode (no moduleId, with courseId + lectureId) */
 async function renderCreateMode(overrides?: {
@@ -57,6 +73,7 @@ async function renderCreateMode(overrides?: {
       { provide: CourseService, useValue: courseService },
       { provide: AuthService, useValue: authService },
       { provide: SupabaseService, useValue: createMockSupabaseService() },
+      { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute(
@@ -95,6 +112,7 @@ async function renderEditMode(overrides?: {
       { provide: CourseService, useValue: courseService },
       { provide: AuthService, useValue: authService },
       { provide: SupabaseService, useValue: createMockSupabaseService() },
+      { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute({ courseId, moduleId }),
@@ -151,32 +169,25 @@ describe('ModuleFormPageComponent', () => {
   // --- Type selection ---
 
   it('should show video form when video type selected', async () => {
-    await renderCreateMode();
+    const { fixture } = await renderCreateMode();
 
     fireEvent.click(screen.getByText('Video'));
+    fixture.detectChanges();
 
-    // VideoFormComponent renders a "Video URL" label
-    expect(screen.getByLabelText('Video URL')).toBeTruthy();
+    // VideoFormComponent renders a file picker with this text
+    expect(screen.getByText('Click to select a video file')).toBeTruthy();
   });
 
-  it('should show generic form for quiz type', async () => {
+  it('should show quiz form when quiz type selected', async () => {
     const { fixture } = await renderCreateMode();
 
     fireEvent.click(screen.getByText('Quiz'));
     fixture.detectChanges();
 
-    // Generic form has Title/Description fields + a Create Module button
+    // QuizFormComponent renders quiz-specific sections
     expect(screen.getByLabelText('Title')).toBeTruthy();
-    expect(screen.getByLabelText('Description')).toBeTruthy();
-  });
-
-  it('should show "Quiz Builder coming in Phase 3D" note for quiz type', async () => {
-    const { fixture } = await renderCreateMode();
-
-    fireEvent.click(screen.getByText('Quiz'));
-    fixture.detectChanges();
-
-    expect(screen.getByText(/Quiz Builder coming in Phase 3D/)).toBeTruthy();
+    expect(screen.getByText('Quiz Settings')).toBeTruthy();
+    expect(screen.getByText('Questions')).toBeTruthy();
   });
 
   // --- Permission redirect ---
@@ -194,6 +205,7 @@ describe('ModuleFormPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: authService },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
+        { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(
@@ -225,16 +237,13 @@ describe('ModuleFormPageComponent', () => {
   it('should call createModule on save in create mode', async () => {
     const { fixture, courseService } = await renderCreateMode();
 
-    // Select video type
-    fireEvent.click(screen.getByText('Video'));
+    // Select Rich Text type (video requires file upload which is harder to test here)
+    fireEvent.click(screen.getByText('Rich Text'));
     fixture.detectChanges();
 
-    // Fill in the video form fields
+    // Fill in the markdown form title
     const titleInput = screen.getByLabelText('Title') as HTMLInputElement;
-    fireEvent.input(titleInput, { target: { value: 'My Video Module' } });
-
-    const videoUrlInput = screen.getByLabelText('Video URL') as HTMLInputElement;
-    fireEvent.input(videoUrlInput, { target: { value: 'https://cdn.bunny.net/video.mp4' } });
+    fireEvent.input(titleInput, { target: { value: 'My Markdown Module' } });
     fixture.detectChanges();
 
     // Click Create Module button
@@ -245,11 +254,11 @@ describe('ModuleFormPageComponent', () => {
       'course-1',
       expect.objectContaining({
         module: expect.objectContaining({
-          title: 'My Video Module',
-          module_type: 'video',
+          title: 'My Markdown Module',
+          module_type: 'markdown',
           lecture_id: 'lecture-1',
         }),
-        content: expect.objectContaining({ type: 'video' }),
+        content: expect.objectContaining({ type: 'markdown' }),
       }),
     );
   });
@@ -260,7 +269,7 @@ describe('ModuleFormPageComponent', () => {
     const { fixture, courseService } = await renderEditMode({ moduleId: 'mod-1' });
 
     // In edit mode with video type, VideoFormComponent is shown with pre-filled data.
-    // The mock loadModuleForEdit returns video_url: 'https://cdn.bunny.net/test.mp4'
+    // The mock loadModuleForEdit returns bunny_video_id: 'test-guid'
     // Click Save Changes
     fireEvent.click(screen.getByText('Save Changes'));
     await new Promise((r) => setTimeout(r));
@@ -322,6 +331,7 @@ describe('ModuleFormPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: authService },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
+        { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(
@@ -338,38 +348,36 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByText('Missing lecture ID')).toBeTruthy();
   });
 
-  // --- Generic form save ---
+  // --- Quiz edit mode ---
 
-  it('should save generic module (quiz) with title and description', async () => {
-    const { fixture, courseService } = await renderCreateMode();
+  it('should load quiz data in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-quiz', title: 'Quiz Module', description: 'A quiz', module_type: 'quiz', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: {
+        type: 'quiz',
+        data: {
+          id: 'quiz-1', title: 'Quiz Module', description: 'A quiz',
+          time_limit: 600, passing_score: 80, max_attempts: 3,
+          show_correct_answers: true, randomize_questions: false, randomize_answers: false,
+          questions: [{
+            id: 'q-1', question_text: 'What is 1+1?', question_type: 'single_choice',
+            points: 1, sort_order: 0, correct_answer: null,
+            options: [
+              { id: 'o-1', option_text: '2', is_correct: true, sort_order: 0 },
+              { id: 'o-2', option_text: '3', is_correct: false, sort_order: 1 },
+            ],
+          }],
+        },
+      },
+    });
 
-    // Select Quiz type (still uses generic form)
-    fireEvent.click(screen.getByText('Quiz'));
-    fixture.detectChanges();
+    await renderEditMode({ courseService, moduleId: 'mod-quiz' });
 
-    // Fill in generic form
-    const titleInput = screen.getByLabelText('Title') as HTMLInputElement;
-    fireEvent.input(titleInput, { target: { value: 'Quiz Module' } });
-
-    const descInput = screen.getByLabelText('Description') as HTMLTextAreaElement;
-    fireEvent.input(descInput, { target: { value: 'A quiz' } });
-    fixture.detectChanges();
-
-    // Click Create Module button
-    fireEvent.click(screen.getByText('Create Module'));
-    await new Promise((r) => setTimeout(r));
-
-    expect(courseService.createModule).toHaveBeenCalledWith(
-      'course-1',
-      expect.objectContaining({
-        module: expect.objectContaining({
-          title: 'Quiz Module',
-          description: 'A quiz',
-          module_type: 'quiz',
-          lecture_id: 'lecture-1',
-        }),
-      }),
-    );
+    expect(courseService.loadModuleForEdit).toHaveBeenCalledWith('mod-quiz');
+    // Quiz form should be visible with quiz-specific sections
+    expect(screen.getByText('Quiz Settings')).toBeTruthy();
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Quiz Module');
   });
 
   // --- Back to course link ---
@@ -448,26 +456,6 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByText('Exam Settings')).toBeTruthy();
     expect((screen.getByLabelText('Duration (minutes)') as HTMLInputElement).value).toBe('90');
     expect((screen.getByLabelText('Passing score (%)') as HTMLInputElement).value).toBe('75');
-  });
-
-  // --- No "coming soon" for PDF and Exam ---
-
-  it('should not show "coming soon" note for PDF type', async () => {
-    const { fixture } = await renderCreateMode();
-
-    fireEvent.click(screen.getByText('PDF'));
-    fixture.detectChanges();
-
-    expect(screen.queryByText(/Quiz Builder coming in Phase 3D/)).toBeNull();
-  });
-
-  it('should not show "coming soon" note for Exam type', async () => {
-    const { fixture } = await renderCreateMode();
-
-    fireEvent.click(screen.getByText('Exam'));
-    fixture.detectChanges();
-
-    expect(screen.queryByText(/Quiz Builder coming in Phase 3D/)).toBeNull();
   });
 
   // --- Markdown form ---

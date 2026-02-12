@@ -1,9 +1,11 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/angular';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { signal } from '@angular/core';
+import { BehaviorSubject, EMPTY } from 'rxjs';
 import { ModuleViewerPageComponent } from './module-viewer-page.component';
 import { CourseService } from '../../../core/services/course.service';
+import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
 import { createMockCourseService, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, MockCourseService } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
@@ -12,6 +14,20 @@ import { VideoViewerComponent } from '../components/video-viewer.component';
 import { PdfViewerComponent } from '../components/pdf-viewer.component';
 import { MarkdownViewerComponent } from '../components/markdown-viewer.component';
 import { ModuleFilesListComponent } from '../components/module-files-list.component';
+
+function createMockBunnyUploadService() {
+  return {
+    uploading: signal(false),
+    progress: signal(0),
+    error: signal(''),
+    uploadedVideoId: signal<string | null>(null),
+    uploadedLibraryId: signal(0),
+    initAndUpload: vi.fn(),
+    pollStatus: vi.fn().mockReturnValue(EMPTY),
+    abort: vi.fn(),
+    reset: vi.fn(),
+  };
+}
 
 describe('ModuleViewerPageComponent', () => {
   let mockCourseService: MockCourseService;
@@ -35,6 +51,7 @@ describe('ModuleViewerPageComponent', () => {
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
+        { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         // Provide paramMap as an observable — the component uses toSignal(route.paramMap)
         // to reactively respond to route param changes (e.g. Next/Previous navigation).
         { provide: ActivatedRoute, useValue: { paramMap: paramMap$ } },
@@ -62,7 +79,8 @@ describe('ModuleViewerPageComponent', () => {
     await renderPage({ viewer });
 
     expect(screen.getByText('Test Module')).toBeTruthy();
-    expect(document.querySelector('video')).toBeTruthy();
+    // VideoViewerComponent shows loading/processing state (no <video> element — uses iframe embed)
+    expect(screen.getByText('Duration: 6:00')).toBeTruthy();
   });
 
   it('should render pdf viewer for pdf module', async () => {

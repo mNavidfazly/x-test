@@ -16,6 +16,11 @@ class Settings(BaseSettings):
 
     cors_origins: list[str] = ["http://localhost:4200"]
 
+    bunny_api_key: str = ""
+    bunny_library_id: int = 0
+    bunny_cdn_hostname: str = ""
+    bunny_token_key: str = ""
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

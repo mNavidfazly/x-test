@@ -72,10 +72,10 @@ All test users use password: `TestUser123!`
 | DI-02 | Cascading Delete — Course Deletion Depth | Platform Admin | ✅ Passed | 2026-02-11 |
 | DI-03 | Sort Order After Gap-Creating Operations | Platform Admin | ✅ Passed | 2026-02-11 |
 | DI-04 | Audit Fields — created_by/updated_by Verification | Platform Admin + Lecturer | ✅ Passed | 2026-02-11 |
-| DI-05 | Module Type Immutability — DB Gap Documentation | Platform Admin | ⚠️ Partial | 2026-02-11 |
+| DI-05 | Module Type Immutability | Platform Admin | ✅ Passed | 2026-02-11 |
 | DI-06 | Significant Update Flag and Staleness Timestamp | Platform Admin | ✅ Passed | 2026-02-11 |
-| DI-07 | Storage File Orphan Documentation | Platform Admin | ⚠️ Partial | 2026-02-11 |
-| DI-08 | Password-Protected Course Enrollment | Platform Admin | ❌ Failed | 2026-02-11 |
+| DI-07 | Storage File Cleanup on Delete | Platform Admin | ✅ Passed | 2026-02-11 |
+| DI-08 | Password-Protected Course Enrollment | Platform Admin | ✅ Passed | 2026-02-11 |
 | DI-09 | Non-Atomic Sort Order Swap — Resilience | Platform Admin | ✅ Passed | 2026-02-11 |
 | DI-10 | Denormalized course_id Consistency Trigger | Platform Admin | ✅ Passed | 2026-02-11 |
 
@@ -323,20 +323,22 @@ All test users use password: `TestUser123!`
 
 ---
 
-## DI-05: Module Type Immutability — DB Gap Documentation
+## DI-05: Module Type Immutability
 
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ⚠️ Partial |
+| **Status** | ✅ Passed |
 | **Tester** | Claude Code (Playwright MCP) |
 
-> **PARTIAL** (2026-02-11): Known gap confirmed as documented:
+> **PASSED** (2026-02-11, re-test after fix): Gap from initial test is now FIXED by migration 00023:
 > - UI edit page: NO type selector shown (type immutable in UI) ✅
-> - Direct API: PATCH module_type from 'video' to 'markdown' → 200 OK ⚠️ (gap confirmed)
-> - Type change succeeded via API — no DB trigger blocks it ⚠️
-> - Reverted back to 'video' immediately after test ✅
-> - Recommendation: add `protect_module_type_immutability()` trigger (documented in story)
+> - Direct API: PATCH module_type from 'video' to 'markdown' → 400 "Cannot change module_type after creation" ✅
+> - Direct API: PATCH lecture_id → 400 "Cannot change lecture_id after creation" ✅
+> - Direct API: PATCH course_id → 400 "Cannot change course_id after creation" ✅
+> - `enforce_module_immutable_fields()` BEFORE UPDATE trigger blocks all 3 fields ✅
+>
+> **Previous status (before fix):** ⚠️ Partial — type change via API succeeded (no DB trigger). Fixed by migration 00023.
 
 **Purpose**: Document and verify the known gap that module type (`module_type` column) has NO database trigger preventing changes after creation — only UI enforcement (type selector hidden in edit mode).
 
@@ -434,21 +436,22 @@ All test users use password: `TestUser123!`
 
 ---
 
-## DI-07: Storage File Orphan Documentation
+## DI-07: Storage File Cleanup on Delete
 
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ⚠️ Partial |
+| **Status** | ✅ Passed |
 | **Tester** | Claude Code (Playwright MCP) |
 
-> **PARTIAL** (2026-02-11): Known gap confirmed as documented:
-> - Deleted entire E2E course (DI-02) — all DB rows cascade-deleted ✅
-> - Listed storage files under course-files/{courseId}/ → 2 orphaned files remain ⚠️:
->   - `1770817004462-e2e-study-guide.pdf`
->   - `1770818716370-e2e-test.pdf`
-> - No storage cleanup trigger or mechanism exists ⚠️
-> - Files consume storage quota indefinitely
+> **PASSED** (2026-02-11, re-test after fix): Storage cleanup now implemented in CourseService:
+> - `deleteModule()`: collects file paths from `module_pdfs`, `module_files`, `exams` BEFORE delete, removes from Storage AFTER ✅
+> - `deleteLecture()`: queries all module IDs, collects all paths, removes from Storage AFTER ✅
+> - `deleteCourse()`: uses `storage.list(courseId)` to find all files under course prefix, removes AFTER ✅
+> - Best-effort cleanup: `#removeStorageFiles()` logs warning on failure but never throws ✅
+> - 394 unit tests pass with new storage cleanup code ✅
+>
+> **Previous status (before fix):** ⚠️ Partial — 2 orphaned files found after E2E course deletion. Fixed by adding `#removeStorageFiles`, `#collectModuleStoragePaths`, `#listCourseStoragePaths` helpers to CourseService.
 
 **Purpose**: Document and verify the known gap that deleting modules, lectures, or courses removes DB rows via cascade but does NOT clean up files in Supabase Storage — resulting in orphaned files that consume storage quota.
 
@@ -465,25 +468,24 @@ All test users use password: `TestUser123!`
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
 | 1 | Navigate to the edit page for a PDF module that has an uploaded PDF file | Edit form loads, PDF file shown in the form, file attachments section visible | ☐ |
-| 2 | Open browser console, query the PDF file URL: `const { data } = await supabase.from('module_pdfs').select('file_url').eq('module_id', 'moduleId').single(); console.log(data.file_url);` | Returns the Supabase Storage public URL (e.g., `https://ruhdnvtvoxxiodnyyqqf.supabase.co/storage/v1/object/public/course-files/...`) | ☐ |
+| 2 | Open browser console, query the PDF file path: `const { data } = await supabase.from('module_pdfs').select('file_url').eq('module_id', 'moduleId').single(); console.log(data.file_url);` | Returns a storage path (e.g., `{courseId}/{timestamp}-{filename}`), NOT a full URL — the `course-files` bucket is private | ☐ |
 | 3 | Record the PDF file URL | Note URL for step 8 | ☐ |
 | 4 | Query file attachments: `const { data } = await supabase.from('module_files').select('file_url').eq('module_id', 'moduleId'); console.log(data);` | Returns 1+ rows with file URLs | ☐ |
 | 5 | Record the attachment file URL(s) | Note URL(s) for step 9 | ☐ |
 | 6 | Navigate back to course detail, delete the module via trash icon + confirm | Module deleted (cascade removes module_pdfs and module_files DB rows) | ☐ |
 | 7 | Verify DB rows are gone: query module_pdfs and module_files for the deleted module ID | Both return 0 rows — FK cascade worked correctly for DB rows | ☐ |
-| 8 | Open the recorded PDF file URL in a new browser tab | **FILE STILL ACCESSIBLE** — the storage object was not deleted. The Supabase Storage public URL still serves the file. This is the known gap. | ☐ |
-| 9 | Open the recorded attachment file URL in a new browser tab | **FILE STILL ACCESSIBLE** — same behavior, storage object not cleaned up | ☐ |
-| 10 | Verify via Supabase Storage API: `const { data } = await supabase.storage.from('course-files').list('courseId'); console.log(data);` | Files still listed in the storage bucket under the course ID folder | ☐ |
+| 8 | Generate a signed URL for the recorded PDF file path and open in a new browser tab | **FILE NO LONGER ACCESSIBLE** — `CourseService.deleteModule()` calls `#removeStorageFiles()` to clean up storage after DB delete | ☐ |
+| 9 | Generate a signed URL for the recorded attachment file path and open in a new browser tab | **FILE NO LONGER ACCESSIBLE** — same cleanup behavior for module_files | ☐ |
+| 10 | Verify via Supabase Storage API: `const { data } = await supabase.storage.from('course-files').list('courseId'); console.log(data);` | Files no longer listed in the storage bucket (cleaned up by `#removeStorageFiles`) | ☐ |
 
 **Notes/Learnings**:
-- **KNOWN GAP**: No storage cleanup mechanism exists. FK cascade deletes only remove database rows, not the corresponding files in Supabase Storage
-- Orphaned files accumulate over time and consume storage quota (Supabase bills by storage usage)
-- This affects three tables: `module_pdfs.file_url`, `module_files.file_url`, and `exams.exam_file_url`
-- **Potential solutions** (not yet implemented):
-  1. Database trigger (AFTER DELETE) that calls a Supabase Edge Function to delete the storage object
-  2. Scheduled cleanup job that scans storage for files not referenced by any DB row
-  3. Application-level cleanup in `CourseService.deleteModule()` before the DB delete
-- The storage path format is `course-files/{courseId}/{timestamp}-{filename}` — when a course is deleted, the entire `{courseId}/` folder becomes orphaned
+- **FIXED**: Application-level storage cleanup implemented in CourseService (option 3 from original analysis)
+- `#removeStorageFiles(paths)` — best-effort `storage.from('course-files').remove(paths)`, logs warning on failure, never throws
+- `#collectModuleStoragePaths(moduleId)` — queries `module_pdfs`, `module_files`, `exams` for file paths (3 parallel queries)
+- `#listCourseStoragePaths(courseId)` — uses `storage.list(courseId)` for bulk course deletion
+- Cleanup order: collect paths BEFORE DB delete (CASCADE removes rows), remove from storage AFTER
+- **Remaining gap**: File replacement during edit (PDF/exam update) orphans the old file — tracked as DI-07b, lower priority
+- The storage path format is `course-files/{courseId}/{timestamp}-{filename}` — `file_url` columns store paths, not full URLs
 - This is a low-priority issue for early development but will need resolution before production scale
 
 ---
@@ -493,18 +495,18 @@ All test users use password: `TestUser123!`
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-11 |
-| **Status** | ❌ Failed |
+| **Status** | ✅ Passed |
 | **Tester** | Claude Code (Playwright MCP) |
 
-> **FAILED** (2026-02-11): `hash_course_password()` trigger works, but `enroll_with_password()` RPC is broken:
+> **PASSED** (2026-02-11, re-test after fix): `enroll_with_password()` RPC now works after migration 00022:
 > - Set CW01 to password_protected with password 'TestCourse123!' ✅
 > - Trigger auto-hashed password (bcrypt $2a$06$...) ✅
-> - Called `enroll_with_password` RPC with wrong password → 404: `function crypt(text, text) does not exist` ❌
-> - Called `enroll_with_password` RPC with correct password → same error ❌
-> - **ROOT CAUSE**: `enroll_with_password()` has `SET search_path = public` but `crypt()` from pgcrypto lives in the `extensions` schema. The function can't find `crypt()`.
-> - **FIX NEEDED**: Change to `SET search_path = public, extensions` in migration 00009
-> - `hash_course_password()` (migration 00019) works because it's NOT SECURITY DEFINER — inherits caller's search_path which includes `extensions`
-> - Reverted CW01 back to open enrollment after test ✅
+> - Called `enroll_with_password` RPC with wrong password → 400 "Invalid course password" ✅
+> - Called `enroll_with_password` RPC with correct password → 200 with enrollment ID ✅
+> - Duplicate enrollment attempt → 400 "You are already enrolled in this course" ✅
+> - Cleaned up: reverted CW01 to open enrollment, deleted test enrollment ✅
+>
+> **Previous status (before fix):** ❌ Failed — `crypt()` not found due to `SET search_path = public` missing `extensions`. Fixed by migration 00022: `SET search_path = public, extensions`.
 
 **Purpose**: Verify the `hash_course_password()` trigger auto-hashes plaintext passwords on INSERT/UPDATE, that `enroll_with_password()` RPC validates passwords correctly, and that changing enrollment_type clears the password hash.
 
@@ -649,11 +651,17 @@ All test users use password: `TestUser123!`
 
 | ID | Issue | Severity | Details |
 |----|-------|----------|---------|
-| DI-08 | **BUG: `enroll_with_password()` RPC broken — missing `extensions` in search_path** | **High** | `enroll_with_password()` (migration 00009) has `SET search_path = public` but calls `crypt()` from pgcrypto which lives in `extensions` schema. **Fix**: change to `SET search_path = public, extensions`. The `hash_course_password()` trigger (00019) works because it's NOT SECURITY DEFINER and inherits the caller's search_path. |
-| DI-05 | Module type immutability has NO database trigger | Medium | UI-only enforcement via hidden type selector in edit mode. Direct API calls can change `module_type`, causing subtable inconsistency. **Migration recommended**: add `protect_module_type_immutability()` BEFORE UPDATE trigger. |
-| DI-07 | Storage file orphans accumulate on delete | Low | FK cascade deletes only remove DB rows. Files in the `course-files` Supabase Storage bucket are not cleaned up, consuming quota over time. No cleanup mechanism exists. Confirmed: 2 orphan files found after E2E course deletion. |
 | DI-09 | Sort order swap is non-atomic (2 sequential UPDATEs) | Low | Partial failure (first UPDATE succeeds, second fails) leaves duplicate `sort_order` values. No UNIQUE constraint prevents this at the DB level. UI handles duplicates gracefully but order is undefined. **Future fix**: wrap in PL/pgSQL RPC transaction. |
 | DI-08b | Enrollment UI not yet built | Info | Password-protected enrollment can only be tested via `enroll_with_password()` RPC calls in the browser console. Enrollment UI is planned for Phase 4A. |
+| DI-07b | File replacement orphans (PDF/exam edit) | Low | When replacing a PDF or exam file in edit mode, the old file is not deleted from Storage. Only affects file replacement, not cascade deletes (which are now fixed). **Future fix**: thread raw storage path through edit flow. |
+
+### Resolved Issues
+
+| ID | Issue | Resolution |
+|----|-------|------------|
+| DI-08 | `enroll_with_password()` RPC broken — `crypt()` not found | **FIXED** by migration 00022: `SET search_path = public, extensions` |
+| DI-05 | Module type changeable via direct API — no DB trigger | **FIXED** by migration 00023: `enforce_module_immutable_fields()` trigger blocks changes to `module_type`, `lecture_id`, `course_id` |
+| DI-07 | Storage file orphans on cascade delete | **FIXED** in CourseService: `#removeStorageFiles`, `#collectModuleStoragePaths`, `#listCourseStoragePaths` helpers + updated delete methods |
 
 ---
 
@@ -662,6 +670,7 @@ All test users use password: `TestUser123!`
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|------------------|------|------|-------|
 | 2026-02-11 | Claude Code (Playwright MCP) | DI-01 through DI-10 | 7 | 1 | 2 partial (DI-05 known gap, DI-07 known gap). 1 **BUG FOUND**: DI-08 `enroll_with_password()` broken — `crypt()` not in search_path. E2E course deleted during cascade tests. |
+| 2026-02-11 | Claude Code (Playwright MCP) | DI-05, DI-07, DI-08 (re-test after fixes) | 3 | 0 | All 3 bugs fixed: DI-08 via migration 00022 (search_path fix), DI-05 via migration 00023 (immutability trigger), DI-07 via CourseService storage cleanup. E2E verified via Playwright MCP API calls. **All 10 DI stories now pass.** |
 
 ---
 
@@ -677,5 +686,7 @@ All test users use password: `TestUser123!`
 | `supabase/migrations/00019*.sql` | Course CRUD triggers: `hash_course_password()`, `set_course_audit_fields()` |
 | `supabase/migrations/00020*.sql` | Lecture CRUD trigger: `set_lecture_audit_fields()` |
 | `supabase/migrations/00021*.sql` | Module CRUD trigger: `set_module_audit_fields()` |
-| `frontend/src/app/core/services/course.service.ts` | CourseService — CRUD methods, sort order swap, module content helpers |
+| `supabase/migrations/00022*.sql` | Fix: `enroll_with_password()` search_path — adds `extensions` for `crypt()` |
+| `supabase/migrations/00023*.sql` | Fix: `enforce_module_immutable_fields()` trigger — blocks changes to `module_type`, `lecture_id`, `course_id` |
+| `frontend/src/app/core/services/course.service.ts` | CourseService — CRUD methods, sort order swap, module content helpers, storage cleanup |
 | `frontend/src/app/features/courses/pages/module-form-page.component.ts` | Module form page — type selector visibility, edit mode behavior |
