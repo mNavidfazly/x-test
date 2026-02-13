@@ -1014,5 +1014,6 @@ All test users use password: `TestUser123!`
 | Course Service (quiz cases) | `frontend/src/app/core/services/course.service.ts` |
 | Course Model (quiz types) | `frontend/src/app/core/models/course.model.ts` |
 | Content Write Stories | `docs/e2e-user-stories/CONTENT_WRITE_USER_STORIES.md` |
+| Test Users Setup | `docs/e2e-user-stories/TEST_USERS.md` |
 | Styling Guide | `docs/STYLING_GUIDE.md` |
 | Development Approach | `docs/x_courses_development_approach.md` |

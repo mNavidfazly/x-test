@@ -25,6 +25,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Dashboard', route: '/dashboard', icon: LayoutDashboard },
       { label: 'My Courses', route: '/courses', icon: BookOpen },
+      { label: 'My Questions', route: '/questions', icon: HelpCircle },
       { label: 'Notifications', route: '/notifications', icon: Bell },
     ],
   },

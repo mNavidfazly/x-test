@@ -16,6 +16,8 @@ E2E testing scenarios for the Bunny Stream integration (Phase 3C-4). These stori
 
 ### Test Users
 
+> Full setup instructions: [TEST_USERS.md](TEST_USERS.md)
+
 All test users use password: `TestUser123!`
 
 | # | Email | Role | Tenant | Used In |
@@ -312,3 +314,17 @@ All test users use password: `TestUser123!`
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-11 | Claude (Playwright MCP) | BS-01 to BS-06 | 6 | 0 | 3 bugs found and fixed. BS-04/BS-05 encoding states tested via manual webhook curl (Bunny can't reach localhost). All 409 frontend tests + 56 backend tests pass. |
+
+---
+
+## References
+
+| Document | Path |
+|----------|------|
+| Test Users Setup | `docs/e2e-user-stories/TEST_USERS.md` |
+| VideoFormComponent | `frontend/src/app/features/courses/components/video-form.component.ts` |
+| VideoViewerComponent | `frontend/src/app/features/courses/components/video-viewer.component.ts` |
+| BunnyUploadService | `frontend/src/app/core/services/bunny-upload.service.ts` |
+| FastAPI Video Router | `backend/app/routers/video.py` |
+| Content Write Stories | `docs/e2e-user-stories/CONTENT_WRITE_USER_STORIES.md` |
+| Development Approach | `docs/x_courses_development_approach.md` |

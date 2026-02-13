@@ -11,11 +11,12 @@ import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.
 import { QuizTakerComponent } from '../components/quiz-taker.component';
 import { ExamTakerComponent } from '../components/exam-taker.component';
 import { CommentSectionComponent } from '../components/comment-section.component';
+import { AskExpertComponent } from '../components/ask-expert.component';
 
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-5xl mx-auto">
@@ -85,6 +86,14 @@ import { CommentSectionComponent } from '../components/comment-section.component
             <app-module-files-list [files]="courseService.moduleViewer()!.files" />
           </div>
         }
+
+        <!-- Ask Expert -->
+        <div class="mt-6 mb-6">
+          <app-ask-expert
+            [courseId]="courseId()"
+            [moduleId]="courseService.moduleViewer()!.module.id"
+          />
+        </div>
 
         <!-- Comments -->
         <div class="mt-8 pt-6 border-t border-slate-200">

@@ -678,3 +678,91 @@ export function createMockCommentService(options?: {
 }
 
 export type MockCommentService = ReturnType<typeof createMockCommentService>;
+
+// ---------------------------------------------------------------------------
+// Expert Question mocks
+// ---------------------------------------------------------------------------
+
+import { ExpertQuestion, ExpertQuestionForBoard, BoardCourseSummary } from '../core/models/expert-question.model';
+
+export function createMockExpertQuestion(overrides?: Partial<ExpertQuestion>): ExpertQuestion {
+  return {
+    id: 'eq-1',
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    course_id: 'course-1',
+    module_id: 'mod-1',
+    question_text: 'How does this concept apply in practice?',
+    status: 'pending',
+    response_text: null,
+    responded_by: null,
+    responded_at: null,
+    created_at: '2026-02-10T10:00:00Z',
+    course: { title: 'Test Course' },
+    module: { title: 'Test Module' },
+    responder: null,
+    ...overrides,
+  };
+}
+
+export function createMockExpertQuestionForBoard(overrides?: Partial<ExpertQuestionForBoard>): ExpertQuestionForBoard {
+  return {
+    id: 'eq-1',
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    course_id: 'course-1',
+    module_id: 'mod-1',
+    question_text: 'How does this concept apply in practice?',
+    status: 'pending',
+    response_text: null,
+    responded_by: null,
+    responded_at: null,
+    created_at: '2026-02-10T10:00:00Z',
+    course: { title: 'Test Course' },
+    module: { title: 'Test Module' },
+    asker: { full_name: 'Test Learner', email: 'learner@test.com' },
+    ...overrides,
+  };
+}
+
+export function createMockExpertQuestionService(options?: {
+  questions?: ExpertQuestion[];
+  loading?: boolean;
+  error?: string;
+  boardQuestions?: ExpertQuestionForBoard[];
+  boardCourses?: BoardCourseSummary[];
+  boardLoading?: boolean;
+  boardError?: string;
+}) {
+  const questions = signal<ExpertQuestion[]>(options?.questions ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+  const boardQuestions = signal<ExpertQuestionForBoard[]>(options?.boardQuestions ?? []);
+  const boardCourses = signal<BoardCourseSummary[]>(options?.boardCourses ?? []);
+  const boardLoading = signal(options?.boardLoading ?? false);
+  const boardError = signal(options?.boardError ?? '');
+
+  return {
+    questions: questions.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadMyQuestions: vi.fn().mockResolvedValue(undefined),
+    askQuestion: vi.fn().mockResolvedValue(undefined),
+    boardQuestions: boardQuestions.asReadonly(),
+    boardCourses: boardCourses.asReadonly(),
+    boardLoading: boardLoading.asReadonly(),
+    boardError: boardError.asReadonly(),
+    loadBoardQuestions: vi.fn().mockResolvedValue(undefined),
+    respondToQuestion: vi.fn().mockResolvedValue(undefined),
+    closeQuestion: vi.fn().mockResolvedValue(undefined),
+    _setQuestions: questions.set.bind(questions),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+    _setBoardQuestions: boardQuestions.set.bind(boardQuestions),
+    _setBoardCourses: boardCourses.set.bind(boardCourses),
+    _setBoardLoading: boardLoading.set.bind(boardLoading),
+    _setBoardError: boardError.set.bind(boardError),
+  };
+}
+
+export type MockExpertQuestionService = ReturnType<typeof createMockExpertQuestionService>;

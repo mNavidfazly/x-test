@@ -486,3 +486,16 @@ curl -s -X POST <BACKEND_URL>/api/quiz-results/external \
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-13 | Claude Code | EQW-01 to EQW-06 | 6 | 0 | All stories pass. Tested against local dev (localhost:4200 + localhost:8000). Zero bugs found. |
+
+---
+
+## References
+
+| Document | Path |
+|----------|------|
+| Test Users Setup | `docs/e2e-user-stories/TEST_USERS.md` |
+| ExternalQuizViewerComponent | `frontend/src/app/features/courses/components/external-quiz-viewer.component.ts` |
+| FastAPI Quiz Results Router | `backend/app/routers/quiz_results.py` |
+| Migration 00030 (auto-mark trigger) | `supabase/migrations/00030_external_quiz_auto_mark.sql` |
+| Progress Tracking Stories | `docs/e2e-user-stories/PROGRESS_TRACKING_USER_STORIES.md` |
+| Development Approach | `docs/x_courses_development_approach.md` |

@@ -104,6 +104,13 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'questions',
+        loadComponent: () =>
+          import('./features/questions/pages/my-questions-page.component').then(
+            (m) => m.MyQuestionsPageComponent,
+          ),
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(
@@ -123,6 +130,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/teaching/pages/exam-grading-page.component').then(
             (m) => m.ExamGradingPageComponent,
+          ),
+      },
+      {
+        path: 'teaching/questions',
+        canActivate: [roleGuard('lecturer', 'platform_admin')],
+        loadComponent: () =>
+          import('./features/teaching/pages/questions-board-page.component').then(
+            (m) => m.QuestionsBoardPageComponent,
           ),
       },
       {
