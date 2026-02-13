@@ -172,4 +172,194 @@ describe('IssueService', () => {
       await expect(service.reportIssue('c1', 'mod-1', 'technical', 'desc')).rejects.toThrow('Insert failed');
     });
   });
+
+  // --- Board tests (Lecturer / Platform Admin) ---
+
+  it('should have empty initial board state', () => {
+    expect(service.boardIssues()).toEqual([]);
+    expect(service.boardCourses()).toEqual([]);
+    expect(service.boardLoading()).toBe(false);
+    expect(service.boardError()).toBe('');
+  });
+
+  describe('loadBoardIssues', () => {
+    it('should load issues with reporter FK join', async () => {
+      const mockIssues = [
+        {
+          id: 'iss-1', user_id: 'user-1', tenant_id: 'tenant-1', course_id: 'c1', module_id: 'mod-1',
+          description: 'Typo on slide 3', issue_type: 'content_error', status: 'open',
+          internal_notes: 'Checking with author', resolved_at: null, resolved_by: null,
+          created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
+          course: { title: 'Alpha Course' }, module: { title: 'Lesson 1' },
+          reporter: { full_name: 'Test Learner', email: 'learner@test.com' },
+        },
+      ];
+      supabase._mockQueryResponse(mockIssues);
+
+      await service.loadBoardIssues();
+
+      expect(service.boardIssues().length).toBe(1);
+      expect(service.boardIssues()[0].reporter?.email).toBe('learner@test.com');
+      expect(service.boardIssues()[0].internal_notes).toBe('Checking with author');
+      expect(service.boardLoading()).toBe(false);
+      expect(service.boardError()).toBe('');
+    });
+
+    it('should handle null FK joins gracefully', async () => {
+      const mockIssues = [
+        {
+          id: 'iss-2', user_id: 'user-1', tenant_id: 'tenant-1', course_id: 'c1', module_id: null,
+          description: 'General issue', issue_type: 'technical', status: 'open',
+          internal_notes: null, resolved_at: null, resolved_by: null,
+          created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
+          course: null, module: null, reporter: null,
+        },
+      ];
+      supabase._mockQueryResponse(mockIssues);
+
+      await service.loadBoardIssues();
+
+      expect(service.boardIssues()[0].course).toBeNull();
+      expect(service.boardIssues()[0].module).toBeNull();
+      expect(service.boardIssues()[0].reporter).toBeNull();
+    });
+
+    it('should handle empty list', async () => {
+      supabase._mockQueryResponse([]);
+
+      await service.loadBoardIssues();
+
+      expect(service.boardIssues()).toEqual([]);
+      expect(service.boardCourses()).toEqual([]);
+      expect(service.boardLoading()).toBe(false);
+    });
+
+    it('should set error on failure', async () => {
+      supabase._mockQueryResponse(null, { message: 'DB error' });
+
+      await service.loadBoardIssues();
+
+      expect(service.boardError()).toBe('DB error');
+      expect(service.boardLoading()).toBe(false);
+    });
+
+    it('should set loading to false after completion', async () => {
+      supabase._mockQueryResponse([]);
+
+      await service.loadBoardIssues();
+
+      expect(service.boardLoading()).toBe(false);
+    });
+
+    it('should derive courses sorted alphabetically', async () => {
+      const mockIssues = [
+        {
+          id: 'iss-1', user_id: 'u1', tenant_id: 't1', course_id: 'c2', module_id: null,
+          description: 'd', issue_type: 'technical', status: 'open',
+          internal_notes: null, resolved_at: null, resolved_by: null,
+          created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
+          course: { title: 'Zebra Course' }, module: null, reporter: null,
+        },
+        {
+          id: 'iss-2', user_id: 'u1', tenant_id: 't1', course_id: 'c1', module_id: null,
+          description: 'd', issue_type: 'technical', status: 'open',
+          internal_notes: null, resolved_at: null, resolved_by: null,
+          created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
+          course: { title: 'Alpha Course' }, module: null, reporter: null,
+        },
+      ];
+      supabase._mockQueryResponse(mockIssues);
+
+      await service.loadBoardIssues();
+
+      expect(service.boardCourses().length).toBe(2);
+      expect(service.boardCourses()[0].title).toBe('Alpha Course');
+      expect(service.boardCourses()[1].title).toBe('Zebra Course');
+    });
+
+    it('should throw when not authenticated', async () => {
+      auth = createMockAuthService({ isAuthenticated: false });
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          IssueService,
+          { provide: SupabaseService, useValue: supabase },
+          { provide: AuthService, useValue: auth },
+        ],
+      });
+      service = TestBed.inject(IssueService);
+
+      await service.loadBoardIssues();
+
+      expect(service.boardError()).toBe('Not authenticated');
+    });
+
+    it('should query base issues table (not issues_safe)', async () => {
+      supabase._mockQueryResponse([]);
+
+      await service.loadBoardIssues();
+
+      expect(supabase.client.from).toHaveBeenCalledWith('issues');
+    });
+  });
+
+  describe('updateIssue', () => {
+    it('should update status and internal_notes', async () => {
+      supabase._mockQueryBuilder.then.mockImplementationOnce((resolve: (value: { data: null; error: null }) => void) =>
+        resolve({ data: null, error: null }),
+      );
+
+      await service.updateIssue('iss-1', { status: 'investigating', internal_notes: 'Looking into it' });
+
+      expect(supabase.client.from).toHaveBeenCalledWith('issues');
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'investigating',
+          internal_notes: 'Looking into it',
+          resolved_by: null,
+          resolved_at: null,
+        }),
+      );
+    });
+
+    it('should auto-set resolved_by and resolved_at when resolving', async () => {
+      supabase._mockQueryBuilder.then.mockImplementationOnce((resolve: (value: { data: null; error: null }) => void) =>
+        resolve({ data: null, error: null }),
+      );
+
+      await service.updateIssue('iss-1', { status: 'resolved' });
+
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'resolved',
+          resolved_by: 'user-1',
+        }),
+      );
+      const updateArg = (supabase._mockQueryBuilder.update as ReturnType<typeof vi.fn>).mock.calls[0][0];
+      expect(updateArg.resolved_at).toBeTruthy();
+    });
+
+    it('should throw when not authenticated', async () => {
+      auth = createMockAuthService({ isAuthenticated: false });
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          IssueService,
+          { provide: SupabaseService, useValue: supabase },
+          { provide: AuthService, useValue: auth },
+        ],
+      });
+      service = TestBed.inject(IssueService);
+
+      await expect(service.updateIssue('iss-1', { status: 'investigating' })).rejects.toThrow('Not authenticated');
+    });
+
+    it('should throw on update error', async () => {
+      supabase._mockQueryBuilder.then.mockImplementationOnce((resolve: (value: { data: null; error: { message: string } }) => void) =>
+        resolve({ data: null, error: { message: 'Update failed' } }),
+      );
+
+      await expect(service.updateIssue('iss-1', { status: 'closed' })).rejects.toThrow('Update failed');
+    });
+  });
 });

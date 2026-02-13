@@ -770,7 +770,7 @@ export type MockExpertQuestionService = ReturnType<typeof createMockExpertQuesti
 // ---------------------------------------------------------------------------
 // Issue mocks
 // ---------------------------------------------------------------------------
-import { Issue } from '../core/models/issue.model';
+import { Issue, IssueForBoard, BoardIssueSummary } from '../core/models/issue.model';
 
 export function createMockIssue(overrides?: Partial<Issue>): Issue {
   return {
@@ -792,16 +792,48 @@ export function createMockIssue(overrides?: Partial<Issue>): Issue {
   };
 }
 
+export function createMockIssueForBoard(overrides?: Partial<IssueForBoard>): IssueForBoard {
+  return {
+    id: 'issue-1',
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    course_id: 'course-1',
+    module_id: 'mod-1',
+    description: 'There is a typo in the formula on slide 3.',
+    issue_type: 'content_error',
+    status: 'open',
+    internal_notes: null,
+    resolved_at: null,
+    resolved_by: null,
+    created_at: '2026-02-10T10:00:00Z',
+    updated_at: '2026-02-10T10:00:00Z',
+    course: { title: 'Test Course' },
+    module: { title: 'Test Module' },
+    reporter: { full_name: 'Test Learner', email: 'learner@test.com' },
+    ...overrides,
+  };
+}
+
 export function createMockIssueService(options?: {
   issues?: Issue[];
   loading?: boolean;
   error?: string;
+  boardIssues?: IssueForBoard[];
+  boardCourses?: BoardIssueSummary[];
+  boardLoading?: boolean;
+  boardError?: string;
 }) {
   const issues = signal<Issue[]>(options?.issues ?? []);
   const loading = signal(options?.loading ?? false);
   const error = signal(options?.error ?? '');
 
+  const boardIssues = signal<IssueForBoard[]>(options?.boardIssues ?? []);
+  const boardCourses = signal<BoardIssueSummary[]>(options?.boardCourses ?? []);
+  const boardLoading = signal(options?.boardLoading ?? false);
+  const boardError = signal(options?.boardError ?? '');
+
   return {
+    // Learner signals + methods
     issues: issues.asReadonly(),
     loading: loading.asReadonly(),
     error: error.asReadonly(),
@@ -810,6 +842,17 @@ export function createMockIssueService(options?: {
     _setIssues: issues.set.bind(issues),
     _setLoading: loading.set.bind(loading),
     _setError: error.set.bind(error),
+    // Board signals + methods
+    boardIssues: boardIssues.asReadonly(),
+    boardCourses: boardCourses.asReadonly(),
+    boardLoading: boardLoading.asReadonly(),
+    boardError: boardError.asReadonly(),
+    loadBoardIssues: vi.fn().mockResolvedValue(undefined),
+    updateIssue: vi.fn().mockResolvedValue(undefined),
+    _setBoardIssues: boardIssues.set.bind(boardIssues),
+    _setBoardCourses: boardCourses.set.bind(boardCourses),
+    _setBoardLoading: boardLoading.set.bind(boardLoading),
+    _setBoardError: boardError.set.bind(boardError),
   };
 }
 

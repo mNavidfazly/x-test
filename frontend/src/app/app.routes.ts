@@ -148,6 +148,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'teaching/issues',
+        canActivate: [roleGuard('lecturer', 'platform_admin')],
+        loadComponent: () =>
+          import('./features/teaching/pages/issue-management-page.component').then(
+            (m) => m.IssueManagementPageComponent,
+          ),
+      },
+      {
         path: 'teaching/:path',
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(

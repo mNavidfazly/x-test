@@ -895,6 +895,42 @@ export async function createExpertQuestion(
   return { id: data.id };
 }
 
+export async function createIssue(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  courseId: string,
+  overrides: {
+    moduleId?: string;
+    issueType?: string;
+    description?: string;
+    status?: string;
+    internalNotes?: string;
+    resolvedBy?: string;
+    resolvedAt?: string;
+  } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('issues')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      course_id: courseId,
+      issue_type: overrides.issueType ?? 'content_error',
+      description: overrides.description ?? 'Test issue ' + Math.random().toString(36).slice(2, 8),
+      ...(overrides.moduleId !== undefined && { module_id: overrides.moduleId }),
+      ...(overrides.status !== undefined && { status: overrides.status }),
+      ...(overrides.internalNotes !== undefined && { internal_notes: overrides.internalNotes }),
+      ...(overrides.resolvedBy !== undefined && { resolved_by: overrides.resolvedBy }),
+      ...(overrides.resolvedAt !== undefined && { resolved_at: overrides.resolvedAt }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create issue: ${error.message}`);
+  return { id: data.id };
+}
+
 // ---------------------------------------------------------------------------
 // Custom Vitest Matcher: toDenyAccess
 // ---------------------------------------------------------------------------

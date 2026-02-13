@@ -37,6 +37,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'My Courses', route: '/teaching/courses', icon: GraduationCap },
       { label: 'Questions Board', route: '/teaching/questions', icon: MessageSquare },
       { label: 'Exam Grading', route: '/teaching/grading', icon: ClipboardCheck },
+      { label: 'Issue Management', route: '/teaching/issues', icon: Flag },
     ],
   },
   {
