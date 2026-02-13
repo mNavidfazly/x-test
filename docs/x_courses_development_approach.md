@@ -769,12 +769,14 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] Mock factories: `createMockGradingSubmission()`, `createMockExamGradingService()`
 - [x] **Tests:** 31 new tests (11 service + 20 component) — 679 total frontend tests, build OK
 
-#### 5E - Quiz & Exam RLS Tests
-- [ ] Quiz attempts: own insert/read, tenant admin read, lecturer read (cross-tenant via quiz → module → course)
-- [ ] Quiz answers: own insert/read, lecturer read (cross-tenant)
-- [ ] Exam submissions: own insert, own read, lecturer with can_grade read/update/delete, platform admin all
-- [ ] External quiz results: own read, lecturer read (cross-tenant), inserts via service role only
-- [ ] **Tests:** ~30 RLS tests
+#### 5E - Quiz & Exam RLS Tests ✅
+- [x] Quiz attempts: 16 tests (SELECT 8, INSERT 4, UPDATE 3, DELETE 1) — learner self, TA same-tenant, PA all, lecturer cross-tenant, CSM assigned-tenant, protect_quiz_attempt_score trigger
+- [x] Quiz attempt answers: 11 tests (SELECT 7, INSERT 2, UPDATE 1, DELETE 1) — no TA policy (intentional gap), no UPDATE/DELETE policies
+- [x] Exam submissions: 19 tests (SELECT 8, INSERT 3, UPDATE 4, DELETE 4) — lecturer can_grade scope, PA all, TA denied
+- [x] External quiz results: 8 tests (SELECT 7, INSERT 1) — service-role only INSERT, no TA policy (intentional gap)
+- [x] Trigger: enforce_exam_submission_course rejects mismatched course_id
+- [x] 4 new factory functions in tests/setup.ts
+- [x] **Tests:** 55 new RLS tests (QE-001 to QE-055) — 217 total RLS tests across 7 files
 
 ---
 

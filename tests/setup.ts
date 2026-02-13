@@ -716,6 +716,103 @@ export async function createExternalQuizReference(
   return { id: data.id };
 }
 
+export async function createQuizAttempt(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  quizId: string,
+  overrides: { attemptNumber?: number; score?: number; passed?: boolean; submittedAt?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('quiz_attempts')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      quiz_id: quizId,
+      attempt_number: overrides.attemptNumber ?? 1,
+      ...(overrides.score !== undefined && { score: overrides.score }),
+      ...(overrides.passed !== undefined && { passed: overrides.passed }),
+      ...(overrides.submittedAt !== undefined && { submitted_at: overrides.submittedAt }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create quiz_attempt: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createQuizAttemptAnswer(
+  tracker: TestDataTracker,
+  attemptId: string,
+  questionId: string,
+  overrides: { userAnswer?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('quiz_attempt_answers')
+    .insert({
+      attempt_id: attemptId,
+      question_id: questionId,
+      ...(overrides.userAnswer !== undefined && { user_answer: overrides.userAnswer }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create quiz_attempt_answer: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createExamSubmission(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  examId: string,
+  courseId: string,
+  overrides: { fileUrl?: string; deadline?: string; score?: number; feedback?: string; gradedBy?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('exam_submissions')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      exam_id: examId,
+      course_id: courseId,
+      file_url: overrides.fileUrl ?? `exam-submissions/${courseId}/${userId}/submission.pdf`,
+      deadline: overrides.deadline ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      ...(overrides.score !== undefined && { score: overrides.score }),
+      ...(overrides.feedback !== undefined && { feedback: overrides.feedback }),
+      ...(overrides.gradedBy !== undefined && { graded_by: overrides.gradedBy, graded_at: new Date().toISOString() }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create exam_submission: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createExternalQuizResult(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  externalQuizId: string,
+  overrides: { score?: number; passed?: boolean; completedAt?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('external_quiz_results')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      external_quiz_id: externalQuizId,
+      ...(overrides.score !== undefined && { score: overrides.score }),
+      ...(overrides.passed !== undefined && { passed: overrides.passed }),
+      ...(overrides.completedAt !== undefined && { completed_at: overrides.completedAt }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create external_quiz_result: ${error.message}`);
+  return { id: data.id };
+}
+
 // ---------------------------------------------------------------------------
 // Custom Vitest Matcher: toDenyAccess
 // ---------------------------------------------------------------------------
