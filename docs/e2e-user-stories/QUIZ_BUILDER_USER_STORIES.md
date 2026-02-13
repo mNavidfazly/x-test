@@ -588,45 +588,25 @@ All test users use password: `TestUser123!`
 
 ---
 
-## QB-12: Quiz Viewer "Coming Soon"
+## QB-12: Quiz Viewer "Coming Soon" — SUPERSEDED by QT-01
 
 | Field | Value |
 |-------|-------|
 | **Last Checked** | 2026-02-12 |
-| **Status** | ✅ |
+| **Status** | ✅ (superseded) |
 | **Tester** | Claude (Playwright MCP) |
 
-**Purpose**: Verify that clicking on a quiz module in the course detail navigates to the module viewer, which shows a "Coming soon" placeholder (quiz taking is Phase 4-5).
+> **SUPERSEDED**: As of Phase 5A (Quiz Taking), quiz modules now render the full `QuizTakerComponent` instead of a "Coming soon" placeholder. The quiz-taking navigation and rendering is now covered by **QT-01** in [`QUIZ_TAKING_USER_STORIES.md`](QUIZ_TAKING_USER_STORIES.md). This story remains as historical record of the Phase 3D behavior.
 
-**Covers**: ModuleViewerPageComponent (`@default` case in content type switch), module-item.component (clickable for quiz type)
+**Purpose**: ~~Verify that clicking on a quiz module in the course detail navigates to the module viewer, which shows a "Coming soon" placeholder (quiz taking is Phase 4-5).~~ **No longer applicable** — quiz modules now show the quiz-taking UI (start phase with metadata, start button, etc.).
 
-**Preconditions**:
-- A quiz module exists in a course
-- User is enrolled in the course (or is Platform Admin)
-
-**Steps**:
-
-| # | Action | Expected Outcome | ✓ |
-|---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to course detail with quiz module | Course detail loads, quiz module visible with HelpCircle icon | ☐ |
-| 3 | Click on the quiz module | Navigated to `/courses/:courseId/modules/:moduleId` (module viewer) | ☐ |
-| 4 | Verify "Coming soon" placeholder | Centered placeholder with BookOpen icon (slate-300), "Coming soon" text, and descriptive subtext | ☐ |
-| 5 | Verify module navigation (prev/next) still works | If other modules exist, prev/next navigation buttons functional | ☐ |
-| 6 | Verify no edit button for learner | No pencil/edit icon in the viewer header | ☐ |
-
-**Platform Admin View**:
-
-| # | Action | Expected Outcome | ✓ |
-|---|--------|------------------|---|
-| A1 | Log in as Platform Admin, navigate to same quiz module | Same "Coming soon" placeholder shown | ☐ |
-| A2 | Verify edit button IS visible | Platform Admin sees edit button in module viewer header | ☐ |
-| A3 | Click edit button | Navigated to edit form with quiz data pre-populated | ☐ |
+**Original Covers**: ModuleViewerPageComponent (`@default` case in content type switch), module-item.component (clickable for quiz type)
 
 **Notes/Learnings**:
-- The module viewer's `@default` case renders for both quiz and exam types — both show "Coming soon"
-- Quiz taking (attempt creation, answering, submission, grading) is Phase 4-5
-- The `grade_quiz_attempt()` RPC and `quiz_questions_safe`/`quiz_question_options_safe` views already exist in the DB for Phase 4-5
+- Phase 5A replaced the `@default` "Coming soon" case with `@case ('quiz')` rendering `<app-quiz-taker>`
+- Quiz modules are now in `LINKABLE_TYPES` and navigate to the full quiz-taking experience
+- See **QT-01 through QT-11** in `QUIZ_TAKING_USER_STORIES.md` for comprehensive quiz-taking E2E coverage
+- Exam modules still show "Coming soon" (Phase 5B)
 
 ---
 

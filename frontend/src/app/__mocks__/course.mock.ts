@@ -9,6 +9,7 @@ import {
   ExternalQuizFormData, ExternalQuizContent,
   EnrolledUser, UserProgressSummary,
   DashboardUserProgress, DashboardCourseSummary,
+  QuizTakingData, QuizAttempt, QuizGradeResult, QuizQuestionResult, QuizResults,
 } from '../core/models/course.model';
 import { of } from 'rxjs';
 
@@ -66,6 +67,10 @@ export function createMockCourseService(options?: {
     loadCourseProgressAdmin: vi.fn().mockResolvedValue([]),
     adminMarkModuleComplete: vi.fn().mockResolvedValue(undefined),
     adminResetModuleProgress: vi.fn().mockResolvedValue(undefined),
+    loadQuizForTaking: vi.fn().mockResolvedValue(null),
+    startQuizAttempt: vi.fn().mockResolvedValue({ id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1, started_at: new Date().toISOString(), submitted_at: null, score: null, passed: null }),
+    submitQuizAttempt: vi.fn().mockResolvedValue({ attempt: { id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1, started_at: new Date().toISOString(), submitted_at: new Date().toISOString(), score: 80, passed: true }, grade: { score: 80, passed: true, earned_points: 4, total_points: 5 }, questions: [] }),
+    getQuizAttemptResults: vi.fn().mockResolvedValue({ attempt: { id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1, started_at: new Date().toISOString(), submitted_at: new Date().toISOString(), score: 80, passed: true }, grade: { score: 80, passed: true, earned_points: 4, total_points: 5 }, questions: [] }),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),
@@ -425,6 +430,97 @@ export function createMockDashboardUserProgress(overrides?: Partial<DashboardUse
     courses: [{ course_id: 'c1', course_title: 'Test Course', completed: 3, total: 5, percent: 60 }],
     overallPercent: 60,
     lastActive: '2026-02-10T10:00:00Z',
+    ...overrides,
+  };
+}
+
+// Phase 5A: Quiz Taking factories
+
+export function createMockQuizTakingData(overrides?: Partial<QuizTakingData>): QuizTakingData {
+  return {
+    id: 'quiz-1',
+    title: 'Test Quiz',
+    description: 'A test quiz for learners',
+    time_limit: 600,
+    passing_score: 70,
+    max_attempts: 3,
+    show_correct_answers: true,
+    randomize_questions: false,
+    randomize_answers: false,
+    questions: [
+      {
+        id: 'q-1',
+        question_text: 'What is 2 + 2?',
+        question_type: 'single_choice',
+        points: 1,
+        sort_order: 0,
+        options: [
+          { id: 'o-1', option_text: '3', sort_order: 0 },
+          { id: 'o-2', option_text: '4', sort_order: 1 },
+          { id: 'o-3', option_text: '5', sort_order: 2 },
+        ],
+      },
+      {
+        id: 'q-2',
+        question_text: 'Is the sky blue?',
+        question_type: 'true_false',
+        points: 1,
+        sort_order: 1,
+        options: [
+          { id: 'o-4', option_text: 'True', sort_order: 0 },
+          { id: 'o-5', option_text: 'False', sort_order: 1 },
+        ],
+      },
+    ],
+    ...overrides,
+  };
+}
+
+export function createMockQuizAttempt(overrides?: Partial<QuizAttempt>): QuizAttempt {
+  return {
+    id: 'attempt-1',
+    quiz_id: 'quiz-1',
+    attempt_number: 1,
+    started_at: '2026-02-12T10:00:00Z',
+    submitted_at: null,
+    score: null,
+    passed: null,
+    ...overrides,
+  };
+}
+
+export function createMockQuizGradeResult(overrides?: Partial<QuizGradeResult>): QuizGradeResult {
+  return {
+    score: 80,
+    passed: true,
+    earned_points: 4,
+    total_points: 5,
+    ...overrides,
+  };
+}
+
+export function createMockQuizQuestionResult(overrides?: Partial<QuizQuestionResult>): QuizQuestionResult {
+  return {
+    question_id: 'q-1',
+    question_text: 'What is 2 + 2?',
+    question_type: 'single_choice',
+    points: 1,
+    correct_answer: null,
+    user_answer: 'o-2',
+    options: [
+      { id: 'o-1', option_text: '3', is_correct: false },
+      { id: 'o-2', option_text: '4', is_correct: true },
+      { id: 'o-3', option_text: '5', is_correct: false },
+    ],
+    ...overrides,
+  };
+}
+
+export function createMockQuizResults(overrides?: Partial<QuizResults>): QuizResults {
+  return {
+    attempt: createMockQuizAttempt({ submitted_at: '2026-02-12T10:10:00Z', score: 80, passed: true }),
+    grade: createMockQuizGradeResult(),
+    questions: [createMockQuizQuestionResult()],
     ...overrides,
   };
 }

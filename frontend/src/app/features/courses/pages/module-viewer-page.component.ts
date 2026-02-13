@@ -8,11 +8,12 @@ import { PdfViewerComponent } from '../components/pdf-viewer.component';
 import { MarkdownViewerComponent } from '../components/markdown-viewer.component';
 import { ModuleFilesListComponent } from '../components/module-files-list.component';
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
+import { QuizTakerComponent } from '../components/quiz-taker.component';
 
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-5xl mx-auto">
@@ -55,6 +56,11 @@ import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.
             }
             @case ('external_quiz') {
               <app-external-quiz-viewer [content]="$any(courseService.moduleViewer()!.content.data)" />
+            }
+            @case ('quiz') {
+              <app-quiz-taker
+                [moduleId]="courseService.moduleViewer()!.module.id"
+                (quizCompleted)="onQuizCompleted()" />
             }
             @default {
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
@@ -160,5 +166,12 @@ export class ModuleViewerPageComponent {
     if (moduleId) {
       this.courseService.markModuleComplete(moduleId);
     }
+  }
+
+  onQuizCompleted() {
+    // No-op: quiz-taker handles its own results display internally.
+    // Progress will update when the user navigates back to course detail.
+    // Calling loadModuleViewer here would destroy the quiz-taker component
+    // (loading=true removes it from DOM), losing the results view.
   }
 }

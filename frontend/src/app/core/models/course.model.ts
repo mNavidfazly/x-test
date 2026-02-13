@@ -158,6 +158,73 @@ export interface QuizContent {
   }[];
 }
 
+// Phase 5A: Quiz Taking types (learner-safe, no correct answers)
+
+export interface QuizTakingData {
+  id: string;
+  title: string;
+  description: string | null;
+  time_limit: number | null;
+  passing_score: number;
+  max_attempts: number | null;
+  show_correct_answers: boolean;
+  randomize_questions: boolean;
+  randomize_answers: boolean;
+  questions: QuizTakingQuestion[];
+}
+
+export interface QuizTakingQuestion {
+  id: string;
+  question_text: string;
+  question_type: QuizQuestionType;
+  points: number;
+  sort_order: number;
+  options: QuizTakingOption[];
+  matchingLeft?: string[];
+  matchingRight?: string[];
+}
+
+export interface QuizTakingOption {
+  id: string;
+  option_text: string;
+  sort_order: number;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quiz_id: string;
+  attempt_number: number;
+  started_at: string;
+  submitted_at: string | null;
+  score: number | null;
+  passed: boolean | null;
+}
+
+export interface QuizGradeResult {
+  score: number;
+  passed: boolean;
+  earned_points: number;
+  total_points: number;
+}
+
+export interface QuizQuestionResult {
+  question_id: string;
+  question_text: string;
+  question_type: QuizQuestionType;
+  points: number;
+  correct_answer: string | null;
+  user_answer: string | null;
+  options: { id: string; option_text: string; is_correct: boolean | null }[] | null;
+}
+
+export interface QuizResults {
+  attempt: QuizAttempt;
+  grade: QuizGradeResult;
+  questions: QuizQuestionResult[];
+}
+
+export type QuizAnswerMap = Record<string, string>;
+
 export type ModuleContent =
   | { type: 'video'; data: ModuleVideo }
   | { type: 'pdf'; data: ModulePdf }

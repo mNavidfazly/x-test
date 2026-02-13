@@ -154,7 +154,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress factories
+│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -164,7 +164,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers, get/post/delete)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete, enrollment (enroll/unenroll/adminEnroll/loadEnrolled/lookupUser), progress admin (loadCourseProgressAdmin/adminMarkModuleComplete/adminResetModuleProgress)
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete, enrollment (enroll/unenroll/adminEnroll/loadEnrolled/lookupUser), progress admin (loadCourseProgressAdmin/adminMarkModuleComplete/adminResetModuleProgress), quiz taking (loadQuizForTaking/startQuizAttempt/submitQuizAttempt/getQuizAttemptResults)
 │   │   │   │   │   ├── bunny-upload.service.ts  # ✅ BunnyUploadService (TUS upload via tus-js-client, progress signals, pollStatus, deleteVideo)
 │   │   │   │   │   ├── progress.service.ts       # ✅ ProgressService (4 parallel queries + client-side aggregation, sendReminders via ApiService)
 │   │   │   │   │   ├── progress.service.spec.ts
@@ -174,7 +174,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   └── role.guard.ts      # 5-role guard (learner, tenant_admin, platform_admin, csm, lecturer)
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
-│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, EnrolledUser, MarkedByType, UserProgressRecord, UserProgressSummary, DashboardUserProgress, DashboardCourseProgress, DashboardCourseSummary, ReminderRequest, ReminderResponse, union types
+│   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, EnrolledUser, MarkedByType, UserProgressRecord, UserProgressSummary, DashboardUserProgress, DashboardCourseProgress, DashboardCourseSummary, ReminderRequest, ReminderResponse, QuizForTaking, QuizQuestionForTaking, QuizQuestionOptionForTaking, QuizAttemptAnswer, QuizAttemptResult, QuizQuestionResult, union types
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -199,7 +199,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C + 5A complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -209,7 +209,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── course-form-page.component.spec.ts
 │   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector (6 types), video/pdf/exam/markdown/quiz/external_quiz forms + module files editor + significant update checkbox (Phase 3C-4B)
 │   │   │   │   │   │   ├── module-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz viewer, prev/next nav, mark-complete (gated by enrollment)
+│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz/quiz viewer, prev/next nav, mark-complete (gated by enrollment), quiz taker integration
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
 │   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
@@ -218,7 +218,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── lecture-accordion.component.spec.ts
 │   │   │   │   │   │   ├── lecture-form.component.ts         # Presentational: inline lecture create/edit form (title + description)
 │   │   │   │   │   │   ├── lecture-form.component.spec.ts
-│   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge, RouterLink for video/pdf/markdown/external_quiz
+│   │   │   │   │   │   ├── module-item.component.ts          # Presentational: type icon, status badge, RouterLink for video/pdf/markdown/external_quiz/quiz
 │   │   │   │   │   │   ├── module-item.component.spec.ts
 │   │   │   │   │   │   ├── video-viewer.component.ts         # Smart-lite: Bunny iframe embed with token-signed URLs, 3 encoding states (processing/ready/failed), polling
 │   │   │   │   │   │   ├── video-viewer.component.spec.ts
@@ -253,7 +253,13 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── enrollment-manager.component.ts    # Smart-lite: admin enrollment panel — enrolled users table, add by email, unenroll (Phase 4A)
 │   │   │   │   │   │   ├── enrollment-manager.component.spec.ts
 │   │   │   │   │   │   ├── progress-manager.component.ts      # Smart-lite: admin progress panel — user progress accordion, mark complete/reset per module (Phase 4B)
-│   │   │   │   │   │   └── progress-manager.component.spec.ts
+│   │   │   │   │   │   ├── progress-manager.component.spec.ts
+│   │   │   │   │   │   ├── quiz-question.component.ts          # Presentational: renders 6 question types (single_choice, multiple_choice, true_false, fill_blank, short_answer, matching) (Phase 5A)
+│   │   │   │   │   │   ├── quiz-question.component.spec.ts
+│   │   │   │   │   │   ├── quiz-result-item.component.ts       # Presentational: per-question results after grading (Phase 5A)
+│   │   │   │   │   │   ├── quiz-result-item.component.spec.ts
+│   │   │   │   │   │   ├── quiz-taker.component.ts             # Smart-lite: 3-phase quiz flow (start → active → results), timer, answer management, auto-submit (Phase 5A)
+│   │   │   │   │   │   └── quiz-taker.component.spec.ts
 │   │   │   │   │   ├── utils/
 │   │   │   │   │   │   ├── quiz-json-template.ts             # Quiz JSON template constant (all 6 types) (Phase 3D)
 │   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
@@ -266,7 +272,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │       └── progress-dashboard-page.component.spec.ts
 │   │   │   │   │
 │   │   │   │   │                         # --- Planned (not yet built) ---
-│   │   │   │   ├── quizzes/              # Phase 5A
+│   │   │   │   ├── quizzes/              # Phase 5A quiz-taking components live in courses/components/ (quiz-question, quiz-result-item, quiz-taker)
 │   │   │   │   ├── exams/                # Phase 5C-5D
 │   │   │   │   ├── comments/             # Phase 6
 │   │   │   │   ├── issues/               # Phase 7
@@ -687,24 +693,35 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 
 ### Phase 5: Quizzes & Exams
 
-#### 5A - Quiz Taking
-- [ ] Quiz start flow: check max_attempts, create quiz_attempt
-- [ ] 6 question type renderers:
-  - [ ] Single choice (radio buttons)
-  - [ ] Multiple choice (checkboxes)
-  - [ ] True/false (radio buttons)
-  - [ ] Fill in the blank (text input)
-  - [ ] Matching (drag-and-drop or dropdowns)
-  - [ ] Short answer (textarea)
-- [ ] Timer (countdown from time_limit, auto-submit on expire)
-- [ ] Question randomization (if quiz.randomize_questions)
-- [ ] Answer randomization (if quiz.randomize_answers)
-- [ ] Auto-grading on submit:
-  - [ ] Calculate score from quiz_attempt_answers vs correct answers
-  - [ ] Set quiz_attempts.score, quiz_attempts.passed
-  - [ ] If passed → auto-mark module progress as completed
-- [ ] Results display: score, pass/fail, questions got wrong, correct answers (if show_correct_answers)
-- [ ] **Tests:** QuizTakingComponent, each question type renderer
+#### 5A - Quiz Taking (Complete)
+- [x] Quiz start flow: check max_attempts, create quiz_attempt
+- [x] 6 question type renderers:
+  - [x] Single choice (radio buttons)
+  - [x] Multiple choice (checkboxes)
+  - [x] True/false (radio buttons)
+  - [x] Fill in the blank (text input)
+  - [x] Matching (dropdowns)
+  - [x] Short answer (textarea)
+- [x] Timer (countdown from time_limit, auto-submit on expire)
+- [x] Question randomization (if quiz.randomize_questions)
+- [x] Answer randomization (if quiz.randomize_answers)
+- [x] Auto-grading on submit:
+  - [x] Call `grade_quiz_attempt` RPC (server-side grading)
+  - [x] Fetch results via `get_quiz_results` RPC
+  - [x] If passed → auto-mark module progress as completed (via DB trigger)
+- [x] Results display: score, pass/fail, per-question results with correct answers (if show_correct_answers)
+- [x] 3 new components:
+  - [x] QuizQuestionComponent (presentational): renders 6 question types (single_choice, multiple_choice, true_false, fill_blank, short_answer, matching)
+  - [x] QuizResultItemComponent (presentational): per-question results after grading
+  - [x] QuizTakerComponent (smart-lite): 3-phase quiz flow (start → active → results), timer, answer management, auto-submit
+- [x] CourseService: 4 new methods — `loadQuizForTaking`, `startQuizAttempt`, `submitQuizAttempt`, `getQuizAttemptResults`
+- [x] Model types: `QuizForTaking`, `QuizQuestionForTaking`, `QuizQuestionOptionForTaking`, `QuizAttemptAnswer`, `QuizAttemptResult`, `QuizQuestionResult`
+- [x] ModuleItemComponent: added 'quiz' to LINKABLE_TYPES (clickable from course detail)
+- [x] ModuleViewerPageComponent: integrated QuizTakerComponent (onQuizCompleted is no-op to preserve results view)
+- [x] Mock factories: 5 new (quiz-taking types) + 4 new service mock methods
+- [x] Migration 00028: fix `protect_quiz_attempt_score` trigger conflict — `set_config('app.grading_in_progress')` bypass
+- [x] **Tests:** 47 new tests (17 QuizQuestion + 6 QuizResultItem + 16 QuizTaker + 8 CourseService quiz methods) — 620 total frontend tests, build OK
+- [x] **E2E verified:** 11 stories (QT-01 to QT-11), 10 pass + 1 partial (QT-04 timer colors). 3 bugs found+fixed (QT-BUG-01/02/03). PT-12 resolved.
 
 #### 5B - External Quiz Webhook
 - [ ] FastAPI endpoint: `POST /api/quiz-results/external`

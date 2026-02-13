@@ -12,6 +12,7 @@ import {
   QuizFormData, QuizContent, QuizQuestionType, QuizQuestionFormData,
   ExternalQuizFormData, ExternalQuizContent,
   EnrolledUser, UserProgressSummary, UserProgressRecord, MarkedByType,
+  QuizTakingData, QuizTakingQuestion, QuizAttempt, QuizGradeResult, QuizQuestionResult, QuizResults, QuizAnswerMap,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -455,6 +456,236 @@ export class CourseService {
       .eq('module_id', moduleId);
 
     if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to reset module progress'));
+  }
+
+  // --- Phase 5A: Quiz Taking methods ---
+
+  async loadQuizForTaking(moduleId: string): Promise<{ quiz: QuizTakingData; pastAttempts: QuizAttempt[] } | null> {
+    const client = this.#supabase.client;
+    const userId = this.#auth.currentUser()?.id;
+    if (!userId) return null;
+
+    // 1. Quiz metadata (from quizzes table — no answers here)
+    const { data: quiz, error: quizErr } = await client
+      .from('quizzes')
+      .select('id, title, description, time_limit, passing_score, max_attempts, show_correct_answers, randomize_questions, randomize_answers')
+      .eq('module_id', moduleId)
+      .maybeSingle();
+
+    if (quizErr || !quiz) return null;
+
+    // 2. Questions from SAFE view (no correct_answer)
+    const { data: questions, error: qErr } = await client
+      .from('quiz_questions_safe')
+      .select('id, question_text, question_type, points, sort_order')
+      .eq('quiz_id', quiz.id)
+      .order('sort_order');
+
+    if (qErr || !questions) return null;
+
+    // 3. Options from SAFE view (no is_correct) — batch query for all questions
+    const questionIds = questions.map((q: { id: string }) => q.id);
+    const { data: allOptions, error: oErr } = await client
+      .from('quiz_question_options_safe')
+      .select('id, question_id, option_text, sort_order')
+      .in('question_id', questionIds)
+      .order('sort_order');
+
+    if (oErr) return null;
+
+    // 4. For matching questions, fetch correct_answer to extract terms
+    const matchingQuestions = questions.filter((q: { question_type: string }) => q.question_type === 'matching');
+    let matchingTerms: Record<string, { left: string[]; right: string[] }> = {};
+    if (matchingQuestions.length > 0) {
+      const matchingIds = matchingQuestions.map((q: { id: string }) => q.id);
+      const { data: matchingData } = await client
+        .from('quiz_questions')
+        .select('id, correct_answer')
+        .in('id', matchingIds);
+
+      if (matchingData) {
+        for (const mq of matchingData) {
+          if (mq.correct_answer) {
+            try {
+              const pairs = JSON.parse(mq.correct_answer) as { left: string; right: string }[];
+              const left = pairs.map(p => p.left);
+              const right = [...pairs.map(p => p.right)];
+              // Shuffle right side using Fisher-Yates
+              for (let i = right.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [right[i], right[j]] = [right[j], right[i]];
+              }
+              matchingTerms[mq.id] = { left, right };
+            } catch { /* ignore parse errors */ }
+          }
+        }
+      }
+    }
+
+    // 5. Assemble questions with options
+    const optionsByQuestion = new Map<string, { id: string; option_text: string; sort_order: number }[]>();
+    for (const opt of (allOptions ?? [])) {
+      const list = optionsByQuestion.get(opt.question_id) ?? [];
+      list.push({ id: opt.id, option_text: opt.option_text, sort_order: opt.sort_order });
+      optionsByQuestion.set(opt.question_id, list);
+    }
+
+    let assembledQuestions: QuizTakingQuestion[] = questions.map((q: { id: string; question_text: string; question_type: QuizQuestionType; points: number; sort_order: number }) => ({
+      id: q.id,
+      question_text: q.question_text,
+      question_type: q.question_type,
+      points: q.points,
+      sort_order: q.sort_order,
+      options: optionsByQuestion.get(q.id) ?? [],
+      ...(matchingTerms[q.id] ? { matchingLeft: matchingTerms[q.id].left, matchingRight: matchingTerms[q.id].right } : {}),
+    }));
+
+    // 6. Randomize if enabled
+    if (quiz.randomize_questions) {
+      for (let i = assembledQuestions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [assembledQuestions[i], assembledQuestions[j]] = [assembledQuestions[j], assembledQuestions[i]];
+      }
+    }
+    if (quiz.randomize_answers) {
+      for (const q of assembledQuestions) {
+        for (let i = q.options.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+        }
+      }
+    }
+
+    // 7. Past attempts
+    const { data: pastAttempts } = await client
+      .from('quiz_attempts')
+      .select('id, quiz_id, attempt_number, started_at, submitted_at, score, passed')
+      .eq('quiz_id', quiz.id)
+      .eq('user_id', userId)
+      .order('attempt_number', { ascending: false });
+
+    return {
+      quiz: { ...quiz, questions: assembledQuestions } as QuizTakingData,
+      pastAttempts: (pastAttempts ?? []) as QuizAttempt[],
+    };
+  }
+
+  async startQuizAttempt(quizId: string): Promise<QuizAttempt> {
+    const userId = this.#auth.currentUser()?.id;
+    const tenantId = this.#auth.currentUser()?.claims?.tenant_id;
+    if (!userId || !tenantId) throw new Error('Not authenticated');
+
+    // Check for existing unsubmitted attempt
+    const { data: existing } = await this.#supabase.client
+      .from('quiz_attempts')
+      .select('id, quiz_id, attempt_number, started_at, submitted_at, score, passed')
+      .eq('quiz_id', quizId)
+      .eq('user_id', userId)
+      .is('submitted_at', null)
+      .maybeSingle();
+
+    if (existing) return existing as QuizAttempt;
+
+    // Count total attempts
+    const { count } = await this.#supabase.client
+      .from('quiz_attempts')
+      .select('id', { count: 'exact', head: true })
+      .eq('quiz_id', quizId)
+      .eq('user_id', userId);
+
+    const attemptNumber = (count ?? 0) + 1;
+
+    const { data, error } = await this.#supabase.client
+      .from('quiz_attempts')
+      .insert({
+        user_id: userId,
+        tenant_id: tenantId,
+        quiz_id: quizId,
+        attempt_number: attemptNumber,
+      })
+      .select('id, quiz_id, attempt_number, started_at, submitted_at, score, passed')
+      .single();
+
+    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to start quiz'));
+    return data as QuizAttempt;
+  }
+
+  async submitQuizAttempt(attemptId: string, answers: QuizAnswerMap): Promise<QuizResults> {
+    const client = this.#supabase.client;
+
+    // 1. Batch insert answers
+    const answerRows = Object.entries(answers).map(([questionId, userAnswer]) => ({
+      attempt_id: attemptId,
+      question_id: questionId,
+      user_answer: userAnswer || null,
+    }));
+
+    if (answerRows.length > 0) {
+      const { error: ansErr } = await client
+        .from('quiz_attempt_answers')
+        .insert(answerRows);
+      if (ansErr) throw new Error(this.#extractErrorMessage(ansErr, 'Failed to save answers'));
+    }
+
+    // 2. Mark as submitted
+    const { error: subErr } = await client
+      .from('quiz_attempts')
+      .update({ submitted_at: new Date().toISOString() })
+      .eq('id', attemptId);
+    if (subErr) throw new Error(this.#extractErrorMessage(subErr, 'Failed to submit quiz'));
+
+    // 3. Grade via RPC
+    const { data: gradeData, error: gradeErr } = await client
+      .rpc('grade_quiz_attempt', { p_attempt_id: attemptId });
+    if (gradeErr) throw new Error(this.#extractErrorMessage(gradeErr, 'Failed to grade quiz'));
+
+    const grade = gradeData as QuizGradeResult;
+
+    // 4. Get per-question results via RPC
+    const { data: resultRows, error: resErr } = await client
+      .rpc('get_quiz_results', { p_attempt_id: attemptId });
+    if (resErr) throw new Error(this.#extractErrorMessage(resErr, 'Failed to load results'));
+
+    const questions = (resultRows ?? []) as QuizQuestionResult[];
+
+    // 5. Fetch updated attempt
+    const { data: attempt } = await client
+      .from('quiz_attempts')
+      .select('id, quiz_id, attempt_number, started_at, submitted_at, score, passed')
+      .eq('id', attemptId)
+      .single();
+
+    return { attempt: attempt as QuizAttempt, grade, questions };
+  }
+
+  async getQuizAttemptResults(attemptId: string): Promise<QuizResults> {
+    const client = this.#supabase.client;
+
+    // Fetch attempt
+    const { data: attempt, error: aErr } = await client
+      .from('quiz_attempts')
+      .select('id, quiz_id, attempt_number, started_at, submitted_at, score, passed')
+      .eq('id', attemptId)
+      .single();
+    if (aErr) throw new Error(this.#extractErrorMessage(aErr, 'Failed to load attempt'));
+
+    // Get per-question results
+    const { data: resultRows, error: resErr } = await client
+      .rpc('get_quiz_results', { p_attempt_id: attemptId });
+    if (resErr) throw new Error(this.#extractErrorMessage(resErr, 'Failed to load results'));
+
+    const questions = (resultRows ?? []) as QuizQuestionResult[];
+    const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
+
+    const a = attempt as QuizAttempt;
+    const grade: QuizGradeResult = {
+      score: a.score ?? 0,
+      passed: a.passed ?? false,
+      earned_points: totalPoints > 0 ? Math.round(((a.score ?? 0) / 100) * totalPoints * 100) / 100 : 0,
+      total_points: totalPoints,
+    };
+
+    return { attempt: a, grade, questions };
   }
 
   // --- Phase 3A: Course CRUD methods ---

@@ -1801,4 +1801,240 @@ describe('CourseService', () => {
       await expect(service.adminResetModuleProgress('u1', 'mod-1')).rejects.toThrow('Cannot reset');
     });
   });
+
+  // --- Phase 5A: Quiz Taking methods ---
+
+  describe('loadQuizForTaking', () => {
+    it('should load quiz with safe questions and options', async () => {
+      // 1st: quizzes maybeSingle
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: {
+          id: 'quiz-1', title: 'Test Quiz', description: 'A quiz', time_limit: 600,
+          passing_score: 70, max_attempts: 3, show_correct_answers: true,
+          randomize_questions: false, randomize_answers: false,
+        },
+        error: null,
+      });
+
+      let thenCallCount = 0;
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) => {
+        thenCallCount++;
+        switch (thenCallCount) {
+          case 1: // quiz_questions_safe
+            return resolve({
+              data: [
+                { id: 'q1', question_text: 'What is 2+2?', question_type: 'single_choice', points: 10, sort_order: 0 },
+                { id: 'q2', question_text: 'True or false?', question_type: 'true_false', points: 5, sort_order: 1 },
+              ],
+              error: null,
+            });
+          case 2: // quiz_question_options_safe
+            return resolve({
+              data: [
+                { id: 'o1', question_id: 'q1', option_text: '3', sort_order: 0 },
+                { id: 'o2', question_id: 'q1', option_text: '4', sort_order: 1 },
+                { id: 'o3', question_id: 'q2', option_text: 'True', sort_order: 0 },
+                { id: 'o4', question_id: 'q2', option_text: 'False', sort_order: 1 },
+              ],
+              error: null,
+            });
+          case 3: // quiz_attempts (past attempts)
+            return resolve({ data: [], error: null });
+          default:
+            return resolve({ data: [], error: null });
+        }
+      });
+
+      const result = await service.loadQuizForTaking('mod-quiz');
+
+      expect(result).not.toBeNull();
+      expect(result!.quiz.id).toBe('quiz-1');
+      expect(result!.quiz.title).toBe('Test Quiz');
+      expect(result!.quiz.time_limit).toBe(600);
+      expect(result!.quiz.questions).toHaveLength(2);
+      expect(result!.quiz.questions[0].question_text).toBe('What is 2+2?');
+      expect(result!.quiz.questions[0].options).toHaveLength(2);
+      expect(result!.quiz.questions[1].question_text).toBe('True or false?');
+      expect(result!.quiz.questions[1].options).toHaveLength(2);
+      expect(result!.pastAttempts).toEqual([]);
+    });
+
+    it('should return null when quiz not found', async () => {
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      const result = await service.loadQuizForTaking('mod-no-quiz');
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when user not authenticated', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          CourseService,
+          { provide: SupabaseService, useValue: supabase },
+          { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
+          { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
+        ],
+      });
+      const unauthService = TestBed.inject(CourseService);
+
+      const result = await unauthService.loadQuizForTaking('mod-quiz');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('startQuizAttempt', () => {
+    it('should return existing unsubmitted attempt', async () => {
+      const existingAttempt = {
+        id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1,
+        started_at: '2026-02-10T10:00:00Z', submitted_at: null, score: null, passed: null,
+      };
+
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: existingAttempt,
+        error: null,
+      });
+
+      const result = await service.startQuizAttempt('quiz-1');
+
+      expect(result).toEqual(existingAttempt);
+      expect(supabase.client.from).toHaveBeenCalledWith('quiz_attempts');
+      expect(supabase._mockQueryBuilder.is).toHaveBeenCalledWith('submitted_at', null);
+    });
+
+    it('should create new attempt when none exists', async () => {
+      // 1st: maybeSingle returns null (no existing unsubmitted attempt)
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      // 2nd: count query resolves via then (select with head:true, count:'exact')
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: null; count: number }) => void) =>
+        resolve({ data: null, error: null, count: 2 }));
+
+      // 3rd: insert + select + single returns new attempt
+      const newAttempt = {
+        id: 'attempt-3', quiz_id: 'quiz-1', attempt_number: 3,
+        started_at: '2026-02-12T10:00:00Z', submitted_at: null, score: null, passed: null,
+      };
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: newAttempt,
+        error: null,
+      });
+
+      const result = await service.startQuizAttempt('quiz-1');
+
+      expect(result).toEqual(newAttempt);
+      expect(result.attempt_number).toBe(3);
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          user_id: 'test-user-id',
+          tenant_id: 'test-tenant-id',
+          quiz_id: 'quiz-1',
+          attempt_number: 3,
+        }),
+      );
+    });
+  });
+
+  describe('submitQuizAttempt', () => {
+    it('should submit answers, grade, and return results', async () => {
+      // 1st then: insert answers, 2nd then: update submitted_at
+      let thenCallCount = 0;
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) => {
+        thenCallCount++;
+        return resolve({ data: null, error: null });
+      });
+
+      // RPC calls: 1st = grade_quiz_attempt, 2nd = get_quiz_results
+      const gradeResult = { score: 80, passed: true, earned_points: 16, total_points: 20 };
+      const questionResults = [
+        { question_id: 'q1', question_text: 'What is 2+2?', question_type: 'single_choice', points: 10, user_answer: 'o2', is_correct: true, correct_answer: 'o2', earned_points: 10 },
+        { question_id: 'q2', question_text: 'True or false?', question_type: 'true_false', points: 10, user_answer: 'True', is_correct: false, correct_answer: 'False', earned_points: 0 },
+      ];
+      supabase.client.rpc = vi.fn()
+        .mockResolvedValueOnce({ data: gradeResult, error: null })
+        .mockResolvedValueOnce({ data: questionResults, error: null });
+
+      // single: fetch updated attempt
+      const updatedAttempt = {
+        id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1,
+        started_at: '2026-02-12T10:00:00Z', submitted_at: '2026-02-12T10:05:00Z',
+        score: 80, passed: true,
+      };
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: updatedAttempt,
+        error: null,
+      });
+
+      const answers = { q1: 'o2', q2: 'True' };
+      const result = await service.submitQuizAttempt('attempt-1', answers);
+
+      expect(result.attempt).toEqual(updatedAttempt);
+      expect(result.grade).toEqual(gradeResult);
+      expect(result.questions).toHaveLength(2);
+
+      // Verify answers were inserted
+      expect(supabase.client.from).toHaveBeenCalledWith('quiz_attempt_answers');
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith([
+        { attempt_id: 'attempt-1', question_id: 'q1', user_answer: 'o2' },
+        { attempt_id: 'attempt-1', question_id: 'q2', user_answer: 'True' },
+      ]);
+
+      // Verify RPC calls
+      expect(supabase.client.rpc).toHaveBeenCalledWith('grade_quiz_attempt', { p_attempt_id: 'attempt-1' });
+      expect(supabase.client.rpc).toHaveBeenCalledWith('get_quiz_results', { p_attempt_id: 'attempt-1' });
+    });
+
+  });
+
+  describe('getQuizAttemptResults', () => {
+    it('should fetch attempt and results via RPC', async () => {
+      // single: fetch attempt
+      const attempt = {
+        id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1,
+        started_at: '2026-02-12T10:00:00Z', submitted_at: '2026-02-12T10:05:00Z',
+        score: 85, passed: true,
+      };
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: attempt,
+        error: null,
+      });
+
+      // RPC: get_quiz_results
+      const questionResults = [
+        { question_id: 'q1', question_text: 'Q1', question_type: 'single_choice', points: 10, user_answer: 'o1', is_correct: true, correct_answer: 'o1', earned_points: 10 },
+        { question_id: 'q2', question_text: 'Q2', question_type: 'true_false', points: 10, user_answer: 'False', is_correct: false, correct_answer: 'True', earned_points: 0 },
+      ];
+      supabase.client.rpc = vi.fn().mockResolvedValueOnce({
+        data: questionResults,
+        error: null,
+      });
+
+      const result = await service.getQuizAttemptResults('attempt-1');
+
+      expect(result.attempt).toEqual(attempt);
+      expect(result.questions).toHaveLength(2);
+      // Grade is computed from attempt.score and question points
+      expect(result.grade.score).toBe(85);
+      expect(result.grade.passed).toBe(true);
+      expect(result.grade.total_points).toBe(20);
+      expect(supabase.client.rpc).toHaveBeenCalledWith('get_quiz_results', { p_attempt_id: 'attempt-1' });
+    });
+
+    it('should throw on attempt fetch error', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'Attempt not found' },
+      });
+
+      await expect(service.getQuizAttemptResults('bad-attempt')).rejects.toThrow('Attempt not found');
+    });
+  });
 });

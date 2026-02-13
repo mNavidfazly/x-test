@@ -41,13 +41,13 @@ describe('ModuleItemComponent', () => {
     expect(link).toBeTruthy();
   });
 
-  it('should show "Coming soon" for quiz modules (no link)', async () => {
+  it('should render as link for quiz type', async () => {
     await renderItem({
       module: { id: 'm4', title: 'Knowledge Check', module_type: 'quiz', sort_order: 0 },
     });
 
-    expect(screen.getByText('Coming soon')).toBeTruthy();
-    expect(document.querySelector('a')).toBeNull();
+    const link = document.querySelector('a[href="/courses/c1/modules/m4"]');
+    expect(link).toBeTruthy();
   });
 
   it('should show "Coming soon" for exam modules (no link)', async () => {

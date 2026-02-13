@@ -15,6 +15,7 @@ import { PdfViewerComponent } from '../components/pdf-viewer.component';
 import { MarkdownViewerComponent } from '../components/markdown-viewer.component';
 import { ModuleFilesListComponent } from '../components/module-files-list.component';
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
+import { QuizTakerComponent } from '../components/quiz-taker.component';
 
 function createMockBunnyUploadService() {
   return {
@@ -55,7 +56,7 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
@@ -134,14 +135,16 @@ describe('ModuleViewerPageComponent', () => {
     expect(screen.getByText('Mark as complete')).toBeTruthy();
   });
 
-  it('should show coming soon for quiz module', async () => {
+  it('should render quiz taker for quiz module', async () => {
     const viewer = createMockModuleViewerData({
       module: { id: 'mod-1', title: 'Quiz Module', description: null, module_type: 'quiz', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
       content: { type: 'quiz', data: null },
     });
     await renderPage({ viewer });
 
-    expect(screen.getByText('Coming soon')).toBeTruthy();
+    expect(screen.getByText('Quiz Module')).toBeTruthy();
+    expect(document.querySelector('app-quiz-taker')).toBeTruthy();
+    expect(screen.queryByText('Coming soon')).toBeNull();
   });
 
   it('should show navigation buttons', async () => {
@@ -217,6 +220,23 @@ describe('ModuleViewerPageComponent', () => {
 
     expect(mockCourseService.loadModuleViewer).toHaveBeenCalledWith('course-1', 'mod-2');
     expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(2);
+  });
+
+  it('should NOT reload module viewer on quiz completion (preserves results view)', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Quiz', description: null, module_type: 'quiz', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'quiz', data: null },
+    });
+    const { fixture } = await renderPage({ viewer });
+
+    // Initial load from effect
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(1);
+
+    // onQuizCompleted is now a no-op — reloading destroys the quiz-taker
+    fixture.componentInstance.onQuizCompleted();
+
+    // Should NOT reload (would destroy quiz results)
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(1);
   });
 
   // --- Enrollment gating tests ---
