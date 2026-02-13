@@ -67,9 +67,9 @@ import { Comment, CommentReply } from '../../../core/models/comment.model';
               <!-- Comment header -->
               <div class="flex items-center gap-2 mb-2">
                 <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-700 text-xs font-semibold flex items-center justify-center shrink-0">
-                  {{ getInitials(comment.author.full_name ?? comment.author.email) }}
+                  {{ getInitials(comment.author?.full_name ?? comment.author?.email ?? '?') }}
                 </div>
-                <span class="text-sm font-semibold text-slate-900">{{ comment.author.full_name ?? comment.author.email }}</span>
+                <span class="text-sm font-semibold text-slate-900">{{ comment.author?.full_name ?? comment.author?.email ?? 'Unknown' }}</span>
                 @if (comment.badge_type === 'expert') {
                   <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 text-xs font-semibold">
                     <lucide-icon [img]="icons.GraduationCap" [size]="12"></lucide-icon>
@@ -128,9 +128,9 @@ import { Comment, CommentReply } from '../../../core/models/comment.model';
                 <div class="ml-8 mt-3 border-l-2 border-slate-200 pl-4">
                   <div class="flex items-center gap-2 mb-1">
                     <div class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center shrink-0">
-                      {{ getInitials(reply.author.full_name ?? reply.author.email) }}
+                      {{ getInitials(reply.author?.full_name ?? reply.author?.email ?? '?') }}
                     </div>
-                    <span class="text-sm font-semibold text-slate-900">{{ reply.author.full_name ?? reply.author.email }}</span>
+                    <span class="text-sm font-semibold text-slate-900">{{ reply.author?.full_name ?? reply.author?.email ?? 'Unknown' }}</span>
                     @if (reply.badge_type === 'expert') {
                       <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 text-xs font-semibold">
                         <lucide-icon [img]="icons.GraduationCap" [size]="12"></lucide-icon>

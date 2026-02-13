@@ -38,11 +38,13 @@ export class CommentService {
 
       if (error) throw error;
 
+      const fallbackAuthor = { full_name: null, email: 'Unknown user' };
       const comments = (data ?? []).map((c: any) => ({
         ...c,
+        author: c.author ?? fallbackAuthor,
         replies: (c.comment_replies ?? []).sort(
           (a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
-        ),
+        ).map((r: any) => ({ ...r, author: r.author ?? fallbackAuthor })),
       })) as Comment[];
 
       this.#comments.set(comments);

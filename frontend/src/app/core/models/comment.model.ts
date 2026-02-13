@@ -14,7 +14,7 @@ export interface CommentReply {
   badge_type: BadgeType | null;
   created_at: string;
   updated_at: string;
-  author: CommentAuthor;
+  author: CommentAuthor | null;
 }
 
 export interface Comment {
@@ -26,6 +26,6 @@ export interface Comment {
   badge_type: BadgeType | null;
   created_at: string;
   updated_at: string;
-  author: CommentAuthor;
+  author: CommentAuthor | null;
   replies: CommentReply[];
 }
