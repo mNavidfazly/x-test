@@ -84,7 +84,7 @@ All test users use password: `TestUser123!`
 | PT-10 | Significant Update Resets Completed Progress | Platform Admin | ✅ | 2026-02-12 |
 | PT-11 | TA Cross-Tenant Progress Isolation | Tenant Admin | ✅ | 2026-02-12 |
 | PT-12 | Auto-Mark on Quiz Pass (Deferred) | Learner | ✅ (via QT-08) | 2026-02-13 |
-| PT-13 | Auto-Mark on Exam Grade (Deferred) | Learner + PA | ⏳ | — |
+| PT-13 | Auto-Mark on Exam Grade (Deferred) | Learner + PA | ✅ (via EG-07) | 2026-02-13 |
 
 ---
 
@@ -589,15 +589,15 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ DEFERRED |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ PASS (via EG-07) |
+| **Tester** | Claude Code (Playwright MCP) |
 
 **Purpose**: Verify that when an admin grades an exam submission with a passing score, the `auto_mark_exam_completed` trigger automatically marks the exam module as completed.
 
 **Covers**: `auto_mark_exam_completed()` SECURITY DEFINER trigger on `exam_submissions`, `on_exam_passed_auto_mark` trigger
 
-**Blocked By**: Phase 5B (Exam Submission + Grading UI) — no frontend UI for exam grading yet
+**Resolved By**: Phase 5D Exam Grading — tested via EG-07 (Exam Grading User Stories). Lecturer graded submission with passing score (85 >= 70), learner saw "Passed" badge and score on module viewer page.
 
 **Expected Flow**:
 1. Learner submits an exam
@@ -675,6 +675,7 @@ ON CONFLICT DO NOTHING;
 |------|--------|-----------------|------|------|-------|
 | 2026-02-12 | Claude Code (Playwright MCP) | PT-01 to PT-11 | 11 | 0 | All 11 testable stories pass. 0 bugs found. PT-12/PT-13 deferred (Phase 5A/5B). |
 | 2026-02-13 | Claude Code (Playwright MCP) | PT-12 (via QT-08) | 1 | 0 | PT-12 tested via Quiz Taking QT-08: `auto_mark_quiz_completed` trigger verified. Required migration 00028 to fix `protect_quiz_attempt_score` blocking the grading UPDATE. PT-13 still deferred (Phase 5B). |
+| 2026-02-13 | Claude Code (Playwright MCP) | PT-13 (via EG-07) | 1 | 0 | PT-13 tested via Exam Grading EG-07: `auto_mark_exam_completed` trigger verified. Lecturer graded with passing score 85 >= 70, learner confirmed Passed badge + score on module viewer. All 13 PT stories now complete. |
 
 ---
 

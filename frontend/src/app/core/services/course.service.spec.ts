@@ -2092,4 +2092,146 @@ describe('CourseService', () => {
       await expect(service.getQuizAttemptResults('bad-attempt')).rejects.toThrow('Attempt not found');
     });
   });
+
+  describe('loadExamForTaking', () => {
+    it('should load exam with no submission', async () => {
+      supabase._mockQueryBuilder.maybeSingle
+        .mockResolvedValueOnce({
+          data: {
+            id: 'exam-1',
+            title: 'Final Exam',
+            description: 'A final exam',
+            duration_minutes: 60,
+            passing_score: 70,
+            max_file_size: 52428800,
+            allowed_file_types: ['application/pdf'],
+            exam_file_url: 'course-1/exam-file.pdf',
+          },
+          error: null,
+        })
+        .mockResolvedValueOnce({ data: null, error: null });
+
+      const result = await service.loadExamForTaking('mod-1');
+
+      expect(result).not.toBeNull();
+      expect(result!.exam.id).toBe('exam-1');
+      expect(result!.exam.title).toBe('Final Exam');
+      expect(result!.exam.exam_file_url).toContain('sign');
+      expect(result!.submission).toBeNull();
+    });
+
+    it('should load exam with existing graded submission', async () => {
+      supabase._mockQueryBuilder.maybeSingle
+        .mockResolvedValueOnce({
+          data: {
+            id: 'exam-1',
+            title: 'Final Exam',
+            description: null,
+            duration_minutes: 30,
+            passing_score: 60,
+            max_file_size: 52428800,
+            allowed_file_types: ['application/pdf'],
+            exam_file_url: null,
+          },
+          error: null,
+        })
+        .mockResolvedValueOnce({
+          data: {
+            id: 'sub-1',
+            exam_id: 'exam-1',
+            file_url: 'course-1/user-1/12345-submission.pdf',
+            submitted_at: '2026-02-13T10:30:00Z',
+            deadline: '2026-02-13T11:00:00Z',
+            score: 85,
+            feedback: 'Great work',
+            graded_by: 'grader-1',
+            graded_at: '2026-02-13T14:00:00Z',
+          },
+          error: null,
+        });
+
+      const result = await service.loadExamForTaking('mod-1');
+
+      expect(result).not.toBeNull();
+      expect(result!.exam.id).toBe('exam-1');
+      expect(result!.exam.exam_file_url).toBeNull();
+      expect(result!.submission).not.toBeNull();
+      expect(result!.submission!.id).toBe('sub-1');
+      expect(result!.submission!.score).toBe(85);
+      expect(result!.submission!.feedback).toBe('Great work');
+      expect(result!.submission!.file_url).toContain('sign');
+    });
+
+    it('should return null when exam not found', async () => {
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: null,
+        error: null,
+      });
+
+      const result = await service.loadExamForTaking('mod-unknown');
+      expect(result).toBeNull();
+    });
+
+    it('should return null when user not authenticated', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          CourseService,
+          { provide: SupabaseService, useValue: supabase },
+          { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
+          { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
+        ],
+      });
+      const unauthService = TestBed.inject(CourseService);
+
+      const result = await unauthService.loadExamForTaking('mod-1');
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('submitExamSubmission', () => {
+    it('should upload file, insert record, and return submission with signed URL', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: {
+          id: 'sub-new',
+          exam_id: 'exam-1',
+          file_url: 'course-1/test-user-id/12345-submission.pdf',
+          submitted_at: '2026-02-13T10:30:00Z',
+          deadline: '2026-02-13T11:30:00Z',
+          score: null,
+          feedback: null,
+          graded_by: null,
+          graded_at: null,
+        },
+        error: null,
+      });
+
+      const file = new File(['content'], 'submission.pdf', { type: 'application/pdf' });
+      const result = await service.submitExamSubmission(
+        'exam-1', 'course-1', file, '2026-02-13T10:30:00Z', 60,
+      );
+
+      expect(result.id).toBe('sub-new');
+      expect(result.exam_id).toBe('exam-1');
+      expect(result.file_url).toContain('sign');
+      expect(supabase.client.storage.from).toHaveBeenCalledWith('exam-submissions');
+      expect(supabase.client.from).toHaveBeenCalledWith('exam_submissions');
+    });
+
+    it('should cleanup uploaded file on DB insert error', async () => {
+      supabase._mockQueryBuilder.single.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'duplicate key value violates unique constraint' },
+      });
+
+      const file = new File(['content'], 'submission.pdf', { type: 'application/pdf' });
+
+      await expect(
+        service.submitExamSubmission('exam-1', 'course-1', file, '2026-02-13T10:30:00Z', 60),
+      ).rejects.toThrow();
+
+      const storageMock = supabase.client.storage.from('exam-submissions');
+      expect(storageMock.remove).toHaveBeenCalled();
+    });
+  });
 });

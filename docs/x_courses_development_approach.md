@@ -165,7 +165,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── api.service.ts     # FastAPI client (HttpClient wrapper with JWT headers, get/post/delete)
 │   │   │   │   │   ├── tenant.service.ts  # Resolve email → tenant + auth methods + idp_hint (caches per email)
 │   │   │   │   │   ├── profile.service.ts # Fetch profile (full_name, avatar_url) via effect()
-│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete, enrollment (enroll/unenroll/adminEnroll/loadEnrolled/lookupUser), progress admin (loadCourseProgressAdmin/adminMarkModuleComplete/adminResetModuleProgress), quiz taking (loadQuizForTaking/startQuizAttempt/submitQuizAttempt/getQuizAttemptResults)
+│   │   │   │   │   ├── course.service.ts  # ✅ loadCourseList, loadCourseDetail, loadModuleViewer, markModuleComplete, CRUD (course+lecture+module incl. video/pdf/exam/markdown/external_quiz), module_files CRUD, Bunny video cleanup on delete, enrollment (enroll/unenroll/adminEnroll/loadEnrolled/lookupUser), progress admin (loadCourseProgressAdmin/adminMarkModuleComplete/adminResetModuleProgress), quiz taking (loadQuizForTaking/startQuizAttempt/submitQuizAttempt/getQuizAttemptResults), exam taking (loadExamForTaking/submitExamSubmission)
 │   │   │   │   │   ├── bunny-upload.service.ts  # ✅ BunnyUploadService (TUS upload via tus-js-client, progress signals, pollStatus, deleteVideo)
 │   │   │   │   │   ├── progress.service.ts       # ✅ ProgressService (4 parallel queries + client-side aggregation, sendReminders via ApiService)
 │   │   │   │   │   ├── progress.service.spec.ts
@@ -200,7 +200,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C + 5A complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C + 5A + 5C complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -210,7 +210,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── course-form-page.component.spec.ts
 │   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector (6 types), video/pdf/exam/markdown/quiz/external_quiz forms + module files editor + significant update checkbox (Phase 3C-4B)
 │   │   │   │   │   │   ├── module-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz/quiz viewer, prev/next nav, mark-complete (gated by enrollment), quiz taker integration
+│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz/quiz/exam viewer, prev/next nav, mark-complete (gated by enrollment), quiz taker + exam taker integration
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
 │   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
@@ -260,7 +260,9 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── quiz-result-item.component.ts       # Presentational: per-question results after grading (Phase 5A)
 │   │   │   │   │   │   ├── quiz-result-item.component.spec.ts
 │   │   │   │   │   │   ├── quiz-taker.component.ts             # Smart-lite: 3-phase quiz flow (start → active → results), timer, answer management, auto-submit (Phase 5A)
-│   │   │   │   │   │   └── quiz-taker.component.spec.ts
+│   │   │   │   │   │   ├── quiz-taker.component.spec.ts
+│   │   │   │   │   │   ├── exam-taker.component.ts             # Smart-lite: 3-phase exam flow (info → active → submitted), timer (informational), file upload, grading status (Phase 5C)
+│   │   │   │   │   │   └── exam-taker.component.spec.ts
 │   │   │   │   │   ├── utils/
 │   │   │   │   │   │   ├── quiz-json-template.ts             # Quiz JSON template constant (all 6 types) (Phase 3D)
 │   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
@@ -735,26 +737,37 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] **Tests:** 8 pytest endpoint tests — 77 total backend tests pass
 
 #### 5C - Exam Flow
-- [ ] Exam module display: title, description, duration, file types, passing score
-- [ ] "Start Exam" button → download exam file (exam_file_url) + start countdown timer
-- [ ] Timer: deadline = now + duration_minutes
-- [ ] Upload submission: file validation (type, size), store in exam-submissions bucket
-- [ ] Insert exam_submissions record (file_url, deadline, user_id, tenant_id, course_id, exam_id)
-- [ ] Deadline enforcement: reject uploads after deadline
-- [ ] UNIQUE constraint on (user_id, exam_id) — single submission only
-- [ ] **Tests:** ExamModuleComponent
+- [x] ExamTakerComponent: 3-phase (info → active → submitted), ~200 lines inline template
+- [x] Info phase: exam metadata grid (duration, passing score, file types, max size) + "Start Exam" button
+- [x] Active phase: countdown timer (teal→amber→rose, informational — does NOT auto-submit or block), download exam file link, FileUploadComponent for submission, 2-step submit confirmation
+- [x] Submitted phase: submission details (on-time/late badge), grading status (awaiting/passed/failed), feedback display
+- [x] Timer persistence: localStorage `exam_start_{examId}` survives page refresh, cleared on submit
+- [x] CourseService: `#getSignedUrlFromBucket` (generalized signed URL helper), `loadExamForTaking` (exam + submission query, dual-bucket signed URLs), `submitExamSubmission` (upload + INSERT + cleanup on error)
+- [x] ExamContent vs ExamTakingData: ExamContent omits `id` (admin viewer), ExamTakingData includes `id` (needed for FK)
+- [x] UNIQUE violation handling: catches duplicate key error → "You have already submitted this exam"
+- [x] Module viewer page: `@case ('exam')` + `onExamCompleted()` no-op (same as quiz pattern)
+- [x] Module item: added `'exam'` to LINKABLE_TYPES (clickable from course detail)
+- [x] Mock factories: `createMockExamTakingData()`, `createMockExamSubmission()` + 2 new service mock methods
+- [x] **Tests:** 27 new tests (18 ExamTaker + 6 CourseService + 3 viewer page) — 648 total frontend tests, build OK
 
 #### 5D - Exam Grading
-- [ ] Lecturer grading page (cross-tenant for assigned courses where can_grade = true)
-- [ ] Download student submission
-- [ ] Enter score + written feedback
-- [ ] Update exam_submissions (score, feedback, graded_by, graded_at)
-- [ ] Auto-notification via trigger (notify_exam_graded)
-- [ ] If passed → auto-mark module progress as completed
-- [ ] Exam reset (delete submission → student can retake):
-  - [ ] Lecturer (for assigned courses with can_grade)
-  - [ ] Platform Admin (any)
-- [ ] **Tests:** ExamGradingComponent
+- [x] ExamGradingService (separate from CourseService): `loadGradingData`, `gradeSubmission`, `resetSubmission`
+- [x] Queries `exam_submissions` with nested select joins (profiles, exams, courses), resolves signed URLs in parallel
+- [x] Lecturer grading page (cross-tenant for assigned courses where can_grade = true)
+- [x] Download student submission (signed URL link)
+- [x] Enter score (0-100) + written feedback
+- [x] Update exam_submissions (score, feedback, graded_by, graded_at)
+- [x] Auto-notification via trigger (notify_exam_graded) — fires on first grade only (NULL→non-NULL)
+- [x] If passed → auto-mark module progress as completed (auto_mark_exam_completed trigger)
+- [x] Exam reset (delete submission → student can retake + fire-and-forget storage cleanup):
+  - [x] Lecturer (for assigned courses with can_grade)
+  - [x] Platform Admin (any)
+- [x] Re-grading allowed — updating an already-graded score permitted (no re-notification)
+- [x] ExamGradingPageComponent: filter bar (search + course + status), 4 summary cards, expandable table rows with inline grading form, 2-step reset confirmation
+- [x] Route: `teaching/grading` with roleGuard('lecturer', 'platform_admin') — BEFORE `teaching/:path` catch-all
+- [x] Sidebar: Teaching section roles updated to `['lecturer', 'platform_admin']`
+- [x] Mock factories: `createMockGradingSubmission()`, `createMockExamGradingService()`
+- [x] **Tests:** 31 new tests (11 service + 20 component) — 679 total frontend tests, build OK
 
 #### 5E - Quiz & Exam RLS Tests
 - [ ] Quiz attempts: own insert/read, tenant admin read, lecturer read (cross-tenant via quiz → module → course)

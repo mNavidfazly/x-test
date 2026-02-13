@@ -30,7 +30,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: 'Teaching',
-    roles: ['lecturer'],
+    roles: ['lecturer', 'platform_admin'],
     items: [
       { label: 'My Courses', route: '/teaching/courses', icon: GraduationCap },
       { label: 'Questions Board', route: '/teaching/questions', icon: MessageSquare },

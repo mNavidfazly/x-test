@@ -13,6 +13,7 @@ import {
   ExternalQuizFormData, ExternalQuizContent,
   EnrolledUser, UserProgressSummary, UserProgressRecord, MarkedByType,
   QuizTakingData, QuizTakingQuestion, QuizAttempt, QuizGradeResult, QuizQuestionResult, QuizResults, QuizAnswerMap,
+  ExamTakingData, ExamSubmission,
 } from '../models/course.model';
 
 @Injectable({ providedIn: 'root' })
@@ -682,6 +683,88 @@ export class CourseService {
     return { attempt: a, grade, questions };
   }
 
+  // --- Phase 5C: Exam Taking methods ---
+
+  async loadExamForTaking(moduleId: string): Promise<{ exam: ExamTakingData; submission: ExamSubmission | null } | null> {
+    const client = this.#supabase.client;
+    const userId = this.#auth.currentUser()?.id;
+    if (!userId) return null;
+
+    const { data: exam, error: examErr } = await client
+      .from('exams')
+      .select('id, title, description, duration_minutes, passing_score, max_file_size, allowed_file_types, exam_file_url')
+      .eq('module_id', moduleId)
+      .maybeSingle();
+
+    if (examErr || !exam) return null;
+
+    if (exam.exam_file_url) {
+      exam.exam_file_url = await this.#getSignedUrl(exam.exam_file_url as string);
+    }
+
+    const { data: sub, error: subErr } = await client
+      .from('exam_submissions')
+      .select('id, exam_id, file_url, submitted_at, deadline, score, feedback, graded_by, graded_at')
+      .eq('exam_id', exam.id)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (subErr) return null;
+
+    let submission: ExamSubmission | null = null;
+    if (sub) {
+      const signedUrl = await this.#getSignedUrlFromBucket('exam-submissions', sub.file_url as string);
+      submission = { ...sub, file_url: signedUrl ?? '' } as ExamSubmission;
+    }
+
+    return { exam: exam as ExamTakingData, submission };
+  }
+
+  async submitExamSubmission(
+    examId: string,
+    courseId: string,
+    file: File,
+    startedAt: string,
+    durationMinutes: number,
+  ): Promise<ExamSubmission> {
+    const userId = this.#auth.currentUser()?.id;
+    const tenantId = (this.#auth.currentUser() as { id: string; claims?: { tenant_id?: string } })
+      ?.claims?.tenant_id;
+    if (!userId || !tenantId) throw new Error('Not authenticated');
+
+    const timestamp = Date.now();
+    const storagePath = `${courseId}/${userId}/${timestamp}-${file.name}`;
+
+    const { error: uploadErr } = await this.#supabase.client.storage
+      .from('exam-submissions')
+      .upload(storagePath, file);
+
+    if (uploadErr) throw new Error(`Failed to upload submission: ${uploadErr.message}`);
+
+    const deadline = new Date(new Date(startedAt).getTime() + durationMinutes * 60 * 1000).toISOString();
+
+    const { data, error } = await this.#supabase.client
+      .from('exam_submissions')
+      .insert({
+        user_id: userId,
+        tenant_id: tenantId,
+        exam_id: examId,
+        course_id: courseId,
+        file_url: storagePath,
+        deadline,
+      })
+      .select('id, exam_id, file_url, submitted_at, deadline, score, feedback, graded_by, graded_at')
+      .single();
+
+    if (error) {
+      await this.#supabase.client.storage.from('exam-submissions').remove([storagePath]);
+      throw new Error(this.#extractErrorMessage(error, 'Failed to submit exam'));
+    }
+
+    const signedUrl = await this.#getSignedUrlFromBucket('exam-submissions', storagePath);
+    return { ...data, file_url: signedUrl ?? '' } as ExamSubmission;
+  }
+
   // --- Phase 3A: Course CRUD methods ---
 
   async createCourse(data: CourseFormData): Promise<{ id: string }> {
@@ -1332,18 +1415,19 @@ export class CourseService {
     }
   }
 
-  // Generate a signed URL from a storage path. The course-files bucket is private,
-  // so we create time-limited signed URLs (1 hour) for viewing/downloading.
-  // Returns null if the file no longer exists in storage (graceful degradation).
-  async #getSignedUrl(storagePath: string): Promise<string | null> {
+  async #getSignedUrlFromBucket(bucket: string, storagePath: string): Promise<string | null> {
     const { data, error } = await this.#supabase.client.storage
-      .from('course-files')
+      .from(bucket)
       .createSignedUrl(storagePath, 3600);
     if (error) {
-      console.warn(`Signed URL failed for "${storagePath}": ${error.message}`);
+      console.warn(`Signed URL failed for "${bucket}/${storagePath}": ${error.message}`);
       return null;
     }
     return data.signedUrl;
+  }
+
+  async #getSignedUrl(storagePath: string): Promise<string | null> {
+    return this.#getSignedUrlFromBucket('course-files', storagePath);
   }
 
   #buildNavigation(moduleId: string): ModuleViewerData['navigation'] {

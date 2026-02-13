@@ -118,6 +118,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'teaching/grading',
+        canActivate: [roleGuard('lecturer', 'platform_admin')],
+        loadComponent: () =>
+          import('./features/teaching/pages/exam-grading-page.component').then(
+            (m) => m.ExamGradingPageComponent,
+          ),
+      },
+      {
         path: 'teaching/:path',
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(

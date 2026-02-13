@@ -123,6 +123,62 @@ export interface ExamContent {
   exam_file_url: string | null;
 }
 
+export interface ExamTakingData {
+  id: string;
+  title: string;
+  description: string | null;
+  duration_minutes: number;
+  passing_score: number;
+  max_file_size: number;
+  allowed_file_types: string[];
+  exam_file_url: string | null;
+}
+
+export interface ExamSubmission {
+  id: string;
+  exam_id: string;
+  file_url: string;
+  submitted_at: string;
+  deadline: string;
+  score: number | null;
+  feedback: string | null;
+  graded_by: string | null;
+  graded_at: string | null;
+}
+
+// Phase 5D: Exam Grading types
+
+export interface GradingSubmission {
+  id: string;
+  user_id: string;
+  tenant_id: string;
+  exam_id: string;
+  course_id: string;
+  file_url: string;
+  file_storage_path: string;
+  submitted_at: string;
+  deadline: string;
+  score: number | null;
+  feedback: string | null;
+  graded_by: string | null;
+  graded_at: string | null;
+  learner_email: string;
+  learner_name: string | null;
+  course_title: string;
+  exam_title: string;
+  passing_score: number;
+}
+
+export interface GradingCourseSummary {
+  id: string;
+  title: string;
+}
+
+export interface GradeExamPayload {
+  score: number;
+  feedback: string;
+}
+
 export interface ExternalQuizContent {
   external_quiz_id: string;
   external_quiz_url: string;

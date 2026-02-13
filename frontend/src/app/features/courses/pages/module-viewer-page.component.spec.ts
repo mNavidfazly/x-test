@@ -16,6 +16,7 @@ import { MarkdownViewerComponent } from '../components/markdown-viewer.component
 import { ModuleFilesListComponent } from '../components/module-files-list.component';
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
 import { QuizTakerComponent } from '../components/quiz-taker.component';
+import { ExamTakerComponent } from '../components/exam-taker.component';
 
 function createMockBunnyUploadService() {
   return {
@@ -56,7 +57,7 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
@@ -253,5 +254,43 @@ describe('ModuleViewerPageComponent', () => {
     await renderPage({ viewer, isEnrolled: true });
 
     expect(screen.getByText('Mark as complete')).toBeTruthy();
+  });
+
+  // --- Exam integration tests ---
+
+  it('should render exam taker for exam module', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Exam Module', description: null, module_type: 'exam', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'exam', data: { title: 'Test Exam', description: null, duration_minutes: 60, passing_score: 70, max_file_size: 52428800, allowed_file_types: ['application/pdf'], exam_file_url: null } },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.getByText('Exam Module')).toBeTruthy();
+    expect(document.querySelector('app-exam-taker')).toBeTruthy();
+    expect(screen.queryByText('Coming soon')).toBeNull();
+  });
+
+  it('should hide mark complete for exam modules', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Exam', description: null, module_type: 'exam', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'exam', data: { title: 'Test Exam', description: null, duration_minutes: 60, passing_score: 70, max_file_size: 52428800, allowed_file_types: ['application/pdf'], exam_file_url: null } },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.queryByText('Mark as complete')).toBeNull();
+  });
+
+  it('should NOT reload module viewer on exam completion', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Exam', description: null, module_type: 'exam', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'exam', data: { title: 'Test Exam', description: null, duration_minutes: 60, passing_score: 70, max_file_size: 52428800, allowed_file_types: ['application/pdf'], exam_file_url: null } },
+    });
+    const { fixture } = await renderPage({ viewer });
+
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(1);
+
+    fixture.componentInstance.onExamCompleted();
+
+    expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(1);
   });
 });

@@ -50,13 +50,14 @@ describe('ModuleItemComponent', () => {
     expect(link).toBeTruthy();
   });
 
-  it('should show "Coming soon" for exam modules (no link)', async () => {
+  it('should render as link for exam type', async () => {
     await renderItem({
       module: { id: 'm5', title: 'Final Exam', module_type: 'exam', sort_order: 0 },
     });
 
-    expect(screen.getByText('Coming soon')).toBeTruthy();
-    expect(document.querySelector('a')).toBeNull();
+    const link = document.querySelector('a[href="/courses/c1/modules/m5"]');
+    expect(link).toBeTruthy();
+    expect(screen.queryByText('Coming soon')).toBeNull();
   });
 
   it('should show "Not started" when no progress', async () => {

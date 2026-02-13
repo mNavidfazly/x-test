@@ -10,6 +10,8 @@ import {
   EnrolledUser, UserProgressSummary,
   DashboardUserProgress, DashboardCourseSummary,
   QuizTakingData, QuizAttempt, QuizGradeResult, QuizQuestionResult, QuizResults,
+  ExamTakingData, ExamSubmission,
+  GradingSubmission, GradingCourseSummary,
 } from '../core/models/course.model';
 import { of } from 'rxjs';
 
@@ -71,6 +73,8 @@ export function createMockCourseService(options?: {
     startQuizAttempt: vi.fn().mockResolvedValue({ id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1, started_at: new Date().toISOString(), submitted_at: null, score: null, passed: null }),
     submitQuizAttempt: vi.fn().mockResolvedValue({ attempt: { id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1, started_at: new Date().toISOString(), submitted_at: new Date().toISOString(), score: 80, passed: true }, grade: { score: 80, passed: true, earned_points: 4, total_points: 5 }, questions: [] }),
     getQuizAttemptResults: vi.fn().mockResolvedValue({ attempt: { id: 'attempt-1', quiz_id: 'quiz-1', attempt_number: 1, started_at: new Date().toISOString(), submitted_at: new Date().toISOString(), score: 80, passed: true }, grade: { score: 80, passed: true, earned_points: 4, total_points: 5 }, questions: [] }),
+    loadExamForTaking: vi.fn().mockResolvedValue(null),
+    submitExamSubmission: vi.fn().mockResolvedValue(createMockExamSubmission()),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),
@@ -524,3 +528,88 @@ export function createMockQuizResults(overrides?: Partial<QuizResults>): QuizRes
     ...overrides,
   };
 }
+
+// Phase 5C: Exam Taking factories
+
+export function createMockExamTakingData(overrides?: Partial<ExamTakingData>): ExamTakingData {
+  return {
+    id: 'exam-1',
+    title: 'Test Exam',
+    description: 'A test exam for learners',
+    duration_minutes: 60,
+    passing_score: 70,
+    max_file_size: 52428800,
+    allowed_file_types: ['application/pdf', 'application/zip'],
+    exam_file_url: 'https://storage.supabase.co/signed-exam-file.pdf',
+    ...overrides,
+  };
+}
+
+export function createMockExamSubmission(overrides?: Partial<ExamSubmission>): ExamSubmission {
+  return {
+    id: 'sub-1',
+    exam_id: 'exam-1',
+    file_url: 'https://storage.supabase.co/signed-submission.pdf',
+    submitted_at: '2026-02-13T10:30:00Z',
+    deadline: '2026-02-13T11:30:00Z',
+    score: null,
+    feedback: null,
+    graded_by: null,
+    graded_at: null,
+    ...overrides,
+  };
+}
+
+// Phase 5D: Exam Grading factories
+
+export function createMockGradingSubmission(overrides?: Partial<GradingSubmission>): GradingSubmission {
+  return {
+    id: 'sub-1',
+    user_id: 'learner-1',
+    tenant_id: 'tenant-1',
+    exam_id: 'exam-1',
+    course_id: 'course-1',
+    file_url: 'https://storage.supabase.co/signed-submission.pdf',
+    file_storage_path: 'course-1/learner-1/1707840600000-submission.pdf',
+    submitted_at: '2026-02-13T10:30:00Z',
+    deadline: '2026-02-13T11:30:00Z',
+    score: null,
+    feedback: null,
+    graded_by: null,
+    graded_at: null,
+    learner_email: 'learner@test.com',
+    learner_name: 'Test Learner',
+    course_title: 'Test Course',
+    exam_title: 'Final Exam',
+    passing_score: 70,
+    ...overrides,
+  };
+}
+
+export function createMockExamGradingService(options?: {
+  submissions?: GradingSubmission[];
+  courses?: GradingCourseSummary[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const submissions = signal<GradingSubmission[]>(options?.submissions ?? []);
+  const courses = signal<GradingCourseSummary[]>(options?.courses ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    submissions: submissions.asReadonly(),
+    courses: courses.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadGradingData: vi.fn().mockResolvedValue(undefined),
+    gradeSubmission: vi.fn().mockResolvedValue(undefined),
+    resetSubmission: vi.fn().mockResolvedValue(undefined),
+    _setSubmissions: submissions.set.bind(submissions),
+    _setCourses: courses.set.bind(courses),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockExamGradingService = ReturnType<typeof createMockExamGradingService>;

@@ -12,7 +12,7 @@ const TYPE_ICONS: Record<string, LucideIconData> = {
   external_quiz: ExternalLink,
 };
 
-const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'quiz']);
+const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'quiz', 'exam']);
 
 @Component({
   selector: 'app-module-item',
