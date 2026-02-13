@@ -22,7 +22,8 @@ All test users use password: `TestUser123!`
 
 | # | Email | Role | Tenant | Used In |
 |---|-------|------|--------|---------|
-| 1 | `learner@calypso-commodities.com` | **Learner** | Calypso (master) | IR-01 through IR-08 |
+| 1 | `learner@calypso-commodities.com` | **Learner** | Calypso (master) | IR-01 through IR-07 |
+| 2 | `learner@calypsoclient.com` | **Learner** | Calypso Client | IR-08 (empty state + tenant isolation) |
 
 ## Status Legend
 
@@ -56,14 +57,14 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| IR-01 | Report an Issue from Module Viewer | Learner | ⏳ | — |
-| IR-02 | View My Issues Page | Learner | ⏳ | — |
-| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ⏳ | — |
-| IR-04 | Form Validation and Cancel | Learner | ⏳ | — |
-| IR-05 | Report Another Issue (Reset Flow) | Learner | ⏳ | — |
-| IR-06 | All Issue Type Labels Render Correctly | Learner | ⏳ | — |
-| IR-07 | Sidebar Navigation to My Issues | Learner | ⏳ | — |
-| IR-08 | Empty State on My Issues Page | Learner | ⏳ | — |
+| IR-01 | Report an Issue from Module Viewer | Learner | ✅ | 2026-02-13 |
+| IR-02 | View My Issues Page | Learner | ✅ | 2026-02-13 |
+| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ✅ | 2026-02-13 |
+| IR-04 | Form Validation and Cancel | Learner | ✅ | 2026-02-13 |
+| IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-13 |
+| IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-13 |
+| IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-13 |
+| IR-08 | Empty State on My Issues Page | Learner (Client) | ✅ | 2026-02-13 |
 
 ---
 
@@ -71,8 +72,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify the complete issue reporting flow: learner clicks "Report Issue" button on module viewer, selects an issue type, writes a description, submits, and sees the success confirmation. This is the core happy path.
@@ -113,8 +114,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify that after reporting an issue, the learner can navigate to the My Issues page (`/issues`) and see their reported issue with correct status badge, issue type, course/module info, and relative timestamp.
@@ -151,8 +152,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify that clicking an issue card expands to show full details (description, resolution info), and the "Go to module" link navigates to the correct module.
@@ -190,8 +191,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify that the report issue form enforces validation (both type and description required) and the cancel button closes the form without submitting.
@@ -229,8 +230,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify that after successfully reporting an issue, the "Report Another" button resets the form to allow submitting a new issue. Also verifies a second issue appears on the My Issues page.
@@ -268,8 +269,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify that all 4 issue types display with their correct human-readable labels on the My Issues page.
@@ -300,8 +301,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify that "My Issues" appears in the sidebar with the Flag icon, is visible to all roles, and navigates correctly to `/issues`.
@@ -333,8 +334,8 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
 | **Tester** | Claude |
 
 **Purpose**: Verify the empty state on the My Issues page when a user has no reported issues. This tests the zero-data experience.
@@ -365,7 +366,7 @@ All test users use password: `TestUser123!`
 
 | # | Bug | Severity | Fix |
 |---|-----|----------|-----|
-| — | (none yet) | — | — |
+| — | No bugs found | — | — |
 
 ---
 
@@ -405,7 +406,7 @@ LIMIT 10;
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| — | — | — | — | — | — |
+| 2026-02-13 | Claude (Playwright MCP) | IR-01 to IR-08 | 8 | 0 | All 8 stories passed. 0 bugs found. Tenant isolation confirmed via IR-08 (client learner sees empty state). |
 
 ---
 
