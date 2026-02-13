@@ -74,20 +74,20 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CM-01 | Post First Comment | Learner | ⏳ | — |
-| CM-02 | Expert Badge — Lecturer | Lecturer | ⏳ | — |
-| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ⏳ | — |
-| CM-04 | Reply to a Comment | Learner | ⏳ | — |
-| CM-05 | Edit Own Comment | Learner | ⏳ | — |
-| CM-06 | Delete Own Comment | Learner | ⏳ | — |
-| CM-07 | Tenant Admin Moderation | Tenant Admin | ⏳ | — |
-| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ⏳ | — |
-| CM-09 | Tenant Isolation | Learner (both tenants) | ⏳ | — |
-| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ⏳ | — |
-| CM-11 | Module Navigation Reloads Comments | Learner | ⏳ | — |
-| CM-12 | Edit and Delete Own Reply | Learner | ⏳ | — |
-| CM-13 | Permission Boundaries | Learner + CSM | ⏳ | — |
-| CM-14 | Calypso Badge — CSM | CSM | ⏳ | — |
+| CM-01 | Post First Comment | Learner | ✅ | 2026-02-13 |
+| CM-02 | Expert Badge — Lecturer | Lecturer | ✅ | 2026-02-13 |
+| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ✅ | 2026-02-13 |
+| CM-04 | Reply to a Comment | Learner | ✅ | 2026-02-13 |
+| CM-05 | Edit Own Comment | Learner | ✅ | 2026-02-13 |
+| CM-06 | Delete Own Comment | Learner | ✅ | 2026-02-13 |
+| CM-07 | Tenant Admin Moderation | Tenant Admin | ✅ | 2026-02-13 |
+| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ✅ | 2026-02-13 |
+| CM-09 | Tenant Isolation | Learner (both tenants) | ✅ | 2026-02-13 |
+| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ✅ | 2026-02-13 |
+| CM-11 | Module Navigation Reloads Comments | Learner | ✅ | 2026-02-13 |
+| CM-12 | Edit and Delete Own Reply | Learner | ✅ | 2026-02-13 |
+| CM-13 | Permission Boundaries | Learner + CSM | ✅ | 2026-02-13 |
+| CM-14 | Calypso Badge — CSM | CSM | ✅ | 2026-02-13 |
 
 ---
 
@@ -95,9 +95,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a learner can post a comment on a module, the empty state disappears, the comment renders with avatar initials, author name, "just now" timestamp, and the Discussion count updates.
 
@@ -140,9 +140,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that when a Lecturer posts a comment on an assigned course's module, the "Expert" badge (amber pill with GraduationCap icon) is automatically displayed. This badge is set server-side by the `set_comment_badge` trigger — the frontend does NOT control it.
 
@@ -179,9 +179,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that when a Platform Admin posts a comment, the "Calypso" badge (teal pill with Building2 icon) is automatically displayed. PA badge takes highest priority in the trigger.
 
@@ -216,9 +216,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a user can reply to an existing comment, the reply form appears when "Reply" is clicked, the reply is indented under the parent comment, and the reply has its own author/timestamp.
 
@@ -258,9 +258,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a user can edit their own comment via inline editing: click Edit, textarea appears with current body, modify text, Save updates the comment, Cancel discards changes.
 
@@ -297,9 +297,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a user can delete their own comment, the comment disappears from the list, and the Discussion count decreases. Also verifies that replies are cascade-deleted with the parent.
 
@@ -333,9 +333,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a Tenant Admin can delete another user's comment within the same tenant (moderation), but cannot edit it. Also verify TA cannot delete comments from other tenants.
 
@@ -385,9 +385,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a Platform Admin can see and delete comments from ANY tenant (cross-tenant moderation). PA uses `comments_select_platform_admin` (sees all) + `comments_delete_platform_admin` (can delete any).
 
@@ -425,9 +425,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that comments are tenant-isolated — a learner from one tenant CANNOT see comments posted by a learner from another tenant on the same module. This is the core security boundary for the comment system.
 
@@ -480,9 +480,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a Lecturer assigned to a course can see comments from ALL tenants on that course's modules. This is by design — lecturers need cross-tenant visibility to support all learners.
 
@@ -517,9 +517,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that when navigating between modules (Next/Previous buttons), the Discussion section reloads with the correct module's comments. Comments from module A should not appear on module B.
 
@@ -558,9 +558,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that a user can edit and delete their own replies. Edit shows inline textarea on the reply, Save updates it, Delete removes it. Also verify that Edit/Delete are NOT shown on other users' replies.
 
@@ -607,9 +607,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that users only see Edit/Delete buttons according to their permissions. Specifically: (1) Learner sees no Edit/Delete on others' comments, (2) CSM sees no Delete on others' comments, (3) No role sees Edit on others' comments (only own).
 
@@ -657,9 +657,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-13 (Run 2) |
+| **Status** | ✅ |
+| **Tester** | Claude |
 
 **Purpose**: Verify that when a CSM posts a comment, the "Calypso" badge is automatically displayed (same visual as PA badge, but triggered by `csm_tenant_assignments` lookup).
 
@@ -693,8 +693,59 @@ All test users use password: `TestUser123!`
 
 | # | Bug | Severity | Fix |
 |---|-----|----------|-----|
+| CM-BUG-01 | `TypeError: Cannot read properties of null (reading 'full_name')` when CSM views comments | P1 | Migration 00032 + defensive null-safe fallback |
 
-**0 bugs found** during E2E testing execution.
+### CM-BUG-01: Profile RLS Policy Missing — CSM Cannot Read Other Users' Profiles
+
+**Story**: CM-14 (Calypso Badge — CSM)
+
+**Description**: When CSM (`csm@calypso-commodities.com`) viewed a module's Discussion section, the app threw:
+
+```
+TypeError: Cannot read properties of null (reading 'full_name')
+```
+
+**Root Cause**: The Supabase query in `CommentService.loadComments()` includes a nested join:
+
+```typescript
+author:profiles!user_id(full_name, email)
+```
+
+This join returns `null` for other users' profiles because there was **no RLS policy allowing users to read profiles from their own tenant**. The existing RLS policies were:
+
+- `profiles_select_own` — only own profile
+- `profiles_select_platform_admin` — PA sees all profiles
+- `profiles_select_tenant_admin` — TA sees own tenant profiles
+
+CSM (and regular learners/lecturers) had no cross-user profile SELECT policy within the same tenant. When CSM tried to read a comment posted by another user (e.g., a learner), the nested `author` join returned `null`.
+
+**Fix**:
+
+1. **Migration 00032** added `profiles_select_tenant` policy:
+   ```sql
+   CREATE POLICY "profiles_select_tenant"
+   ON profiles FOR SELECT
+   USING (tenant_id = (auth.jwt() ->> 'tenant_id')::uuid);
+   ```
+   This allows any authenticated user to read profiles from their own tenant (needed for comment author display).
+
+2. **Defensive null-safe fallback** in `CommentService.loadComments()`:
+   ```typescript
+   author: {
+     full_name: item.author?.full_name ?? 'Unknown User',
+     email: item.author?.email ?? ''
+   }
+   ```
+   And in the template:
+   ```html
+   <div class="text-sm font-semibold text-slate-900">
+     {{ comment.author?.full_name ?? 'Unknown User' }}
+   </div>
+   ```
+
+**Severity**: P1 — Breaks comment display for all non-PA/TA roles. Critical security fix (RLS gap).
+
+**Prevention**: Always test new features with all 5 roles. CSM is the most commonly overlooked role in testing because it's the least used.
 
 ---
 
@@ -758,13 +809,20 @@ LIMIT 10;
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| — | — | — | — | — | — |
+| 2026-02-13 | Claude (Run 1) | 14/14 | 14 | 0 | 1 bug found+fixed (CM-BUG-01: profiles_select_tenant). Migration 00032 applied. |
+| 2026-02-13 | Claude (Run 2) | 14/14 | 14 | 0 | Clean re-run after bug fix. All stories pass. 0 new bugs. |
 
 ---
 
 ## Notes and Learnings from E2E Testing
 
-*(To be filled in after test execution)*
+- **Run 1**: CM-14 initially failed due to missing `profiles_select_tenant` RLS policy (CM-BUG-01). Fixed with migration 00032. All 14 stories passed after fix.
+- **Run 2**: Full clean re-run — deleted all comments, re-tested from scratch. All 14 stories passed with zero new issues.
+- **Tenant isolation verified**: Client tenant learner sees 0 comments when Calypso tenant has 4 comments on same module.
+- **Cross-tenant visibility**: Lecturer sees 5 comments (all tenants), PA sees 5 comments (all tenants). Client TA sees only 1 (own tenant).
+- **Badge triggers work correctly**: Learner=NULL, Lecturer=Expert (amber), CSM=Calypso (teal), PA=Calypso (teal).
+- **Permission boundaries correct**: Learner sees Edit+Delete only on own. CSM sees Edit+Delete only on own. Lecturer sees Edit+Delete only on own. TA sees Delete on same-tenant. PA sees Delete on all + Edit on own.
+- **Module navigation**: Comments reload correctly when navigating between modules via Next/Previous.
 
 ---
 
