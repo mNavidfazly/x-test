@@ -10,11 +10,12 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
 import { QuizTakerComponent } from '../components/quiz-taker.component';
 import { ExamTakerComponent } from '../components/exam-taker.component';
+import { CommentSectionComponent } from '../components/comment-section.component';
 
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-5xl mx-auto">
@@ -84,6 +85,14 @@ import { ExamTakerComponent } from '../components/exam-taker.component';
             <app-module-files-list [files]="courseService.moduleViewer()!.files" />
           </div>
         }
+
+        <!-- Comments -->
+        <div class="mt-8 pt-6 border-t border-slate-200">
+          <app-comment-section
+            [moduleId]="courseService.moduleViewer()!.module.id"
+            [courseId]="courseId()"
+          />
+        </div>
 
         <!-- Bottom navigation bar -->
         <div class="flex items-center justify-between border-t border-slate-200 pt-4 mt-6">

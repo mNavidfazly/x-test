@@ -6,7 +6,7 @@ import { BehaviorSubject, EMPTY } from 'rxjs';
 import { ModuleViewerPageComponent } from './module-viewer-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
-import { createMockCourseService, createMockCourseDetail, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, MockCourseService } from '../../../__mocks__/course.mock';
+import { createMockCourseService, createMockCourseDetail, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, createMockCommentService, MockCourseService } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
 import { provideMarkdown } from 'ngx-markdown';
@@ -17,6 +17,10 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
 import { QuizTakerComponent } from '../components/quiz-taker.component';
 import { ExamTakerComponent } from '../components/exam-taker.component';
+import { CommentSectionComponent } from '../components/comment-section.component';
+import { CommentService } from '../../../core/services/comment.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { createMockAuthService } from '../../../__mocks__/auth.mock';
 
 function createMockBunnyUploadService() {
   return {
@@ -57,11 +61,13 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
+        { provide: CommentService, useValue: createMockCommentService() },
+        { provide: AuthService, useValue: createMockAuthService() },
         // Provide paramMap as an observable — the component uses toSignal(route.paramMap)
         // to reactively respond to route param changes (e.g. Next/Previous navigation).
         { provide: ActivatedRoute, useValue: { paramMap: paramMap$ } },
@@ -278,6 +284,15 @@ describe('ModuleViewerPageComponent', () => {
     await renderPage({ viewer });
 
     expect(screen.queryByText('Mark as complete')).toBeNull();
+  });
+
+  // --- Comment section integration ---
+
+  it('should render comment section when module is loaded', async () => {
+    const viewer = createMockModuleViewerData();
+    await renderPage({ viewer });
+
+    expect(document.querySelector('app-comment-section')).toBeTruthy();
   });
 
   it('should NOT reload module viewer on exam completion', async () => {

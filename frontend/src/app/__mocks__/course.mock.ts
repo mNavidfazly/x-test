@@ -613,3 +613,68 @@ export function createMockExamGradingService(options?: {
 }
 
 export type MockExamGradingService = ReturnType<typeof createMockExamGradingService>;
+
+// ---------------------------------------------------------------------------
+// Comment mocks
+// ---------------------------------------------------------------------------
+
+import { Comment, CommentReply, BadgeType } from '../core/models/comment.model';
+
+export function createMockCommentReply(overrides?: Partial<CommentReply>): CommentReply {
+  return {
+    id: 'reply-1',
+    comment_id: 'comment-1',
+    user_id: 'user-2',
+    tenant_id: 'tenant-1',
+    body: 'This is a reply',
+    badge_type: null,
+    created_at: '2026-02-01T12:00:00Z',
+    updated_at: '2026-02-01T12:00:00Z',
+    author: { full_name: 'Reply Author', email: 'reply@example.com' },
+    ...overrides,
+  };
+}
+
+export function createMockComment(overrides?: Partial<Comment>): Comment {
+  return {
+    id: 'comment-1',
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    module_id: 'module-1',
+    body: 'This is a comment',
+    badge_type: null,
+    created_at: '2026-02-01T10:00:00Z',
+    updated_at: '2026-02-01T10:00:00Z',
+    author: { full_name: 'Test User', email: 'test@example.com' },
+    replies: [],
+    ...overrides,
+  };
+}
+
+export function createMockCommentService(options?: {
+  comments?: Comment[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const comments = signal<Comment[]>(options?.comments ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    comments: comments.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadComments: vi.fn().mockResolvedValue(undefined),
+    addComment: vi.fn().mockResolvedValue(undefined),
+    updateComment: vi.fn().mockResolvedValue(undefined),
+    deleteComment: vi.fn().mockResolvedValue(undefined),
+    addReply: vi.fn().mockResolvedValue(undefined),
+    updateReply: vi.fn().mockResolvedValue(undefined),
+    deleteReply: vi.fn().mockResolvedValue(undefined),
+    _setComments: comments.set.bind(comments),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockCommentService = ReturnType<typeof createMockCommentService>;

@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00027` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00031` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -106,7 +106,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00027                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers, reminder_history lecturer SELECT fix)
+│       └── 00001-00031                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers, reminder_history lecturer SELECT fix, quiz grading bypass, matching question RPC, external quiz auto-mark, comment badge triggers)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -155,7 +155,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult factories
+│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CommentService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult + Comment/CommentReply factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -169,6 +169,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── bunny-upload.service.ts  # ✅ BunnyUploadService (TUS upload via tus-js-client, progress signals, pollStatus, deleteVideo)
 │   │   │   │   │   ├── progress.service.ts       # ✅ ProgressService (4 parallel queries + client-side aggregation, sendReminders via ApiService)
 │   │   │   │   │   ├── progress.service.spec.ts
+│   │   │   │   │   ├── comment.service.ts        # ✅ CommentService (7 methods: load/add/update/delete comments + replies, signal state, nested Supabase select with author joins)
+│   │   │   │   │   ├── comment.service.spec.ts
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
@@ -176,6 +178,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   └── models/
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
 │   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, EnrolledUser, MarkedByType, UserProgressRecord, UserProgressSummary, DashboardUserProgress, DashboardCourseProgress, DashboardCourseSummary, ReminderRequest, ReminderResponse, QuizForTaking, QuizQuestionForTaking, QuizQuestionOptionForTaking, QuizAttemptAnswer, QuizAttemptResult, QuizQuestionResult, union types
+│   │   │   │       ├── comment.model.ts   # ✅ Comment, CommentReply, CommentAuthor, BadgeType
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -200,7 +203,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C + 5A + 5C complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C + 5A + 5C + 6A complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -210,7 +213,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── course-form-page.component.spec.ts
 │   │   │   │   │   │   ├── module-form-page.component.ts    # Smart: create/edit module, type selector (6 types), video/pdf/exam/markdown/quiz/external_quiz forms + module files editor + significant update checkbox (Phase 3C-4B)
 │   │   │   │   │   │   ├── module-form-page.component.spec.ts
-│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz/quiz/exam viewer, prev/next nav, mark-complete (gated by enrollment), quiz taker + exam taker integration
+│   │   │   │   │   │   ├── module-viewer-page.component.ts  # Smart: video/pdf/markdown/external_quiz/quiz/exam viewer, prev/next nav, mark-complete (gated by enrollment), quiz taker + exam taker + comment section integration
 │   │   │   │   │   │   └── module-viewer-page.component.spec.ts
 │   │   │   │   │   ├── components/
 │   │   │   │   │   │   ├── course-card.component.ts          # Presentational: progress bar, action button, badge
@@ -262,7 +265,9 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── quiz-taker.component.ts             # Smart-lite: 3-phase quiz flow (start → active → results), timer, answer management, auto-submit (Phase 5A)
 │   │   │   │   │   │   ├── quiz-taker.component.spec.ts
 │   │   │   │   │   │   ├── exam-taker.component.ts             # Smart-lite: 3-phase exam flow (info → active → submitted), timer (informational), file upload, grading status (Phase 5C)
-│   │   │   │   │   │   └── exam-taker.component.spec.ts
+│   │   │   │   │   │   ├── exam-taker.component.spec.ts
+│   │   │   │   │   │   ├── comment-section.component.ts        # Smart-lite: comment section with badges (Expert/Calypso), 1-level replies, inline edit/delete, relative timestamps (Phase 6A)
+│   │   │   │   │   │   └── comment-section.component.spec.ts
 │   │   │   │   │   ├── utils/
 │   │   │   │   │   │   ├── quiz-json-template.ts             # Quiz JSON template constant (all 6 types) (Phase 3D)
 │   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
@@ -782,18 +787,16 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 
 ### Phase 6: Comments & Ask Expert
 
-#### 6A - Comments
-- [ ] Comment list per module (tenant-isolated — users only see their tenant's comments)
-- [ ] Post comment (user_id + tenant_id from JWT)
-- [ ] Expert badges:
-  - [ ] Lecturer commenting on assigned course → 🎓 **Expert** badge
-  - [ ] CSM / Platform Admin commenting → 🏢 **Calypso** badge
-  - [ ] Determine badge from: lecturer_course_assignments + profiles.is_platform_admin + csm_tenant_assignments
-- [ ] 1-level replies (comment_replies — reply to comment, no reply to reply)
-- [ ] Edit own comments/replies
-- [ ] Delete: own, Tenant Admin (own tenant), Platform Admin (all)
-- [ ] Lecturer cross-tenant commenting: can comment on modules of assigned courses using the target tenant's tenant_id (validated by RLS via tenant_courses join)
-- [ ] **Tests:** CommentListComponent, CommentFormComponent
+#### 6A - Comments (Complete)
+- [x] Migration 00031: `badge_type text` column on `comments` + `comment_replies`, SECURITY DEFINER BEFORE INSERT triggers (`set_comment_badge`, `set_comment_reply_badge`) — auto-set 'calypso' (PA/CSM) or 'expert' (Lecturer on course) or NULL
+- [x] CommentService (separate from CourseService): 7 methods — `loadComments`, `addComment`, `updateComment`, `deleteComment`, `addReply`, `updateReply`, `deleteReply`. Signal-based state (comments, loading, error). Nested Supabase select with author join + reply author join.
+- [x] CommentSectionComponent (smart-lite in `features/courses/components/`): inline template (~200 lines), expert/calypso badges with Lucide icons (GraduationCap/Building2), avatar initials, relative timestamps, inline edit/delete/reply forms, permission-aware action buttons (own/TA/PA)
+- [x] Module viewer page integration: `<app-comment-section>` between files section and bottom navigation bar, auto-reloads on module navigation via `effect()` watching `moduleId`
+- [x] Mock factories: `createMockComment()`, `createMockCommentReply()`, `createMockCommentService()`
+- [x] Lecturer cross-tenant commenting: lecturers insert with own tenant_id (master), visible via `comments_select_lecturer` RLS policy. Explicit cross-tenant posting deferred.
+- [x] No enrollment gate — comments visible to anyone with module access (via tenant_courses RLS)
+- [x] Plain text only (no markdown) — `<textarea>` input, `body` is `text NOT NULL`
+- [x] **Tests:** 31 new tests (13 CommentService + 17 CommentSectionComponent + 1 ModuleViewerPage comment integration) — 710 total frontend tests, build OK
 
 #### 6B - Ask Expert
 - [ ] "Ask Expert" button on module/course view
