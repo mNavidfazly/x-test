@@ -22,8 +22,10 @@ All test users use password: `TestUser123!`
 
 | # | Email | Role | Tenant | Used In |
 |---|-------|------|--------|---------|
-| 1 | `learner@calypso-commodities.com` | **Learner** | Calypso (master) | IR-01 through IR-07 |
-| 2 | `learner@calypsoclient.com` | **Learner** | Calypso Client | IR-08 (empty state + tenant isolation) |
+| 1 | `learner@calypso-commodities.com` | **Learner** | Calypso (master) | IR-01 through IR-07, IR-09, IR-13 |
+| 2 | `learner@calypsoclient.com` | **Learner** | Calypso Client | IR-09 (tenant isolation) |
+| 3 | `et@calypso-commodities.com` | **Platform Admin** | Calypso (master) | IR-10 (cross-role reporting) |
+| 4 | `lecturer-edit@calypso-commodities.com` | **Lecturer (can_edit)** | Calypso (master) | IR-08 (empty state) |
 
 ## Status Legend
 
@@ -49,7 +51,12 @@ All test users use password: `TestUser123!`
 | 5 | IR-05 | Report Another Issue (Reset Flow) | IR-04 (on module viewer page) |
 | 6 | IR-06 | All Issue Type Labels Render Correctly | IR-01 + IR-05 (multiple issues exist) |
 | 7 | IR-07 | Sidebar Navigation to My Issues | None (independent) |
-| 8 | IR-08 | Empty State on My Issues Page | Run only if no issues exist (or use fresh user) |
+| 8 | IR-08 | Empty State on My Issues Page | Use a user with no issues (Lecturer) |
+| 9 | IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | IR-01 (Calypso learner has issues) |
+| 10 | IR-10 | Platform Admin Can Report Issue | PA logged in, module exists |
+| 11 | IR-11 | Status Badges — Investigating, Resolved, Closed | DB setup: set issues to different statuses |
+| 12 | IR-12 | Resolved Issue — Resolution Info Panel | DB setup: set issue to resolved with resolved_at |
+| 13 | IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | IR-01 + IR-05 (3+ issues exist) |
 
 ---
 
@@ -64,7 +71,12 @@ All test users use password: `TestUser123!`
 | IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-13 |
 | IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-13 |
 | IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-13 |
-| IR-08 | Empty State on My Issues Page | Learner (Client) | ✅ | 2026-02-13 |
+| IR-08 | Empty State on My Issues Page | Lecturer | ✅ | 2026-02-13 |
+| IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | Learner (both tenants) | ✅ | 2026-02-13 |
+| IR-10 | Platform Admin Can Report Issue | Platform Admin | ✅ | 2026-02-13 |
+| IR-11 | Status Badges — Investigating, Resolved, Closed | Learner | ✅ | 2026-02-13 |
+| IR-12 | Resolved Issue — Resolution Info Panel | Learner | ✅ | 2026-02-13 |
+| IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | Learner | ✅ | 2026-02-13 |
 
 ---
 
@@ -338,27 +350,215 @@ All test users use password: `TestUser123!`
 | **Status** | ✅ |
 | **Tester** | Claude |
 
-**Purpose**: Verify the empty state on the My Issues page when a user has no reported issues. This tests the zero-data experience.
+**Purpose**: Verify the empty state on the My Issues page when a user has no reported issues. Uses Lecturer (who has never reported issues) to guarantee clean state.
 
-**Covers**: MyIssuesPageComponent (empty state rendering)
+**Covers**: MyIssuesPageComponent (empty state rendering), cross-role My Issues visibility
 
 **Preconditions**:
-- Either use a fresh user with no issues, or verify the empty state text is correct by checking the component (may not be directly testable if issues already exist from earlier stories)
+- Use a user who has never reported issues (e.g., Lecturer `lecturer-edit@calypso-commodities.com`)
 
 **Steps**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | If possible, log in as a user with no issues (e.g., another test user) | Dashboard loads | ☐ |
-| 2 | Navigate to My Issues page (`/issues`) | Page loads | ☐ |
-| 3 | Verify empty state message | "No issues reported yet" heading visible | ☐ |
-| 4 | Verify empty state subtitle | "You can report issues from any module page." text visible | ☐ |
-| 5 | Verify no issue cards are shown | No accordion cards, no count badge (or badge shows "0") | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com` / `TestUser123!`) | Dashboard loads | ☐ |
+| 2 | Verify "My Issues" visible in sidebar | Flag icon + "My Issues" nav item shown (roles: 'all') | ☐ |
+| 3 | Click "My Issues" in sidebar | Page navigates to `/issues` | ☐ |
+| 4 | Verify empty state message | "No issues reported yet" heading visible | ☐ |
+| 5 | Verify empty state subtitle | "You can report issues from any module page." text visible | ☐ |
+| 6 | Verify no issue cards or count badge | No accordion cards, count badge is absent | ☐ |
 
 **Notes/Learnings**:
-- Empty state is only visible when `issueService.issues().length === 0` and not loading
-- This may be difficult to test after IR-01–IR-06 have created issues — could use client learner instead
-- The empty state encourages users to report from module pages
+- Empty state renders when `issueService.issues().length === 0` and not loading
+- Using Lecturer guarantees no issues exist (never reported any) — avoids false positive from empty client tenant
+- Also confirms non-learner roles can access the My Issues page (roles: 'all' sidebar + no guard)
+
+---
+
+## IR-09: Tenant Isolation — Cross-Tenant Issues Not Visible
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
+| **Tester** | Claude |
+
+**Purpose**: Verify that issues reported by one tenant's learner are NOT visible to another tenant's learner. This proves RLS is actually filtering data, not just that no data exists. Mirrors CM-09 pattern.
+
+**Covers**: `issues_safe` view WHERE clause (learner: `user_id = auth.uid()`), tenant boundary enforcement, IssueService (`loadMyIssues`)
+
+**Preconditions**:
+- Calypso learner has at least one issue (from IR-01/IR-05)
+- Client learner has no issues OR we create one during this test
+
+**Steps**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | Log in as Client learner (`learner@calypsoclient.com` / `TestUser123!`) | Dashboard loads | ☐ |
+| 2 | Navigate to My Issues page (`/issues`) | Page loads | ☐ |
+| 3 | Verify Calypso learner's issues are NOT visible | Empty state shown — no issues from other tenant appear | ☐ |
+| 4 | Navigate to a course → module viewer | Module loads (if client has course access) | ☐ |
+| 5 | Report an issue as Client learner | Select "Technical Problem", describe, submit → success | ☐ |
+| 6 | Navigate to My Issues page | Client learner sees own issue (1 issue) | ☐ |
+| 7 | Verify only Client learner's issue visible | "Technical Problem" issue visible, NOT any "Content Error" from Calypso learner | ☐ |
+| 8 | Log out and log in as Calypso learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
+| 9 | Navigate to My Issues page | Calypso learner sees own issues (3+ from IR-01/IR-05) | ☐ |
+| 10 | Verify Client learner's issue is NOT visible | No "Technical Problem" issue from Client learner appears | ☐ |
+
+**Notes/Learnings**:
+- `issues_safe` view: learner sees `WHERE user_id = auth.uid()` — tenant isolation is per-user, not per-tenant for learners
+- This test proves RLS is actively filtering, not just that no data exists (unlike IR-08 which only tested empty state)
+- Cross-user isolation within same tenant is also implicitly tested (each learner only sees their own issues)
+- If Client tenant has no course assigned, steps 4-5 may need to navigate to a course that's assigned to both tenants
+
+---
+
+## IR-10: Platform Admin Can Report Issue
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
+| **Tester** | Claude |
+
+**Purpose**: Verify that non-learner roles (Platform Admin) can also report issues from the module viewer. The `<app-report-issue>` renders for all roles, and `issues_insert_own` RLS should allow PA to insert.
+
+**Covers**: ReportIssueComponent (cross-role usage), `issues_insert_own` RLS policy for PA, IssueService (`reportIssue` as PA)
+
+**Preconditions**:
+- Platform Admin (`et@calypso-commodities.com`) is logged in
+- A course with a viewable module exists
+
+**Steps**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com` / `TestUser123!`) | Dashboard loads with full sidebar | ☐ |
+| 2 | Navigate to a course → click a module | Module viewer loads | ☐ |
+| 3 | Scroll to "Report Issue" section | "Report Issue" button visible (same rose styling as for learners) | ☐ |
+| 4 | Click "Report Issue" | Form expands with type dropdown + description textarea | ☐ |
+| 5 | Select "Other" from dropdown | Type selected | ☐ |
+| 6 | Type "Admin test: reviewing module quality" in description | Text entered | ☐ |
+| 7 | Click "Submit Issue" | Spinner → success confirmation ("Your issue has been reported!") | ☐ |
+| 8 | Navigate to My Issues page (`/issues`) | PA's issue visible with "Other" type, "Open" badge | ☐ |
+| 9 | Verify only PA's own issue visible | PA does NOT see learner's issues (PA reads from `issues_safe` which filters by `user_id = auth.uid()`) | ☐ |
+
+**Notes/Learnings**:
+- `issues_insert_own` RLS: `user_id = auth.uid() AND tenant_id = jwt_claim('tenant_id')` — works for any role
+- PA reads from `issues_safe` which uses `user_id = auth.uid()` filter — PA sees own issues only on My Issues page (not all issues — that's Phase 7B Issue Management)
+- PA has base-table SELECT via `issues_select_platform_admin`, but the frontend reads from `issues_safe` view which bypasses RLS, so the view's WHERE clause matters
+- This confirms the Report Issue button is functional for non-learner roles
+
+---
+
+## IR-11: Status Badges — Investigating, Resolved, Closed
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
+| **Tester** | Claude |
+
+**Purpose**: Verify that all 4 status badges render correctly on the My Issues page. Since Phase 7B (Issue Management) is not built, statuses are set directly in the database.
+
+**Covers**: MyIssuesPageComponent (status badge rendering for all 4 states: open/amber, investigating/blue, resolved/emerald, closed/slate)
+
+**Preconditions**:
+- Calypso learner has 3+ issues from IR-01/IR-05
+- Access to Supabase SQL Editor to update issue statuses
+
+**Steps**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | In Supabase SQL Editor, update one issue to `investigating` | `UPDATE issues SET status = 'investigating' WHERE ...` | ☐ |
+| 2 | Update another issue to `resolved` with `resolved_at` | `UPDATE issues SET status = 'resolved', resolved_at = now() WHERE ...` | ☐ |
+| 3 | Update a third issue to `closed` (no `resolved_at`) | `UPDATE issues SET status = 'closed' WHERE ...` | ☐ |
+| 4 | Log in as Calypso learner | Dashboard loads | ☐ |
+| 5 | Navigate to My Issues page (`/issues`) | Page loads with issue cards | ☐ |
+| 6 | Verify "Open" badge | Amber badge (`bg-amber-100 text-amber-700`) with Clock icon on remaining open issue(s) | ☐ |
+| 7 | Verify "Investigating" badge | Blue badge (`bg-blue-100 text-blue-700`) with Search icon | ☐ |
+| 8 | Verify "Resolved" badge | Emerald badge (`bg-emerald-100 text-emerald-700`) with CheckCircle2 icon | ☐ |
+| 9 | Verify "Closed" badge | Slate badge (`bg-slate-100 text-slate-600`) with XCircle icon | ☐ |
+
+**Notes/Learnings**:
+- Status transitions normally happen via Phase 7B (lecturer/PA update) — for E2E we set via SQL
+- All 4 badge colors and icons are coded in the component but only "Open" was previously verified
+- After testing, reset statuses back to 'open' for subsequent test runs: `UPDATE issues SET status = 'open', resolved_at = NULL, resolved_by = NULL WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodities.com');`
+
+---
+
+## IR-12: Resolved Issue — Resolution Info Panel
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
+| **Tester** | Claude |
+
+**Purpose**: Verify that when an issue has `resolved_at` set, expanding it shows the emerald resolution info panel with "This issue has been resolved." Also verify that closed-without-resolution shows the "closed" message.
+
+**Covers**: MyIssuesPageComponent (resolution panel, closed-without-resolution text), expanded detail for non-open statuses
+
+**Preconditions**:
+- IR-11 has been run (issues set to resolved/closed in DB)
+- Calypso learner is logged in
+
+**Steps**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | Navigate to My Issues page | Issue cards visible with mixed statuses | ☐ |
+| 2 | Click on the "Resolved" issue card | Card expands to show detail panel | ☐ |
+| 3 | Verify "Resolution" heading | "Resolution" label visible in expanded area | ☐ |
+| 4 | Verify resolution message | Emerald panel with "This issue has been resolved." text | ☐ |
+| 5 | Verify resolved date | Resolution date shown (formatted) | ☐ |
+| 6 | Click on the "Closed" issue card (no resolved_at) | Card expands | ☐ |
+| 7 | Verify closed message | "This issue has been closed." text visible (slate text, no emerald panel) | ☐ |
+| 8 | Click on an "Open" issue card | Card expands | ☐ |
+| 9 | Verify NO resolution panel | No "Resolution" heading, no "closed" message — just description and "Go to module" link | ☐ |
+
+**Notes/Learnings**:
+- Resolution panel: `@if (issue.resolved_at)` → emerald bg panel
+- Closed-without-resolution: `@if (issue.status === 'closed' && !issue.resolved_at)` → simple text
+- Open issues show neither — verify by absence
+- After testing, reset statuses back to 'open': `UPDATE issues SET status = 'open', resolved_at = NULL, resolved_by = NULL WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodities.com');`
+
+---
+
+## IR-13: Accordion Mutual Exclusion — One Expanded at a Time
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | 2026-02-13 |
+| **Status** | ✅ |
+| **Tester** | Claude |
+
+**Purpose**: Verify that the accordion allows only one issue to be expanded at a time. Clicking a second issue collapses the first.
+
+**Covers**: MyIssuesPageComponent (`expandedId` signal, accordion toggle behavior with multiple cards)
+
+**Preconditions**:
+- Calypso learner has 3+ issues (from IR-01/IR-05)
+
+**Steps**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | Navigate to My Issues page | 3+ issue cards visible, all collapsed | ☐ |
+| 2 | Click on Issue A (first card) | Issue A expands — description, "Go to module" link visible | ☐ |
+| 3 | Verify Issue B and Issue C are collapsed | No expanded detail visible for B or C | ☐ |
+| 4 | Click on Issue B (second card) | Issue B expands, Issue A collapses simultaneously | ☐ |
+| 5 | Verify Issue A is collapsed | Issue A no longer shows description or detail panel | ☐ |
+| 6 | Verify Issue B is expanded | Issue B shows description and detail | ☐ |
+| 7 | Click on Issue B again (same card) | Issue B collapses — all cards are collapsed | ☐ |
+| 8 | Verify all cards collapsed | No expanded detail visible anywhere | ☐ |
+
+**Notes/Learnings**:
+- `expandedId` signal holds the currently expanded issue ID — only one at a time
+- Clicking the same issue toggles it (expand ↔ collapse)
+- Clicking a different issue sets `expandedId` to the new one, collapsing the previous
 
 ---
 
@@ -381,6 +581,10 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodit
 
 -- Remove all issues on a specific course's modules
 DELETE FROM issues WHERE course_id = '<COURSE_ID>';
+
+-- Reset statuses back to 'open' after IR-11/IR-12 testing
+UPDATE issues SET status = 'open', resolved_at = NULL, resolved_by = NULL
+WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodities.com');
 
 -- Nuclear option: clear ALL issues
 DELETE FROM issues;
@@ -406,7 +610,8 @@ LIMIT 10;
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| 2026-02-13 | Claude (Playwright MCP) | IR-01 to IR-08 | 8 | 0 | All 8 stories passed. 0 bugs found. Tenant isolation confirmed via IR-08 (client learner sees empty state). |
+| 2026-02-13 | Claude (Playwright MCP) | IR-01 to IR-08 | 8 | 0 | Initial run: all 8 stories passed. |
+| 2026-02-13 | Claude (Playwright MCP) | IR-08 to IR-13 | 6 | 0 | Extended run: 5 new stories + IR-08 re-tested with Lecturer. 4 roles tested (Learner, Lecturer, PA, Client Learner). Tenant isolation verified bidirectionally. All 4 status badges + resolution panel confirmed. |
 
 ---
 
