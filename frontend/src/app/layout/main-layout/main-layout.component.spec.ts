@@ -6,8 +6,10 @@ import { provideRouter } from '@angular/router';
 import { MainLayoutComponent } from './main-layout.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
+import { createMockNotificationService } from '../../__mocks__/course.mock';
 
 @Component({ selector: 'app-test-child', standalone: true, template: '<p>Test child content</p>' })
 class TestChildComponent {}
@@ -16,11 +18,14 @@ async function renderLayout() {
   const auth = createMockAuthService({ isAuthenticated: true, roles: ['learner'] });
   const profile = createMockProfileService({ profile: { full_name: 'Test', avatar_url: null } });
 
+  const notifications = createMockNotificationService();
+
   const { fixture } = await render(MainLayoutComponent, {
     providers: [
       provideRouter([{ path: '**', component: TestChildComponent }]),
       { provide: AuthService, useValue: auth },
       { provide: ProfileService, useValue: profile },
+      { provide: NotificationService, useValue: notifications },
     ],
   });
 

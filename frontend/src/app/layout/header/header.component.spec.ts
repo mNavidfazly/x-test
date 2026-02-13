@@ -5,14 +5,17 @@ import { provideRouter } from '@angular/router';
 import { HeaderComponent } from './header.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
+import { NotificationService } from '../../core/services/notification.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
+import { createMockNotificationService } from '../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../__mocks__/lucide.mock';
 
 async function renderHeader(options?: {
   email?: string;
   fullName?: string | null;
   avatarUrl?: string | null;
+  unreadCount?: number;
 }) {
   const auth = createMockAuthService({
     isAuthenticated: true,
@@ -22,6 +25,9 @@ async function renderHeader(options?: {
     profile: options?.fullName !== undefined || options?.avatarUrl !== undefined
       ? { full_name: options?.fullName ?? null, avatar_url: options?.avatarUrl ?? null }
       : null,
+  });
+  const notifications = createMockNotificationService({
+    unreadCount: options?.unreadCount ?? 0,
   });
 
   const menuToggleSpy = vi.fn();
@@ -33,10 +39,11 @@ async function renderHeader(options?: {
       provideRouter([]),
       { provide: AuthService, useValue: auth },
       { provide: ProfileService, useValue: profile },
+      { provide: NotificationService, useValue: notifications },
     ],
   });
 
-  return { auth, profile, menuToggleSpy };
+  return { auth, profile, notifications, menuToggleSpy };
 }
 
 describe('HeaderComponent', () => {
@@ -81,5 +88,20 @@ describe('HeaderComponent', () => {
     await user.click(screen.getByText('Sign out'));
 
     expect(auth.signOut).toHaveBeenCalled();
+  });
+
+  it('should show unread badge when count > 0', async () => {
+    await renderHeader({ fullName: 'Test', unreadCount: 5 });
+    expect(screen.getByText('5')).toBeTruthy();
+  });
+
+  it('should hide badge when count is 0', async () => {
+    await renderHeader({ fullName: 'Test', unreadCount: 0 });
+    expect(screen.queryByText('0')).toBeNull();
+  });
+
+  it('should show 99+ when count > 99', async () => {
+    await renderHeader({ fullName: 'Test', unreadCount: 150 });
+    expect(screen.getByText('99+')).toBeTruthy();
   });
 });

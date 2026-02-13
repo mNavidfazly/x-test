@@ -1,12 +1,16 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { LucideAngularModule, X } from 'lucide-angular';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
+import { NotificationService } from '../../core/services/notification.service';
+import { AppNotification } from '../../core/models/notification.model';
+import { getNotificationRoute } from '../../core/models/notification.model';
 
 @Component({
   selector: 'app-main-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, LucideAngularModule],
   host: { class: 'block' },
   template: `
     <div class="flex h-screen bg-slate-50">
@@ -21,8 +25,47 @@ import { HeaderComponent } from '../header/header.component';
         </main>
       </div>
     </div>
+
+    @if (notificationService.latestToast(); as toast) {
+      <div
+        class="fixed top-4 right-4 z-50 max-w-sm bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-start gap-3 cursor-pointer"
+        (click)="onToastClick(toast)"
+      >
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-slate-900 truncate">{{ toast.title }}</p>
+          @if (toast.body) {
+            <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">{{ toast.body }}</p>
+          }
+        </div>
+        <button
+          class="text-slate-400 hover:text-slate-600 p-1 shrink-0"
+          (click)="onDismissToast($event)"
+          aria-label="Dismiss"
+        >
+          <lucide-icon [img]="icons.X" [size]="14"></lucide-icon>
+        </button>
+      </div>
+    }
   `,
 })
 export class MainLayoutComponent {
+  readonly icons = { X };
+  readonly notificationService = inject(NotificationService);
+  #router = inject(Router);
+
   sidebarOpen = signal(false);
+
+  async onToastClick(notification: AppNotification): Promise<void> {
+    this.notificationService.dismissToast();
+    await this.notificationService.markAsRead(notification.id);
+    const route = getNotificationRoute(notification.type, notification.data);
+    if (route) {
+      this.#router.navigateByUrl(route);
+    }
+  }
+
+  onDismissToast(event: Event): void {
+    event.stopPropagation();
+    this.notificationService.dismissToast();
+  }
 }

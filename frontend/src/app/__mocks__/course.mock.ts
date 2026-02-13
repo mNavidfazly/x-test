@@ -857,3 +857,57 @@ export function createMockIssueService(options?: {
 }
 
 export type MockIssueService = ReturnType<typeof createMockIssueService>;
+
+// ---------------------------------------------------------------------------
+// Notification mocks
+// ---------------------------------------------------------------------------
+
+import { AppNotification } from '../core/models/notification.model';
+
+export function createMockNotification(overrides?: Partial<AppNotification>): AppNotification {
+  return {
+    id: 'notif-1',
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    type: 'course_assigned',
+    title: 'New course assigned',
+    body: 'You have been assigned to Test Course',
+    data: { course_id: 'course-1' },
+    read_at: null,
+    created_at: '2026-02-10T10:00:00Z',
+    ...overrides,
+  };
+}
+
+export function createMockNotificationService(options?: {
+  notifications?: AppNotification[];
+  loading?: boolean;
+  error?: string;
+  unreadCount?: number;
+  latestToast?: AppNotification | null;
+}) {
+  const notifications = signal<AppNotification[]>(options?.notifications ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+  const unreadCount = signal(options?.unreadCount ?? 0);
+  const latestToast = signal<AppNotification | null>(options?.latestToast ?? null);
+
+  return {
+    notifications: notifications.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    unreadCount: unreadCount.asReadonly(),
+    latestToast: latestToast.asReadonly(),
+    loadNotifications: vi.fn().mockResolvedValue(undefined),
+    markAsRead: vi.fn().mockResolvedValue(undefined),
+    markAllAsRead: vi.fn().mockResolvedValue(undefined),
+    dismissToast: vi.fn(),
+    _setNotifications: notifications.set.bind(notifications),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+    _setUnreadCount: unreadCount.set.bind(unreadCount),
+    _setLatestToast: latestToast.set.bind(latestToast),
+  };
+}
+
+export type MockNotificationService = ReturnType<typeof createMockNotificationService>;

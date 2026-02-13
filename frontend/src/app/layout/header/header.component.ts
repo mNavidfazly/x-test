@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { LucideAngularModule, Menu, Bell, ChevronDown, User, LogOut } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-header',
@@ -34,6 +35,11 @@ import { ProfileService } from '../../core/services/profile.service';
           aria-label="Notifications"
         >
           <lucide-icon [img]="icons.Bell" [size]="20"></lucide-icon>
+          @if (unreadCount() > 0) {
+            <span class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-rose-500 text-white text-[10px] font-bold leading-none px-1">
+              {{ unreadCount() > 99 ? '99+' : unreadCount() }}
+            </span>
+          }
         </a>
 
         <!-- User menu -->
@@ -96,6 +102,9 @@ export class HeaderComponent {
 
   #auth = inject(AuthService);
   #profile = inject(ProfileService);
+  #notifications = inject(NotificationService);
+
+  unreadCount = this.#notifications.unreadCount;
 
   displayName = computed(() => {
     const profile = this.#profile.profile();

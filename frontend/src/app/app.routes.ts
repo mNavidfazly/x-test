@@ -120,8 +120,8 @@ export const routes: Routes = [
       {
         path: 'notifications',
         loadComponent: () =>
-          import('./shared/components/stub-page.component').then(
-            (m) => m.StubPageComponent,
+          import('./features/notifications/pages/notification-list-page.component').then(
+            (m) => m.NotificationListPageComponent,
           ),
       },
       {

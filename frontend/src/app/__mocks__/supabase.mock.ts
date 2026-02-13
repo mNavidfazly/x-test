@@ -59,10 +59,14 @@ export function createMockSupabaseService(options?: {
         }),
       },
       rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
-      channel: vi.fn().mockReturnValue({
-        on: vi.fn().mockReturnThis(),
-        subscribe: vi.fn(),
+      channel: vi.fn().mockImplementation(() => {
+        const ch: Record<string, any> = {
+          on: vi.fn().mockImplementation(() => ch),
+          subscribe: vi.fn().mockImplementation(() => ch),
+        };
+        return ch;
       }),
+      removeChannel: vi.fn().mockResolvedValue('ok'),
       storage: {
         from: vi.fn().mockReturnValue({
           upload: vi.fn().mockResolvedValue({

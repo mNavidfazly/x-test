@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00031` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00033` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -911,21 +911,18 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 
 ### Phase 8: Notifications
 
-#### 8A - Notification Service & Bell
-- [ ] NotificationService:
-  - [ ] Supabase Realtime subscription on `notifications` table (filter: `user_id=eq.{currentUserId}`)
-  - [ ] Unread count (notifications where read_at IS NULL)
-  - [ ] Mark as read (UPDATE read_at)
-  - [ ] Mark all as read
-- [ ] Notification bell component (in header):
-  - [ ] Unread count badge
-  - [ ] Toast popup on new notification
-  - [ ] Dropdown/page with notification list
-- [ ] Notification list page:
-  - [ ] All notifications, sorted by created_at DESC
-  - [ ] Click to navigate to related content (via data jsonb)
-  - [ ] Mark individual as read
-- [ ] **Tests:** NotificationService, NotificationBellComponent, NotificationListComponent
+#### 8A - Notification Service & Bell (Complete)
+- [x] Migration 00033: `notifications` added to `supabase_realtime` publication (idempotent DO block — table was already published, so migration is a safe no-op)
+- [x] `notification.model.ts`: `AppNotification` interface, `NotificationType` (15-value string literal union), `NotificationMeta` interface (icon + colorClass), `NOTIFICATION_META` map (15 entries, type-specific Lucide icons + Tailwind color classes), `getNotificationMeta()` helper with Bell fallback, `getNotificationRoute(type, data)` helper mapping each notification type to a frontend route (or null)
+- [x] NotificationService (root singleton): Supabase Realtime subscription via `effect(onCleanup)` tied to auth state, `loadNotifications` (limit 50, ordered by created_at DESC), `markAsRead` (single), `markAllAsRead` (bulk), `dismissToast`, `latestToast` signal (5s auto-dismiss via setTimeout), `unreadCount` computed signal
+- [x] Header: inject NotificationService, expose `unreadCount`, rose-500 pill badge with 99+ cap on bell icon
+- [x] Main layout: toast overlay (fixed top-right z-50, click navigates + marks read, X dismiss button with stopPropagation)
+- [x] NotificationListPageComponent (~250 lines): 4-state template (loading/error/empty/list), type-specific icons+colors from NOTIFICATION_META, unread border-l-teal-500 indicator, "Mark all as read" button (hidden when all read), click → markAsRead + Router.navigate, relative timestamps
+- [x] Route `/notifications` replaced stub with real lazy-loaded component
+- [x] Mock factories: `createMockNotification()` (full AppNotification factory), `createMockNotificationService()` (signal-based mock with helper setters)
+- [x] Supabase mock enhanced: `channel().on().subscribe()` chain returns `this` (mockReturnThis pattern), `removeChannel` added
+- [x] **Tests:** 31 new tests (12 NotificationService + 16 NotificationListPage + 3 HeaderComponent badge) — 885 total frontend tests, build OK
+- [x] **E2E verified:** 12 stories (NT-01 to NT-12), 11 pass / 1 skipped (NT-11 Realtime Toast — requires two separate browser instances, Supabase auth localStorage prevents multi-user testing in single browser context), 0 bugs found. Verified all 4 roles (learner, lecturer, PA, CSM). Triggers verified: `notify_question_answered`, `notify_issue_resolved`, `notify_new_expert_question`, `notify_new_issue`.
 
 #### 8B - Verify Notification Triggers
 All 13 trigger functions in the schema should be verified working:
@@ -1287,7 +1284,7 @@ npm run test:ui             # Interactive browser UI
 **Key Files (source of truth — do NOT duplicate code examples here, they drift):**
 - `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
 - `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
-- `frontend/src/app/__mocks__/` — 10 mock files (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin + dashboard progress + comment + expert-question + issue], tiptap)
+- `frontend/src/app/__mocks__/` — 10 mock files (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin + dashboard progress + comment + expert-question + issue + notification], tiptap)
 
 See `CLAUDE.md` § Testing for conventions and patterns.
 
@@ -1303,8 +1300,8 @@ npm run test:rls:local # Local only (requires env vars)
 
 **Key files:** `tests/setup.ts` (factories, adminClient, createClientAs, toDenyAccess matcher), `scripts/test-runner.ts` (branch management). See `CLAUDE.md` § Testing for patterns, gotchas, and permission matrix categories (TEN/XTA/ESC/ROL/INH/CW/EP).
 
-**162 total RLS tests** across 6 files:
-- `tenants.test.ts` (10), `profiles.test.ts` (14), `courses.test.ts` (16), `content-hierarchy.test.ts` (26), `content-write.test.ts` (48), `enrollment-progress.test.ts` (48)
+**278 total RLS tests** across 10 files:
+- `tenants.test.ts` (10), `profiles.test.ts` (14), `courses.test.ts` (16), `content-hierarchy.test.ts` (26), `content-write.test.ts` (48), `enrollment-progress.test.ts` (48), `quiz-exam.test.ts` (55), `comments.test.ts` (24), `expert-questions.test.ts` (16), `issues.test.ts` (21)
 
 ---
 
