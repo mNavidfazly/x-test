@@ -102,7 +102,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── docs/
 │   ├── learning-platform-requirements.md
 │   ├── x_courses_development_approach.md    # This document
-│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress + 12 dashboard = 110 total)
+│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress + 12 dashboard + 14 comments + 12 questions + 12 issue-mgmt = 148 total)
 │
 ├── supabase/
 │   └── migrations/
@@ -155,7 +155,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CommentService + ExpertQuestionService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult + Comment/CommentReply + ExpertQuestion factories
+│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CommentService + ExpertQuestionService + IssueService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult + Comment/CommentReply + ExpertQuestion + Issue/IssueForBoard factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -171,8 +171,10 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── progress.service.spec.ts
 │   │   │   │   │   ├── comment.service.ts        # ✅ CommentService (7 methods: load/add/update/delete comments + replies, signal state, nested Supabase select with author joins)
 │   │   │   │   │   ├── comment.service.spec.ts
-│   │   │   │   │   ├── expert-question.service.ts   # ✅ ExpertQuestionService (2 methods: loadMyQuestions, askQuestion — signal state, nested FK joins, reload-after-mutation) (Phase 6B)
+│   │   │   │   │   ├── expert-question.service.ts   # ✅ ExpertQuestionService (2+3 methods: learner loadMyQuestions/askQuestion + board loadBoardQuestions/respondToQuestion/closeQuestion — dual-signal state) (Phase 6B+6C)
 │   │   │   │   │   ├── expert-question.service.spec.ts
+│   │   │   │   │   ├── issue.service.ts             # ✅ IssueService (2+2 methods: learner loadMyIssues/reportIssue + board loadBoardIssues/updateIssue — dual-signal, dual-table: issues_safe view for learner, base issues for board) (Phase 7A+7B)
+│   │   │   │   │   ├── issue.service.spec.ts
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
@@ -181,7 +183,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │       ├── auth.model.ts      # AppUser, JwtClaims, UserRole
 │   │   │   │       ├── course.model.ts    # ✅ CourseWithProgress, CourseDetail, ModuleViewerData, CourseFormData, LectureFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, ExternalQuizContent, ExternalQuizFormData, ExamContent, ModuleSavePayload, EnrolledUser, MarkedByType, UserProgressRecord, UserProgressSummary, DashboardUserProgress, DashboardCourseProgress, DashboardCourseSummary, ReminderRequest, ReminderResponse, QuizForTaking, QuizQuestionForTaking, QuizQuestionOptionForTaking, QuizAttemptAnswer, QuizAttemptResult, QuizQuestionResult, union types
 │   │   │   │       ├── comment.model.ts   # ✅ Comment, CommentReply, CommentAuthor, BadgeType
-│   │   │   │       ├── expert-question.model.ts  # ✅ ExpertQuestion, ExpertQuestionStatus, ExpertQuestionResponder (Phase 6B)
+│   │   │   │       ├── expert-question.model.ts  # ✅ ExpertQuestion, ExpertQuestionStatus, ExpertQuestionForBoard, QuestionAsker, BoardCourseSummary (Phase 6B+6C)
+│   │   │   │       ├── issue.model.ts            # ✅ Issue, IssueType, IssueStatus, IssueForBoard, IssueReporter, BoardIssueSummary (Phase 7A+7B)
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -189,7 +192,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── sidebar/
 │   │   │   │   │   ├── sidebar.component.ts        # Role-aware nav, mobile overlay, desktop static
 │   │   │   │   │   ├── sidebar.component.spec.ts
-│   │   │   │   │   └── sidebar-nav.config.ts       # 6 sections, 14 items, filterNavSections()
+│   │   │   │   │   └── sidebar-nav.config.ts       # 6 sections, 16 items, filterNavSections()
 │   │   │   │   ├── header/
 │   │   │   │   │   ├── header.component.ts          # Hamburger, notification bell, user menu dropdown
 │   │   │   │   │   └── header.component.spec.ts
@@ -206,7 +209,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │
 │   │   │   │   ├── dashboard/             # Dashboard page
 │   │   │   │   │
-│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C + 5A + 5C + 6A + 6B complete
+│   │   │   │   ├── courses/               # ✅ Phase 2A + 2B + 3A + 3B + 3C-1 + 3C-2 + 3C-3 + 3C-4 + 3D + 3E + 4A + 4B + 4C + 5A + 5C + 6A + 6B + 7A complete
 │   │   │   │   │   ├── pages/
 │   │   │   │   │   │   ├── course-list-page.component.ts    # Smart: injects CourseService, grid of CourseCards
 │   │   │   │   │   │   ├── course-list-page.component.spec.ts
@@ -272,7 +275,9 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   │   ├── comment-section.component.ts        # Smart-lite: comment section with badges (Expert/Calypso), 1-level replies, inline edit/delete, relative timestamps (Phase 6A)
 │   │   │   │   │   │   ├── comment-section.component.spec.ts
 │   │   │   │   │   │   ├── ask-expert.component.ts             # Smart-lite: "Ask an Expert" button → form → success confirmation, injects ExpertQuestionService (Phase 6B)
-│   │   │   │   │   │   └── ask-expert.component.spec.ts
+│   │   │   │   │   │   ├── ask-expert.component.spec.ts
+│   │   │   │   │   │   ├── report-issue.component.ts           # Smart-lite: "Report Issue" button → form (type dropdown + description) → success confirmation, injects IssueService (Phase 7A)
+│   │   │   │   │   │   └── report-issue.component.spec.ts
 │   │   │   │   │   ├── utils/
 │   │   │   │   │   │   ├── quiz-json-template.ts             # Quiz JSON template constant (all 6 types) (Phase 3D)
 │   │   │   │   │   │   ├── quiz-json.utils.ts                # validateQuizJson() — shape validation + defaults (Phase 3D)
@@ -290,10 +295,24 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │       ├── my-questions-page.component.ts    # Smart: "My Questions" page — accordion cards, status badges (amber/emerald/slate), expand to see expert response, "Go to module" links (Phase 6B)
 │   │   │   │   │       └── my-questions-page.component.spec.ts
 │   │   │   │   │
+│   │   │   │   │
+│   │   │   │   ├── issues/               # ✅ Phase 7A complete
+│   │   │   │   │   └── pages/
+│   │   │   │   │       ├── my-issues-page.component.ts          # Smart: "My Issues" page — accordion cards, 4 status badges (amber/blue/emerald/slate), issue type labels, expand to see status updates (Phase 7A)
+│   │   │   │   │       └── my-issues-page.component.spec.ts
+│   │   │   │   │
+│   │   │   │   ├── teaching/             # ✅ Phase 5D + 6C + 7B complete
+│   │   │   │   │   └── pages/
+│   │   │   │   │       ├── exam-grading-page.component.ts       # Smart: cross-course exam grading dashboard (Phase 5D)
+│   │   │   │   │       ├── exam-grading-page.component.spec.ts
+│   │   │   │   │       ├── questions-board-page.component.ts    # Smart: expert questions board with filters, summary cards, expandable rows, inline response form (Phase 6C)
+│   │   │   │   │       ├── questions-board-page.component.spec.ts
+│   │   │   │   │       ├── issue-management-page.component.ts   # Smart: issue management board with 4 filters, 5 summary cards, expandable rows, inline status+notes editing (Phase 7B)
+│   │   │   │   │       └── issue-management-page.component.spec.ts
+│   │   │   │   │
 │   │   │   │   │                         # --- Planned (not yet built) ---
 │   │   │   │   ├── quizzes/              # Phase 5A quiz-taking components live in courses/components/ (quiz-question, quiz-result-item, quiz-taker)
 │   │   │   │   ├── exams/                # Phase 5C-5D
-│   │   │   │   ├── issues/               # Phase 7
 │   │   │   │   ├── notifications/        # Phase 8
 │   │   │   │   └── admin/                # Phase 9
 │   │   │   │
@@ -462,11 +481,11 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 
 #### 1G - Layout Shell
 - [x] Main layout component (wraps authenticated routes via `loadComponent` on parent route)
-- [x] Role-aware sidebar navigation (6 sections, 13 nav items, `filterNavSections()` pure function):
-  - [x] **All users:** Dashboard, My Courses, Notifications
+- [x] Role-aware sidebar navigation (6 sections, 16 nav items, `filterNavSections()` pure function):
+  - [x] **All users:** Dashboard, My Courses, My Questions, My Issues, Notifications
   - [x] **Tenant Admin:** + User Management, Progress Dashboard
   - [x] **CSM:** + Assigned Tenants, Expert Questions, Progress Dashboard
-  - [x] **Lecturer:** + My Courses (teaching), Questions Board, Exam Grading, Progress Dashboard
+  - [x] **Lecturer:** + My Courses (teaching), Questions Board, Exam Grading, Issue Management, Progress Dashboard
   - [x] **Platform Admin:** + All of the above + Tenant Management, Content Management, Staleness Dashboard
 - [x] Header with notification bell (hardcoded 0 count for 1G, Realtime in Phase 8) + user menu dropdown (avatar/initials, profile link, sign out)
 - [x] ProfileService (fetches `full_name`/`avatar_url` from `profiles` table via `effect()` watching auth state)
@@ -852,33 +871,41 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 
 ### Phase 7: Issue Reporting
 
-#### 7A - Issue Reporting UI
-- [ ] "Report Issue" button on module/course
-- [ ] Issue type selection: content_error, technical, accessibility, other
-- [ ] Description text input
-- [ ] Module/course linking (auto-populated from context)
-- [ ] Insert into issues table
-- [ ] Auto-notification via trigger (notify_new_issue → lecturers + CSMs + platform admins, with deduplication)
-- [ ] "My Issues" page: own issues with status
-- [ ] **Tests:** IssueFormComponent, MyIssuesComponent
+#### 7A - Issue Reporting UI (Complete)
+- [x] No migration needed — `issues` table, `issues_safe` view, 6 RLS policies, 2 notification triggers already exist
+- [x] IssueService (separate from CourseService): 2 methods — `loadMyIssues` (from `issues_safe` view, excludes internal_notes), `reportIssue` (INSERT into base `issues` table without `.select()` — learner has INSERT but no SELECT on base table). Signal-based state.
+- [x] ReportIssueComponent (smart-lite in `features/courses/components/`): 3-state UI (collapsed Flag button → form with issue type dropdown + description textarea → success confirmation), injects IssueService
+- [x] MyIssuesPageComponent (smart page in `features/issues/pages/`): expandable accordion cards, 4 status badges (amber=open, blue=investigating, emerald=resolved, slate=closed), issue type labels, expand to see description + "Go to module" link + resolution panel
+- [x] Route `/issues` + sidebar "My Issues" (Flag icon, roles: 'all') — added before `/notifications` in route config
+- [x] Module viewer page integration: `<app-report-issue>` between ask-expert and comment section
+- [x] **Dual table strategy:** SELECT from `issues_safe` (view, no internal_notes), INSERT into base `issues` table (learner has INSERT but no SELECT on base)
+- [x] Mock factories: `createMockIssue()`, `createMockIssueService()` in course.mock.ts
+- [x] Auto-notification via existing DB triggers: `notify_new_issue` (INSERT → lecturers + CSMs + PA, deduplicated)
+- [x] **Tests:** 39 new tests (11 IssueService + 10 ReportIssueComponent + 17 MyIssuesPageComponent + 1 ModuleViewerPage integration) — 821 total frontend tests, build OK
+- [x] **E2E verified:** 13 stories (IR-01 to IR-13), all pass, 0 bugs found
 
-#### 7B - Issue Management
-- [ ] Role-scoped issue dashboard:
-  - [ ] **Learner:** Own issues only
-  - [ ] **Tenant Admin:** All issues from their tenant
-  - [ ] **CSM:** Issues from assigned tenants
-  - [ ] **Lecturer:** Issues on assigned courses (cross-tenant)
-  - [ ] **Platform Admin:** All issues
-- [ ] Status workflow: open → investigating → resolved → closed
-- [ ] Internal notes (visible to Calypso staff only, not to reporter)
-- [ ] Resolved_by, resolved_at tracking
-- [ ] **Tests:** IssueDashboardComponent
+#### 7B - Issue Management Board (Complete)
+- [x] Extended IssueService with dual-signal pattern (4 board signals + 2 board methods): `loadBoardIssues` (base `issues` table with reporter FK join, includes internal_notes), `updateIssue` (status + internal_notes, auto-sets resolved_by/resolved_at when resolving, clears when moving away from resolved)
+- [x] New model types: `IssueForBoard` (with reporter FK join + internal_notes), `IssueReporter`, `BoardIssueSummary`
+- [x] IssueManagementPageComponent (~290 lines): 4 filters (search/course/status/type), 5 summary cards (Total/Open/Investigating/Resolved/Closed), expandable table rows with inline status dropdown + internal notes textarea + Save/Cancel
+- [x] Status badges: open=amber/Clock, investigating=blue/Eye, resolved=emerald/CheckCircle2, closed=slate/XCircle
+- [x] Board reads from base `issues` table (not `issues_safe`) — includes `internal_notes` + reporter FK join
+- [x] Route: `teaching/issues` with `roleGuard('lecturer', 'platform_admin')` — BEFORE `teaching/:path` catch-all
+- [x] Sidebar: "Issue Management" in Teaching section (Flag icon)
+- [x] Mock backward compat: extended `createMockIssueService` with board options, all default empty — existing call sites unaffected
+- [x] Auto-notification via trigger: `notify_issue_resolved` fires when status changes to 'resolved'
+- [x] **Tests:** 33 new tests (12 IssueService board + 20 IssueManagementPage + 1 existing fix) — 854 total frontend tests, build OK
+- [x] **E2E verified:** 12 stories (IM-01 to IM-12), all pass, 4 roles tested (Lecturer, PA, Learner, CSM), 0 bugs found
 
-#### 7C - Issue RLS Tests
-- [ ] Issues: own read, tenant admin read (own tenant), CSM read (assigned tenants), lecturer read (assigned courses cross-tenant)
-- [ ] Issues: own INSERT, platform admin + lecturer UPDATE (status, internal_notes)
-- [ ] Issues: internal_notes not visible to reporter (app-level, not RLS)
-- [ ] **Tests:** ~20 RLS tests
+#### 7C - Issue RLS Tests (Complete)
+- [x] `createIssue` factory in `tests/setup.ts` (userId, tenantId, courseId, overrides)
+- [x] Base table SELECT (7 tests): Learner/TA cannot SELECT base table (dropped in 00010), PA sees all, CSM sees assigned tenant, Lecturer sees assigned courses cross-tenant
+- [x] `issues_safe` view SELECT (4 tests): Learner sees own, TA sees tenant, internal_notes column absent
+- [x] INSERT (2 tests): Learner can insert with own user_id+tenant_id, wrong tenant denied
+- [x] UPDATE (5 tests): Lecturer can update assigned course issues, PA can update any, Learner/TA/CSM denied
+- [x] DELETE (3 tests): No DELETE policies — PA, Lecturer, Learner all denied
+- [x] **IS-RLS-BUG-01:** Learner INSERT with `.select().single()` fails — learner has INSERT but NO SELECT on base table (dropped migration 00010). Must INSERT without `.select()`, verify via admin.
+- [x] **Tests:** 21 new RLS tests (IS-001 to IS-021) — 278 total RLS tests across 10 files, all pass
 
 ---
 
@@ -1260,7 +1287,7 @@ npm run test:ui             # Interactive browser UI
 **Key Files (source of truth — do NOT duplicate code examples here, they drift):**
 - `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
 - `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
-- `frontend/src/app/__mocks__/` — 10 mock factories (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin + dashboard progress], tiptap)
+- `frontend/src/app/__mocks__/` — 10 mock files (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin + dashboard progress + comment + expert-question + issue], tiptap)
 
 See `CLAUDE.md` § Testing for conventions and patterns.
 
