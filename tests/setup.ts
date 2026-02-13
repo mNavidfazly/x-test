@@ -814,6 +814,88 @@ export async function createExternalQuizResult(
 }
 
 // ---------------------------------------------------------------------------
+// Phase 6D: Comments & Expert Questions factories
+// ---------------------------------------------------------------------------
+
+export async function createComment(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  moduleId: string,
+  overrides: { body?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('comments')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      module_id: moduleId,
+      body: overrides.body ?? 'Test comment ' + Math.random().toString(36).slice(2, 8),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create comment: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createCommentReply(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  commentId: string,
+  overrides: { body?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('comment_replies')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      comment_id: commentId,
+      body: overrides.body ?? 'Test reply ' + Math.random().toString(36).slice(2, 8),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create comment_reply: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createExpertQuestion(
+  tracker: TestDataTracker,
+  userId: string,
+  tenantId: string,
+  courseId: string,
+  overrides: {
+    questionText?: string;
+    moduleId?: string;
+    status?: string;
+    responseText?: string;
+    respondedBy?: string;
+    respondedAt?: string;
+  } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('expert_questions')
+    .insert({
+      user_id: userId,
+      tenant_id: tenantId,
+      course_id: courseId,
+      question_text: overrides.questionText ?? 'Test question ' + Math.random().toString(36).slice(2, 8),
+      ...(overrides.moduleId !== undefined && { module_id: overrides.moduleId }),
+      ...(overrides.status !== undefined && { status: overrides.status }),
+      ...(overrides.responseText !== undefined && { response_text: overrides.responseText }),
+      ...(overrides.respondedBy !== undefined && { responded_by: overrides.respondedBy }),
+      ...(overrides.respondedAt !== undefined && { responded_at: overrides.respondedAt }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create expert_question: ${error.message}`);
+  return { id: data.id };
+}
+
+// ---------------------------------------------------------------------------
 // Custom Vitest Matcher: toDenyAccess
 // ---------------------------------------------------------------------------
 //

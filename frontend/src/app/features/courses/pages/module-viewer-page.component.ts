@@ -12,11 +12,12 @@ import { QuizTakerComponent } from '../components/quiz-taker.component';
 import { ExamTakerComponent } from '../components/exam-taker.component';
 import { CommentSectionComponent } from '../components/comment-section.component';
 import { AskExpertComponent } from '../components/ask-expert.component';
+import { ReportIssueComponent } from '../components/report-issue.component';
 
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-5xl mx-auto">
@@ -90,6 +91,14 @@ import { AskExpertComponent } from '../components/ask-expert.component';
         <!-- Ask Expert -->
         <div class="mt-6 mb-6">
           <app-ask-expert
+            [courseId]="courseId()"
+            [moduleId]="courseService.moduleViewer()!.module.id"
+          />
+        </div>
+
+        <!-- Report Issue -->
+        <div class="mt-4 mb-6">
+          <app-report-issue
             [courseId]="courseId()"
             [moduleId]="courseService.moduleViewer()!.module.id"
           />

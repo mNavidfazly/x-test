@@ -6,7 +6,7 @@ import { BehaviorSubject, EMPTY } from 'rxjs';
 import { ModuleViewerPageComponent } from './module-viewer-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
-import { createMockCourseService, createMockCourseDetail, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, createMockCommentService, createMockExpertQuestionService, MockCourseService } from '../../../__mocks__/course.mock';
+import { createMockCourseService, createMockCourseDetail, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, createMockCommentService, createMockExpertQuestionService, createMockIssueService, MockCourseService } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
 import { provideMarkdown } from 'ngx-markdown';
@@ -19,8 +19,10 @@ import { QuizTakerComponent } from '../components/quiz-taker.component';
 import { ExamTakerComponent } from '../components/exam-taker.component';
 import { CommentSectionComponent } from '../components/comment-section.component';
 import { AskExpertComponent } from '../components/ask-expert.component';
+import { ReportIssueComponent } from '../components/report-issue.component';
 import { CommentService } from '../../../core/services/comment.service';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
+import { IssueService } from '../../../core/services/issue.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 
@@ -63,13 +65,14 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         { provide: CommentService, useValue: createMockCommentService() },
         { provide: ExpertQuestionService, useValue: createMockExpertQuestionService() },
+        { provide: IssueService, useValue: createMockIssueService() },
         { provide: AuthService, useValue: createMockAuthService() },
         // Provide paramMap as an observable — the component uses toSignal(route.paramMap)
         // to reactively respond to route param changes (e.g. Next/Previous navigation).
@@ -305,6 +308,15 @@ describe('ModuleViewerPageComponent', () => {
     await renderPage({ viewer });
 
     expect(document.querySelector('app-comment-section')).toBeTruthy();
+  });
+
+  // --- Report issue integration ---
+
+  it('should render report issue component when module is loaded', async () => {
+    const viewer = createMockModuleViewerData();
+    await renderPage({ viewer });
+
+    expect(document.querySelector('app-report-issue')).toBeTruthy();
   });
 
   it('should NOT reload module viewer on exam completion', async () => {

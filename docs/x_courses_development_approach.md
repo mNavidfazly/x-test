@@ -820,22 +820,33 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] Auto-notification via existing DB triggers: `notify_new_expert_question` (INSERT → lecturers + CSMs), `notify_question_answered` (UPDATE → learner)
 - [x] **Tests:** 38 new tests (11 ExpertQuestionService + 10 AskExpertComponent + 16 MyQuestionsPageComponent + 1 ModuleViewerPage ask-expert integration) — 748 total frontend tests, build OK
 
-#### 6C - Questions Board (Lecturer)
-- [ ] Lecturer dashboard: incoming questions for assigned courses (cross-tenant)
-- [ ] Filter by status (pending, answered, closed)
-- [ ] Reply to question: update expert_questions (response_text, responded_by, responded_at, status → 'answered')
-- [ ] Auto-notification via trigger (notify_question_answered → learner)
-- [ ] CSM visibility: can see questions from assigned tenants (read-only awareness, cannot reply)
-- [ ] Platform Admin: can see all, can reply
-- [ ] **Tests:** QuestionsBoardComponent
+#### 6C - Questions Board (Lecturer) ✅
+- [x] No migration needed — reuses `expert_questions` table + existing RLS policies
+- [x] Extended ExpertQuestionService (same service, 4 new board signals + 3 new methods): `loadBoardQuestions` (FK join to asker profile, grouped by course), `respondToQuestion` (update response_text + status → answered), `closeQuestion` (status → closed)
+- [x] New model types: `ExpertQuestionForBoard` (with asker FK join), `QuestionAsker`, `BoardCourseSummary`
+- [x] QuestionsBoardPageComponent (~300 lines): filter bar (search input + course dropdown + status dropdown), 4 summary cards (total/pending/answered/closed), expandable table rows with inline response form
+- [x] Filter by status (pending, answered, closed) + search by question text + filter by course
+- [x] Reply to question: update expert_questions (response_text, responded_by, responded_at, status → 'answered')
+- [x] Auto-notification via trigger (notify_question_answered → learner) — fires at DB level
+- [x] CSM visibility: can see questions from assigned tenants (read-only awareness, cannot reply)
+- [x] Platform Admin: can see all, can reply
+- [x] Route: `teaching/questions` with `roleGuard('lecturer', 'platform_admin')` — BEFORE `teaching/:path` catch-all
+- [x] Mock backward compat: extended `createMockExpertQuestionService` with board options, all default empty — 27 existing call sites unaffected
+- [x] QB-BUG-01: Closed questions with `response_text` didn't show expert response on learner's My Questions page — condition was `status === 'answered'` only, changed to `response_text` truthy check
+- [x] **Tests:** 33 new tests (11 service + 22 component) + 1 bug fix — 782 total frontend tests, build OK. E2E 12/12 all PASS.
 
-#### 6D - Comments & Expert Questions RLS Tests
-- [ ] Comments: tenant users see own tenant only, lecturer sees cross-tenant for assigned courses
-- [ ] Comments: lecturer INSERT with tenant_courses validation
-- [ ] Comment replies: same tenant isolation + lecturer cross-tenant
-- [ ] Expert questions: own questions read, tenant admin read (own tenant), CSM read (assigned tenants), lecturer read (assigned courses cross-tenant)
-- [ ] Expert questions: lecturer UPDATE (response), platform admin UPDATE
-- [ ] **Tests:** ~35 RLS tests
+#### 6D - Comments & Expert Questions RLS Tests ✅
+- [x] 3 new factory functions in `tests/setup.ts`: `createComment`, `createCommentReply`, `createExpertQuestion`
+- [x] Comments SELECT (7 tests): tenant users see own tenant only, PA sees all, CSM sees assigned tenant, lecturer sees cross-tenant for assigned courses, TA sees own tenant
+- [x] Comments INSERT (4 tests): own tenant OK, wrong tenant denied. **Finding:** `comments_insert_lecturer` and `comments_insert_csm` policies are broken — their EXISTS subqueries reference `tenant_courses` which has no lecturer/CSM SELECT policy. PostgreSQL recursively applies RLS in policy subqueries. Lecturers/CSMs use `comments_insert_own` with their master tenant_id instead.
+- [x] Comments UPDATE (2 tests): author can update own, others denied
+- [x] Comments DELETE (4 tests): author, TA (same tenant), PA (any) can delete; others denied
+- [x] Comment replies: same tenant isolation + lecturer cross-tenant SELECT, own INSERT, own UPDATE/DELETE, PA DELETE (7 tests)
+- [x] Expert questions SELECT (7 tests): own questions, TA own tenant, PA all, CSM assigned tenants, lecturer cross-tenant on assigned courses
+- [x] Expert questions INSERT (2 tests): own tenant OK, wrong tenant denied
+- [x] Expert questions UPDATE (4 tests): lecturer can update (response + status), PA can update any, learner and TA denied
+- [x] Expert questions DELETE (3 tests): no DELETE policies — all roles denied (learner, PA, lecturer)
+- [x] **Tests:** 40 new RLS tests (CM-001 to CM-024, EQ-001 to EQ-016) — 257 total RLS tests across 9 files
 
 ---
 

@@ -766,3 +766,51 @@ export function createMockExpertQuestionService(options?: {
 }
 
 export type MockExpertQuestionService = ReturnType<typeof createMockExpertQuestionService>;
+
+// ---------------------------------------------------------------------------
+// Issue mocks
+// ---------------------------------------------------------------------------
+import { Issue } from '../core/models/issue.model';
+
+export function createMockIssue(overrides?: Partial<Issue>): Issue {
+  return {
+    id: 'issue-1',
+    user_id: 'user-1',
+    tenant_id: 'tenant-1',
+    course_id: 'course-1',
+    module_id: 'mod-1',
+    description: 'There is a typo in the formula on slide 3.',
+    issue_type: 'content_error',
+    status: 'open',
+    resolved_at: null,
+    resolved_by: null,
+    created_at: '2026-02-10T10:00:00Z',
+    updated_at: '2026-02-10T10:00:00Z',
+    course: { title: 'Test Course' },
+    module: { title: 'Test Module' },
+    ...overrides,
+  };
+}
+
+export function createMockIssueService(options?: {
+  issues?: Issue[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const issues = signal<Issue[]>(options?.issues ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    issues: issues.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadMyIssues: vi.fn().mockResolvedValue(undefined),
+    reportIssue: vi.fn().mockResolvedValue(undefined),
+    _setIssues: issues.set.bind(issues),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockIssueService = ReturnType<typeof createMockIssueService>;

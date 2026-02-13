@@ -111,6 +111,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'issues',
+        loadComponent: () =>
+          import('./features/issues/pages/my-issues-page.component').then(
+            (m) => m.MyIssuesPageComponent,
+          ),
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(
