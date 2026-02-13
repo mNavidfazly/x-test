@@ -4,7 +4,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app.config import get_settings
-from app.routers import auth, health, reminder, video
+from app.routers import auth, health, quiz_results, reminder, video
 
 app = FastAPI(title="X-Courses v2 API")
 
@@ -25,3 +25,4 @@ app.include_router(health.router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(video.router, prefix="/api")
 app.include_router(reminder.router, prefix="/api")
+app.include_router(quiz_results.router, prefix="/api")

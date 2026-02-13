@@ -493,31 +493,25 @@ export class CourseService {
 
     if (oErr) return null;
 
-    // 4. For matching questions, fetch correct_answer to extract terms
+    // 4. For matching questions, fetch terms via SECURITY DEFINER RPC
+    //    (learners can't read base quiz_questions table directly — RLS blocks it)
     const matchingQuestions = questions.filter((q: { question_type: string }) => q.question_type === 'matching');
     let matchingTerms: Record<string, { left: string[]; right: string[] }> = {};
     if (matchingQuestions.length > 0) {
       const matchingIds = matchingQuestions.map((q: { id: string }) => q.id);
-      const { data: matchingData } = await client
-        .from('quiz_questions')
-        .select('id, correct_answer')
-        .in('id', matchingIds);
+      const { data: termsData } = await client
+        .rpc('get_matching_question_terms', { p_question_ids: matchingIds });
 
-      if (matchingData) {
-        for (const mq of matchingData) {
-          if (mq.correct_answer) {
-            try {
-              const pairs = JSON.parse(mq.correct_answer) as { left: string; right: string }[];
-              const left = pairs.map(p => p.left);
-              const right = [...pairs.map(p => p.right)];
-              // Shuffle right side using Fisher-Yates
-              for (let i = right.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [right[i], right[j]] = [right[j], right[i]];
-              }
-              matchingTerms[mq.id] = { left, right };
-            } catch { /* ignore parse errors */ }
+      if (termsData && typeof termsData === 'object') {
+        for (const [qId, terms] of Object.entries(termsData as Record<string, { left: string[]; right: string[] }>)) {
+          const left = terms.left;
+          const right = [...terms.right];
+          // Shuffle right side using Fisher-Yates
+          for (let i = right.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [right[i], right[j]] = [right[j], right[i]];
           }
+          matchingTerms[qId] = { left, right };
         }
       }
     }

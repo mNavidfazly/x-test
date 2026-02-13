@@ -204,8 +204,8 @@ AND module_id IN (
 
 **Preconditions**:
 - On start phase (QT-02), "Start Quiz" button visible
-- Quiz has at least one question of each type (ideal) or a representative subset
-- If quiz doesn't have all 6 types, create one via Platform Admin first
+- Quiz **MUST** have at least one question of **each of the 6 types**: `single_choice`, `multiple_choice`, `true_false`, `fill_blank`, `short_answer`, `matching` — a subset is NOT sufficient (see QT-BUG-04: matching questions failed silently when untested)
+- If quiz doesn't have all 6 types, create them via Platform Admin before testing
 
 **Steps**:
 
@@ -581,6 +581,7 @@ AND m.course_id = '<COURSE_ID>';
 | QT-BUG-01 | QT-06 | **High** | `QuizResultItemComponent.isCorrect` displays ALL option-based questions as incorrect | FIXED — restructured `isCorrect` to check options before `correct_answer` null guard. +7 tests (12 total). |
 | QT-BUG-02 | QT-05 | **Critical** | `protect_quiz_attempt_score` trigger silently reverts score/passed set by `grade_quiz_attempt` | FIXED — migration 00028: `set_config('app.grading_in_progress')` bypass in trigger + grade function. |
 | QT-BUG-03 | QT-05 | **Medium** | `onQuizCompleted()` calling `loadModuleViewer()` destroys quiz-taker, losing results view | FIXED — made `onQuizCompleted()` a no-op; quiz-taker handles its own results display. |
+| QT-BUG-04 | QT-03 | **High** | Matching question dropdowns don't render — `loadQuizForTaking` queried base `quiz_questions` table (RLS blocks learner), returning `[]` for matching terms | FIXED — migration 00029: `get_matching_question_terms` SECURITY DEFINER RPC; CourseService updated to use `.rpc()`. |
 
 ### QT-BUG-01: Results Display — All Option-Based Questions Shown as Incorrect
 
@@ -666,12 +667,43 @@ readonly isCorrect = computed(() => {
 
 ---
 
+### QT-BUG-04: Matching Question Dropdowns Don't Render
+
+**Discovered during**: QT-03 retest (matching type not covered in original 5-type quiz)
+**Severity**: High (matching questions completely broken for learners — no dropdowns, no way to answer)
+**Component**: `course.service.ts` → `loadQuizForTaking()` (line ~496)
+
+**Symptoms**:
+- Quiz showed "5 of 6 answered" with question 6 (matching) visible but with NO `<select>` dropdowns
+- Only the question text and table header rendered, no interactive elements
+- Matching question type effectively unusable for all learners
+
+**Root cause**: `loadQuizForTaking` fetched matching question terms by querying the **base** `quiz_questions` table directly:
+
+```typescript
+const { data: matchingData } = await client
+  .from('quiz_questions')
+  .select('id, correct_answer')
+  .in('id', matchingIds);
+```
+
+The `quiz_questions_safe` view works because the view owner (`postgres`) bypasses RLS. But direct queries to the base `quiz_questions` table apply RLS for the authenticated user's role. Learners have no SELECT policy on base `quiz_questions` — they can only read via `quiz_questions_safe`. The query returned `[]` (empty array), so `matchingLeft`/`matchingRight` were never set on the question objects, and the template's `@for (left of question().matchingLeft ?? [])` fell back to empty arrays.
+
+**Why this was missed**: The original E2E quiz (module `37a5d684`) only had 5 question types — no matching question was included. QT-03's precondition had a loophole: "or a representative subset" allowed testing to pass without all 6 types. The matching rendering code worked in unit tests (mocked data) and worked for Platform Admins (who have SELECT policy on base table), but failed for learners.
+
+**Fix**: Migration 00029 — `get_matching_question_terms(p_question_ids uuid[])` SECURITY DEFINER RPC that reads the base `quiz_questions` table and returns left/right term arrays (without exposing correct pairings to the client). CourseService updated to use `.rpc('get_matching_question_terms', ...)` instead of `.from('quiz_questions')`. Right-side terms are still shuffled client-side via Fisher-Yates.
+
+**Verified**: Playwright MCP confirmed matching dropdowns render correctly after fix (France/Germany/Spain matched to Paris/Berlin/Madrid).
+
+---
+
 ## Test Execution Log
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-13 | Claude | QT-01 to QT-06 | 3 | 2 | QT-04 partial (teal verified, amber/rose not timed). QT-05 FAIL: grading RPC not applied (QT-BUG-02). QT-06 FAIL: all option-based questions shown as incorrect (QT-BUG-01). QT-07 to QT-11 blocked pending bug fixes. |
 | 2026-02-13 | Claude | QT-01 to QT-11 (retest) | 10 | 0 | All 11 stories tested (QT-04 partial — teal verified, amber/rose skipped on 20min timer). 3 bugs found+fixed: QT-BUG-01 (isCorrect logic), QT-BUG-02 (migration 00028 — trigger bypass), QT-BUG-03 (onQuizCompleted no-op). 620 tests, build OK. |
+| 2026-02-13 | Claude | QT-03 (matching retest) | 1 | 0 | QT-BUG-04: matching dropdowns broken for learners (RLS blocks base table). Fixed via migration 00029 SECURITY DEFINER RPC. QT-03 precondition hardened to REQUIRE all 6 types. Verified via Playwright MCP. 621 tests, build OK. |
 
 ---
 
@@ -686,6 +718,7 @@ readonly isCorrect = computed(() => {
 | Module Item (LINKABLE_TYPES) | `frontend/src/app/features/courses/components/module-item.component.ts` |
 | Course Service (quiz-taking methods) | `frontend/src/app/core/services/course.service.ts` |
 | Course Model (quiz-taking types) | `frontend/src/app/core/models/course.model.ts` |
+| Migration 00029 (matching terms RPC) | `supabase/migrations/00029_get_matching_question_terms.sql` |
 | Quiz Builder Stories (QB-12 superseded) | `docs/e2e-user-stories/QUIZ_BUILDER_USER_STORIES.md` |
 | Progress Tracking Stories (PT-12 resolved) | `docs/e2e-user-stories/PROGRESS_TRACKING_USER_STORIES.md` |
 | Test Users Setup | `docs/e2e-user-stories/TEST_USERS.md` |

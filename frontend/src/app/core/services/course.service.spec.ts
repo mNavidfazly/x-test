@@ -1859,6 +1859,61 @@ describe('CourseService', () => {
       expect(result!.pastAttempts).toEqual([]);
     });
 
+    it('should load matching question terms via RPC', async () => {
+      // 1st: quizzes maybeSingle
+      supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
+        data: {
+          id: 'quiz-m', title: 'Matching Quiz', description: null, time_limit: null,
+          passing_score: 70, max_attempts: 3, show_correct_answers: true,
+          randomize_questions: false, randomize_answers: false,
+        },
+        error: null,
+      });
+
+      let thenCallCount = 0;
+      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) => {
+        thenCallCount++;
+        switch (thenCallCount) {
+          case 1: // quiz_questions_safe
+            return resolve({
+              data: [
+                { id: 'qm1', question_text: 'Match countries', question_type: 'matching', points: 3, sort_order: 0 },
+              ],
+              error: null,
+            });
+          case 2: // quiz_question_options_safe
+            return resolve({ data: [], error: null });
+          case 3: // quiz_attempts (past attempts)
+            return resolve({ data: [], error: null });
+          default:
+            return resolve({ data: [], error: null });
+        }
+      });
+
+      // Mock the RPC call for matching terms
+      supabase.client.rpc = vi.fn().mockResolvedValueOnce({
+        data: {
+          'qm1': {
+            left: ['France', 'Germany'],
+            right: ['Paris', 'Berlin'],
+          },
+        },
+        error: null,
+      });
+
+      const result = await service.loadQuizForTaking('mod-matching');
+
+      expect(result).not.toBeNull();
+      expect(result!.quiz.questions).toHaveLength(1);
+      expect(result!.quiz.questions[0].question_type).toBe('matching');
+      expect(result!.quiz.questions[0].matchingLeft).toEqual(['France', 'Germany']);
+      // Right side is shuffled, so just check it has the same elements
+      expect(result!.quiz.questions[0].matchingRight).toHaveLength(2);
+      expect(result!.quiz.questions[0].matchingRight).toContain('Paris');
+      expect(result!.quiz.questions[0].matchingRight).toContain('Berlin');
+      expect(supabase.client.rpc).toHaveBeenCalledWith('get_matching_question_terms', { p_question_ids: ['qm1'] });
+    });
+
     it('should return null when quiz not found', async () => {
       supabase._mockQueryBuilder.maybeSingle.mockResolvedValueOnce({
         data: null,

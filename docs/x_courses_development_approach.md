@@ -121,7 +121,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   ├── auth.py                   # POST /api/auth/resolve-tenant (10/min), POST /api/auth/reset-password (5/min)
 │   │   │   ├── video.py                 # POST /api/video/init-upload, GET /api/video/{id}/status, POST /api/video/webhook, DELETE /api/video/{id}
 │   │   │   ├── reminder.py              # POST /api/reminders/send (PA/TA/CSM/Lecturer auth, sends email + inserts reminder_history)
-│   │   │   # Planned: invite.py (Phase 9B), quiz_results.py (Phase 5B)
+│   │   │   ├── quiz_results.py            # POST /api/quiz-results/external (external quiz webhook, API key auth)
+│   │   │   # Planned: invite.py (Phase 9B)
 │   │   │
 │   │   ├── services/
 │   │   │   ├── __init__.py
@@ -724,13 +725,14 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] **E2E verified:** 11 stories (QT-01 to QT-11), 10 pass + 1 partial (QT-04 timer colors). 3 bugs found+fixed (QT-BUG-01/02/03). PT-12 resolved.
 
 #### 5B - External Quiz Webhook
-- [ ] FastAPI endpoint: `POST /api/quiz-results/external`
-- [ ] Request body: `{ external_quiz_id, user_email, score, passed, details }`
-- [ ] Lookup user by email → get user_id, tenant_id
-- [ ] Insert into external_quiz_results (service role, bypasses RLS)
-- [ ] If passed → auto-mark module progress (lookup module via external_quiz_references)
-- [ ] API key or webhook signature validation
-- [ ] **Tests:** pytest endpoint tests
+- [x] FastAPI endpoint: `POST /api/quiz-results/external`
+- [x] Request body: `{ external_quiz_id, user_email, score, passed, details }`
+- [x] Lookup user by email → get user_id, tenant_id
+- [x] Insert into external_quiz_results (service role, bypasses RLS)
+- [x] If passed → auto-mark module progress (lookup module via external_quiz_references)
+- [x] API key or webhook signature validation
+- [x] Migration 00030: `auto_mark_external_quiz_completed()` trigger — AFTER INSERT on `external_quiz_results`, auto-marks `user_progress` with `marked_by='system'`
+- [x] **Tests:** 8 pytest endpoint tests — 77 total backend tests pass
 
 #### 5C - Exam Flow
 - [ ] Exam module display: title, description, duration, file types, passing score
@@ -1023,7 +1025,7 @@ Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
 | `/api/auth/reset-password` | POST | Validate tenant allows email_password, then forward to Supabase admin API | None (rate-limited 5/min/IP) |
 | `/api/invite` | POST | *Planned (Phase 9B)* — Send invitation email (Calypso SMTP) | JWT (Tenant Admin, Platform Admin) |
 | `/api/reminders/send` | POST | Send reminder emails + log to `reminder_history` (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
-| `/api/quiz-results/external` | POST | *Planned (Phase 5B)* — External quiz results webhook | API Key / Webhook Signature |
+| `/api/quiz-results/external` | POST | External quiz results webhook — receives score/passed, inserts into `external_quiz_results`, auto-marks progress via trigger | API Key (`X-API-Key` header) |
 | `/api/video/init-upload` | POST | Create Bunny video + return TUS upload credentials | JWT (Platform Admin, Lecturer with can_edit) |
 | `/api/video/{id}/status` | GET | Poll Bunny encoding progress + return signed embed URL | JWT (any authenticated) |
 | `/api/video/webhook` | POST | Bunny encoding status callback | None (validates library_id) |

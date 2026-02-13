@@ -76,3 +76,17 @@ class SendRemindersRequest(BaseModel):
 class SendRemindersResponse(BaseModel):
     sent: int
     failed: int
+
+
+class ExternalQuizResultRequest(BaseModel):
+    external_quiz_id: str
+    user_email: str
+    score: Optional[float] = None
+    passed: Optional[bool] = None
+    details: Optional[dict] = None
+
+
+class ExternalQuizResultResponse(BaseModel):
+    status: str
+    user_id: Optional[str] = None
+    result_id: Optional[str] = None

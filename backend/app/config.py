@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     bunny_cdn_hostname: str = ""
     bunny_token_key: str = ""
 
+    external_quiz_api_key: str = ""
+
     model_config = SettingsConfigDict(env_file=".env")
 
 
