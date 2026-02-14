@@ -185,6 +185,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'platform/tenants',
+        canActivate: [roleGuard('platform_admin')],
+        loadComponent: () =>
+          import('./features/platform/pages/tenant-management-page.component').then(
+            (m) => m.TenantManagementPageComponent,
+          ),
+      },
+      {
         path: 'platform/:path',
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(

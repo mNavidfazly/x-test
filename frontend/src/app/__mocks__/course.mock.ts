@@ -911,3 +911,80 @@ export function createMockNotificationService(options?: {
 }
 
 export type MockNotificationService = ReturnType<typeof createMockNotificationService>;
+
+// ---------------------------------------------------------------------------
+// Tenant Management mocks
+// ---------------------------------------------------------------------------
+
+import {
+  TenantForBoard, TenantCourseAssignment, CsmAssignment,
+  AvailableCourse, AvailableCsm,
+} from '../core/models/tenant-management.model';
+
+export function createMockTenantForBoard(overrides?: Partial<TenantForBoard>): TenantForBoard {
+  return {
+    id: 'tenant-1',
+    name: 'Test Tenant',
+    domain: 'test.com',
+    is_master: false,
+    settings: { auth_methods: ['email_password'] },
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-02-01T00:00:00Z',
+    courseCount: 3,
+    csmCount: 1,
+    ...overrides,
+  };
+}
+
+export function createMockTenantCourseAssignment(overrides?: Partial<TenantCourseAssignment>): TenantCourseAssignment {
+  return {
+    id: 'tc-1',
+    course_id: 'course-1',
+    course_title: 'Test Course',
+    ...overrides,
+  };
+}
+
+export function createMockCsmAssignment(overrides?: Partial<CsmAssignment>): CsmAssignment {
+  return {
+    id: 'csa-1',
+    user_id: 'user-1',
+    email: 'csm@calypso.com',
+    full_name: 'CSM User',
+    assigned_at: '2026-02-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+export function createMockTenantManagementService(options?: {
+  tenants?: TenantForBoard[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const tenants = signal<TenantForBoard[]>(options?.tenants ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    tenants: tenants.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadTenants: vi.fn().mockResolvedValue(undefined),
+    createTenant: vi.fn().mockResolvedValue(undefined),
+    updateTenant: vi.fn().mockResolvedValue(undefined),
+    deleteTenant: vi.fn().mockResolvedValue(undefined),
+    loadTenantCourses: vi.fn().mockResolvedValue([]),
+    loadAvailableCourses: vi.fn().mockResolvedValue([]),
+    assignCourseToTenant: vi.fn().mockResolvedValue(undefined),
+    removeCourseFromTenant: vi.fn().mockResolvedValue(undefined),
+    loadCsmAssignments: vi.fn().mockResolvedValue([]),
+    loadAvailableCsms: vi.fn().mockResolvedValue([]),
+    assignCsm: vi.fn().mockResolvedValue(undefined),
+    removeCsm: vi.fn().mockResolvedValue(undefined),
+    _setTenants: tenants.set.bind(tenants),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockTenantManagementService = ReturnType<typeof createMockTenantManagementService>;

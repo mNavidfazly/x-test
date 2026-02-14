@@ -102,11 +102,11 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── docs/
 │   ├── learning-platform-requirements.md
 │   ├── x_courses_development_approach.md    # This document
-│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress + 12 dashboard + 14 comments + 12 questions + 12 issue-mgmt = 148 total)
+│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress + 12 dashboard + 14 comments + 12 questions + 12 issue-mgmt + 12 notifications + 10 tenant-mgmt = 170 total)
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00032                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers, reminder_history lecturer SELECT fix, quiz grading bypass, matching question RPC, external quiz auto-mark, comment badge triggers, profiles_select_tenant policy)
+│       └── 00001-00033                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers, reminder_history lecturer SELECT fix, quiz grading bypass, matching question RPC, external quiz auto-mark, comment badge triggers, profiles_select_tenant policy, notifications Realtime)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -146,7 +146,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── frontend/                               # Angular app (Vercel)
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── __mocks__/                # Test mocks (11 factories + bunny-upload mock via inline provider)
+│   │   │   ├── __mocks__/                # Test mocks (13 factories + bunny-upload mock via inline provider)
 │   │   │   │   ├── supabase.mock.ts      # Multi-tenant aware mock with JWT claims
 │   │   │   │   ├── auth.mock.ts          # Session mock with role switching
 │   │   │   │   ├── api.mock.ts           # FastAPI client mock
@@ -155,7 +155,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CommentService + ExpertQuestionService + IssueService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult + Comment/CommentReply + ExpertQuestion + Issue/IssueForBoard factories
+│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CommentService + ExpertQuestionService + IssueService + NotificationService + TenantManagementService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult + Comment/CommentReply + ExpertQuestion + Issue/IssueForBoard + Notification + TenantForBoard/CsmAssignment factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -175,6 +175,10 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── expert-question.service.spec.ts
 │   │   │   │   │   ├── issue.service.ts             # ✅ IssueService (2+2 methods: learner loadMyIssues/reportIssue + board loadBoardIssues/updateIssue — dual-signal, dual-table: issues_safe view for learner, base issues for board) (Phase 7A+7B)
 │   │   │   │   │   ├── issue.service.spec.ts
+│   │   │   │   │   ├── notification.service.ts      # ✅ NotificationService (Realtime subscription via effect(), loadNotifications, markAsRead, markAllAsRead, latestToast, unreadCount computed) (Phase 8A)
+│   │   │   │   │   ├── notification.service.spec.ts
+│   │   │   │   │   ├── tenant-management.service.ts # ✅ TenantManagementService (3 signals + 12 methods: CRUD tenants, course assignments, CSM assignments) (Phase 9A)
+│   │   │   │   │   ├── tenant-management.service.spec.ts
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
@@ -185,6 +189,8 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │       ├── comment.model.ts   # ✅ Comment, CommentReply, CommentAuthor, BadgeType
 │   │   │   │       ├── expert-question.model.ts  # ✅ ExpertQuestion, ExpertQuestionStatus, ExpertQuestionForBoard, QuestionAsker, BoardCourseSummary (Phase 6B+6C)
 │   │   │   │       ├── issue.model.ts            # ✅ Issue, IssueType, IssueStatus, IssueForBoard, IssueReporter, BoardIssueSummary (Phase 7A+7B)
+│   │   │   │       ├── notification.model.ts    # ✅ AppNotification, NotificationType (15), NOTIFICATION_META map, getNotificationMeta(), getNotificationRoute() (Phase 8A)
+│   │   │   │       ├── tenant-management.model.ts # ✅ TenantForBoard, TenantSettings, TenantCourseAssignment, CsmAssignment, AvailableCourse, AvailableCsm, TenantFormData (Phase 9A)
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -194,10 +200,10 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── sidebar.component.spec.ts
 │   │   │   │   │   └── sidebar-nav.config.ts       # 6 sections, 16 items, filterNavSections()
 │   │   │   │   ├── header/
-│   │   │   │   │   ├── header.component.ts          # Hamburger, notification bell, user menu dropdown
+│   │   │   │   │   ├── header.component.ts          # Hamburger, notification bell (Realtime unread count badge, rose-500 pill, 99+ cap), user menu dropdown
 │   │   │   │   │   └── header.component.spec.ts
 │   │   │   │   └── main-layout/
-│   │   │   │       ├── main-layout.component.ts     # Shell: sidebar + header + <router-outlet>
+│   │   │   │       ├── main-layout.component.ts     # Shell: sidebar + header + <router-outlet> + toast overlay (fixed top-right, Realtime notifications)
 │   │   │   │       └── main-layout.component.spec.ts
 │   │   │   │
 │   │   │   ├── features/
@@ -301,6 +307,16 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │       ├── my-issues-page.component.ts          # Smart: "My Issues" page — accordion cards, 4 status badges (amber/blue/emerald/slate), issue type labels, expand to see status updates (Phase 7A)
 │   │   │   │   │       └── my-issues-page.component.spec.ts
 │   │   │   │   │
+│   │   │   │   ├── notifications/        # ✅ Phase 8A complete
+│   │   │   │   │   └── pages/
+│   │   │   │   │       ├── notification-list-page.component.ts    # Smart: notification list with type-specific icons+colors, unread indicator, mark all as read, click to navigate (Phase 8A)
+│   │   │   │   │       └── notification-list-page.component.spec.ts
+│   │   │   │   │
+│   │   │   │   ├── platform/             # ✅ Phase 9A complete
+│   │   │   │   │   └── pages/
+│   │   │   │   │       ├── tenant-management-page.component.ts    # Smart: PA-only tenant board — CRUD tenants, expandable rows with 3 tabs (Details/Courses/CSMs), course+CSM assignment management, master tenant protection, two-click delete (Phase 9A)
+│   │   │   │   │       └── tenant-management-page.component.spec.ts
+│   │   │   │   │
 │   │   │   │   ├── teaching/             # ✅ Phase 5D + 6C + 7B complete
 │   │   │   │   │   └── pages/
 │   │   │   │   │       ├── exam-grading-page.component.ts       # Smart: cross-course exam grading dashboard (Phase 5D)
@@ -310,11 +326,10 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │       ├── issue-management-page.component.ts   # Smart: issue management board with 4 filters, 5 summary cards, expandable rows, inline status+notes editing (Phase 7B)
 │   │   │   │   │       └── issue-management-page.component.spec.ts
 │   │   │   │   │
-│   │   │   │   │                         # --- Planned (not yet built) ---
+│   │   │   │   │                         # --- Notes ---
 │   │   │   │   ├── quizzes/              # Phase 5A quiz-taking components live in courses/components/ (quiz-question, quiz-result-item, quiz-taker)
-│   │   │   │   ├── exams/                # Phase 5C-5D
-│   │   │   │   ├── notifications/        # Phase 8
-│   │   │   │   └── admin/                # Phase 9
+│   │   │   │   ├── exams/                # Phase 5C-5D exam-taking components live in courses/components/ (exam-taker)
+│   │   │   │   └── admin/                # Phase 9B (User Management — planned)
 │   │   │   │
 │   │   │   └── shared/
 │   │   │       └── components/
@@ -487,7 +502,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
   - [x] **CSM:** + Assigned Tenants, Expert Questions, Progress Dashboard
   - [x] **Lecturer:** + My Courses (teaching), Questions Board, Exam Grading, Issue Management, Progress Dashboard
   - [x] **Platform Admin:** + All of the above + Tenant Management, Content Management, Staleness Dashboard
-- [x] Header with notification bell (hardcoded 0 count for 1G, Realtime in Phase 8) + user menu dropdown (avatar/initials, profile link, sign out)
+- [x] Header with notification bell (Realtime unread count badge via NotificationService — Phase 8A) + user menu dropdown (avatar/initials, profile link, sign out)
 - [x] ProfileService (fetches `full_name`/`avatar_url` from `profiles` table via `effect()` watching auth state)
 - [x] Mobile responsive sidebar (fixed overlay with backdrop on `<lg`, static `w-64` on `lg:`, translate-x transitions)
 - [x] StubPageComponent ("Coming soon" placeholder for unbuilt feature routes)
@@ -956,13 +971,30 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 
 ### Phase 9: Admin
 
-#### 9A - Tenant Management
-- [ ] Tenant list (Platform Admin only)
-- [ ] Create tenant (name, domain, settings)
-- [ ] Edit tenant
-- [ ] Course assignment: assign/unassign courses to tenants (manage tenant_courses)
-- [ ] CSM assignment: assign CSMs to tenants (manage csm_tenant_assignments, enforces master tenant)
-- [ ] **Tests:** TenantManagementComponent, TenantService
+#### 9A - Tenant Management (Complete)
+- [x] No migration needed — `tenants`, `tenant_courses`, `csm_tenant_assignments` tables + RLS policies + triggers already exist (migrations 00001-00023)
+- [x] `tenant-management.model.ts`: 7 interfaces — `TenantForBoard`, `TenantSettings`, `TenantCourseAssignment`, `CsmAssignment`, `AvailableCourse`, `AvailableCsm`, `TenantFormData`
+- [x] TenantManagementService (separate from auth-flow TenantService — different concern): 3 signals (`tenants`, `loading`, `error`) + 12 methods:
+  - [x] `loadTenants` — `.select('*, tenant_courses(count), csm_tenant_assignments(count)')`, maps `[{count:N}]` → `courseCount`/`csmCount`
+  - [x] `createTenant` / `updateTenant` / `deleteTenant` — CRUD on `tenants` table
+  - [x] `loadTenantCourses` / `loadAvailableCourses` / `assignCourseToTenant` / `removeCourseFromTenant` — manage `tenant_courses`
+  - [x] `loadCsmAssignments` / `loadAvailableCsms` / `assignCsm` / `removeCsm` — manage `csm_tenant_assignments`
+- [x] TenantManagementPageComponent (~480 lines): PA-only board at `/platform/tenants`
+  - [x] Header: Building2 icon + "Tenant Management" + teal count badge + "Add Tenant" button
+  - [x] Create form: name + domain + 3 auth method checkboxes (Email default-checked)
+  - [x] Filter bar: search by name/domain (case-insensitive)
+  - [x] 4 summary cards: Total Tenants, Master (always 1), Course Assignments (sum), CSM Assignments (sum)
+  - [x] Table: Name (Master badge with Shield icon), Domain, Auth Methods (pills), Courses count, CSMs count
+  - [x] Expandable rows with 3 tabs (Details / Courses / CSMs):
+    - [x] Details: inline edit name/domain/auth methods + Save + two-click Delete (disabled for master with AlertTriangle warning)
+    - [x] Courses: assigned list with remove (X) + "Add Course" dropdown + cascade warning (cleanup_tenant_course_removal)
+    - [x] CSMs: assigned list with remove (X) + "Add CSM" dropdown (master-tenant users only, enforce_master_tenant_assignment)
+- [x] Route: `platform/tenants` with `roleGuard('platform_admin')` — BEFORE `platform/:path` catch-all
+- [x] Mock factories: `createMockTenantForBoard`, `createMockTenantCourseAssignment`, `createMockCsmAssignment`, `createMockTenantManagementService` — with `_set*` helpers + backward-compat defaults
+- [x] **Key gotcha:** "Master" text in both badge and summary card — use `getAllByText` not `getByText`
+- [x] **Key gotcha:** Supabase count pattern `.select('*, tenant_courses(count)')` returns `[{count: N}]` — map via `?.[0]?.count ?? 0`
+- [x] **Tests:** 41 new tests (19 TenantManagementService + 22 TenantManagementPage) — 926 total frontend tests, build OK
+- [x] **E2E verified:** 10 stories (TM-01 to TM-10), all pass, 5 roles tested (PA allowed, Learner/Lecturer/CSM/TA blocked), 0 bugs found
 
 #### 9B - User Management
 - [ ] User list (role-scoped: Tenant Admin sees own tenant, Platform Admin sees all)
@@ -1003,15 +1035,13 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **Tests:** 9 pytest endpoint tests (auth, authorization, send flow, partial failure)
 
 #### 9E - CSM & Lecturer Assignment Management
-- [ ] CSM assignments page (Platform Admin only):
-  - [ ] List CSM → tenant assignments
-  - [ ] Add/remove assignments (validates master tenant user via trigger)
+- [x] CSM → tenant assignment management — **completed in Phase 9A** (Tenant Management "CSMs" tab)
 - [ ] Lecturer assignments page (Platform Admin only):
   - [ ] List Lecturer → course assignments
   - [ ] Add/remove assignments (validates master tenant user via trigger)
   - [ ] Toggle can_edit and can_grade flags
 - [ ] **Important:** After changing assignments, user must re-login for JWT claims to refresh
-- [ ] **Tests:** AssignmentManagementComponents
+- [ ] **Tests:** LecturerAssignmentManagementComponent
 
 #### 9F - Admin RLS Tests
 - [ ] Tenants: platform admin CRUD, others read own only
