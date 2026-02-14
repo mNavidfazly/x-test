@@ -924,38 +924,33 @@ Goal: Allow Platform Admins and Lecturers (with can_edit) to create and manage c
 - [x] **Tests:** 31 new tests (12 NotificationService + 16 NotificationListPage + 3 HeaderComponent badge) — 885 total frontend tests, build OK
 - [x] **E2E verified:** 12 stories (NT-01 to NT-12), 11 pass / 1 skipped (NT-11 Realtime Toast — requires two separate browser instances, Supabase auth localStorage prevents multi-user testing in single browser context), 0 bugs found. Verified all 4 roles (learner, lecturer, PA, CSM). Triggers verified: `notify_question_answered`, `notify_issue_resolved`, `notify_new_expert_question`, `notify_new_issue`.
 
-#### 8B - Verify Notification Triggers
-All 13 trigger functions in the schema should be verified working:
+#### 8B - Verify Notification Triggers (Complete)
+All 13 trigger functions verified via integration tests (`tests/rls/notifications.test.ts`, Section B):
 
-| # | Trigger | Table | Event | Recipients |
-|---|---------|-------|-------|------------|
-| 1 | notify_course_assigned | course_enrollments | INSERT | Enrolled learner |
-| 2 | notify_new_module | modules | INSERT | All enrolled learners |
-| 3 | notify_progress_reset | user_progress | UPDATE | Affected learner |
-| 4 | notify_exam_graded | exam_submissions | UPDATE (score set) | Submitting learner |
-| 5 | notify_question_answered | expert_questions | UPDATE (response set) | Asking learner |
-| 6 | notify_reminder_sent | reminder_history | INSERT | Reminded learner |
-| 7 | notify_new_expert_question | expert_questions | INSERT | Assigned lecturers + CSMs |
-| 8 | notify_new_exam_submission | exam_submissions | INSERT | Lecturers with can_grade |
-| 9 | notify_new_issue | issues | INSERT | Lecturers + CSMs + Platform Admins (deduplicated) |
-| 10 | notify_new_access_request | access_requests | INSERT | Tenant admins (if known domain) + Platform admins |
-| 11 | notify_issue_resolved | issues | UPDATE (status→resolved) | Reporter |
-| 12 | notify_exam_reset | exam_submissions | DELETE | Student |
-| 13 | notify_access_request_reviewed | access_requests | UPDATE (status changed) | Requester + admins |
+| # | Trigger | Table | Event | Recipients | Test IDs |
+|---|---------|-------|-------|------------|----------|
+| 1 | notify_course_assigned | course_enrollments | INSERT | Enrolled learner | NT-010 |
+| 2 | notify_new_module | modules | INSERT | All enrolled learners | NT-011, NT-012 |
+| 3 | notify_progress_reset | user_progress | UPDATE | Affected learner | NT-013, NT-014 |
+| 4 | notify_exam_graded | exam_submissions | UPDATE (score set) | Submitting learner | NT-015, NT-016 |
+| 5 | notify_question_answered | expert_questions | UPDATE (response set) | Asking learner | NT-017, NT-018 |
+| 6 | notify_reminder_sent | reminder_history | INSERT | Reminded learner | NT-019 |
+| 7 | notify_new_expert_question | expert_questions | INSERT | Assigned lecturers + CSMs | NT-020, NT-021 |
+| 8 | notify_new_exam_submission | exam_submissions | INSERT | Lecturers with can_grade | NT-022 |
+| 9 | notify_new_issue | issues | INSERT | Lecturers + CSMs + Platform Admins (deduplicated) | NT-023 |
+| 10 | notify_new_access_request | access_requests | INSERT | Tenant admins (if known domain) + Platform admins | NT-024, NT-025 |
+| 11 | notify_issue_resolved | issues | UPDATE (status→resolved) | Reporter | NT-026, NT-027 |
+| 12 | notify_exam_reset | exam_submissions | DELETE | Student | NT-028 |
+| 13 | notify_access_request_reviewed | access_requests | UPDATE (status changed) | Requester + admins | NT-029, NT-030 |
 
-Plus 2 pg_cron jobs (uncomment in migration after enabling pg_cron):
-| Job | Schedule | What |
-|-----|----------|------|
-| exam-deadline-reminder | Every hour | Notify learners 24h before deadline |
-| content-staleness-check | Daily midnight | Notify lecturers + admins about stale courses |
+- [x] All 13 triggers verified with positive + negative tests (21 trigger tests total)
+- [x] Covers: correct recipients, notification type/title/body, data payload keys, conditional fire guards (e.g., score NULL→non-NULL only)
+- [ ] Enable pg_cron and uncomment scheduled jobs (operational task — requires Supabase Dashboard)
 
-- [ ] Test each trigger manually or via integration tests
-- [ ] Enable pg_cron and uncomment scheduled jobs
-
-#### 8C - Notification RLS Tests
-- [ ] Notifications: own read only, own update only (mark as read)
-- [ ] Notifications: no direct INSERT (only via SECURITY DEFINER triggers)
-- [ ] **Tests:** ~10 RLS tests
+#### 8C - Notification RLS Tests (Complete)
+- [x] Notifications: own read only (NT-001 to NT-003), own update only (NT-004, NT-005)
+- [x] Notifications: no direct INSERT (NT-006, NT-007), no DELETE (NT-008, NT-009)
+- [x] **Tests:** 9 RLS tests + 21 trigger tests = 30 new tests in `tests/rls/notifications.test.ts` — 308 total RLS tests across 11 files
 
 ---
 

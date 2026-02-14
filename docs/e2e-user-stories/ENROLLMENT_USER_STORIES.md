@@ -70,17 +70,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| EN-01 | Open Course Self-Enrollment | Learner | ✅ PASS | 2026-02-12 |
-| EN-02 | Password Protected Enrollment | Learner + PA | ✅ PASS | 2026-02-12 |
-| EN-03 | Invite-Only Course Info | Learner + PA | ✅ PASS | 2026-02-12 |
-| EN-04 | Enrolled Badge Display | Learner | ✅ PASS | 2026-02-12 |
-| EN-05 | Enrollment CTA Hidden for Editors | PA + Lecturer | ✅ PASS | 2026-02-12 |
-| EN-06 | Enrollment Manager — Platform Admin View | Platform Admin | ✅ PASS | 2026-02-12 |
-| EN-07 | Enrollment Manager — Add User by Email | Platform Admin | ✅ PASS | 2026-02-12 |
-| EN-08 | Enrollment Manager — Unenroll User | Platform Admin | ✅ PASS | 2026-02-12 |
-| EN-09 | Enrollment Manager — Tenant Admin | Tenant Admin | ✅ PASS | 2026-02-12 |
-| EN-10 | Enrollment Manager Hidden for Unauthorized | Learner + Lecturer | ✅ PASS | 2026-02-12 |
-| EN-11 | Module Completion Gated by Enrollment | Learner | ✅ PASS | 2026-02-12 |
+| EN-01 | Open Course Self-Enrollment | Learner | ✅ PASS | 2026-02-14 |
+| EN-02 | Password Protected Enrollment | Learner + PA | ✅ PASS | 2026-02-14 |
+| EN-03 | Invite-Only Course Info | Learner + PA | ✅ PASS | 2026-02-14 |
+| EN-04 | Enrolled Badge Display | Learner | ✅ PASS | 2026-02-14 |
+| EN-05 | Enrollment CTA Hidden for Editors | PA + Lecturer | ✅ PASS | 2026-02-14 |
+| EN-06 | Enrollment Manager — Platform Admin View | Platform Admin | ✅ PASS | 2026-02-14 |
+| EN-07 | Enrollment Manager — Add User by Email | Platform Admin | ✅ PASS | 2026-02-14 |
+| EN-08 | Enrollment Manager — Unenroll User | Platform Admin | ✅ PASS | 2026-02-14 |
+| EN-09 | Enrollment Manager — Tenant Admin | Tenant Admin | ✅ PASS | 2026-02-14 |
+| EN-10 | Enrollment Manager Hidden for Unauthorized | Learner + Lecturer | ✅ PASS | 2026-02-14 |
+| EN-11 | Module Completion Gated by Enrollment | Learner | ✅ PASS | 2026-02-14 |
 
 ---
 
@@ -645,6 +645,7 @@ AND user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commoditie
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-12 | Claude Code | EN-01 to EN-11 | 11 | 0 | All tests passed. 1 bug found and fixed (password enrollment button stuck). |
+| 2026-02-14 | Claude (Playwright MCP) | EN-01 through EN-11 (regression) | 11 | 0 | Full regression — all 11 PASS. Verified: enrolled badge, open/password CTA, PA enrollment manager (3 users), TA enrollment manager (1 user, tenant-scoped), CTA hidden for editors. No regressions. |
 
 ---
 

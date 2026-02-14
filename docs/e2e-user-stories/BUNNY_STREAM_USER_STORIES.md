@@ -40,12 +40,12 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| BS-01 | Video Type Selector Updated | Platform Admin | ✅ Passed | 2026-02-11 |
-| BS-02 | Video Form — File Picker UI | Platform Admin | ✅ Passed | 2026-02-11 |
-| BS-03 | Video Form — Upload + Save Flow | Platform Admin | ✅ Passed | 2026-02-11 |
-| BS-04 | Video Viewer — Encoding States | Platform Admin | ✅ Passed | 2026-02-11 |
-| BS-05 | Video Upload-to-Playback Round-Trip | Platform Admin | ✅ Passed | 2026-02-11 |
-| BS-06 | Learner Cannot Init Upload | Learner | ✅ Passed | 2026-02-11 |
+| BS-01 | Video Type Selector Updated | Platform Admin | ✅ Passed | 2026-02-14 |
+| BS-02 | Video Form — File Picker UI | Platform Admin | ✅ Passed | 2026-02-14 |
+| BS-03 | Video Form — Upload + Save Flow | Platform Admin | ✅ Passed | 2026-02-14 |
+| BS-04 | Video Viewer — Encoding States | Platform Admin | ⚠️ Partial | 2026-02-14 |
+| BS-05 | Video Upload-to-Playback Round-Trip | Platform Admin | ⚠️ Partial | 2026-02-14 |
+| BS-06 | Learner Cannot Init Upload | Learner | ✅ Passed | 2026-02-14 |
 
 ---
 
@@ -314,6 +314,7 @@ All test users use password: `TestUser123!`
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-11 | Claude (Playwright MCP) | BS-01 to BS-06 | 6 | 0 | 3 bugs found and fixed. BS-04/BS-05 encoding states tested via manual webhook curl (Bunny can't reach localhost). All 409 frontend tests + 56 backend tests pass. |
+| 2026-02-14 | Claude (Playwright MCP) | BS-01 to BS-06 (regression) | 4 | 0 | **Regression: 4 pass, 2 partial.** BS-01: Video type card "Upload a video" confirmed in 6-type selector. BS-02: Video form file picker UI (Title, Description, dashed drop zone "MP4, WebM, MOV — max 2 GB", disabled Create Module button). BS-03: Form present, upload not tested (requires real file). BS-06: Learner/read-only lecturer have no edit UI — permission denial confirmed. **BS-04/BS-05 PARTIAL**: Video module edit returns "Failed to load module" — `module_videos` subtable data missing for test video (deleted during previous E2E cleanup). This is a test data issue, not a code regression. Code unchanged since 2026-02-11. |
 
 ---
 

@@ -85,19 +85,19 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PM-01 | Lecturer (can_edit) Full Content CRUD | Lecturer (can_edit) | ✅ Passed | 2026-02-11 |
-| PM-02 | Lecturer Boundary — Assigned vs Unassigned | Lecturer (can_edit) | ✅ Passed | 2026-02-11 |
-| PM-03 | Learner Cannot Mutate Content via Direct API | Learner (Calypso) | ✅ Passed | 2026-02-11 |
-| PM-04 | Tenant Admin Cannot Write Content via Direct API | Tenant Admin | ✅ Passed | 2026-02-11 |
-| PM-05 | CSM Cannot Write Content via Direct API | CSM | ✅ Passed | 2026-02-11 |
-| PM-06 | Read-Only Lecturer Cannot Write via Direct API | Lecturer (read-only) | ✅ Passed | 2026-02-11 |
-| PM-07 | Lecturer (can_edit) Cannot Delete Course or Manage Tenants | Lecturer (can_edit) | ✅ Passed | 2026-02-11 |
-| PM-08 | Read-Only Lecturer URL Navigation Redirect | Lecturer (read-only) | ✅ Passed | 2026-02-11 |
-| PM-09 | Learner Route Guard Denial — All Write Routes | Learner (both tenants) | ✅ Passed | 2026-02-11 |
-| PM-10 | Cross-Tenant Content Visibility Enforcement | Learner (Calypso Client) | ⚠️ Partial | 2026-02-11 |
-| PM-11 | Cross-Tenant User Data Isolation | Learner (Calypso) | ✅ Passed | 2026-02-11 |
-| PM-12 | Tenant Admin Route Guard Denial | Tenant Admin | ✅ Passed | 2026-02-11 |
-| PM-13 | Full Permission Denial Matrix — All 4 Non-Write Roles | Learner / TA / CSM / Lecturer (read-only) | ✅ Passed | 2026-02-11 |
+| PM-01 | Lecturer (can_edit) Full Content CRUD | Lecturer (can_edit) | ✅ Passed | 2026-02-14 |
+| PM-02 | Lecturer Boundary — Assigned vs Unassigned | Lecturer (can_edit) | ✅ Passed | 2026-02-14 |
+| PM-03 | Learner Cannot Mutate Content via Direct API | Learner (Calypso) | ✅ Passed | 2026-02-14 |
+| PM-04 | Tenant Admin Cannot Write Content via Direct API | Tenant Admin | ✅ Passed | 2026-02-14 |
+| PM-05 | CSM Cannot Write Content via Direct API | CSM | ✅ Passed | 2026-02-14 |
+| PM-06 | Read-Only Lecturer Cannot Write via Direct API | Lecturer (read-only) | ✅ Passed | 2026-02-14 |
+| PM-07 | Lecturer (can_edit) Cannot Delete Course or Manage Tenants | Lecturer (can_edit) | ✅ Passed | 2026-02-14 |
+| PM-08 | Read-Only Lecturer URL Navigation Redirect | Lecturer (read-only) | ✅ Passed | 2026-02-14 |
+| PM-09 | Learner Route Guard Denial — All Write Routes | Learner (both tenants) | ✅ Passed | 2026-02-14 |
+| PM-10 | Cross-Tenant Content Visibility Enforcement | Learner (Calypso Client) | ⚠️ Partial | 2026-02-14 |
+| PM-11 | Cross-Tenant User Data Isolation | Learner (Calypso) | ✅ Passed | 2026-02-14 |
+| PM-12 | Tenant Admin Route Guard Denial | Tenant Admin | ✅ Passed | 2026-02-14 |
+| PM-13 | Full Permission Denial Matrix — All 4 Non-Write Roles | Learner / TA / CSM / Lecturer (read-only) | ✅ Passed | 2026-02-14 |
 
 ---
 
@@ -843,6 +843,7 @@ If time is limited, execute tests in this priority order:
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|------------------|------|------|-------|
 | 2026-02-11 | Claude Code (Playwright MCP) | PM-01 through PM-13 (all 13) | 12 | 0 | 1 partial (PM-10: no Calypso-only course to test exclusion). Direct API tests used `fetch()` with user JWT against PostgREST REST API. All RLS policies correctly enforced. Most critical test (PM-06: read-only lecturer) confirmed `lecturer_can_edit_course_ids` is used for write policies, not `lecturer_course_ids`. |
+| 2026-02-14 | Claude (Playwright MCP) | PM-01 through PM-13 (all 13) | 12 | 0 | Full regression. PM-01: lecture create+delete CRUD verified. PM-02: unassigned course shows zero edit UI, /edit redirects to /courses. PM-07: no Delete Course or Tenant Assignment on edit page. PM-08: read-only lecturer /edit redirects to /courses, /modules/new redirects to /courses/:id. PM-09: all 4 learner write routes → /dashboard. PM-12: all TA write routes → /dashboard. PM-05/PM-13: CSM write routes → /dashboard. PM-10 still partial (no Calypso-only course). No regressions found. |
 
 ---
 

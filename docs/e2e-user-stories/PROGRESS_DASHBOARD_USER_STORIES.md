@@ -76,18 +76,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PD-01 | Dashboard Visible — Platform Admin | Platform Admin | ✅ | 2026-02-12 |
-| PD-02 | Dashboard Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-12 |
-| PD-03 | Dashboard Visible — Lecturer | Lecturer | ✅ | 2026-02-12 |
-| PD-04 | Dashboard Blocked — Learner | Learner | ✅ | 2026-02-12 |
-| PD-05 | User Table with Progress Bars | Platform Admin | ✅ | 2026-02-12 |
-| PD-06 | Summary Stats Cards | Platform Admin | ✅ | 2026-02-12 |
-| PD-07 | Search Filter — Name and Email | Platform Admin | ✅ | 2026-02-12 |
-| PD-08 | Course Dropdown Filter | Platform Admin | ✅ | 2026-02-12 |
-| PD-09 | Progress Range Filter + Clear Filters | Platform Admin | ✅ | 2026-02-12 |
-| PD-10 | Checkbox Selection + Select All | Platform Admin | ✅ | 2026-02-12 |
-| PD-11 | Send Reminder — Success Flow | Platform Admin | ⚠️ | 2026-02-12 |
-| PD-12 | Tenant Column Visibility | PA + TA + CSM + Lecturer | ✅ | 2026-02-12 |
+| PD-01 | Dashboard Visible — Platform Admin | Platform Admin | ✅ | 2026-02-14 |
+| PD-02 | Dashboard Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-14 |
+| PD-03 | Dashboard Visible — Lecturer | Lecturer | ✅ | 2026-02-14 |
+| PD-04 | Dashboard Blocked — Learner | Learner | ✅ | 2026-02-14 |
+| PD-05 | User Table with Progress Bars | Platform Admin | ✅ | 2026-02-14 |
+| PD-06 | Summary Stats Cards | Platform Admin | ✅ | 2026-02-14 |
+| PD-07 | Search Filter — Name and Email | Platform Admin | ✅ | 2026-02-14 |
+| PD-08 | Course Dropdown Filter | Platform Admin | ✅ | 2026-02-14 |
+| PD-09 | Progress Range Filter + Clear Filters | Platform Admin | ✅ | 2026-02-14 |
+| PD-10 | Checkbox Selection + Select All | Platform Admin | ✅ | 2026-02-14 |
+| PD-11 | Send Reminder — Success Flow | Platform Admin | ⚠️ | 2026-02-14 |
+| PD-12 | Tenant Column Visibility | PA + TA + CSM + Lecturer | ✅ | 2026-02-14 |
 
 ---
 
@@ -656,6 +656,7 @@ LIMIT 5;
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-12 | Claude (Playwright MCP) | 12/12 | 11 | 0 | PD-11 partial: UI flow verified (panel, send button loading state, cancel), SMTP timeout locally prevented full email delivery test. CSM role not individually tested for PD-12 but computed logic verified via PA (is_platform_admin=true). |
+| 2026-02-14 | Claude (Playwright MCP) | PD-01 through PD-12 (regression) | 11 | 0 | Full regression — 11 PASS, PD-11 still ⚠️ Partial (UI verified: checkbox→Send Reminder button, email unverifiable). Verified: PA cross-tenant view (3 users, Tenant column), TA tenant-scoped view (1 user, no Tenant column), course filter, progress range filter (50–100% narrows to 1 user), summary cards update. No regressions. |
 
 ---
 

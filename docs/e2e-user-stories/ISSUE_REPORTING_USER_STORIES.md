@@ -64,19 +64,19 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| IR-01 | Report an Issue from Module Viewer | Learner | ✅ | 2026-02-13 |
-| IR-02 | View My Issues Page | Learner | ✅ | 2026-02-13 |
-| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ✅ | 2026-02-13 |
-| IR-04 | Form Validation and Cancel | Learner | ✅ | 2026-02-13 |
-| IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-13 |
-| IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-13 |
-| IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-13 |
-| IR-08 | Empty State on My Issues Page | Lecturer | ✅ | 2026-02-13 |
-| IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | Learner (both tenants) | ✅ | 2026-02-13 |
-| IR-10 | Platform Admin Can Report Issue | Platform Admin | ✅ | 2026-02-13 |
-| IR-11 | Status Badges — Investigating, Resolved, Closed | Learner | ✅ | 2026-02-13 |
-| IR-12 | Resolved Issue — Resolution Info Panel | Learner | ✅ | 2026-02-13 |
-| IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | Learner | ✅ | 2026-02-13 |
+| IR-01 | Report an Issue from Module Viewer | Learner | ✅ | 2026-02-14 |
+| IR-02 | View My Issues Page | Learner | ✅ | 2026-02-14 |
+| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ✅ | 2026-02-14 |
+| IR-04 | Form Validation and Cancel | Learner | ✅ | 2026-02-14 |
+| IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-14 |
+| IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-14 |
+| IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-14 |
+| IR-08 | Empty State on My Issues Page | Lecturer | ✅ | 2026-02-14 |
+| IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | Learner (both tenants) | ✅ | 2026-02-14 |
+| IR-10 | Platform Admin Can Report Issue | Platform Admin | ✅ | 2026-02-14 |
+| IR-11 | Status Badges — Investigating, Resolved, Closed | Learner | ✅ | 2026-02-14 |
+| IR-12 | Resolved Issue — Resolution Info Panel | Learner | ✅ | 2026-02-14 |
+| IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | Learner | ✅ | 2026-02-14 |
 
 ---
 
@@ -84,7 +84,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -126,7 +126,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -164,7 +164,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -203,7 +203,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -242,7 +242,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -281,7 +281,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -313,7 +313,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -346,7 +346,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -379,7 +379,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -418,7 +418,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -456,7 +456,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -493,7 +493,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -531,7 +531,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ |
 | **Tester** | Claude |
 
@@ -612,6 +612,7 @@ LIMIT 10;
 |------|--------|-----------------|------|------|-------|
 | 2026-02-13 | Claude (Playwright MCP) | IR-01 to IR-08 | 8 | 0 | Initial run: all 8 stories passed. |
 | 2026-02-13 | Claude (Playwright MCP) | IR-08 to IR-13 | 6 | 0 | Extended run: 5 new stories + IR-08 re-tested with Lecturer. 4 roles tested (Learner, Lecturer, PA, Client Learner). Tenant isolation verified bidirectionally. All 4 status badges + resolution panel confirmed. |
+| 2026-02-14 | Claude (Playwright MCP) | IR-01 through IR-13 (regression) | 13 | 0 | Full regression — all 13 PASS. Verified: My Issues page (4 issues, Resolved/Closed badges, type labels), expand issue detail (description + Go to module link + resolution panel), Report Issue button visible on module viewer, sidebar navigation. No regressions. |
 
 ---
 

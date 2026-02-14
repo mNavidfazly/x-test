@@ -63,10 +63,10 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Status | Last Checked |
 |----|-------|--------|--------------|
-| AUTH-01 | Tenant-Aware Email/Password Login | ✅ Passed | 2026-02-10 |
-| AUTH-02 | Magic Link Login | ⚠️ Partial | 2026-02-10 |
-| AUTH-03 | Password Reset Flow | ⚠️ Partial | 2026-02-10 |
-| AUTH-04 | Access Request Submission | ✅ Passed | 2026-02-10 |
+| AUTH-01 | Tenant-Aware Email/Password Login | ✅ Passed | 2026-02-14 |
+| AUTH-02 | Magic Link Login | ⚠️ Partial | 2026-02-14 |
+| AUTH-03 | Password Reset Flow | ⚠️ Partial | 2026-02-14 |
+| AUTH-04 | Access Request Submission | ✅ Passed | 2026-02-14 |
 
 ---
 
@@ -74,7 +74,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-10 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude (Playwright MCP) |
 
@@ -124,7 +124,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-10 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ⚠️ Partial (UI flow verified, no inbox access for full E2E) |
 | **Tester** | Claude (Playwright MCP) |
 
@@ -172,7 +172,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-10 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ⚠️ Partial (UI validation + anti-enumeration verified, no inbox access for full E2E) |
 | **Tester** | Claude (Playwright MCP) |
 
@@ -268,7 +268,7 @@ curl -s -X POST https://x-courses-v2-production.up.railway.app/api/auth/reset-pa
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-10 |
+| **Last Checked** | 2026-02-14 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude (Playwright MCP) |
 
@@ -341,6 +341,7 @@ Expected: `status = 'pending'`, `domain = 'calypso-commodities.com'` (extracted 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|------------------|------|------|-------|
 | 2026-02-10 | Claude (Playwright MCP) | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | 2 full, 2 partial | 0 | AUTH-01/04 fully passed. AUTH-02/03 partial (no inbox access for OTP verification). All UI flows, validations, and navigation verified. |
+| 2026-02-14 | Claude (Playwright MCP) | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | 2 full, 2 partial | 0 | Full regression. AUTH-01 all 12 steps + 4 negative cases pass. AUTH-02 OTP code entry screen verified (button is "Send sign-in code"). AUTH-03 all validations + anti-enumeration pass. AUTH-04 full submit flow + direct navigation pass. No regressions. |
 
 ---
 
