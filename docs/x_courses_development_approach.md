@@ -1093,16 +1093,18 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **Tests:** 15 service + 21 page = 36 new tests (1040 total frontend)
 - [x] **E2E:** 7 stories (LA-01 to LA-07), all pass, 3 roles tested (PA + Learner + Lecturer), 0 bugs
 
-#### 9F - Admin RLS Tests
-- [ ] Tenants: platform admin CRUD, others read own only
-- [ ] Tenant courses: platform admin INSERT/DELETE, others read based on tenant
-- [ ] CSM assignments: platform admin CRUD, CSM reads own
-- [ ] Lecturer assignments: platform admin CRUD, lecturer reads own
-- [ ] Profiles: escalation prevention via protect_profile_role_fields trigger
-- [ ] Access requests: platform admin + tenant admin based on routing
-- [ ] Reminder history: sender-specific INSERT, role-scoped SELECT
-- [ ] Master tenant enforcement: cannot assign non-master-tenant users as CSM/Lecturer
-- [ ] **Tests:** ~40 RLS tests
+#### 9F - Admin RLS Tests (Complete)
+- [x] CSM assignments: PA CRUD (INSERT/DELETE), CSM reads own, learner/TA/lecturer denied
+- [x] Lecturer assignments: PA full CRUD, lecturer reads own but CANNOT UPDATE/DELETE, TA/learner denied
+- [x] Access requests: PA SELECT all + UPDATE, TA SELECT/UPDATE own-tenant, authenticated INSERT (pending only), no DELETE
+- [x] Reminder history: PA/TA/CSM/lecturer SELECT (role-scoped), PA/TA/CSM/lecturer INSERT (role-scoped), learner denied, no UPDATE/DELETE
+- [x] Tenants gap-fill: PA UPDATE/DELETE, TA cannot UPDATE
+- [x] Profiles gap-fill: PA UPDATE role fields, TA UPDATE same-tenant, TA denied cross-tenant
+- [x] Master tenant enforcement trigger: non-master user rejected as CSM and lecturer
+- [x] resolve_access_request_tenant trigger: domain auto-resolves to tenant_id
+- [x] **Key finding:** `access_requests` INSERT+SELECT fails for learner (no SELECT policy) — INSERT without `.select()`, verify via admin
+- [x] **Files:** `tests/rls/admin.test.ts` (new), `tests/setup.ts` (2 factories + tracker fields)
+- [x] **Tests:** 46 new RLS tests (354 total RLS, 12 test files)
 
 ---
 
@@ -1375,8 +1377,8 @@ npm run test:rls:local # Local only (requires env vars)
 
 **Key files:** `tests/setup.ts` (factories, adminClient, createClientAs, toDenyAccess matcher), `scripts/test-runner.ts` (branch management). See `CLAUDE.md` § Testing for patterns, gotchas, and permission matrix categories (TEN/XTA/ESC/ROL/INH/CW/EP).
 
-**308 total RLS tests** across 11 files:
-- `tenants.test.ts` (10), `profiles.test.ts` (14), `courses.test.ts` (16), `content-hierarchy.test.ts` (26), `content-write.test.ts` (48), `enrollment-progress.test.ts` (48), `quiz-exam.test.ts` (55), `comments.test.ts` (24), `expert-questions.test.ts` (16), `issues.test.ts` (21), `notifications.test.ts` (30)
+**354 total RLS tests** across 12 files:
+- `tenants.test.ts` (10), `profiles.test.ts` (14), `courses.test.ts` (16), `content-hierarchy.test.ts` (26), `content-write.test.ts` (48), `enrollment-progress.test.ts` (48), `quiz-exam.test.ts` (55), `comments.test.ts` (24), `expert-questions.test.ts` (16), `issues.test.ts` (21), `notifications.test.ts` (30), `admin.test.ts` (46)
 
 ---
 

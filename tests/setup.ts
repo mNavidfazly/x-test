@@ -91,6 +91,8 @@ export class TestDataTracker {
   readonly tenantCourseIds: string[] = [];
   readonly csmAssignmentIds: string[] = [];
   readonly lecturerAssignmentIds: string[] = [];
+  readonly accessRequestIds: string[] = [];
+  readonly reminderHistoryIds: string[] = [];
 
   trackUser(id: string) { this.userIds.push(id); }
   trackTenant(id: string) { this.tenantIds.push(id); }
@@ -101,6 +103,8 @@ export class TestDataTracker {
   trackTenantCourse(id: string) { this.tenantCourseIds.push(id); }
   trackCSMAssignment(id: string) { this.csmAssignmentIds.push(id); }
   trackLecturerAssignment(id: string) { this.lecturerAssignmentIds.push(id); }
+  trackAccessRequest(id: string) { this.accessRequestIds.push(id); }
+  trackReminderHistory(id: string) { this.reminderHistoryIds.push(id); }
 }
 
 // ---------------------------------------------------------------------------
@@ -108,6 +112,14 @@ export class TestDataTracker {
 // ---------------------------------------------------------------------------
 
 export async function cleanupTestData(tracker: TestDataTracker): Promise<void> {
+  // Phase 0: ID-tracked tables without user_id FK
+  if (tracker.accessRequestIds.length > 0) {
+    await adminClient.from('access_requests').delete().in('id', tracker.accessRequestIds);
+  }
+  if (tracker.reminderHistoryIds.length > 0) {
+    await adminClient.from('reminder_history').delete().in('id', tracker.reminderHistoryIds);
+  }
+
   // Phase 1: user-generated data (child tables that reference profiles/courses)
   // These are needed for later phases — no-op if no IDs tracked
   for (const table of [
@@ -928,6 +940,68 @@ export async function createIssue(
     .single();
 
   if (error) throw new Error(`Failed to create issue: ${error.message}`);
+  return { id: data.id };
+}
+
+// ---------------------------------------------------------------------------
+// Phase 9F: Access Requests & Reminder History factories
+// ---------------------------------------------------------------------------
+
+export async function createAccessRequest(
+  tracker: TestDataTracker,
+  overrides: {
+    email?: string;
+    fullName?: string;
+    domain?: string;
+    tenantId?: string;
+    status?: string;
+    reviewedBy?: string;
+    reviewedAt?: string;
+    reviewNotes?: string;
+  } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('access_requests')
+    .insert({
+      email: overrides.email ?? faker.internet.email().toLowerCase(),
+      full_name: overrides.fullName ?? faker.person.fullName(),
+      ...(overrides.domain !== undefined && { domain: overrides.domain }),
+      ...(overrides.tenantId !== undefined && { tenant_id: overrides.tenantId }),
+      status: overrides.status ?? 'pending',
+      ...(overrides.reviewedBy !== undefined && { reviewed_by: overrides.reviewedBy }),
+      ...(overrides.reviewedAt !== undefined && { reviewed_at: overrides.reviewedAt }),
+      ...(overrides.reviewNotes !== undefined && { review_notes: overrides.reviewNotes }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create access_request: ${error.message}`);
+
+  tracker.trackAccessRequest(data.id);
+  return { id: data.id };
+}
+
+export async function createReminderHistory(
+  tracker: TestDataTracker,
+  sentBy: string,
+  sentTo: string,
+  tenantId: string,
+  overrides: { courseId?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('reminder_history')
+    .insert({
+      sent_by: sentBy,
+      sent_to: sentTo,
+      tenant_id: tenantId,
+      ...(overrides.courseId !== undefined && { course_id: overrides.courseId }),
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create reminder_history: ${error.message}`);
+
+  tracker.trackReminderHistory(data.id);
   return { id: data.id };
 }
 
