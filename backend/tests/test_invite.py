@@ -66,9 +66,10 @@ class TestInviteUser:
         app.dependency_overrides[get_current_user] = _pa_user
 
         # Mock: tenant exists, no existing profile, invite succeeds
+        # Note: maybe_single().execute() returns None for 0 rows in production
         mock_supabase.table.return_value.select.return_value.eq.return_value.maybe_single.return_value.execute.side_effect = [
             MagicMock(data={"id": "tenant-1"}),  # tenant lookup
-            MagicMock(data=None),  # profile lookup (no duplicate)
+            None,  # profile lookup (no duplicate — real maybe_single returns None)
         ]
         _mock_invite_success(mock_supabase)
 
@@ -87,7 +88,7 @@ class TestInviteUser:
         # TA sends only email — tenant_id comes from JWT
         mock_supabase.table.return_value.select.return_value.eq.return_value.maybe_single.return_value.execute.side_effect = [
             MagicMock(data={"id": "tenant-1"}),  # tenant lookup (TA's own)
-            MagicMock(data=None),  # no duplicate
+            None,  # no duplicate — real maybe_single returns None for 0 rows
         ]
         _mock_invite_success(mock_supabase)
 
@@ -105,7 +106,7 @@ class TestInviteUser:
 
         mock_supabase.table.return_value.select.return_value.eq.return_value.maybe_single.return_value.execute.side_effect = [
             MagicMock(data={"id": "tenant-1"}),
-            MagicMock(data=None),
+            None,  # no duplicate
         ]
         _mock_invite_success(mock_supabase)
 
@@ -163,9 +164,8 @@ class TestInviteUser:
     def test_nonexistent_tenant_returns_404(self, client, mock_supabase):
         app.dependency_overrides[get_current_user] = _pa_user
 
-        mock_supabase.table.return_value.select.return_value.eq.return_value.maybe_single.return_value.execute.return_value = MagicMock(
-            data=None  # tenant not found
-        )
+        # maybe_single().execute() returns None for 0 rows in production
+        mock_supabase.table.return_value.select.return_value.eq.return_value.maybe_single.return_value.execute.return_value = None
 
         resp = client.post("/api/invite", json=INVITE_PAYLOAD)
 

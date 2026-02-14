@@ -19,24 +19,6 @@ async def invite_user(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> InviteUserResponse:
     """Invite a new user by email. Creates auth user + sends invite email."""
-    try:
-        return _do_invite(body, user, supabase)
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.exception("Unhandled error in invite_user: %s", e)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal error: {type(e).__name__}: {e}",
-        )
-
-
-def _do_invite(
-    body: InviteUserRequest,
-    user: UserClaims,
-    supabase: Client,
-) -> InviteUserResponse:
-    """Core invite logic (sync helper to avoid async exception issues)."""
     # Authorization: Platform Admin or Tenant Admin only
     if not (user.is_platform_admin or user.is_tenant_admin):
         raise HTTPException(
@@ -55,7 +37,7 @@ def _do_invite(
             detail="Could not determine tenant for invitation",
         )
 
-    # Validate tenant exists
+    # Validate tenant exists (maybe_single returns None for 0 rows)
     tenant_result = (
         supabase.table("tenants")
         .select("id")
@@ -63,13 +45,13 @@ def _do_invite(
         .maybe_single()
         .execute()
     )
-    if not tenant_result.data:
+    if tenant_result is None or not tenant_result.data:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Tenant not found",
         )
 
-    # Check if user with this email already exists
+    # Check if user with this email already exists (None = not found = OK)
     existing = (
         supabase.table("profiles")
         .select("id")
@@ -77,7 +59,7 @@ def _do_invite(
         .maybe_single()
         .execute()
     )
-    if existing.data:
+    if existing is not None and existing.data:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="A user with this email already exists",
@@ -94,7 +76,7 @@ def _do_invite(
         logger.error("Failed to invite user %s: %s", body.email, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to send invitation: {type(e).__name__}: {e}",
+            detail="Failed to send invitation",
         )
 
     return InviteUserResponse(
