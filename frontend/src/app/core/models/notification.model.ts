@@ -97,6 +97,8 @@ export function getNotificationRoute(type: NotificationType, data: Record<string
       return '/teaching/issues';
 
     case 'new_access_request':
+      return '/admin/access-requests';
+
     case 'access_request_reviewed':
       return null;
   }

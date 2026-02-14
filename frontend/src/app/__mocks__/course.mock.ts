@@ -1036,3 +1036,101 @@ export function createMockUserManagementService(options?: {
 }
 
 export type MockUserManagementService = ReturnType<typeof createMockUserManagementService>;
+
+// ---------------------------------------------------------------------------
+// Access Request mocks
+// ---------------------------------------------------------------------------
+
+import { AccessRequestForBoard } from '../core/models/access-request.model';
+import { AccessRequestService } from '../core/services/access-request.service';
+
+export function createMockAccessRequestForBoard(overrides?: Partial<AccessRequestForBoard>): AccessRequestForBoard {
+  return {
+    id: 'req-1',
+    email: 'requester@client.com',
+    full_name: 'Test Requester',
+    domain: 'client.com',
+    tenant_id: 'tenant-1',
+    tenant_name: 'Client Corp',
+    status: 'pending',
+    reviewed_by: null,
+    reviewer_name: null,
+    reviewed_at: null,
+    review_notes: null,
+    created_at: '2026-02-01T10:00:00Z',
+    ...overrides,
+  };
+}
+
+export function createMockAccessRequestService(options?: {
+  requests?: AccessRequestForBoard[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const requests = signal<AccessRequestForBoard[]>(options?.requests ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    requests: requests.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadRequests: vi.fn().mockResolvedValue(undefined),
+    reviewRequest: vi.fn().mockResolvedValue(undefined),
+    approveAndInvite: vi.fn().mockResolvedValue(undefined),
+    _setRequests: requests.set.bind(requests),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockAccessRequestService = ReturnType<typeof createMockAccessRequestService>;
+
+// --- Lecturer Assignment Mocks ---
+
+import { LecturerAssignment } from '../core/models/lecturer-assignment.model';
+
+export function createMockLecturerAssignment(
+  overrides?: Partial<LecturerAssignment>,
+): LecturerAssignment {
+  return {
+    id: 'assignment-1',
+    user_id: 'lecturer-1',
+    email: 'lecturer@master.com',
+    full_name: 'Test Lecturer',
+    course_id: 'course-1',
+    course_title: 'Test Course',
+    can_edit: false,
+    can_grade: true,
+    assigned_at: '2026-02-01T10:00:00Z',
+    assigned_by_name: 'Platform Admin',
+    ...overrides,
+  };
+}
+
+export function createMockLecturerAssignmentService(options?: {
+  assignments?: LecturerAssignment[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const assignments = signal<LecturerAssignment[]>(options?.assignments ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    assignments: assignments.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadAssignments: vi.fn().mockResolvedValue(undefined),
+    addAssignment: vi.fn().mockResolvedValue(undefined),
+    removeAssignment: vi.fn().mockResolvedValue(undefined),
+    updatePermissions: vi.fn().mockResolvedValue(undefined),
+    loadAvailableLecturers: vi.fn().mockResolvedValue([]),
+    loadAvailableCourses: vi.fn().mockResolvedValue([]),
+    _setAssignments: assignments.set.bind(assignments),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockLecturerAssignmentService = ReturnType<typeof createMockLecturerAssignmentService>;

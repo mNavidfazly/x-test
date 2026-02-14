@@ -171,6 +171,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'admin/access-requests',
+        canActivate: [roleGuard('tenant_admin', 'platform_admin')],
+        loadComponent: () =>
+          import('./features/admin/pages/access-request-page.component').then(
+            (m) => m.AccessRequestPageComponent,
+          ),
+      },
+      {
         path: 'admin/:path',
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(
@@ -198,6 +206,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/platform/pages/tenant-management-page.component').then(
             (m) => m.TenantManagementPageComponent,
+          ),
+      },
+      {
+        path: 'platform/lecturer-assignments',
+        canActivate: [roleGuard('platform_admin')],
+        loadComponent: () =>
+          import('./features/platform/pages/lecturer-assignment-page.component').then(
+            (m) => m.LecturerAssignmentPageComponent,
           ),
       },
       {

@@ -2,8 +2,8 @@ import { UserRole } from '../../core/models/auth.model';
 import {
   LucideIconData,
   LayoutDashboard, BookOpen, Bell, GraduationCap, MessageSquare,
-  ClipboardCheck, Users, Building, HelpCircle, BarChart3,
-  Building2, FolderOpen, Clock, Flag,
+  ClipboardCheck, Users, UserPlus, Building, HelpCircle, BarChart3,
+  Building2, FolderOpen, Clock, Flag, UserCog,
 } from 'lucide-angular';
 
 export interface NavItem {
@@ -45,6 +45,7 @@ export const NAV_SECTIONS: NavSection[] = [
     roles: ['tenant_admin', 'platform_admin'],
     items: [
       { label: 'User Management', route: '/admin/users', icon: Users },
+      { label: 'Access Requests', route: '/admin/access-requests', icon: UserPlus },
     ],
   },
   {
@@ -67,6 +68,7 @@ export const NAV_SECTIONS: NavSection[] = [
     roles: ['platform_admin'],
     items: [
       { label: 'Tenant Management', route: '/platform/tenants', icon: Building2 },
+      { label: 'Lecturer Assignments', route: '/platform/lecturer-assignments', icon: UserCog },
       { label: 'Content Management', route: '/platform/content', icon: FolderOpen },
       { label: 'Staleness Dashboard', route: '/platform/staleness', icon: Clock },
     ],

@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00033` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00034` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -60,7 +60,7 @@ This document describes the development approach for building X-Courses v2 (Mult
 │  │ PostgreSQL│  │  Storage  │       │    │  GET  /api/health                 │
 │  │ + RLS     │  │ (PDFs,    │       │    │  POST /api/auth/resolve-tenant    │
 │  │ + Triggers│  │  exams,   │       │    │  POST /api/auth/reset-password    │
-│  └───────────┘  │  avatars) │       │    │  POST /api/invite       (planned) │
+│  └───────────┘  │  avatars) │       │    │  POST /api/invite                 │
 │  ┌───────────┐  └───────────┘       │    │                                   │
 │  │   Auth    │  ┌───────────┐       │    └───────────────────────────────────┘
 │  │(Keycloak+ │  │ Realtime  │       │                    │
@@ -85,9 +85,9 @@ This document describes the development approach for building X-Courses v2 (Mult
 - **Angular → FastAPI** for:
   - Tenant resolution (email → tenant + auth methods + IdP hint)
   - Password reset proxy (validates tenant allows email_password)
-  - User invitations (planned — sends email via Calypso SMTP)
+  - User invitations (sends invite via `supabase.auth.admin.invite_user_by_email()`)
   - Reminder emails (sends via Calypso SMTP + logs to `reminder_history`)
-  - External quiz results webhook (planned — receives from external quiz platform)
+  - External quiz results webhook (receives from external quiz platform)
   - Bunny Stream video upload init + embed URL signing + encoding webhook
 - **Notifications** are created automatically via PostgreSQL triggers (SECURITY DEFINER)
 - **Videos** are hosted on Bunny Stream — uploaded via TUS (browser → Bunny directly), embedded via token-signed iframe URLs. FastAPI handles upload init, embed signing, and encoding webhooks
@@ -102,11 +102,11 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── docs/
 │   ├── learning-platform-requirements.md
 │   ├── x_courses_development_approach.md    # This document
-│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress + 12 dashboard + 14 comments + 12 questions + 12 issue-mgmt + 12 notifications + 10 tenant-mgmt = 170 total)
+│   └── e2e-user-stories/               # E2E test stories (54 content + 6 Bunny + 16 quiz + 11 enrollment + 11 progress + 12 dashboard + 14 comments + 12 questions + 12 issue-mgmt + 12 notifications + 10 tenant-mgmt + 12 user-mgmt + 11 access-requests = 193 total)
 │
 ├── supabase/
 │   └── migrations/
-│       └── 00001-00033                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers, reminder_history lecturer SELECT fix, quiz grading bypass, matching question RPC, external quiz auto-mark, comment badge triggers, profiles_select_tenant policy, notifications Realtime)
+│       └── 00001-00034                     # Complete schema (30 tables, ~242 RLS policies, auth hooks, security hardening, Keycloak SSO, course+lecture+module CRUD triggers, Bunny Stream support, module immutable fields, external_quiz enum, progress tracking triggers, reminder_history lecturer SELECT fix, quiz grading bypass, matching question RPC, external quiz auto-mark, comment badge triggers, profiles_select_tenant policy, notifications Realtime, access_requests domain→tenant_id trigger)
 │
 ├── backend/                                # FastAPI app (Railway)
 │   ├── app/
@@ -122,7 +122,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   ├── video.py                 # POST /api/video/init-upload, GET /api/video/{id}/status, POST /api/video/webhook, DELETE /api/video/{id}
 │   │   │   ├── reminder.py              # POST /api/reminders/send (PA/TA/CSM/Lecturer auth, sends email + inserts reminder_history)
 │   │   │   ├── quiz_results.py            # POST /api/quiz-results/external (external quiz webhook, API key auth)
-│   │   │   # Planned: invite.py (Phase 9B)
+│   │   │   ├── invite.py                  # ✅ POST /api/invite (PA/TA auth, supabase.auth.admin.invite_user_by_email + tenant validation + duplicate check) (Phase 9B)
 │   │   │
 │   │   ├── services/
 │   │   │   ├── __init__.py
@@ -146,7 +146,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 ├── frontend/                               # Angular app (Vercel)
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── __mocks__/                # Test mocks (13 factories + bunny-upload mock via inline provider)
+│   │   │   ├── __mocks__/                # Test mocks (15 factories + bunny-upload mock via inline provider)
 │   │   │   │   ├── supabase.mock.ts      # Multi-tenant aware mock with JWT claims
 │   │   │   │   ├── auth.mock.ts          # Session mock with role switching
 │   │   │   │   ├── api.mock.ts           # FastAPI client mock
@@ -155,7 +155,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── lucide.mock.ts
 │   │   │   │   ├── tenant.mock.ts
 │   │   │   │   ├── profile.mock.ts
-│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CommentService + ExpertQuestionService + IssueService + NotificationService + TenantManagementService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult + Comment/CommentReply + ExpertQuestion + Issue/IssueForBoard + Notification + TenantForBoard/CsmAssignment factories
+│   │   │   │   ├── course.mock.ts        # CourseService + ProgressService + CommentService + ExpertQuestionService + IssueService + NotificationService + TenantManagementService + UserManagementService + AccessRequestService + CourseWithProgress + CourseDetail + ModuleViewerData + LectureFormData + PdfFormData + ExamFormData + MarkdownFormData + ExternalQuizContent/FormData + EnrolledUser + UserProgressSummary + DashboardUserProgress + QuizForTaking + QuizAttemptResult + Comment/CommentReply + ExpertQuestion + Issue/IssueForBoard + Notification + TenantForBoard/CsmAssignment + UserForBoard + AccessRequestForBoard factories
 │   │   │   │   └── tiptap.mock.ts        # MockTiptapEditorComponent (textarea fallback for tests)
 │   │   │   │
 │   │   │   ├── core/
@@ -179,6 +179,12 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │   ├── notification.service.spec.ts
 │   │   │   │   │   ├── tenant-management.service.ts # ✅ TenantManagementService (3 signals + 12 methods: CRUD tenants, course assignments, CSM assignments) (Phase 9A)
 │   │   │   │   │   ├── tenant-management.service.spec.ts
+│   │   │   │   │   ├── user-management.service.ts  # ✅ UserManagementService (3 signals + 5 methods: loadUsers, inviteUser via ApiService, updateUserRoles, updateUserProfile, removeUserAdminRole) (Phase 9B)
+│   │   │   │   │   ├── user-management.service.spec.ts
+│   │   │   │   │   ├── access-request.service.ts   # ✅ AccessRequestService (3 signals + 3 methods: loadRequests with FK joins, reviewRequest, approveAndInvite two-step) (Phase 9C)
+│   │   │   │   │   ├── access-request.service.spec.ts
+│   │   │   │   │   ├── lecturer-assignment.service.ts # ✅ LecturerAssignmentService (3 signals + 6 methods: loadAssignments triple FK join, addAssignment, removeAssignment, updatePermissions, loadAvailableLecturers, loadAvailableCourses two-query Set filter) (Phase 9E)
+│   │   │   │   │   ├── lecturer-assignment.service.spec.ts
 │   │   │   │   │   └── course.service.spec.ts
 │   │   │   │   ├── guards/
 │   │   │   │   │   ├── auth.guard.ts
@@ -191,6 +197,9 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │       ├── issue.model.ts            # ✅ Issue, IssueType, IssueStatus, IssueForBoard, IssueReporter, BoardIssueSummary (Phase 7A+7B)
 │   │   │   │       ├── notification.model.ts    # ✅ AppNotification, NotificationType (15), NOTIFICATION_META map, getNotificationMeta(), getNotificationRoute() (Phase 8A)
 │   │   │   │       ├── tenant-management.model.ts # ✅ TenantForBoard, TenantSettings, TenantCourseAssignment, CsmAssignment, AvailableCourse, AvailableCsm, TenantFormData (Phase 9A)
+│   │   │   │       ├── user-management.model.ts   # ✅ UserForBoard, InviteUserData, UpdateUserRolesData, UpdateUserProfileData (Phase 9B)
+│   │   │   │       ├── access-request.model.ts    # ✅ AccessRequestForBoard, AccessRequestStatus, ReviewAccessRequestData (Phase 9C)
+│   │   │   │       ├── lecturer-assignment.model.ts # ✅ LecturerAssignment, AvailableLecturer, AvailableCourse, UpdatePermissionsData (Phase 9E)
 │   │   │   │       ├── profile.model.ts
 │   │   │   │       └── tenant.model.ts
 │   │   │   │
@@ -198,7 +207,7 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   ├── sidebar/
 │   │   │   │   │   ├── sidebar.component.ts        # Role-aware nav, mobile overlay, desktop static
 │   │   │   │   │   ├── sidebar.component.spec.ts
-│   │   │   │   │   └── sidebar-nav.config.ts       # 6 sections, 16 items, filterNavSections()
+│   │   │   │   │   └── sidebar-nav.config.ts       # 6 sections, 17 items, filterNavSections()
 │   │   │   │   ├── header/
 │   │   │   │   │   ├── header.component.ts          # Hamburger, notification bell (Realtime unread count badge, rose-500 pill, 99+ cap), user menu dropdown
 │   │   │   │   │   └── header.component.spec.ts
@@ -312,10 +321,12 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │       ├── notification-list-page.component.ts    # Smart: notification list with type-specific icons+colors, unread indicator, mark all as read, click to navigate (Phase 8A)
 │   │   │   │   │       └── notification-list-page.component.spec.ts
 │   │   │   │   │
-│   │   │   │   ├── platform/             # ✅ Phase 9A complete
+│   │   │   │   ├── platform/             # ✅ Phase 9A + 9E complete
 │   │   │   │   │   └── pages/
 │   │   │   │   │       ├── tenant-management-page.component.ts    # Smart: PA-only tenant board — CRUD tenants, expandable rows with 3 tabs (Details/Courses/CSMs), course+CSM assignment management, master tenant protection, two-click delete (Phase 9A)
-│   │   │   │   │       └── tenant-management-page.component.spec.ts
+│   │   │   │   │       ├── tenant-management-page.component.spec.ts
+│   │   │   │   │       ├── lecturer-assignment-page.component.ts  # Smart: PA-only lecturer assignment board — flat table with triple FK joins, expandable rows with can_edit/can_grade toggles, add form (lecturer+course pickers), remove, JWT warning banner, 4 summary cards, search filter (Phase 9E)
+│   │   │   │   │       └── lecturer-assignment-page.component.spec.ts
 │   │   │   │   │
 │   │   │   │   ├── teaching/             # ✅ Phase 5D + 6C + 7B complete
 │   │   │   │   │   └── pages/
@@ -326,10 +337,17 @@ x-courses-v2/                                  # GitHub monorepo (main branch �
 │   │   │   │   │       ├── issue-management-page.component.ts   # Smart: issue management board with 4 filters, 5 summary cards, expandable rows, inline status+notes editing (Phase 7B)
 │   │   │   │   │       └── issue-management-page.component.spec.ts
 │   │   │   │   │
+│   │   │   │   │
+│   │   │   │   ├── admin/                # ✅ Phase 9C complete
+│   │   │   │   │   └── pages/
+│   │   │   │   │       ├── user-management-page.component.ts    # Smart: TA+PA user board — user list with FK tenant join, invite form (TA: email-only, PA: email + tenant picker), role toggles (TA/PA), profile name edit, self-role protection, summary cards, search + role filters (Phase 9B)
+│   │   │   │   │       ├── user-management-page.component.spec.ts
+│   │   │   │   │       ├── access-request-page.component.ts     # Smart: TA+PA access request board — dual-role view (PA: tenant column + tenant picker for unknown domains, TA: own-tenant only), approve & invite two-step, reject with notes, read-only reviewed rows, search + status filters (Phase 9C)
+│   │   │   │   │       └── access-request-page.component.spec.ts
+│   │   │   │   │
 │   │   │   │   │                         # --- Notes ---
 │   │   │   │   ├── quizzes/              # Phase 5A quiz-taking components live in courses/components/ (quiz-question, quiz-result-item, quiz-taker)
-│   │   │   │   ├── exams/                # Phase 5C-5D exam-taking components live in courses/components/ (exam-taker)
-│   │   │   │   └── admin/                # Phase 9B (User Management — planned)
+│   │   │   │   └── exams/                # Phase 5C-5D exam-taking components live in courses/components/ (exam-taker)
 │   │   │   │
 │   │   │   └── shared/
 │   │   │       └── components/
@@ -996,29 +1014,58 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **Tests:** 41 new tests (19 TenantManagementService + 22 TenantManagementPage) — 926 total frontend tests, build OK
 - [x] **E2E verified:** 10 stories (TM-01 to TM-10), all pass, 5 roles tested (PA allowed, Learner/Lecturer/CSM/TA blocked), 0 bugs found
 
-#### 9B - User Management
-- [ ] User list (role-scoped: Tenant Admin sees own tenant, Platform Admin sees all)
-- [ ] Invite user:
-  - [ ] Frontend: enter email, select tenant (Platform Admin) or use own tenant (Tenant Admin)
-  - [ ] Backend: `POST /api/invite` → send invitation email via Calypso SMTP
-  - [ ] Supabase: `auth.admin.inviteUserByEmail()` with `raw_user_meta_data: { tenant_id }`
-- [ ] Change user roles:
-  - [ ] Toggle is_tenant_admin (Tenant Admin of same tenant, or Platform Admin)
-  - [ ] Toggle is_platform_admin (Platform Admin only)
-  - [ ] Protected by `protect_profile_role_fields()` trigger
-- [ ] View/edit user profiles
-- [ ] **Tests:** UserManagementComponent, InviteService
+#### 9B - User Management (Complete)
+- [x] No migration needed — `profiles` table + RLS policies (`profiles_select_tenant`, `profiles_select_platform_admin`, `profiles_update_tenant_admin`, `profiles_update_platform_admin`) + `protect_profile_role_fields()` trigger already exist
+- [x] `user-management.model.ts`: 4 interfaces — `UserForBoard`, `InviteUserData`, `UpdateUserRolesData`, `UpdateUserProfileData`
+- [x] UserManagementService (separate from ProfileService — different concern): 3 signals (`users`, `loading`, `error`) + 5 methods:
+  - [x] `loadUsers` — `.select('*, tenant:tenants(name)')`, maps `row.tenant?.name` → `tenant_name`. RLS auto-scopes: TA sees own-tenant, PA sees all
+  - [x] `inviteUser(data)` — calls `ApiService.post('/invite', data)`. TA sends `{ email }` (backend uses JWT tenant_id). PA sends `{ email, tenant_id }`
+  - [x] `updateUserRoles(userId, data)` / `updateUserProfile(userId, data)` / `removeUserAdminRole(userId)` — `.update().eq('id', userId)` on `profiles` table
+- [x] FastAPI `POST /api/invite` endpoint (`backend/app/routers/invite.py`):
+  - [x] Auth: JWT (PA or TA only, else 403). PA provides `tenant_id`, TA uses JWT claim
+  - [x] Validates tenant exists via `maybe_single().execute()`, checks email uniqueness
+  - [x] Calls `supabase.auth.admin.invite_user_by_email()` with `options={"data": {"tenant_id": tenant_id}}`
+  - [x] `InviteUserRequest` / `InviteUserResponse` schemas in `schemas.py`
+  - [x] **UM-BUG-01 (Critical):** Python `maybe_single().execute()` returns `None` for 0 rows (not response with `data=None`). Fixed: null checks `tenant_result is None or not tenant_result.data`
+- [x] UserManagementPageComponent (~450 lines): TA+PA board at `/admin/users`
+  - [x] Header: Users icon + "User Management" + teal count badge + "Invite User" button
+  - [x] Invite form (collapsible): email input + tenant dropdown (PA only, loads from `tenants` table) + Invite/Cancel buttons
+  - [x] Filter bar: search by name/email + role filter dropdown (All / Tenant Admin / Platform Admin / Regular User)
+  - [x] Summary cards: Total Users + Tenant Admins + Platform Admins (PA only) + Regular Users
+  - [x] Table: Avatar initials + Name, Email, Roles (badges: teal PA / amber TA / slate User), Tenant (PA only), Joined
+  - [x] Expandable rows: name edit (input + Save) + role toggles (TA checkbox + PA checkbox for PA users only)
+  - [x] Self-role protection: own checkboxes disabled + "Cannot modify own role" message
+  - [x] TA-scoped view: no tenant column, no PA toggle, no PA summary card, no tenant picker in invite
+- [x] Route: `admin/users` with `roleGuard('tenant_admin', 'platform_admin')` — BEFORE `admin/:path` catch-all
+- [x] Sidebar update: "Tenant Admin" section roles changed from `['tenant_admin']` to `['tenant_admin', 'platform_admin']` — PA sees User Management link
+- [x] Mock factories: `createMockUserForBoard`, `createMockUserManagementService` — with `_set*` helpers + backward-compat defaults
+- [x] **Tests:** 41 new frontend tests (18 UserManagementService + 22 UserManagementPage + 1 sidebar) + 8 backend pytest tests (PA/TA invite, role rejection, duplicate email 409, nonexistent tenant 404, unauthenticated 401) — 967 total frontend, 85 backend
+- [x] **E2E verified:** 12 stories (UM-01 to UM-12), all pass, 5 roles tested (PA + TA allowed, Learner/Lecturer/CSM blocked), 1 bug found+fixed (UM-BUG-01)
 
-#### 9C - Access Requests
-- [ ] Access request list:
-  - [ ] Platform Admin: all pending requests
-  - [ ] Tenant Admin: requests routed to their tenant (by domain match)
-- [ ] Approve: create user invitation → send email
-- [ ] Reject: update status to 'rejected'
-- [ ] Domain routing logic:
-  - [ ] Known domain (matches tenant) → routed to that tenant's admin
-  - [ ] Unknown domain → routed to Platform Admin
-- [ ] **Tests:** AccessRequestComponent
+#### 9C - Access Requests (Complete)
+- [x] Migration 00034: BEFORE INSERT trigger `resolve_access_request_tenant()` — auto-resolves `domain → tenant_id` from `tenants` table. Known domains get `tenant_id` set; unknown domains keep `tenant_id = NULL` (only PA sees them)
+- [x] `access-request.model.ts`: 3 types — `AccessRequestForBoard`, `AccessRequestStatus`, `ReviewAccessRequestData`
+- [x] AccessRequestService (separate service): 3 signals (`requests`, `loading`, `error`) + 3 methods:
+  - [x] `loadRequests` — `.select('*, tenant:tenants(name), reviewer:profiles!reviewed_by(full_name)')`, maps FK joins to flat fields. RLS auto-scopes: TA sees own-tenant, PA sees all
+  - [x] `reviewRequest(id, data, userId)` — `.update({ status, review_notes, reviewed_by, reviewed_at })`. Used for both approve and reject
+  - [x] `approveAndInvite(id, email, tenantId, userId)` — two-step: (1) `reviewRequest()` with status 'approved', (2) `ApiService.post('/invite', { email, tenant_id })` via `firstValueFrom()`. If step 2 fails, request is still 'approved' — UI shows error + allows retry
+- [x] AccessRequestPageComponent (~440 lines): TA+PA board at `/admin/access-requests`
+  - [x] Header: UserPlus icon + "Access Requests" + teal count badge
+  - [x] Filter bar: search by name/email/domain (case-insensitive) + status dropdown (All / Pending / Approved / Rejected)
+  - [x] 4 summary cards: Total Requests (slate), Pending (amber), Approved (emerald), Rejected (rose)
+  - [x] Table: Name/Email, Domain, Tenant (PA only — "Unknown domain" amber badge when `tenant_id = NULL`), Status badge, Requested date
+  - [x] Expandable rows — two templates:
+    - [x] **Pending**: request details + review notes textarea + "Approve & Invite" (teal) + "Reject" (rose) buttons
+    - [x] **Already reviewed**: read-only reviewer name, date, notes — no action buttons
+  - [x] PA-only: tenant picker dropdown for unknown-domain requests — "Approve & Invite" disabled until tenant selected
+  - [x] TA-scoped: no tenant column, no tenant picker, no unknown-domain requests (RLS filters them)
+- [x] Route: `admin/access-requests` with `roleGuard('tenant_admin', 'platform_admin')` — BEFORE `admin/:path` catch-all
+- [x] Sidebar: added "Access Requests" (UserPlus icon) under "Tenant Admin" section
+- [x] Notification routing: updated `getNotificationRoute()` for `new_access_request` → `/admin/access-requests`
+- [x] Mock factories: `createMockAccessRequestForBoard`, `createMockAccessRequestService` — with `_set*` helpers + backward-compat defaults
+- [x] **Key finding:** Existing access_requests rows (created before migration 00034) have `tenant_id = NULL` — they show as "Unknown domain" for PA. Migration only fixes FUTURE inserts.
+- [x] **Tests:** 37 new frontend tests (16 AccessRequestService + 21 AccessRequestPage) — 1004 total frontend, 85 backend, build OK
+- [x] **E2E verified:** 11 stories (AR-01 to AR-11), all pass, 5 roles tested (PA + TA allowed, Learner/Lecturer/CSM blocked), 0 bugs found
 
 #### 9D - Reminder Emails (Complete — built as part of Phase 4C)
 - [x] FastAPI endpoint: `POST /api/reminders/send` (backend/app/routers/reminder.py)
@@ -1034,14 +1081,17 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] Integration with Progress Dashboard (bulk select → send reminder)
 - [x] **Tests:** 9 pytest endpoint tests (auth, authorization, send flow, partial failure)
 
-#### 9E - CSM & Lecturer Assignment Management
+#### 9E - CSM & Lecturer Assignment Management (Complete)
 - [x] CSM → tenant assignment management — **completed in Phase 9A** (Tenant Management "CSMs" tab)
-- [ ] Lecturer assignments page (Platform Admin only):
-  - [ ] List Lecturer → course assignments
-  - [ ] Add/remove assignments (validates master tenant user via trigger)
-  - [ ] Toggle can_edit and can_grade flags
-- [ ] **Important:** After changing assignments, user must re-login for JWT claims to refresh
-- [ ] **Tests:** LecturerAssignmentManagementComponent
+- [x] Lecturer assignments page (Platform Admin only):
+  - [x] List Lecturer → course assignments (triple FK join: `profiles!user_id`, `courses!course_id`, `profiles!assigned_by`)
+  - [x] Add/remove assignments (validates master tenant user via trigger, course dropdown excludes already-assigned)
+  - [x] Toggle can_edit and can_grade flags (expandable row with checkboxes, immediate persistence)
+- [x] **Important:** JWT warning banner — "Permission changes take effect when the lecturer next logs in (~1 hour JWT refresh)."
+- [x] **Files:** LecturerAssignmentService (3 signals + 6 methods), LecturerAssignmentPageComponent (~350 lines), model types, mock factories
+- [x] **Route:** `platform/lecturer-assignments` with `roleGuard('platform_admin')`, sidebar UserCog icon in Platform section
+- [x] **Tests:** 15 service + 21 page = 36 new tests (1040 total frontend)
+- [x] **E2E:** 7 stories (LA-01 to LA-07), all pass, 3 roles tested (PA + Learner + Lecturer), 0 bugs
 
 #### 9F - Admin RLS Tests
 - [ ] Tenants: platform admin CRUD, others read own only
@@ -1113,7 +1163,7 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 | `/api/health` | GET | Health check | None |
 | `/api/auth/resolve-tenant` | POST | Resolve email domain → tenant + allowed auth methods + idp_hint | None (rate-limited 10/min/IP) |
 | `/api/auth/reset-password` | POST | Validate tenant allows email_password, then forward to Supabase admin API | None (rate-limited 5/min/IP) |
-| `/api/invite` | POST | *Planned (Phase 9B)* — Send invitation email (Calypso SMTP) | JWT (Tenant Admin, Platform Admin) |
+| `/api/invite` | POST | ✅ Invite user via `supabase.auth.admin.invite_user_by_email()` (validates tenant + email uniqueness, sends Supabase invite email) | JWT (Tenant Admin, Platform Admin) |
 | `/api/reminders/send` | POST | Send reminder emails + log to `reminder_history` (Calypso SMTP) | JWT (Tenant Admin, CSM, Lecturer, Platform Admin) |
 | `/api/quiz-results/external` | POST | External quiz results webhook — receives score/passed, inserts into `external_quiz_results`, auto-marks progress via trigger | API Key (`X-API-Key` header) |
 | `/api/video/init-upload` | POST | Create Bunny video + return TUS upload credentials | JWT (Platform Admin, Lecturer with can_edit) |
@@ -1309,7 +1359,7 @@ npm run test:ui             # Interactive browser UI
 **Key Files (source of truth — do NOT duplicate code examples here, they drift):**
 - `frontend/vitest.config.mts` — Test configuration (Vite + AnalogJS angular plugin)
 - `frontend/src/test-setup.mjs` — Angular TestBed initialization. **MUST be `.mjs`**, not `.ts` (Angular Vite plugin silently swallows `.ts` setupFiles)
-- `frontend/src/app/__mocks__/` — 10 mock files (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin + dashboard progress + comment + expert-question + issue + notification], tiptap)
+- `frontend/src/app/__mocks__/` — 10 mock files (supabase, auth, api, toast, router, lucide, tenant, profile, course [incl. progress admin + dashboard progress + comment + expert-question + issue + notification + tenant-management + user-management + access-request + lecturer-assignment], tiptap)
 
 See `CLAUDE.md` § Testing for conventions and patterns.
 
@@ -1325,8 +1375,8 @@ npm run test:rls:local # Local only (requires env vars)
 
 **Key files:** `tests/setup.ts` (factories, adminClient, createClientAs, toDenyAccess matcher), `scripts/test-runner.ts` (branch management). See `CLAUDE.md` § Testing for patterns, gotchas, and permission matrix categories (TEN/XTA/ESC/ROL/INH/CW/EP).
 
-**278 total RLS tests** across 10 files:
-- `tenants.test.ts` (10), `profiles.test.ts` (14), `courses.test.ts` (16), `content-hierarchy.test.ts` (26), `content-write.test.ts` (48), `enrollment-progress.test.ts` (48), `quiz-exam.test.ts` (55), `comments.test.ts` (24), `expert-questions.test.ts` (16), `issues.test.ts` (21)
+**308 total RLS tests** across 11 files:
+- `tenants.test.ts` (10), `profiles.test.ts` (14), `courses.test.ts` (16), `content-hierarchy.test.ts` (26), `content-write.test.ts` (48), `enrollment-progress.test.ts` (48), `quiz-exam.test.ts` (55), `comments.test.ts` (24), `expert-questions.test.ts` (16), `issues.test.ts` (21), `notifications.test.ts` (30)
 
 ---
 
