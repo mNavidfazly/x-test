@@ -3,6 +3,7 @@ import { RealtimeChannel } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { AppNotification } from '../models/notification.model';
+import { extractErrorMessage } from '../utils/error.utils';
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
@@ -51,8 +52,7 @@ export class NotificationService {
 
       this.#notifications.set((data ?? []) as AppNotification[]);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
-      this.#error.set(msg || 'Failed to load notifications');
+      this.#error.set(extractErrorMessage(err, 'Failed to load notifications'));
     } finally {
       this.#loading.set(false);
     }

@@ -277,6 +277,7 @@ export class LoginComponent {
   #route = inject(ActivatedRoute);
   #destroyRef = inject(DestroyRef);
   #urlIdpHint: string | null = null;
+  #returnUrl: string | null = null;
 
   email = '';
   password = '';
@@ -305,6 +306,7 @@ export class LoginComponent {
 
   constructor() {
     this.#urlIdpHint = this.#route.snapshot.queryParamMap.get('kc_idp_hint');
+    this.#returnUrl = this.#route.snapshot.queryParamMap.get('returnUrl');
     this.#destroyRef.onDestroy(() => this.#clearResendCooldown());
   }
 
@@ -350,7 +352,7 @@ export class LoginComponent {
       this.errorMessage.set(error.message);
       this.loading.set(false);
     } else {
-      this.#router.navigate(['/']);
+      this.#router.navigate([this.#returnUrl ?? '/']);
     }
   }
 
@@ -389,7 +391,7 @@ export class LoginComponent {
       this.otpError.set(error.message);
       this.otpLoading.set(false);
     } else {
-      this.#router.navigate(['/']);
+      this.#router.navigate([this.#returnUrl ?? '/']);
     }
   }
 

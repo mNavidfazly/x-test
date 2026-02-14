@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } from '@angular/core';
 import { LucideAngularModule, BarChart3, ChevronDown, ChevronUp, Check, RotateCcw, Loader2 } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { LectureWithModules, UserProgressSummary } from '../../../core/models/course.model';
 
 @Component({
@@ -133,6 +134,7 @@ export class ProgressManagerComponent implements OnInit {
   readonly lectures = input.required<LectureWithModules[]>();
 
   #courseService = inject(CourseService);
+  #toast = inject(ToastService);
 
   readonly users = signal<UserProgressSummary[]>([]);
   readonly loading = signal(false);
@@ -152,12 +154,12 @@ export class ProgressManagerComponent implements OnInit {
 
   async onMarkComplete(user: UserProgressSummary, lectureId: string, moduleId: string) {
     this.actionInProgress.set(true);
-    this.error.set('');
     try {
       await this.#courseService.adminMarkModuleComplete(user.user_id, user.tenant_id, this.courseId(), lectureId, moduleId);
+      this.#toast.success('Progress marked as complete');
       await this.#loadProgress();
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Failed to mark complete');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to mark complete');
     } finally {
       this.actionInProgress.set(false);
     }
@@ -165,12 +167,12 @@ export class ProgressManagerComponent implements OnInit {
 
   async onReset(user: UserProgressSummary, moduleId: string) {
     this.actionInProgress.set(true);
-    this.error.set('');
     try {
       await this.#courseService.adminResetModuleProgress(user.user_id, moduleId);
+      this.#toast.success('Progress reset');
       await this.#loadProgress();
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Failed to reset progress');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to reset progress');
     } finally {
       this.actionInProgress.set(false);
     }

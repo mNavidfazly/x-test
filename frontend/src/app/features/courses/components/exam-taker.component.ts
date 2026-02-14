@@ -3,6 +3,7 @@ import { LucideAngularModule, Clock, Play, Upload, Download, CheckCircle2, XCirc
 import { CourseService } from '../../../core/services/course.service';
 import { ExamTakingData, ExamSubmission } from '../../../core/models/course.model';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
+import { formatDate } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-exam-taker',
@@ -358,9 +359,7 @@ export class ExamTakerComponent implements OnDestroy {
     }
   }
 
-  formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  }
+  readonly formatDate = formatDate;
 
   async #loadExam(moduleId: string) {
     try {

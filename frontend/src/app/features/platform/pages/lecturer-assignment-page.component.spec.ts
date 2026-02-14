@@ -3,12 +3,14 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { LecturerAssignmentPageComponent } from './lecturer-assignment-page.component';
 import { LecturerAssignmentService } from '../../../core/services/lecturer-assignment.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   createMockLecturerAssignment,
   createMockLecturerAssignmentService,
 } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockLecturerAssignmentService>;
@@ -21,14 +23,16 @@ function renderPage(options?: {
     roles: ['platform_admin'],
     claims: { is_platform_admin: true },
   });
+  const toast = createMockToastService();
 
   return render(LecturerAssignmentPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: LecturerAssignmentService, useValue: service },
       { provide: AuthService, useValue: auth },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, service, auth }));
+  }).then(result => ({ ...result, service, auth, toast }));
 }
 
 describe('LecturerAssignmentPageComponent', () => {
@@ -243,7 +247,7 @@ describe('LecturerAssignmentPageComponent', () => {
     expect(service.addAssignment).toHaveBeenCalledWith('l1', 'c1');
   });
 
-  it('should show add assignment error', async () => {
+  it('should show add assignment error toast', async () => {
     const service = createMockLecturerAssignmentService();
     service.loadAvailableLecturers.mockResolvedValue([
       { id: 'l1', email: 'lect@m.com', full_name: 'Lect One' },
@@ -253,7 +257,7 @@ describe('LecturerAssignmentPageComponent', () => {
     ]);
     service.addAssignment.mockRejectedValue(new Error('Already assigned to this course'));
 
-    const { fixture } = await renderPage({ service });
+    const { fixture, toast } = await renderPage({ service });
 
     // Open form
     fireEvent.click(screen.getByText('New Assignment', { selector: 'button' }));
@@ -276,7 +280,7 @@ describe('LecturerAssignmentPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Already assigned to this course')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Already assigned to this course');
   });
 
   it('should expand row and show permission checkboxes and remove button', async () => {

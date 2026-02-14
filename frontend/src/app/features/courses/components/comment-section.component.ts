@@ -2,7 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, On
 import { LucideAngularModule, MessageSquare, Reply, Pencil, Trash2, Loader2, GraduationCap, Building2, Send } from 'lucide-angular';
 import { CommentService } from '../../../core/services/comment.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { Comment, CommentReply } from '../../../core/models/comment.model';
+import { formatRelativeTime } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-comment-section',
@@ -41,12 +43,6 @@ import { Comment, CommentReply } from '../../../core/models/comment.model';
           </button>
         </div>
       </div>
-
-      @if (actionError()) {
-        <div class="mb-4 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-          {{ actionError() }}
-        </div>
-      }
 
       @if (commentService.loading()) {
         <div class="space-y-4">
@@ -211,6 +207,7 @@ export class CommentSectionComponent implements OnInit {
 
   readonly commentService = inject(CommentService);
   #auth = inject(AuthService);
+  #toast = inject(ToastService);
 
   readonly newCommentBody = signal('');
   readonly replyingToId = signal<string | null>(null);
@@ -219,7 +216,6 @@ export class CommentSectionComponent implements OnInit {
   readonly editingReplyId = signal<string | null>(null);
   readonly editBody = signal('');
   readonly submitting = signal(false);
-  readonly actionError = signal('');
 
   readonly #currentUserId = computed(() => this.#auth.currentUser()?.id ?? '');
   readonly #isTenantAdmin = computed(() => this.#auth.currentUser()?.claims?.is_tenant_admin ?? false);
@@ -227,6 +223,7 @@ export class CommentSectionComponent implements OnInit {
   readonly #userTenantId = computed(() => this.#auth.currentUser()?.claims?.tenant_id ?? '');
 
   readonly icons = { MessageSquare, Reply, Pencil, Trash2, Loader2, GraduationCap, Building2, Send };
+  readonly formatRelativeTime = formatRelativeTime;
 
   constructor() {
     effect(() => {
@@ -261,22 +258,6 @@ export class CommentSectionComponent implements OnInit {
       .join('');
   }
 
-  formatRelativeTime(dateStr: string): string {
-    const now = Date.now();
-    const then = new Date(dateStr).getTime();
-    const diffMs = now - then;
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHr = Math.floor(diffMs / 3600000);
-    const diffDay = Math.floor(diffMs / 86400000);
-
-    if (diffMin < 1) return 'just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
-    if (diffHr < 24) return `${diffHr}h ago`;
-    if (diffDay < 7) return `${diffDay}d ago`;
-
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
-
   onNewCommentInput(event: Event) {
     this.newCommentBody.set((event.target as HTMLTextAreaElement).value);
   }
@@ -294,13 +275,12 @@ export class CommentSectionComponent implements OnInit {
     if (!body) return;
 
     this.submitting.set(true);
-    this.actionError.set('');
 
     try {
       await this.commentService.addComment(this.moduleId(), body);
       this.newCommentBody.set('');
     } catch (err) {
-      this.actionError.set(err instanceof Error ? err.message : 'Failed to post comment');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to post comment');
     } finally {
       this.submitting.set(false);
     }
@@ -323,14 +303,13 @@ export class CommentSectionComponent implements OnInit {
     if (!body) return;
 
     this.submitting.set(true);
-    this.actionError.set('');
 
     try {
       await this.commentService.addReply(commentId, body);
       this.replyingToId.set(null);
       this.replyBody.set('');
     } catch (err) {
-      this.actionError.set(err instanceof Error ? err.message : 'Failed to post reply');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to post reply');
     } finally {
       this.submitting.set(false);
     }
@@ -361,14 +340,13 @@ export class CommentSectionComponent implements OnInit {
     if (!body) return;
 
     this.submitting.set(true);
-    this.actionError.set('');
 
     try {
       await this.commentService.updateComment(commentId, body);
       this.editingCommentId.set(null);
       this.editBody.set('');
     } catch (err) {
-      this.actionError.set(err instanceof Error ? err.message : 'Failed to update comment');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to update comment');
     } finally {
       this.submitting.set(false);
     }
@@ -379,36 +357,31 @@ export class CommentSectionComponent implements OnInit {
     if (!body) return;
 
     this.submitting.set(true);
-    this.actionError.set('');
 
     try {
       await this.commentService.updateReply(replyId, body);
       this.editingReplyId.set(null);
       this.editBody.set('');
     } catch (err) {
-      this.actionError.set(err instanceof Error ? err.message : 'Failed to update reply');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to update reply');
     } finally {
       this.submitting.set(false);
     }
   }
 
   async onDeleteComment(commentId: string) {
-    this.actionError.set('');
-
     try {
       await this.commentService.deleteComment(commentId);
     } catch (err) {
-      this.actionError.set(err instanceof Error ? err.message : 'Failed to delete comment');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to delete comment');
     }
   }
 
   async onDeleteReply(replyId: string) {
-    this.actionError.set('');
-
     try {
       await this.commentService.deleteReply(replyId);
     } catch (err) {
-      this.actionError.set(err instanceof Error ? err.message : 'Failed to delete reply');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to delete reply');
     }
   }
 }

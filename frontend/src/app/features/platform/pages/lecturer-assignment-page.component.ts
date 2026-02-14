@@ -22,11 +22,13 @@ import {
 } from 'lucide-angular';
 import { LecturerAssignmentService } from '../../../core/services/lecturer-assignment.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   LecturerAssignment,
   AvailableLecturer,
   AvailableCourse,
 } from '../../../core/models/lecturer-assignment.model';
+import { formatDate } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-lecturer-assignment-page',
@@ -115,16 +117,6 @@ import {
               class="text-sm text-slate-600 hover:text-slate-800"
             >Cancel</button>
           </div>
-          @if (addError()) {
-            <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-              {{ addError() }}
-            </div>
-          }
-          @if (addSuccess()) {
-            <div class="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
-              Assignment added successfully!
-            </div>
-          }
         </div>
       }
 
@@ -261,11 +253,6 @@ import {
                               </span>
                             </label>
                           </div>
-                          @if (toggleError()) {
-                            <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                              {{ toggleError() }}
-                            </div>
-                          }
                         </div>
 
                         <!-- Assignment Info -->
@@ -294,11 +281,6 @@ import {
                             }
                             Remove Assignment
                           </button>
-                          @if (removeError()) {
-                            <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                              {{ removeError() }}
-                            </div>
-                          }
                         </div>
                       </div>
                     </td>
@@ -315,6 +297,7 @@ import {
 export class LecturerAssignmentPageComponent implements OnInit {
   readonly service = inject(LecturerAssignmentService);
   #auth = inject(AuthService);
+  #toast = inject(ToastService);
 
   // Filter
   readonly searchTerm = signal('');
@@ -327,19 +310,15 @@ export class LecturerAssignmentPageComponent implements OnInit {
   readonly availableCourses = signal<AvailableCourse[]>([]);
   readonly coursesLoading = signal(false);
   readonly adding = signal(false);
-  readonly addError = signal('');
-  readonly addSuccess = signal(false);
 
   // Expanded row
   readonly expandedAssignmentId = signal<string | null>(null);
 
   // Permission toggling
   readonly togglingPermission = signal(false);
-  readonly toggleError = signal('');
 
   // Remove
   readonly removing = signal(false);
-  readonly removeError = signal('');
 
   // Computed
   readonly filteredAssignments = computed(() => {
@@ -387,8 +366,6 @@ export class LecturerAssignmentPageComponent implements OnInit {
     const showing = !this.showNewForm();
     this.showNewForm.set(showing);
     if (showing) {
-      this.addError.set('');
-      this.addSuccess.set(false);
       this.selectedLecturerId.set('');
       this.selectedCourseId.set('');
       this.availableCourses.set([]);
@@ -398,8 +375,6 @@ export class LecturerAssignmentPageComponent implements OnInit {
 
   cancelNewForm() {
     this.showNewForm.set(false);
-    this.addError.set('');
-    this.addSuccess.set(false);
   }
 
   private async loadLecturers() {
@@ -407,7 +382,7 @@ export class LecturerAssignmentPageComponent implements OnInit {
       const lecturers = await this.service.loadAvailableLecturers();
       this.availableLecturers.set(lecturers);
     } catch {
-      this.addError.set('Failed to load lecturers');
+      this.#toast.error('Failed to load lecturers');
     }
   }
 
@@ -423,7 +398,7 @@ export class LecturerAssignmentPageComponent implements OnInit {
       const courses = await this.service.loadAvailableCourses(lecturerId);
       this.availableCourses.set(courses);
     } catch {
-      this.addError.set('Failed to load courses');
+      this.#toast.error('Failed to load courses');
     } finally {
       this.coursesLoading.set(false);
     }
@@ -435,21 +410,17 @@ export class LecturerAssignmentPageComponent implements OnInit {
     if (!lecturerId || !courseId) return;
 
     this.adding.set(true);
-    this.addError.set('');
-    this.addSuccess.set(false);
 
     try {
       await this.service.addAssignment(lecturerId, courseId);
-      this.addSuccess.set(true);
+      this.#toast.success('Assignment added');
       this.selectedLecturerId.set('');
       this.selectedCourseId.set('');
       this.availableCourses.set([]);
       await this.service.loadAssignments();
       await this.loadLecturers();
     } catch (err: any) {
-      this.addError.set(
-        err?.message || 'Failed to add assignment',
-      );
+      this.#toast.error(err?.message || 'Failed to add assignment');
     } finally {
       this.adding.set(false);
     }
@@ -459,8 +430,6 @@ export class LecturerAssignmentPageComponent implements OnInit {
     this.expandedAssignmentId.set(
       this.expandedAssignmentId() === assignment.id ? null : assignment.id,
     );
-    this.toggleError.set('');
-    this.removeError.set('');
   }
 
   async onTogglePermission(
@@ -469,15 +438,15 @@ export class LecturerAssignmentPageComponent implements OnInit {
     checked: boolean,
   ) {
     this.togglingPermission.set(true);
-    this.toggleError.set('');
 
     try {
       await this.service.updatePermissions(assignment.id, {
         [field]: checked,
       });
+      this.#toast.success('Permissions updated');
       await this.service.loadAssignments();
     } catch (err: any) {
-      this.toggleError.set(err?.message || 'Failed to update permissions');
+      this.#toast.error(err?.message || 'Failed to update permissions');
     } finally {
       this.togglingPermission.set(false);
     }
@@ -486,28 +455,18 @@ export class LecturerAssignmentPageComponent implements OnInit {
   async onRemoveAssignment(id: string, event: Event) {
     event.stopPropagation();
     this.removing.set(true);
-    this.removeError.set('');
 
     try {
       await this.service.removeAssignment(id);
+      this.#toast.success('Assignment removed');
       this.expandedAssignmentId.set(null);
       await this.service.loadAssignments();
     } catch (err: any) {
-      this.removeError.set(err?.message || 'Failed to remove assignment');
+      this.#toast.error(err?.message || 'Failed to remove assignment');
     } finally {
       this.removing.set(false);
     }
   }
 
-  formatDate(dateStr: string): string {
-    try {
-      return new Date(dateStr).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
+  readonly formatDate = formatDate;
 }

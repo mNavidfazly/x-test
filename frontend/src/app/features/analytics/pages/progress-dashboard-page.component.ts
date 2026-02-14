@@ -6,7 +6,10 @@ import {
 } from 'lucide-angular';
 import { ProgressService } from '../../../core/services/progress.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { DashboardUserProgress } from '../../../core/models/course.model';
+import { extractErrorMessage } from '../../../core/utils/error.utils';
+import { isToastedByInterceptor } from '../../../core/interceptors/http-error.interceptor';
 
 @Component({
   selector: 'app-progress-dashboard-page',
@@ -62,14 +65,6 @@ import { DashboardUserProgress } from '../../../core/models/course.model';
               Send
             </button>
             <button type="button" (click)="reminderMode.set(false)" class="text-sm text-slate-600 hover:text-slate-800">Cancel</button>
-            @if (reminderResult()) {
-              <span class="text-sm text-teal-700">
-                Sent {{ reminderResult()!.sent }}, failed {{ reminderResult()!.failed }}
-              </span>
-            }
-            @if (reminderError()) {
-              <span class="text-sm text-rose-600">{{ reminderError() }}</span>
-            }
           </div>
         </div>
       }
@@ -240,6 +235,7 @@ import { DashboardUserProgress } from '../../../core/models/course.model';
 export class ProgressDashboardPageComponent implements OnInit {
   readonly progressService = inject(ProgressService);
   #auth = inject(AuthService);
+  readonly #toast = inject(ToastService);
 
   readonly icons = { BarChart3, Search, Mail, Loader2, Users, Check, X, AlertTriangle, Filter };
 
@@ -254,8 +250,6 @@ export class ProgressDashboardPageComponent implements OnInit {
   readonly reminderMode = signal(false);
   readonly reminderMessage = signal('You have incomplete courses. Continue learning to stay on track!');
   readonly reminderSending = signal(false);
-  readonly reminderResult = signal<{ sent: number; failed: number } | null>(null);
-  readonly reminderError = signal('');
 
   // Role checks
   readonly showTenantColumn = computed(() => {
@@ -345,8 +339,6 @@ export class ProgressDashboardPageComponent implements OnInit {
 
   async onSendReminders() {
     this.reminderSending.set(true);
-    this.reminderError.set('');
-    this.reminderResult.set(null);
 
     try {
       const result = await firstValueFrom(
@@ -356,10 +348,12 @@ export class ProgressDashboardPageComponent implements OnInit {
           message: this.reminderMessage(),
         }),
       );
-      this.reminderResult.set(result);
+      this.#toast.success(`Reminders sent: ${result.sent} delivered, ${result.failed} failed`);
       this.selectedUserIds.set(new Set());
     } catch (err) {
-      this.reminderError.set(err instanceof Error ? err.message : 'Failed to send reminders');
+      if (!isToastedByInterceptor(err)) {
+        this.#toast.error(extractErrorMessage(err, 'Failed to send reminders'));
+      }
     } finally {
       this.reminderSending.set(false);
     }

@@ -4,6 +4,7 @@ import { CourseService } from '../../../core/services/course.service';
 import { QuizTakingData, QuizAttempt, QuizResults, QuizAnswerMap } from '../../../core/models/course.model';
 import { QuizQuestionComponent } from './quiz-question.component';
 import { QuizResultItemComponent } from './quiz-result-item.component';
+import { formatDate } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-quiz-taker',
@@ -386,9 +387,7 @@ export class QuizTakerComponent implements OnDestroy {
     this.phase.set('start');
   }
 
-  formatDate(iso: string): string {
-    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  }
+  readonly formatDate = formatDate;
 
   async #loadQuiz(moduleId: string) {
     try {

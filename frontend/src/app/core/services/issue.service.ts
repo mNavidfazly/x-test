@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { Issue, IssueType, IssueStatus, IssueForBoard, BoardIssueSummary } from '../models/issue.model';
+import { extractErrorMessage } from '../utils/error.utils';
 
 @Injectable({ providedIn: 'root' })
 export class IssueService {
@@ -59,8 +60,7 @@ export class IssueService {
 
       this.#issues.set(issues);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
-      this.#error.set(msg || 'Failed to load issues');
+      this.#error.set(extractErrorMessage(err, 'Failed to load issues'));
     } finally {
       this.#loading.set(false);
     }
@@ -87,7 +87,7 @@ export class IssueService {
         description,
       });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to report issue'));
     await this.loadMyIssues();
   }
 
@@ -135,11 +135,7 @@ export class IssueService {
       this.#boardIssues.set(issues);
       this.#boardCourses.set(courses);
     } catch (err) {
-      this.#boardError.set(
-        err instanceof Error ? err.message :
-        typeof err === 'object' && err && 'message' in err ? String((err as any).message) :
-        'Failed to load issues',
-      );
+      this.#boardError.set(extractErrorMessage(err, 'Failed to load issues'));
     } finally {
       this.#boardLoading.set(false);
     }

@@ -981,6 +981,7 @@ export function createMockTenantManagementService(options?: {
     loadAvailableCsms: vi.fn().mockResolvedValue([]),
     assignCsm: vi.fn().mockResolvedValue(undefined),
     removeCsm: vi.fn().mockResolvedValue(undefined),
+    loadAvailableTenantsList: vi.fn().mockResolvedValue([]),
     _setTenants: tenants.set.bind(tenants),
     _setLoading: loading.set.bind(loading),
     _setError: error.set.bind(error),

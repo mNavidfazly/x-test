@@ -6,8 +6,12 @@ import {
 } from 'lucide-angular';
 import { UserManagementService } from '../../../core/services/user-management.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
+import { TenantManagementService } from '../../../core/services/tenant-management.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { UserForBoard } from '../../../core/models/user-management.model';
+import { formatDate } from '../../../core/utils/date.utils';
+import { extractErrorMessage } from '../../../core/utils/error.utils';
+import { isToastedByInterceptor } from '../../../core/interceptors/http-error.interceptor';
 
 type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
@@ -88,16 +92,6 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
               class="text-sm text-slate-600 hover:text-slate-800"
             >Cancel</button>
           </div>
-          @if (inviteError()) {
-            <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-              {{ inviteError() }}
-            </div>
-          }
-          @if (inviteSuccess()) {
-            <div class="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
-              Invitation sent successfully!
-            </div>
-          }
         </div>
       }
 
@@ -317,11 +311,6 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                           <div>Updated: {{ user.updated_at }}</div>
                         </div>
 
-                        @if (saveError()) {
-                          <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                            {{ saveError() }}
-                          </div>
-                        }
                       </div>
                     </td>
                   </tr>
@@ -337,7 +326,8 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 export class UserManagementPageComponent implements OnInit {
   readonly service = inject(UserManagementService);
   readonly #auth = inject(AuthService);
-  readonly #supabaseService = inject(SupabaseService);
+  readonly #tenantService = inject(TenantManagementService);
+  readonly #toast = inject(ToastService);
 
   readonly icons = {
     Users, Search, Loader2, Plus, Save, X,
@@ -354,8 +344,6 @@ export class UserManagementPageComponent implements OnInit {
   readonly inviteEmail = signal('');
   readonly inviteTenantId = signal('');
   readonly inviting = signal(false);
-  readonly inviteError = signal('');
-  readonly inviteSuccess = signal(false);
   readonly availableTenants = signal<{ id: string; name: string }[]>([]);
 
   // Expanded row
@@ -364,7 +352,6 @@ export class UserManagementPageComponent implements OnInit {
   // Edit
   readonly editName = signal('');
   readonly saving = signal(false);
-  readonly saveError = signal('');
 
   // Role toggle
   readonly togglingRole = signal(false);
@@ -413,15 +400,7 @@ export class UserManagementPageComponent implements OnInit {
     return user.email[0].toUpperCase();
   }
 
-  formatDate(dateStr: string): string {
-    try {
-      return new Date(dateStr).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
+  readonly formatDate = formatDate;
 
   isSelf(userId: string): boolean {
     return this.#auth.currentUser()?.id === userId;
@@ -436,8 +415,6 @@ export class UserManagementPageComponent implements OnInit {
 
   async onInviteUser() {
     this.inviting.set(true);
-    this.inviteError.set('');
-    this.inviteSuccess.set(false);
 
     try {
       const data: { email: string; tenant_id?: string } = {
@@ -448,12 +425,12 @@ export class UserManagementPageComponent implements OnInit {
       }
 
       await this.service.inviteUser(data);
-      this.inviteSuccess.set(true);
+      this.#toast.success('Invitation sent successfully');
       this.inviteEmail.set('');
       this.inviteTenantId.set('');
       await this.service.loadUsers();
     } catch (err) {
-      this.inviteError.set(err instanceof Error ? err.message : 'Failed to send invitation');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to send invitation');
     } finally {
       this.inviting.set(false);
     }
@@ -471,8 +448,6 @@ export class UserManagementPageComponent implements OnInit {
     this.showInviteForm.set(false);
     this.inviteEmail.set('');
     this.inviteTenantId.set('');
-    this.inviteError.set('');
-    this.inviteSuccess.set(false);
   }
 
   // --- Expand ---
@@ -484,7 +459,6 @@ export class UserManagementPageComponent implements OnInit {
     }
     this.expandedUserId.set(user.id);
     this.editName.set(user.full_name ?? '');
-    this.saveError.set('');
 
     // Load tenants for invite form if PA and not loaded yet
     if (this.isPlatformAdmin() && this.availableTenants().length === 0) {
@@ -496,14 +470,14 @@ export class UserManagementPageComponent implements OnInit {
 
   async onSaveProfile(userId: string) {
     this.saving.set(true);
-    this.saveError.set('');
 
     try {
       await this.service.updateUserProfile(userId, { full_name: this.editName().trim() });
+      this.#toast.success('Profile updated');
       this.expandedUserId.set(null);
       await this.service.loadUsers();
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'Failed to update profile');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       this.saving.set(false);
     }
@@ -513,15 +487,15 @@ export class UserManagementPageComponent implements OnInit {
 
   async onToggleTenantAdmin(user: UserForBoard) {
     this.togglingRole.set(true);
-    this.saveError.set('');
 
     try {
       await this.service.updateUserRoles(user.id, {
         is_tenant_admin: !user.is_tenant_admin,
       });
+      this.#toast.success('Role updated');
       await this.service.loadUsers();
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'Failed to update role');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to update role');
     } finally {
       this.togglingRole.set(false);
     }
@@ -529,15 +503,15 @@ export class UserManagementPageComponent implements OnInit {
 
   async onTogglePlatformAdmin(user: UserForBoard) {
     this.togglingRole.set(true);
-    this.saveError.set('');
 
     try {
       await this.service.updateUserRoles(user.id, {
         is_platform_admin: !user.is_platform_admin,
       });
+      this.#toast.success('Role updated');
       await this.service.loadUsers();
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'Failed to update role');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to update role');
     } finally {
       this.togglingRole.set(false);
     }
@@ -547,12 +521,8 @@ export class UserManagementPageComponent implements OnInit {
 
   private async loadAvailableTenants() {
     try {
-      const { data } = await this.#supabaseService.client
-        .from('tenants')
-        .select('id, name')
-        .order('name');
-
-      this.availableTenants.set(data ?? []);
+      const tenants = await this.#tenantService.loadAvailableTenantsList();
+      this.availableTenants.set(tenants);
     } catch {
       // Non-critical — invite can still work without tenant list
     }

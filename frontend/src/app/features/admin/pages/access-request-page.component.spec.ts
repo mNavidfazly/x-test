@@ -3,16 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { AccessRequestPageComponent } from './access-request-page.component';
 import { AccessRequestService } from '../../../core/services/access-request.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
-import { createMockAccessRequestService, createMockAccessRequestForBoard } from '../../../__mocks__/course.mock';
+import { TenantManagementService } from '../../../core/services/tenant-management.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { createMockAccessRequestService, createMockAccessRequestForBoard, createMockTenantManagementService } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
-import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockAccessRequestService>;
   auth?: ReturnType<typeof createMockAuthService>;
-  supabase?: ReturnType<typeof createMockSupabaseService>;
+  tenantService?: ReturnType<typeof createMockTenantManagementService>;
 }) {
   const service = options?.service ?? createMockAccessRequestService();
   const auth = options?.auth ?? createMockAuthService({
@@ -20,16 +21,18 @@ function renderPage(options?: {
     roles: ['tenant_admin'],
     claims: { is_tenant_admin: true },
   });
-  const supabase = options?.supabase ?? createMockSupabaseService();
+  const tenantService = options?.tenantService ?? createMockTenantManagementService();
+  const toast = createMockToastService();
 
   return render(AccessRequestPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: AccessRequestService, useValue: service },
       { provide: AuthService, useValue: auth },
-      { provide: SupabaseService, useValue: supabase },
+      { provide: TenantManagementService, useValue: tenantService },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, service, auth, supabase }));
+  }).then(result => ({ ...result, service, auth, tenantService, toast }));
 }
 
 function renderPageAsPA(options?: {
@@ -42,16 +45,18 @@ function renderPageAsPA(options?: {
     roles: ['platform_admin'],
     claims: { is_platform_admin: true },
   });
-  const supabase = createMockSupabaseService();
+  const tenantService = createMockTenantManagementService();
+  const toast = createMockToastService();
 
   return render(AccessRequestPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: AccessRequestService, useValue: service },
       { provide: AuthService, useValue: auth },
-      { provide: SupabaseService, useValue: supabase },
+      { provide: TenantManagementService, useValue: tenantService },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, service, auth, supabase }));
+  }).then(result => ({ ...result, service, auth, tenantService, toast }));
 }
 
 describe('AccessRequestPageComponent', () => {
@@ -257,7 +262,7 @@ describe('AccessRequestPageComponent', () => {
     expect(screen.getAllByText('alice@client.com').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('should call approveAndInvite on approve', async () => {
+  it('should call approveAndInvite on approve and show success toast', async () => {
     const auth = createMockAuthService({
       isAuthenticated: true,
       userId: 'ta-user-1',
@@ -277,7 +282,7 @@ describe('AccessRequestPageComponent', () => {
       ],
     });
 
-    const { fixture } = await renderPage({ service, auth });
+    const { fixture, toast } = await renderPage({ service, auth });
 
     fireEvent.click(screen.getByText('Alice'));
     fixture.detectChanges();
@@ -289,9 +294,10 @@ describe('AccessRequestPageComponent', () => {
     expect(service.approveAndInvite).toHaveBeenCalledWith(
       'r1', 'alice@client.com', 'tenant-1', 'ta-user-1',
     );
+    expect(toast.success).toHaveBeenCalledWith('Request approved and invitation sent');
   });
 
-  it('should show approve error on rejection', async () => {
+  it('should show approve error toast on rejection', async () => {
     const auth = createMockAuthService({
       isAuthenticated: true,
       userId: 'ta-user-1',
@@ -312,7 +318,7 @@ describe('AccessRequestPageComponent', () => {
     });
     service.approveAndInvite.mockRejectedValue(new Error('User already exists'));
 
-    const { fixture } = await renderPage({ service, auth });
+    const { fixture, toast } = await renderPage({ service, auth });
 
     fireEvent.click(screen.getByText('Alice'));
     fixture.detectChanges();
@@ -321,10 +327,10 @@ describe('AccessRequestPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('User already exists')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('User already exists');
   });
 
-  it('should call reviewRequest with rejected status on reject', async () => {
+  it('should call reviewRequest with rejected status on reject and show success toast', async () => {
     const auth = createMockAuthService({
       isAuthenticated: true,
       userId: 'ta-user-1',
@@ -343,7 +349,7 @@ describe('AccessRequestPageComponent', () => {
       ],
     });
 
-    const { fixture } = await renderPage({ service, auth });
+    const { fixture, toast } = await renderPage({ service, auth });
 
     fireEvent.click(screen.getByText('Alice'));
     fixture.detectChanges();
@@ -362,9 +368,10 @@ describe('AccessRequestPageComponent', () => {
       { status: 'rejected', review_notes: 'Not eligible' },
       'ta-user-1',
     );
+    expect(toast.success).toHaveBeenCalledWith('Request rejected');
   });
 
-  it('should show reject error on rejection', async () => {
+  it('should show reject error toast on rejection', async () => {
     const auth = createMockAuthService({
       isAuthenticated: true,
       userId: 'ta-user-1',
@@ -383,7 +390,7 @@ describe('AccessRequestPageComponent', () => {
     });
     service.reviewRequest.mockRejectedValue(new Error('Update denied'));
 
-    const { fixture } = await renderPage({ service, auth });
+    const { fixture, toast } = await renderPage({ service, auth });
 
     fireEvent.click(screen.getByText('Alice'));
     fixture.detectChanges();
@@ -392,7 +399,7 @@ describe('AccessRequestPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Update denied')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Update denied');
   });
 
   it('should show read-only info for already-reviewed requests', async () => {

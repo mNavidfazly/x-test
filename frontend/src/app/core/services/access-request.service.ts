@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
+import { extractErrorMessage } from '../utils/error.utils';
 import {
   AccessRequestForBoard,
   ReviewAccessRequestData,
@@ -21,13 +22,6 @@ export class AccessRequestService {
   readonly requests = this.#requests.asReadonly();
   readonly loading = this.#loading.asReadonly();
   readonly error = this.#error.asReadonly();
-
-  #extractErrorMessage(err: unknown, fallback: string): string {
-    if (err instanceof Error) return err.message;
-    if (err && typeof err === 'object' && 'message' in err)
-      return String((err as { message: unknown }).message);
-    return fallback;
-  }
 
   async loadRequests(): Promise<void> {
     const user = this.#auth.currentUser();
@@ -66,7 +60,7 @@ export class AccessRequestService {
       this.#requests.set(requests);
     } catch (err) {
       this.#error.set(
-        this.#extractErrorMessage(err, 'Failed to load access requests'),
+        extractErrorMessage(err, 'Failed to load access requests'),
       );
     } finally {
       this.#loading.set(false);
@@ -91,7 +85,7 @@ export class AccessRequestService {
       })
       .eq('id', id);
 
-    if (error) throw new Error(error.message || 'Failed to review request');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to review request'));
   }
 
   async approveAndInvite(

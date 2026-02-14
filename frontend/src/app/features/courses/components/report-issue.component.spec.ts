@@ -2,7 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { ReportIssueComponent } from './report-issue.component';
 import { IssueService } from '../../../core/services/issue.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockIssueService } from '../../../__mocks__/course.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 describe('ReportIssueComponent', () => {
   const renderReportIssue = async (options?: {
@@ -11,6 +13,7 @@ describe('ReportIssueComponent', () => {
     mockService?: ReturnType<typeof createMockIssueService>;
   }) => {
     const mockService = options?.mockService ?? createMockIssueService();
+    const toast = createMockToastService();
 
     const result = await render(ReportIssueComponent, {
       componentInputs: {
@@ -19,10 +22,11 @@ describe('ReportIssueComponent', () => {
       },
       providers: [
         { provide: IssueService, useValue: mockService },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
-    return { ...result, mockService };
+    return { ...result, mockService, toast };
   };
 
   it('should show "Report Issue" button initially', async () => {
@@ -123,11 +127,11 @@ describe('ReportIssueComponent', () => {
     expect(screen.getByText(/Your issue has been reported/)).toBeTruthy();
   });
 
-  it('should show error message on submit failure', async () => {
+  it('should show error toast on submit failure', async () => {
     const mockService = createMockIssueService();
     mockService.reportIssue.mockRejectedValueOnce(new Error('Network error'));
 
-    const { fixture } = await renderReportIssue({ mockService });
+    const { fixture, toast } = await renderReportIssue({ mockService });
 
     fireEvent.click(screen.getByText('Report Issue'));
 
@@ -143,7 +147,7 @@ describe('ReportIssueComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Network error')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Network error');
   });
 
   it('should allow reporting another issue after success', async () => {

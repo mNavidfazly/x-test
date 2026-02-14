@@ -157,6 +157,7 @@ export const routes: Routes = [
       },
       {
         path: 'teaching/:path',
+        canActivate: [roleGuard('lecturer', 'platform_admin')],
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(
             (m) => m.StubPageComponent,
@@ -180,6 +181,7 @@ export const routes: Routes = [
       },
       {
         path: 'admin/:path',
+        canActivate: [roleGuard('tenant_admin', 'platform_admin')],
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(
             (m) => m.StubPageComponent,
@@ -187,6 +189,7 @@ export const routes: Routes = [
       },
       {
         path: 'csm/:path',
+        canActivate: [roleGuard('csm', 'platform_admin')],
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(
             (m) => m.StubPageComponent,
@@ -218,6 +221,7 @@ export const routes: Routes = [
       },
       {
         path: 'platform/:path',
+        canActivate: [roleGuard('platform_admin')],
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(
             (m) => m.StubPageComponent,

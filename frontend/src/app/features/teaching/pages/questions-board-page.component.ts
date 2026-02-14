@@ -4,7 +4,9 @@ import {
   Clock, Check, CheckCircle2, XCircle, Send, HelpCircle,
 } from 'lucide-angular';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { ExpertQuestionForBoard, ExpertQuestionStatus } from '../../../core/models/expert-question.model';
+import { formatRelativeTime } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-questions-board-page',
@@ -255,11 +257,6 @@ import { ExpertQuestionForBoard, ExpertQuestionStatus } from '../../../core/mode
                           }
                         }
 
-                        @if (responseError()) {
-                          <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                            {{ responseError() }}
-                          </div>
-                        }
                       </div>
                     </td>
                   </tr>
@@ -274,8 +271,10 @@ import { ExpertQuestionForBoard, ExpertQuestionStatus } from '../../../core/mode
 })
 export class QuestionsBoardPageComponent implements OnInit {
   readonly questionService = inject(ExpertQuestionService);
+  #toast = inject(ToastService);
 
   readonly icons = { MessageSquare, Search, Loader2, Clock, Check, CheckCircle2, XCircle, Send, HelpCircle };
+  readonly formatRelativeTime = formatRelativeTime;
 
   // Filters
   readonly searchTerm = signal('');
@@ -286,7 +285,6 @@ export class QuestionsBoardPageComponent implements OnInit {
   readonly expandedQuestionId = signal<string | null>(null);
   readonly responseText = signal('');
   readonly responding = signal(false);
-  readonly responseError = signal('');
 
   // Filtered questions
   readonly filteredQuestions = computed(() => {
@@ -340,7 +338,6 @@ export class QuestionsBoardPageComponent implements OnInit {
     }
     this.expandedQuestionId.set(q.id);
     this.responseText.set(q.response_text ?? '');
-    this.responseError.set('');
   }
 
   async onRespondToQuestion(questionId: string) {
@@ -348,14 +345,15 @@ export class QuestionsBoardPageComponent implements OnInit {
     if (!text) return;
 
     this.responding.set(true);
-    this.responseError.set('');
 
     try {
       await this.questionService.respondToQuestion(questionId, text);
+      this.#toast.success('Response submitted');
       this.expandedQuestionId.set(null);
       await this.questionService.loadBoardQuestions();
     } catch (err) {
-      this.responseError.set(err instanceof Error ? err.message : 'Failed to submit response');
+      const msg = err instanceof Error ? err.message : 'Failed to submit response';
+      this.#toast.error(msg);
     } finally {
       this.responding.set(false);
     }
@@ -363,14 +361,15 @@ export class QuestionsBoardPageComponent implements OnInit {
 
   async onCloseQuestion(questionId: string) {
     this.responding.set(true);
-    this.responseError.set('');
 
     try {
       await this.questionService.closeQuestion(questionId);
+      this.#toast.success('Question closed');
       this.expandedQuestionId.set(null);
       await this.questionService.loadBoardQuestions();
     } catch (err) {
-      this.responseError.set(err instanceof Error ? err.message : 'Failed to close question');
+      const msg = err instanceof Error ? err.message : 'Failed to close question';
+      this.#toast.error(msg);
     } finally {
       this.responding.set(false);
     }
@@ -385,23 +384,5 @@ export class QuestionsBoardPageComponent implements OnInit {
   truncateText(text: string, maxLength: number): string {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
-  }
-
-  formatRelativeTime(iso: string): string {
-    const now = Date.now();
-    const then = new Date(iso).getTime();
-    const diffMs = now - then;
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 }

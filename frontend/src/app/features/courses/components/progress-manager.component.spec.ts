@@ -4,7 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { Component, input } from '@angular/core';
 import { ProgressManagerComponent } from './progress-manager.component';
 import { CourseService } from '../../../core/services/course.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockCourseService, createMockUserProgressSummary } from '../../../__mocks__/course.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { LectureWithModules, UserProgressSummary } from '../../../core/models/course.model';
 
 @Component({
@@ -29,15 +31,18 @@ class TestHostComponent {
 
 describe('ProgressManagerComponent', () => {
   let mockService: ReturnType<typeof createMockCourseService>;
+  let toast: ReturnType<typeof createMockToastService>;
   const user = userEvent.setup();
 
   async function renderComponent(progressData: UserProgressSummary[] = []) {
     mockService = createMockCourseService();
     mockService.loadCourseProgressAdmin = vi.fn().mockResolvedValue(progressData);
+    toast = createMockToastService();
 
     const { fixture, container } = await render(TestHostComponent, {
       providers: [
         { provide: CourseService, useValue: mockService },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -58,10 +63,12 @@ describe('ProgressManagerComponent', () => {
     mockService.loadCourseProgressAdmin = vi.fn().mockImplementation(
       () => new Promise(() => {}), // Never resolves
     );
+    toast = createMockToastService();
 
     const { fixture } = await render(TestHostComponent, {
       providers: [
         { provide: CourseService, useValue: mockService },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -219,13 +226,15 @@ describe('ProgressManagerComponent', () => {
     expect(mockService.loadCourseProgressAdmin).toHaveBeenCalledTimes(2);
   });
 
-  it('should show error on failure', async () => {
+  it('should show error on load failure', async () => {
     mockService = createMockCourseService();
     mockService.loadCourseProgressAdmin = vi.fn().mockRejectedValue(new Error('Network error'));
+    toast = createMockToastService();
 
     const { fixture } = await render(TestHostComponent, {
       providers: [
         { provide: CourseService, useValue: mockService },
+        { provide: ToastService, useValue: toast },
       ],
     });
 

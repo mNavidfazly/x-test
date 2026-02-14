@@ -3,9 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { ProgressDashboardPageComponent } from './progress-dashboard-page.component';
 import { ProgressService } from '../../../core/services/progress.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockProgressService, createMockDashboardUserProgress } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { of, Subject } from 'rxjs';
 
 function renderDashboard(options?: {
@@ -17,14 +19,16 @@ function renderDashboard(options?: {
     isAuthenticated: true,
     claims: { is_platform_admin: true },
   });
+  const toast = createMockToastService();
 
   return render(ProgressDashboardPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: ProgressService, useValue: progressService },
       { provide: AuthService, useValue: authService },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, progressService, authService }));
+  }).then(result => ({ ...result, progressService, authService, toast }));
 }
 
 describe('ProgressDashboardPageComponent', () => {
@@ -208,13 +212,13 @@ describe('ProgressDashboardPageComponent', () => {
     expect(screen.queryByText(/Send Reminder/)).toBeFalsy();
   });
 
-  it('should send reminders and show result', async () => {
+  it('should send reminders and show success toast', async () => {
     const progressService = createMockProgressService({
       users: [createMockDashboardUserProgress({ user_id: 'u1' })],
     });
     progressService.sendReminders.mockReturnValue(of({ sent: 1, failed: 0 }));
 
-    const { fixture, container } = await renderDashboard({ progressService });
+    const { fixture, container, toast } = await renderDashboard({ progressService });
 
     // Select user
     const userCheckbox = container.querySelectorAll('input[type="checkbox"]')[1];
@@ -235,17 +239,17 @@ describe('ProgressDashboardPageComponent', () => {
       course_id: null,
       message: 'You have incomplete courses. Continue learning to stay on track!',
     });
-    expect(screen.getByText('Sent 1, failed 0')).toBeTruthy();
+    expect(toast.success).toHaveBeenCalledWith('Reminders sent: 1 delivered, 0 failed');
   });
 
-  it('should show reminder error on failure', async () => {
+  it('should show reminder error toast on failure', async () => {
     const progressService = createMockProgressService({
       users: [createMockDashboardUserProgress({ user_id: 'u1' })],
     });
     const errorSubject = new Subject();
     progressService.sendReminders.mockReturnValue(errorSubject.asObservable());
 
-    const { fixture, container } = await renderDashboard({ progressService });
+    const { fixture, container, toast } = await renderDashboard({ progressService });
 
     // Select user + open reminder panel
     fireEvent.click(container.querySelectorAll('input[type="checkbox"]')[1]);
@@ -262,7 +266,7 @@ describe('ProgressDashboardPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('SMTP down')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('SMTP down');
   });
 
   it('should compute summary stats correctly', async () => {

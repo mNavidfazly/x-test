@@ -3,10 +3,12 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { CommentSectionComponent } from './comment-section.component';
 import { CommentService } from '../../../core/services/comment.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   createMockCommentService, createMockComment, createMockCommentReply,
 } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 describe('CommentSectionComponent', () => {
   const renderSection = async (options?: {
@@ -30,18 +32,21 @@ describe('CommentSectionComponent', () => {
       claims: options?.claims ?? {},
     });
 
+    const toast = createMockToastService();
+
     const result = await render(CommentSectionComponent, {
       componentInputs: { moduleId: 'module-1', courseId: 'course-1' },
       providers: [
         { provide: CommentService, useValue: mockCommentService },
         { provide: AuthService, useValue: mockAuthService },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
     await new Promise(r => setTimeout(r));
     result.fixture.detectChanges();
 
-    return { ...result, mockCommentService, mockAuthService };
+    return { ...result, mockCommentService, mockAuthService, toast };
   };
 
   it('shows empty state when no comments', async () => {

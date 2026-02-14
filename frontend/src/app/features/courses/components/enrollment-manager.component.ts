@@ -2,7 +2,9 @@ import { ChangeDetectionStrategy, Component, inject, input, OnInit, signal } fro
 import { LucideAngularModule, Users, UserPlus, Trash2, Loader2 } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { EnrolledUser, EnrollmentType } from '../../../core/models/course.model';
+import { formatDate } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-enrollment-manager',
@@ -99,6 +101,7 @@ export class EnrollmentManagerComponent implements OnInit {
 
   #courseService = inject(CourseService);
   #auth = inject(AuthService);
+  #toast = inject(ToastService);
 
   readonly enrolledUsers = signal<EnrolledUser[]>([]);
   readonly loadingUsers = signal(false);
@@ -146,9 +149,10 @@ export class EnrollmentManagerComponent implements OnInit {
 
       await this.#courseService.adminEnrollUser(user.id, tenantId, this.courseId());
       this.addEmail.set('');
+      this.#toast.success('User enrolled');
       await this.#loadUsers();
     } catch (err) {
-      this.addError.set(err instanceof Error ? err.message : 'Failed to enroll user');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to enroll user');
     } finally {
       this.adding.set(false);
     }
@@ -157,17 +161,14 @@ export class EnrollmentManagerComponent implements OnInit {
   async onUnenroll(enrollmentId: string) {
     try {
       await this.#courseService.unenrollUser(enrollmentId);
+      this.#toast.success('User unenrolled');
       await this.#loadUsers();
     } catch (err) {
-      this.addError.set(err instanceof Error ? err.message : 'Failed to unenroll user');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to unenroll user');
     }
   }
 
-  formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric', month: 'short', year: 'numeric',
-    });
-  }
+  readonly formatDate = formatDate;
 
   async #loadUsers() {
     this.loadingUsers.set(true);

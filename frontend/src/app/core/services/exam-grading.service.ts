@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { GradingSubmission, GradingCourseSummary, GradeExamPayload } from '../models/course.model';
+import { extractErrorMessage } from '../utils/error.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ExamGradingService {
@@ -92,11 +93,7 @@ export class ExamGradingService {
       this.#submissions.set(submissions);
       this.#courses.set(courses);
     } catch (err) {
-      this.#error.set(
-        err instanceof Error ? err.message :
-        typeof err === 'object' && err && 'message' in err ? String((err as any).message) :
-        'Failed to load grading data',
-      );
+      this.#error.set(extractErrorMessage(err, 'Failed to load grading data'));
     } finally {
       this.#loading.set(false);
     }

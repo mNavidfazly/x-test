@@ -2,20 +2,24 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { IssueManagementPageComponent } from './issue-management-page.component';
 import { IssueService } from '../../../core/services/issue.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockIssueService, createMockIssueForBoard } from '../../../__mocks__/course.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 
 function renderBoard(options?: {
   issueService?: ReturnType<typeof createMockIssueService>;
 }) {
   const issueService = options?.issueService ?? createMockIssueService();
+  const toast = createMockToastService();
 
   return render(IssueManagementPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: IssueService, useValue: issueService },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, issueService }));
+  }).then(result => ({ ...result, issueService, toast }));
 }
 
 describe('IssueManagementPageComponent', () => {
@@ -267,7 +271,7 @@ describe('IssueManagementPageComponent', () => {
     expect(textarea.value).toBe('Checking with the author.');
   });
 
-  it('should call updateIssue on save', async () => {
+  it('should call updateIssue on save and show success toast', async () => {
     const issueService = createMockIssueService({
       boardIssues: [
         createMockIssueForBoard({
@@ -277,7 +281,7 @@ describe('IssueManagementPageComponent', () => {
       ],
     });
 
-    const { fixture } = await renderBoard({ issueService });
+    const { fixture, toast } = await renderBoard({ issueService });
 
     // Expand
     fireEvent.click(screen.getByText('alice@test.com'));
@@ -293,9 +297,10 @@ describe('IssueManagementPageComponent', () => {
       internal_notes: '',
     });
     expect(issueService.loadBoardIssues).toHaveBeenCalledTimes(2); // init + after save
+    expect(toast.success).toHaveBeenCalledWith('Issue updated');
   });
 
-  it('should show save error on failure', async () => {
+  it('should show error toast on save failure', async () => {
     const issueService = createMockIssueService({
       boardIssues: [
         createMockIssueForBoard({
@@ -306,7 +311,7 @@ describe('IssueManagementPageComponent', () => {
     });
     issueService.updateIssue.mockRejectedValue(new Error('Update failed'));
 
-    const { fixture } = await renderBoard({ issueService });
+    const { fixture, toast } = await renderBoard({ issueService });
 
     fireEvent.click(screen.getByText('alice@test.com'));
     fixture.detectChanges();
@@ -315,7 +320,7 @@ describe('IssueManagementPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Update failed')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Update failed');
   });
 
   it('should clear filters', async () => {

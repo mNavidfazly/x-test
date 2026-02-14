@@ -9,6 +9,8 @@ import { TenantAssignmentComponent } from '../components/tenant-assignment.compo
 import { createMockCourseService, createMockCourseDetail, createMockTenantSummary } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { ToastService } from '../../../core/services/toast.service';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 function mockActivatedRoute(params: Record<string, string | null>) {
   return {
@@ -24,6 +26,7 @@ describe('CourseFormPageComponent', () => {
   describe('create mode', () => {
     it('should render create form for platform admin', async () => {
       const courseService = createMockCourseService();
+      const toast = createMockToastService();
 
       await render(CourseFormPageComponent, {
         componentImports: [MockLucideIconComponent, CourseFormComponent, TenantAssignmentComponent],
@@ -32,6 +35,7 @@ describe('CourseFormPageComponent', () => {
           { provide: CourseService, useValue: courseService },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({}) },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -41,6 +45,7 @@ describe('CourseFormPageComponent', () => {
 
     it('should redirect non-admin from create mode', async () => {
       const courseService = createMockCourseService();
+      const toast = createMockToastService();
       const router = { navigate: vi.fn() };
 
       await render(CourseFormPageComponent, {
@@ -51,6 +56,7 @@ describe('CourseFormPageComponent', () => {
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({}) },
           { provide: Router, useValue: router },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -59,6 +65,7 @@ describe('CourseFormPageComponent', () => {
 
     it('should call createCourse on save', async () => {
       const courseService = createMockCourseService();
+      const toast = createMockToastService();
 
       const { fixture } = await render(CourseFormPageComponent, {
         componentImports: [MockLucideIconComponent, CourseFormComponent, TenantAssignmentComponent],
@@ -67,6 +74,7 @@ describe('CourseFormPageComponent', () => {
           { provide: CourseService, useValue: courseService },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({}) },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -86,6 +94,7 @@ describe('CourseFormPageComponent', () => {
       const courseService = createMockCourseService({
         courseDetail: createMockCourseDetail({ title: 'X-LNG Advanced' }),
       });
+      const toast = createMockToastService();
       courseService.loadTenants.mockResolvedValue([
         createMockTenantSummary({ id: 't1', name: 'Calypso', is_master: true }),
       ]);
@@ -100,6 +109,7 @@ describe('CourseFormPageComponent', () => {
           { provide: CourseService, useValue: courseService },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({ courseId: 'c1' }) },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -111,6 +121,7 @@ describe('CourseFormPageComponent', () => {
       const courseService = createMockCourseService({
         courseDetail: createMockCourseDetail(),
       });
+      const toast = createMockToastService();
       courseService.loadTenants.mockResolvedValue([]);
       courseService.loadTenantAssignments.mockResolvedValue([]);
 
@@ -121,6 +132,7 @@ describe('CourseFormPageComponent', () => {
           { provide: CourseService, useValue: courseService },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({ courseId: 'c1' }) },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -134,6 +146,7 @@ describe('CourseFormPageComponent', () => {
       const courseService = createMockCourseService({
         courseDetail: createMockCourseDetail(),
       });
+      const toast = createMockToastService();
       courseService.loadTenants.mockResolvedValue([]);
       courseService.loadTenantAssignments.mockResolvedValue([]);
 
@@ -144,6 +157,7 @@ describe('CourseFormPageComponent', () => {
           { provide: CourseService, useValue: courseService },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({ courseId: 'c1' }) },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -160,6 +174,7 @@ describe('CourseFormPageComponent', () => {
       const courseService = createMockCourseService({
         courseDetail: createMockCourseDetail(),
       });
+      const toast = createMockToastService();
 
       const { fixture } = await render(CourseFormPageComponent, {
         componentImports: [MockLucideIconComponent, CourseFormComponent, TenantAssignmentComponent],
@@ -175,6 +190,7 @@ describe('CourseFormPageComponent', () => {
             }),
           },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({ courseId: 'c1' }) },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -191,6 +207,7 @@ describe('CourseFormPageComponent', () => {
       const courseService = createMockCourseService({
         courseDetail: createMockCourseDetail(),
       });
+      const toast = createMockToastService();
       courseService.loadTenants.mockResolvedValue([
         createMockTenantSummary({ id: 't1', name: 'Calypso', is_master: true }),
         createMockTenantSummary({ id: 't2', name: 'Santos' }),
@@ -206,6 +223,7 @@ describe('CourseFormPageComponent', () => {
           { provide: CourseService, useValue: courseService },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
           { provide: ActivatedRoute, useValue: mockActivatedRoute({ courseId: 'c1' }) },
+          { provide: ToastService, useValue: toast },
         ],
       });
 
@@ -218,6 +236,7 @@ describe('CourseFormPageComponent', () => {
 
   it('should show error message', async () => {
     const courseService = createMockCourseService();
+    const toast = createMockToastService();
     courseService.loadCourseDetail.mockRejectedValue(new Error('Network error'));
 
     const { fixture } = await render(CourseFormPageComponent, {
@@ -227,6 +246,7 @@ describe('CourseFormPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute({ courseId: 'c1' }) },
+        { provide: ToastService, useValue: toast },
       ],
     });
 

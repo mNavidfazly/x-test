@@ -4,6 +4,7 @@ import {
   Plus, Save, Trash2, X, ChevronDown, ChevronUp, BookOpen, Users, Shield, Edit, AlertTriangle,
 } from 'lucide-angular';
 import { TenantManagementService } from '../../../core/services/tenant-management.service';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   TenantForBoard, TenantCourseAssignment, CsmAssignment,
   AvailableCourse, AvailableCsm,
@@ -104,11 +105,6 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
               class="text-sm text-slate-600 hover:text-slate-800"
             >Cancel</button>
           </div>
-          @if (createError()) {
-            <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-              {{ createError() }}
-            </div>
-          }
         </div>
       }
 
@@ -340,11 +336,6 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                               <span class="text-xs text-slate-400 italic">Master tenant cannot be deleted</span>
                             }
                           </div>
-                          @if (saveError()) {
-                            <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                              {{ saveError() }}
-                            </div>
-                          }
                         </div>
                       }
 
@@ -486,6 +477,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
 })
 export class TenantManagementPageComponent implements OnInit {
   readonly service = inject(TenantManagementService);
+  readonly #toast = inject(ToastService);
 
   readonly icons = {
     Building2, Search, Loader2, Plus, Save, Trash2, X,
@@ -503,7 +495,6 @@ export class TenantManagementPageComponent implements OnInit {
   readonly createDomain = signal('');
   readonly createAuthMethods = signal<AuthMethod[]>(['email_password']);
   readonly creating = signal(false);
-  readonly createError = signal('');
 
   // Expanded row
   readonly expandedTenantId = signal<string | null>(null);
@@ -514,7 +505,6 @@ export class TenantManagementPageComponent implements OnInit {
   readonly editDomain = signal('');
   readonly editAuthMethods = signal<AuthMethod[]>([]);
   readonly saving = signal(false);
-  readonly saveError = signal('');
 
   // Course assignments (courses tab)
   readonly tenantCourses = signal<TenantCourseAssignment[]>([]);
@@ -577,7 +567,6 @@ export class TenantManagementPageComponent implements OnInit {
 
   async onCreateTenant() {
     this.creating.set(true);
-    this.createError.set('');
 
     try {
       await this.service.createTenant({
@@ -585,10 +574,11 @@ export class TenantManagementPageComponent implements OnInit {
         domain: this.createDomain().trim() || null,
         auth_methods: this.createAuthMethods(),
       });
+      this.#toast.success('Tenant created');
       this.cancelCreate();
       await this.service.loadTenants();
     } catch (err) {
-      this.createError.set(err instanceof Error ? err.message : 'Failed to create tenant');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to create tenant');
     } finally {
       this.creating.set(false);
     }
@@ -599,7 +589,6 @@ export class TenantManagementPageComponent implements OnInit {
     this.createName.set('');
     this.createDomain.set('');
     this.createAuthMethods.set(['email_password']);
-    this.createError.set('');
   }
 
   // --- Expand / Tab ---
@@ -613,7 +602,6 @@ export class TenantManagementPageComponent implements OnInit {
     this.activeTab.set('details');
     this.populateEditFields(tenant);
     this.confirmingDelete.set(false);
-    this.saveError.set('');
   }
 
   onTabChange(tab: 'details' | 'courses' | 'csms', tenant: TenantForBoard) {
@@ -644,7 +632,6 @@ export class TenantManagementPageComponent implements OnInit {
 
   async onSaveTenantDetails(tenantId: string) {
     this.saving.set(true);
-    this.saveError.set('');
 
     try {
       await this.service.updateTenant(tenantId, {
@@ -652,10 +639,11 @@ export class TenantManagementPageComponent implements OnInit {
         domain: this.editDomain().trim() || null,
         auth_methods: this.editAuthMethods(),
       });
+      this.#toast.success('Tenant updated');
       this.expandedTenantId.set(null);
       await this.service.loadTenants();
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'Failed to save tenant');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to save tenant');
     } finally {
       this.saving.set(false);
     }
@@ -666,10 +654,11 @@ export class TenantManagementPageComponent implements OnInit {
 
     try {
       await this.service.deleteTenant(tenantId);
+      this.#toast.success('Tenant deleted');
       this.expandedTenantId.set(null);
       await this.service.loadTenants();
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'Failed to delete tenant');
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to delete tenant');
     } finally {
       this.deleting.set(false);
       this.confirmingDelete.set(false);
@@ -701,10 +690,11 @@ export class TenantManagementPageComponent implements OnInit {
 
     try {
       await this.service.assignCourseToTenant(tenantId, courseId);
+      this.#toast.success('Course assigned');
       await this.loadCoursesTab(tenantId);
       await this.service.loadTenants();
-    } catch {
-      // Errors handled by service
+    } catch (err) {
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to assign course');
     }
   }
 
@@ -712,10 +702,11 @@ export class TenantManagementPageComponent implements OnInit {
     event.stopPropagation();
     try {
       await this.service.removeCourseFromTenant(tenantId, courseId);
+      this.#toast.success('Course removed');
       await this.loadCoursesTab(tenantId);
       await this.service.loadTenants();
-    } catch {
-      // Errors handled by service
+    } catch (err) {
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to remove course');
     }
   }
 
@@ -744,10 +735,11 @@ export class TenantManagementPageComponent implements OnInit {
 
     try {
       await this.service.assignCsm(tenantId, userId);
+      this.#toast.success('CSM assigned');
       await this.loadCsmsTab(tenantId);
       await this.service.loadTenants();
-    } catch {
-      // Errors handled by service
+    } catch (err) {
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to assign CSM');
     }
   }
 
@@ -758,10 +750,11 @@ export class TenantManagementPageComponent implements OnInit {
 
     try {
       await this.service.removeCsm(assignmentId);
+      this.#toast.success('CSM removed');
       await this.loadCsmsTab(tenantId);
       await this.service.loadTenants();
-    } catch {
-      // Errors handled by service
+    } catch (err) {
+      this.#toast.error(err instanceof Error ? err.message : 'Failed to remove CSM');
     }
   }
 }

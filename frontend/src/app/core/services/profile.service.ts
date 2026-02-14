@@ -30,12 +30,15 @@ export class ProfileService {
   }
 
   async #fetchProfile(userId: string) {
-    const { data } = await this.#supabase.client
+    const { data, error } = await this.#supabase.client
       .from('profiles')
       .select('full_name, avatar_url')
       .eq('id', userId)
       .maybeSingle();
 
+    if (error) {
+      console.error('Failed to fetch profile:', error.message);
+    }
     this.#profile.set(data ?? null);
   }
 }

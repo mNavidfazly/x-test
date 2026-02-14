@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { extractErrorMessage } from '../utils/error.utils';
 import {
   TenantForBoard,
   TenantSettings,
@@ -23,12 +24,6 @@ export class TenantManagementService {
   readonly tenants = this.#tenants.asReadonly();
   readonly loading = this.#loading.asReadonly();
   readonly error = this.#error.asReadonly();
-
-  #extractErrorMessage(err: unknown, fallback: string): string {
-    if (err instanceof Error) return err.message;
-    if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
-    return fallback;
-  }
 
   async loadTenants(): Promise<void> {
     const user = this.#auth.currentUser();
@@ -59,7 +54,7 @@ export class TenantManagementService {
 
       this.#tenants.set(tenants);
     } catch (err) {
-      this.#error.set(this.#extractErrorMessage(err, 'Failed to load tenants'));
+      this.#error.set(extractErrorMessage(err, 'Failed to load tenants'));
     } finally {
       this.#loading.set(false);
     }
@@ -77,7 +72,7 @@ export class TenantManagementService {
         settings: { auth_methods: data.auth_methods },
       });
 
-    if (error) throw new Error(error.message || 'Failed to create tenant');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to create tenant'));
   }
 
   async updateTenant(id: string, data: Partial<TenantFormData>): Promise<void> {
@@ -94,7 +89,7 @@ export class TenantManagementService {
       .update(payload)
       .eq('id', id);
 
-    if (error) throw new Error(error.message || 'Failed to update tenant');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update tenant'));
   }
 
   async deleteTenant(id: string): Promise<void> {
@@ -106,7 +101,7 @@ export class TenantManagementService {
       .delete()
       .eq('id', id);
 
-    if (error) throw new Error(error.message || 'Failed to delete tenant');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to delete tenant'));
   }
 
   // --- Course Assignments ---
@@ -118,7 +113,7 @@ export class TenantManagementService {
       .eq('tenant_id', tenantId)
       .order('course_id');
 
-    if (error) throw new Error(error.message || 'Failed to load course assignments');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load course assignments'));
 
     return (data ?? []).map((row: any) => ({
       id: row.id,
@@ -134,7 +129,7 @@ export class TenantManagementService {
       .select('id, title')
       .order('title');
 
-    if (coursesErr) throw new Error(coursesErr.message || 'Failed to load courses');
+    if (coursesErr) throw new Error(extractErrorMessage(coursesErr, 'Failed to load courses'));
 
     // Load already-assigned course IDs
     const { data: assigned, error: assignedErr } = await this.#supabase.client
@@ -142,7 +137,7 @@ export class TenantManagementService {
       .select('course_id')
       .eq('tenant_id', tenantId);
 
-    if (assignedErr) throw new Error(assignedErr.message || 'Failed to load assigned courses');
+    if (assignedErr) throw new Error(extractErrorMessage(assignedErr, 'Failed to load assigned courses'));
 
     const assignedIds = new Set((assigned ?? []).map((r: any) => r.course_id));
     return (allCourses ?? [])
@@ -155,7 +150,7 @@ export class TenantManagementService {
       .from('tenant_courses')
       .insert({ tenant_id: tenantId, course_id: courseId });
 
-    if (error) throw new Error(error.message || 'Failed to assign course');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to assign course'));
   }
 
   async removeCourseFromTenant(tenantId: string, courseId: string): Promise<void> {
@@ -165,7 +160,7 @@ export class TenantManagementService {
       .eq('tenant_id', tenantId)
       .eq('course_id', courseId);
 
-    if (error) throw new Error(error.message || 'Failed to remove course');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to remove course'));
   }
 
   // --- CSM Assignments ---
@@ -177,7 +172,7 @@ export class TenantManagementService {
       .eq('tenant_id', tenantId)
       .order('assigned_at', { ascending: false });
 
-    if (error) throw new Error(error.message || 'Failed to load CSM assignments');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load CSM assignments'));
 
     return (data ?? []).map((row: any) => ({
       id: row.id,
@@ -201,7 +196,7 @@ export class TenantManagementService {
       .eq('tenant_id', masterTenantId)
       .order('email');
 
-    if (profilesErr) throw new Error(profilesErr.message || 'Failed to load profiles');
+    if (profilesErr) throw new Error(extractErrorMessage(profilesErr, 'Failed to load profiles'));
 
     // Filter out already-assigned CSMs for this tenant
     const { data: assigned, error: assignedErr } = await this.#supabase.client
@@ -209,7 +204,7 @@ export class TenantManagementService {
       .select('user_id')
       .eq('tenant_id', tenantId);
 
-    if (assignedErr) throw new Error(assignedErr.message || 'Failed to load assigned CSMs');
+    if (assignedErr) throw new Error(extractErrorMessage(assignedErr, 'Failed to load assigned CSMs'));
 
     const assignedIds = new Set((assigned ?? []).map((r: any) => r.user_id));
     return (masterProfiles ?? [])
@@ -229,7 +224,7 @@ export class TenantManagementService {
         assigned_by: user.id,
       });
 
-    if (error) throw new Error(error.message || 'Failed to assign CSM');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to assign CSM'));
   }
 
   async removeCsm(assignmentId: string): Promise<void> {
@@ -238,6 +233,17 @@ export class TenantManagementService {
       .delete()
       .eq('id', assignmentId);
 
-    if (error) throw new Error(error.message || 'Failed to remove CSM');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to remove CSM'));
+  }
+
+  // --- Tenant List (lightweight, for dropdowns) ---
+
+  async loadAvailableTenantsList(): Promise<{ id: string; name: string }[]> {
+    const { data, error } = await this.#supabase.client
+      .from('tenants')
+      .select('id, name')
+      .order('name');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load tenants'));
+    return data ?? [];
   }
 }

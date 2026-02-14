@@ -2,7 +2,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { AskExpertComponent } from './ask-expert.component';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockExpertQuestionService } from '../../../__mocks__/course.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 describe('AskExpertComponent', () => {
   const renderAskExpert = async (options?: {
@@ -11,6 +13,7 @@ describe('AskExpertComponent', () => {
     mockService?: ReturnType<typeof createMockExpertQuestionService>;
   }) => {
     const mockService = options?.mockService ?? createMockExpertQuestionService();
+    const toast = createMockToastService();
 
     const result = await render(AskExpertComponent, {
       componentInputs: {
@@ -19,10 +22,11 @@ describe('AskExpertComponent', () => {
       },
       providers: [
         { provide: ExpertQuestionService, useValue: mockService },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
-    return { ...result, mockService };
+    return { ...result, mockService, toast };
   };
 
   it('should show "Ask an Expert" button initially', async () => {
@@ -87,11 +91,11 @@ describe('AskExpertComponent', () => {
     expect(screen.getByText(/Your question has been sent/)).toBeTruthy();
   });
 
-  it('should show error message on submit failure', async () => {
+  it('should show error toast on submit failure', async () => {
     const mockService = createMockExpertQuestionService();
     mockService.askQuestion.mockRejectedValueOnce(new Error('Network error'));
 
-    const { fixture } = await renderAskExpert({ mockService });
+    const { fixture, toast } = await renderAskExpert({ mockService });
 
     fireEvent.click(screen.getByText('Ask an Expert'));
 
@@ -103,7 +107,7 @@ describe('AskExpertComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Network error')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Network error');
   });
 
   it('should allow asking another question after success', async () => {

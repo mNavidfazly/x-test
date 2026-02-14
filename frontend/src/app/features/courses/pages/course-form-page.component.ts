@@ -3,9 +3,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Loader2, Trash2 } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { CourseFormComponent } from '../components/course-form.component';
 import { TenantAssignmentComponent } from '../components/tenant-assignment.component';
 import { CourseFormData, TenantSummary, EnrollmentType } from '../../../core/models/course.model';
+import { extractErrorMessage } from '../../../core/utils/error.utils';
 
 @Component({
   selector: 'app-course-form-page',
@@ -95,6 +97,7 @@ import { CourseFormData, TenantSummary, EnrollmentType } from '../../../core/mod
 export class CourseFormPageComponent implements OnInit {
   #courseService = inject(CourseService);
   #auth = inject(AuthService);
+  #toast = inject(ToastService);
   #route = inject(ActivatedRoute);
   #router = inject(Router);
 
@@ -187,7 +190,6 @@ export class CourseFormPageComponent implements OnInit {
 
   async onSave(data: CourseFormData) {
     this.saving.set(true);
-    this.errorMessage.set('');
 
     try {
       const cid = this.courseId();
@@ -199,7 +201,7 @@ export class CourseFormPageComponent implements OnInit {
         this.#router.navigate(['/courses', id]);
       }
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to save course');
+      this.#toast.error(extractErrorMessage(err, 'Failed to save course'));
     } finally {
       this.saving.set(false);
     }
@@ -223,7 +225,7 @@ export class CourseFormPageComponent implements OnInit {
       await this.#courseService.deleteCourse(cid);
       this.#router.navigate(['/courses']);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to delete course');
+      this.#toast.error(extractErrorMessage(err, 'Failed to delete course'));
     } finally {
       this.saving.set(false);
       this.confirmingDelete.set(false);
@@ -237,8 +239,9 @@ export class CourseFormPageComponent implements OnInit {
     try {
       await this.#courseService.assignCourseToTenant(cid, tenantId);
       this.assignedTenantIds.update(ids => [...ids, tenantId]);
+      this.#toast.success('Course assigned to tenant');
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to assign tenant');
+      this.#toast.error(extractErrorMessage(err, 'Failed to assign tenant'));
     }
   }
 
@@ -249,8 +252,9 @@ export class CourseFormPageComponent implements OnInit {
     try {
       await this.#courseService.removeCourseFromTenant(cid, tenantId);
       this.assignedTenantIds.update(ids => ids.filter(id => id !== tenantId));
+      this.#toast.success('Course removed from tenant');
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to remove tenant');
+      this.#toast.error(extractErrorMessage(err, 'Failed to remove tenant'));
     }
   }
 }

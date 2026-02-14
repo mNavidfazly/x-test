@@ -3,8 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { EnrollmentManagerComponent } from './enrollment-manager.component';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockCourseService, createMockEnrolledUser } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 describe('EnrollmentManagerComponent', () => {
   const renderManager = async (options?: {
@@ -20,11 +22,14 @@ describe('EnrollmentManagerComponent', () => {
       claims: options?.claims ?? { is_platform_admin: true },
     });
 
+    const toast = createMockToastService();
+
     const result = await render(EnrollmentManagerComponent, {
       componentInputs: { courseId: 'course-1', enrollmentType: 'open' as const },
       providers: [
         { provide: CourseService, useValue: mockCourseService },
         { provide: AuthService, useValue: mockAuthService },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -32,7 +37,7 @@ describe('EnrollmentManagerComponent', () => {
     await new Promise(r => setTimeout(r));
     result.fixture.detectChanges();
 
-    return { ...result, mockCourseService, mockAuthService };
+    return { ...result, mockCourseService, mockAuthService, toast };
   };
 
   it('calls loadEnrolledUsers on init', async () => {

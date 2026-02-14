@@ -3,6 +3,7 @@ import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
+import { ToastContainerComponent } from '../../shared/components/toast-container.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { AppNotification } from '../../core/models/notification.model';
 import { getNotificationRoute } from '../../core/models/notification.model';
@@ -10,7 +11,7 @@ import { getNotificationRoute } from '../../core/models/notification.model';
 @Component({
   selector: 'app-main-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent, LucideAngularModule],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent, LucideAngularModule],
   host: { class: 'block' },
   template: `
     <div class="flex h-screen bg-slate-50">
@@ -25,6 +26,8 @@ import { getNotificationRoute } from '../../core/models/notification.model';
         </main>
       </div>
     </div>
+
+    <app-toast-container />
 
     @if (notificationService.latestToast(); as toast) {
       <div

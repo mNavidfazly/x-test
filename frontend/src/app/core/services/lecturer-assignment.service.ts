@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { extractErrorMessage } from '../utils/error.utils';
 import {
   LecturerAssignment,
   AvailableLecturer,
@@ -20,13 +21,6 @@ export class LecturerAssignmentService {
   readonly assignments = this.#assignments.asReadonly();
   readonly loading = this.#loading.asReadonly();
   readonly error = this.#error.asReadonly();
-
-  #extractErrorMessage(err: unknown, fallback: string): string {
-    if (err instanceof Error) return err.message;
-    if (err && typeof err === 'object' && 'message' in err)
-      return String((err as { message: unknown }).message);
-    return fallback;
-  }
 
   async loadAssignments(): Promise<void> {
     const user = this.#auth.currentUser();
@@ -63,7 +57,7 @@ export class LecturerAssignmentService {
       this.#assignments.set(assignments);
     } catch (err) {
       this.#error.set(
-        this.#extractErrorMessage(err, 'Failed to load lecturer assignments'),
+        extractErrorMessage(err, 'Failed to load lecturer assignments'),
       );
     } finally {
       this.#loading.set(false);
@@ -82,7 +76,7 @@ export class LecturerAssignmentService {
         assigned_by: user.id,
       });
 
-    if (error) throw new Error(error.message || 'Failed to add assignment');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to add assignment'));
   }
 
   async removeAssignment(id: string): Promise<void> {
@@ -91,7 +85,7 @@ export class LecturerAssignmentService {
       .delete()
       .eq('id', id);
 
-    if (error) throw new Error(error.message || 'Failed to remove assignment');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to remove assignment'));
   }
 
   async updatePermissions(
@@ -104,7 +98,7 @@ export class LecturerAssignmentService {
       .eq('id', id);
 
     if (error)
-      throw new Error(error.message || 'Failed to update permissions');
+      throw new Error(extractErrorMessage(error, 'Failed to update permissions'));
   }
 
   async loadAvailableLecturers(): Promise<AvailableLecturer[]> {
@@ -119,7 +113,7 @@ export class LecturerAssignmentService {
       .eq('tenant_id', masterTenantId)
       .order('email');
 
-    if (error) throw new Error(error.message || 'Failed to load profiles');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load profiles'));
 
     return (data ?? []).map((p: any) => ({
       id: p.id,
@@ -139,7 +133,7 @@ export class LecturerAssignmentService {
         .order('title');
 
     if (coursesErr)
-      throw new Error(coursesErr.message || 'Failed to load courses');
+      throw new Error(extractErrorMessage(coursesErr, 'Failed to load courses'));
 
     const { data: assigned, error: assignedErr } =
       await this.#supabase.client
@@ -149,7 +143,7 @@ export class LecturerAssignmentService {
 
     if (assignedErr)
       throw new Error(
-        assignedErr.message || 'Failed to load assigned courses',
+        extractErrorMessage(assignedErr, 'Failed to load assigned courses'),
       );
 
     const assignedIds = new Set(

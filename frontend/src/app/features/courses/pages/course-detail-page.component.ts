@@ -3,7 +3,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { LectureFormData } from '../../../core/models/course.model';
+import { extractErrorMessage } from '../../../core/utils/error.utils';
 import { LectureAccordionComponent } from '../components/lecture-accordion.component';
 import { LectureFormComponent } from '../components/lecture-form.component';
 import { EnrollmentCtaComponent } from '../components/enrollment-cta.component';
@@ -96,13 +98,6 @@ const BADGE_LABELS: Record<string, string> = {
               (enroll)="onEnroll()"
               (enrollWithPassword)="onEnrollWithPassword($event)"
             />
-          </div>
-        }
-
-        <!-- Lecture error -->
-        @if (lectureError()) {
-          <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
-            {{ lectureError() }}
           </div>
         }
 
@@ -230,6 +225,7 @@ const BADGE_LABELS: Record<string, string> = {
 export class CourseDetailPageComponent implements OnInit {
   readonly courseService = inject(CourseService);
   #auth = inject(AuthService);
+  #toast = inject(ToastService);
   #route = inject(ActivatedRoute);
   #router = inject(Router);
   readonly icons = { ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus };
@@ -242,7 +238,6 @@ export class CourseDetailPageComponent implements OnInit {
   // Lecture CRUD state
   readonly editingLectureId = signal<string | null>(null);
   readonly lectureSaving = signal(false);
-  readonly lectureError = signal('');
 
   readonly isPlatformAdmin = computed(() =>
     this.#auth.currentUser()?.claims?.is_platform_admin ?? false,
@@ -326,17 +321,14 @@ export class CourseDetailPageComponent implements OnInit {
 
   startAddLecture() {
     this.editingLectureId.set('new');
-    this.lectureError.set('');
   }
 
   startEditLecture(id: string) {
     this.editingLectureId.set(id);
-    this.lectureError.set('');
   }
 
   cancelLectureEdit() {
     this.editingLectureId.set(null);
-    this.lectureError.set('');
   }
 
   async onSaveLecture(data: LectureFormData) {
@@ -345,7 +337,6 @@ export class CourseDetailPageComponent implements OnInit {
 
     const editId = this.editingLectureId();
     this.lectureSaving.set(true);
-    this.lectureError.set('');
 
     try {
       if (editId === 'new') {
@@ -355,8 +346,9 @@ export class CourseDetailPageComponent implements OnInit {
       }
       this.editingLectureId.set(null);
       await this.courseService.loadCourseDetail(courseId);
+      this.#toast.success('Lecture saved');
     } catch (err) {
-      this.lectureError.set(err instanceof Error ? err.message : 'Failed to save lecture');
+      this.#toast.error(extractErrorMessage(err, 'Failed to save lecture'));
     } finally {
       this.lectureSaving.set(false);
     }
@@ -366,12 +358,12 @@ export class CourseDetailPageComponent implements OnInit {
     const courseId = this.#route.snapshot.paramMap.get('courseId');
     if (!courseId) return;
 
-    this.lectureError.set('');
     try {
       await this.courseService.deleteLecture(lectureId);
       await this.courseService.loadCourseDetail(courseId);
+      this.#toast.success('Lecture deleted');
     } catch (err) {
-      this.lectureError.set(err instanceof Error ? err.message : 'Failed to delete lecture');
+      this.#toast.error(extractErrorMessage(err, 'Failed to delete lecture'));
     }
   }
 
@@ -387,15 +379,15 @@ export class CourseDetailPageComponent implements OnInit {
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= lectures.length) return;
 
-    this.lectureError.set('');
     try {
       await this.courseService.swapLectureSortOrder(
         lectures[idx].id, lectures[idx].sort_order,
         lectures[targetIdx].id, lectures[targetIdx].sort_order,
       );
       await this.courseService.loadCourseDetail(courseId);
+      this.#toast.success('Lecture moved');
     } catch (err) {
-      this.lectureError.set(err instanceof Error ? err.message : 'Failed to reorder lectures');
+      this.#toast.error(extractErrorMessage(err, 'Failed to reorder lectures'));
     }
   }
 
@@ -415,12 +407,12 @@ export class CourseDetailPageComponent implements OnInit {
     const courseId = this.#route.snapshot.paramMap.get('courseId');
     if (!courseId) return;
 
-    this.lectureError.set('');
     try {
       await this.courseService.deleteModule(moduleId);
       await this.courseService.loadCourseDetail(courseId);
+      this.#toast.success('Module deleted');
     } catch (err) {
-      this.lectureError.set(err instanceof Error ? err.message : 'Failed to delete module');
+      this.#toast.error(extractErrorMessage(err, 'Failed to delete module'));
     }
   }
 
@@ -439,15 +431,15 @@ export class CourseDetailPageComponent implements OnInit {
     const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
     if (targetIdx < 0 || targetIdx >= modules.length) return;
 
-    this.lectureError.set('');
     try {
       await this.courseService.swapModuleSortOrder(
         modules[idx].id, modules[idx].sort_order,
         modules[targetIdx].id, modules[targetIdx].sort_order,
       );
       await this.courseService.loadCourseDetail(courseId);
+      this.#toast.success('Module moved');
     } catch (err) {
-      this.lectureError.set(err instanceof Error ? err.message : 'Failed to reorder modules');
+      this.#toast.error(extractErrorMessage(err, 'Failed to reorder modules'));
     }
   }
 
@@ -459,7 +451,8 @@ export class CourseDetailPageComponent implements OnInit {
     try {
       await this.courseService.deleteCourse(courseId);
       this.#router.navigate(['/courses']);
-    } catch {
+    } catch (err) {
+      this.#toast.error(extractErrorMessage(err, 'Failed to delete course'));
       this.confirmingDelete.set(false);
     } finally {
       this.deleting.set(false);

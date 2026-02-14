@@ -2,20 +2,24 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { ExamGradingPageComponent } from './exam-grading-page.component';
 import { ExamGradingService } from '../../../core/services/exam-grading.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockExamGradingService, createMockGradingSubmission } from '../../../__mocks__/course.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 
 function renderGrading(options?: {
   gradingService?: ReturnType<typeof createMockExamGradingService>;
 }) {
   const gradingService = options?.gradingService ?? createMockExamGradingService();
+  const toast = createMockToastService();
 
   return render(ExamGradingPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: ExamGradingService, useValue: gradingService },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, gradingService }));
+  }).then(result => ({ ...result, gradingService, toast }));
 }
 
 describe('ExamGradingPageComponent', () => {
@@ -216,12 +220,12 @@ describe('ExamGradingPageComponent', () => {
     expect(screen.getByText('Update Grade')).toBeTruthy();
   });
 
-  it('should call gradeSubmission on submit', async () => {
+  it('should call gradeSubmission on submit and show success toast', async () => {
     const gradingService = createMockExamGradingService({
       submissions: [createMockGradingSubmission({ id: 's1', learner_email: 'alice@test.com' })],
     });
 
-    const { fixture } = await renderGrading({ gradingService });
+    const { fixture, toast } = await renderGrading({ gradingService });
 
     // Expand row
     fireEvent.click(screen.getByText('alice@test.com'));
@@ -239,15 +243,16 @@ describe('ExamGradingPageComponent', () => {
 
     expect(gradingService.gradeSubmission).toHaveBeenCalledWith('s1', { score: 85, feedback: 'Well done' });
     expect(gradingService.loadGradingData).toHaveBeenCalledTimes(2); // init + after grade
+    expect(toast.success).toHaveBeenCalledWith('Submission graded');
   });
 
-  it('should show grading error on failure', async () => {
+  it('should show error toast on grading failure', async () => {
     const gradingService = createMockExamGradingService({
       submissions: [createMockGradingSubmission({ id: 's1', learner_email: 'alice@test.com' })],
     });
     gradingService.gradeSubmission.mockRejectedValue(new Error('Update failed'));
 
-    const { fixture } = await renderGrading({ gradingService });
+    const { fixture, toast } = await renderGrading({ gradingService });
 
     fireEvent.click(screen.getByText('alice@test.com'));
     fixture.detectChanges();
@@ -258,7 +263,7 @@ describe('ExamGradingPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Update failed')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Update failed');
   });
 
   it('should show 2-step reset confirmation', async () => {
@@ -281,12 +286,12 @@ describe('ExamGradingPageComponent', () => {
     expect(screen.getByText('Yes, Reset')).toBeTruthy();
   });
 
-  it('should call resetSubmission on confirm', async () => {
+  it('should call resetSubmission on confirm and show success toast', async () => {
     const gradingService = createMockExamGradingService({
       submissions: [createMockGradingSubmission({ id: 's1', learner_email: 'alice@test.com' })],
     });
 
-    const { fixture } = await renderGrading({ gradingService });
+    const { fixture, toast } = await renderGrading({ gradingService });
 
     // Expand + trigger reset
     fireEvent.click(screen.getByText('alice@test.com'));
@@ -302,6 +307,30 @@ describe('ExamGradingPageComponent', () => {
 
     expect(gradingService.resetSubmission).toHaveBeenCalledWith('s1');
     expect(gradingService.loadGradingData).toHaveBeenCalledTimes(2); // init + after reset
+    expect(toast.success).toHaveBeenCalledWith('Submission reset');
+  });
+
+  it('should show error toast on reset failure', async () => {
+    const gradingService = createMockExamGradingService({
+      submissions: [createMockGradingSubmission({ id: 's1', learner_email: 'alice@test.com' })],
+    });
+    gradingService.resetSubmission.mockRejectedValue(new Error('Reset failed'));
+
+    const { fixture, toast } = await renderGrading({ gradingService });
+
+    // Expand + trigger reset
+    fireEvent.click(screen.getByText('alice@test.com'));
+    fixture.detectChanges();
+    const resetButtons = screen.getAllByTitle('Reset submission');
+    fireEvent.click(resetButtons[0]);
+    fixture.detectChanges();
+
+    // Confirm
+    fireEvent.click(screen.getByText('Yes, Reset'));
+    await new Promise(r => setTimeout(r));
+    fixture.detectChanges();
+
+    expect(toast.error).toHaveBeenCalledWith('Reset failed');
   });
 
   it('should clear filters', async () => {

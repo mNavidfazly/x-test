@@ -1,6 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { Session } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
+import { ToastService } from './toast.service';
 import { AppUser, JwtClaims, UserRole } from '../models/auth.model';
 
 const DEFAULT_CLAIMS: JwtClaims = {
@@ -16,8 +18,11 @@ const DEFAULT_CLAIMS: JwtClaims = {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   #supabase = inject(SupabaseService);
+  #router = inject(Router);
+  #toast = inject(ToastService);
   #currentUser = signal<AppUser | null>(null);
   #loading = signal(true);
+  #signOutInitiated = false;
 
   readonly currentUser = this.#currentUser.asReadonly();
   readonly loading = this.#loading.asReadonly();
@@ -25,15 +30,34 @@ export class AuthService {
   readonly roles = computed(() => this.#currentUser()?.roles ?? []);
 
   constructor() {
-    this.#supabase.client.auth.onAuthStateChange((_event, session) => {
+    this.#supabase.client.auth.onAuthStateChange((event, session) => {
+      const wasAuthenticated = this.#currentUser() !== null;
       this.#currentUser.set(this.#parseSession(session));
       this.#loading.set(false);
+
+      if (event === 'SIGNED_OUT' && wasAuthenticated) {
+        if (this.#signOutInitiated) {
+          this.#signOutInitiated = false;
+          this.#router.navigate(['/login']);
+        } else {
+          this.#toast.error('Your session has expired. Please sign in again.', { persistent: true });
+          const returnUrl = this.#router.url;
+          this.#router.navigate(['/login'], {
+            queryParams: returnUrl !== '/' && returnUrl !== '/login' ? { returnUrl } : {},
+          });
+        }
+      }
     });
 
-    this.#supabase.client.auth.getSession().then(({ data: { session } }) => {
-      this.#currentUser.set(this.#parseSession(session));
-      this.#loading.set(false);
-    });
+    this.#supabase.client.auth.getSession()
+      .then(({ data: { session } }) => {
+        this.#currentUser.set(this.#parseSession(session));
+        this.#loading.set(false);
+      })
+      .catch(() => {
+        this.#currentUser.set(null);
+        this.#loading.set(false);
+      });
   }
 
   async signInWithPassword(email: string, password: string) {
@@ -74,6 +98,7 @@ export class AuthService {
   }
 
   async signOut() {
+    this.#signOutInitiated = true;
     await this.#supabase.client.auth.signOut();
   }
 

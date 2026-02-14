@@ -3,16 +3,17 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { UserManagementPageComponent } from './user-management-page.component';
 import { UserManagementService } from '../../../core/services/user-management.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
-import { createMockUserManagementService, createMockUserForBoard } from '../../../__mocks__/course.mock';
+import { TenantManagementService } from '../../../core/services/tenant-management.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { createMockUserManagementService, createMockUserForBoard, createMockTenantManagementService } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
-import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockUserManagementService>;
   auth?: ReturnType<typeof createMockAuthService>;
-  supabase?: ReturnType<typeof createMockSupabaseService>;
+  tenantService?: ReturnType<typeof createMockTenantManagementService>;
 }) {
   const service = options?.service ?? createMockUserManagementService();
   const auth = options?.auth ?? createMockAuthService({
@@ -20,16 +21,18 @@ function renderPage(options?: {
     roles: ['tenant_admin'],
     claims: { is_tenant_admin: true },
   });
-  const supabase = options?.supabase ?? createMockSupabaseService();
+  const tenantService = options?.tenantService ?? createMockTenantManagementService();
+  const toast = createMockToastService();
 
   return render(UserManagementPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: UserManagementService, useValue: service },
       { provide: AuthService, useValue: auth },
-      { provide: SupabaseService, useValue: supabase },
+      { provide: TenantManagementService, useValue: tenantService },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, service, auth, supabase }));
+  }).then(result => ({ ...result, service, auth, tenantService, toast }));
 }
 
 function renderPageAsPA(options?: {
@@ -42,16 +45,18 @@ function renderPageAsPA(options?: {
     roles: ['platform_admin'],
     claims: { is_platform_admin: true },
   });
-  const supabase = createMockSupabaseService();
+  const tenantService = createMockTenantManagementService();
+  const toast = createMockToastService();
 
   return render(UserManagementPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: UserManagementService, useValue: service },
       { provide: AuthService, useValue: auth },
-      { provide: SupabaseService, useValue: supabase },
+      { provide: TenantManagementService, useValue: tenantService },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, service, auth, supabase }));
+  }).then(result => ({ ...result, service, auth, tenantService, toast }));
 }
 
 describe('UserManagementPageComponent', () => {
@@ -216,12 +221,12 @@ describe('UserManagementPageComponent', () => {
     expect(screen.getByPlaceholderText('user@example.com')).toBeTruthy();
   });
 
-  it('should invite user and show success message', async () => {
+  it('should invite user and show success toast', async () => {
     const service = createMockUserManagementService({
       users: [createMockUserForBoard()],
     });
 
-    const { fixture } = await renderPage({ service });
+    const { fixture, toast } = await renderPage({ service });
 
     // Open form
     fireEvent.click(screen.getByText('Invite User'));
@@ -237,16 +242,16 @@ describe('UserManagementPageComponent', () => {
     fixture.detectChanges();
 
     expect(service.inviteUser).toHaveBeenCalledWith({ email: 'new@test.com' });
-    expect(screen.getByText('Invitation sent successfully!')).toBeTruthy();
+    expect(toast.success).toHaveBeenCalledWith('Invitation sent successfully');
   });
 
-  it('should show invite error on rejection', async () => {
+  it('should show invite error toast on rejection', async () => {
     const service = createMockUserManagementService({
       users: [createMockUserForBoard()],
     });
     service.inviteUser.mockRejectedValue(new Error('User already exists'));
 
-    const { fixture } = await renderPage({ service });
+    const { fixture, toast } = await renderPage({ service });
 
     // Open form
     fireEvent.click(screen.getByText('Invite User'));
@@ -259,7 +264,7 @@ describe('UserManagementPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('User already exists')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('User already exists');
   });
 
   it('should expand row and show edit section', async () => {
@@ -315,7 +320,7 @@ describe('UserManagementPageComponent', () => {
     expect(service.updateUserProfile).toHaveBeenCalledWith('u1', { full_name: 'Alice Test' });
   });
 
-  it('should show save error on rejection', async () => {
+  it('should show save error toast on rejection', async () => {
     const service = createMockUserManagementService({
       users: [
         createMockUserForBoard({ id: 'u1', full_name: 'Alice Test' }),
@@ -323,7 +328,7 @@ describe('UserManagementPageComponent', () => {
     });
     service.updateUserProfile.mockRejectedValue(new Error('Update failed'));
 
-    const { fixture } = await renderPage({ service });
+    const { fixture, toast } = await renderPage({ service });
 
     fireEvent.click(screen.getByText('Alice Test'));
     fixture.detectChanges();
@@ -332,7 +337,7 @@ describe('UserManagementPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Update failed')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Update failed');
   });
 
   it('should toggle is_tenant_admin via updateUserRoles', async () => {

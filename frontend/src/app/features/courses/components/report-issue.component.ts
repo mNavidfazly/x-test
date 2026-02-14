@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { LucideAngularModule, Flag, Send, Loader2, X, CheckCircle2 } from 'lucide-angular';
 import { IssueService } from '../../../core/services/issue.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { IssueType } from '../../../core/models/issue.model';
 
 @Component({
@@ -55,12 +56,6 @@ import { IssueType } from '../../../core/models/issue.model';
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none"
         ></textarea>
 
-        @if (actionError()) {
-          <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-            {{ actionError() }}
-          </div>
-        }
-
         <div class="flex justify-end mt-3">
           <button
             type="button"
@@ -94,19 +89,18 @@ export class ReportIssueComponent {
   readonly moduleId = input.required<string>();
 
   #issueService = inject(IssueService);
+  #toast = inject(ToastService);
 
   readonly isOpen = signal(false);
   readonly issueType = signal<IssueType | null>(null);
   readonly description = signal('');
   readonly submitting = signal(false);
-  readonly actionError = signal('');
   readonly submitted = signal(false);
 
   readonly icons = { Flag, Send, Loader2, X, CheckCircle2 };
 
   onToggle() {
     this.isOpen.update(v => !v);
-    this.actionError.set('');
   }
 
   onTypeChange(event: Event) {
@@ -123,7 +117,6 @@ export class ReportIssueComponent {
     if (!type || !desc) return;
 
     this.submitting.set(true);
-    this.actionError.set('');
 
     try {
       await this.#issueService.reportIssue(
@@ -134,7 +127,7 @@ export class ReportIssueComponent {
       this.isOpen.set(false);
       this.submitted.set(true);
     } catch (err) {
-      this.actionError.set(
+      this.#toast.error(
         err instanceof Error ? err.message : 'Failed to report issue',
       );
     } finally {
@@ -147,6 +140,5 @@ export class ReportIssueComponent {
     this.isOpen.set(false);
     this.issueType.set(null);
     this.description.set('');
-    this.actionError.set('');
   }
 }

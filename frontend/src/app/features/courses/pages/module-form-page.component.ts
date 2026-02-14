@@ -3,6 +3,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, ArrowLeft, Loader2, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, LucideIconData } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { extractErrorMessage } from '../../../core/utils/error.utils';
 import { VideoFormComponent } from '../components/video-form.component';
 import { PdfFormComponent } from '../components/pdf-form.component';
 import { ExamFormComponent } from '../components/exam-form.component';
@@ -166,6 +168,7 @@ interface TypeOption {
 export class ModuleFormPageComponent implements OnInit {
   #courseService = inject(CourseService);
   #auth = inject(AuthService);
+  #toast = inject(ToastService);
   #route = inject(ActivatedRoute);
   #router = inject(Router);
 
@@ -253,7 +256,6 @@ export class ModuleFormPageComponent implements OnInit {
 
   async onSave(payload: ModuleSavePayload) {
     this.saving.set(true);
-    this.errorMessage.set('');
     try {
       if (this.isEditMode()) {
         payload.significantUpdate = this.significantUpdate();
@@ -263,7 +265,7 @@ export class ModuleFormPageComponent implements OnInit {
       }
       this.#router.navigate(['/courses', this.courseId()]);
     } catch (err) {
-      this.errorMessage.set(err instanceof Error ? err.message : 'Failed to save module');
+      this.#toast.error(extractErrorMessage(err, 'Failed to save module'));
     } finally {
       this.saving.set(false);
     }

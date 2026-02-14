@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { LucideAngularModule, HelpCircle, Send, Loader2, X, CheckCircle2 } from 'lucide-angular';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-ask-expert',
@@ -41,12 +42,6 @@ import { ExpertQuestionService } from '../../../core/services/expert-question.se
           class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none"
         ></textarea>
 
-        @if (actionError()) {
-          <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-            {{ actionError() }}
-          </div>
-        }
-
         <div class="flex justify-end mt-3">
           <button
             type="button"
@@ -80,18 +75,17 @@ export class AskExpertComponent {
   readonly moduleId = input.required<string>();
 
   #expertQuestionService = inject(ExpertQuestionService);
+  #toast = inject(ToastService);
 
   readonly isOpen = signal(false);
   readonly questionText = signal('');
   readonly submitting = signal(false);
-  readonly actionError = signal('');
   readonly submitted = signal(false);
 
   readonly icons = { HelpCircle, Send, Loader2, X, CheckCircle2 };
 
   onToggle() {
     this.isOpen.update(v => !v);
-    this.actionError.set('');
   }
 
   onInput(event: Event) {
@@ -103,7 +97,6 @@ export class AskExpertComponent {
     if (!text) return;
 
     this.submitting.set(true);
-    this.actionError.set('');
 
     try {
       await this.#expertQuestionService.askQuestion(
@@ -113,7 +106,7 @@ export class AskExpertComponent {
       this.isOpen.set(false);
       this.submitted.set(true);
     } catch (err) {
-      this.actionError.set(
+      this.#toast.error(
         err instanceof Error ? err.message : 'Failed to send question',
       );
     } finally {
@@ -125,6 +118,5 @@ export class AskExpertComponent {
     this.submitted.set(false);
     this.isOpen.set(false);
     this.questionText.set('');
-    this.actionError.set('');
   }
 }

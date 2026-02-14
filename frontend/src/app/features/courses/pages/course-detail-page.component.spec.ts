@@ -12,6 +12,8 @@ import { ProgressManagerComponent } from '../components/progress-manager.compone
 import { createMockCourseService, createMockCourseDetail } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { ToastService } from '../../../core/services/toast.service';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 function mockActivatedRoute(courseId: string) {
   return {
@@ -28,6 +30,7 @@ const defaultImports = [MockLucideIconComponent, LectureAccordionComponent, Lect
 describe('CourseDetailPageComponent', () => {
   it('should call loadCourseDetail with route param', async () => {
     const courseService = createMockCourseService();
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -36,6 +39,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('abc-123') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -44,6 +48,7 @@ describe('CourseDetailPageComponent', () => {
 
   it('should show back link', async () => {
     const courseService = createMockCourseService();
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -52,6 +57,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -60,6 +66,7 @@ describe('CourseDetailPageComponent', () => {
 
   it('should show loading skeleton', async () => {
     const courseService = createMockCourseService({ loading: true });
+    const toast = createMockToastService();
 
     const { container } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -68,6 +75,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -76,6 +84,7 @@ describe('CourseDetailPageComponent', () => {
 
   it('should show error message', async () => {
     const courseService = createMockCourseService({ error: 'Course not found' });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -84,6 +93,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -97,6 +107,7 @@ describe('CourseDetailPageComponent', () => {
         description: 'Deep dive into Angular',
       }),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -105,6 +116,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -129,6 +141,7 @@ describe('CourseDetailPageComponent', () => {
         },
       }),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -137,6 +150,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -147,6 +161,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -155,6 +170,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -166,6 +182,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -174,6 +191,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -184,6 +202,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -199,6 +218,7 @@ describe('CourseDetailPageComponent', () => {
           }),
         },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -210,6 +230,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -218,6 +239,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -229,6 +251,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -237,6 +260,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -247,6 +271,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -255,6 +280,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -270,6 +296,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -278,6 +305,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -288,6 +316,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -303,6 +332,7 @@ describe('CourseDetailPageComponent', () => {
           }),
         },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -313,6 +343,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -321,6 +352,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -331,6 +363,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -339,6 +372,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -351,6 +385,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     const { fixture } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -359,6 +394,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -381,6 +417,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -389,6 +426,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -404,10 +442,11 @@ describe('CourseDetailPageComponent', () => {
     expect(courseService.loadCourseDetail).toHaveBeenCalledWith('c1');
   });
 
-  it('should show lecture error message on failure', async () => {
+  it('should show toast error on lecture delete failure', async () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
     courseService.deleteLecture.mockRejectedValueOnce(new Error('Cannot delete lecture'));
 
     const { fixture } = await render(CourseDetailPageComponent, {
@@ -417,6 +456,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -427,7 +467,7 @@ describe('CourseDetailPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Cannot delete lecture')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Cannot delete lecture');
   });
 
   // --- Module CRUD tests ---
@@ -436,6 +476,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -444,6 +485,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -455,6 +497,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -463,6 +506,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -473,6 +517,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -481,6 +526,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -497,10 +543,11 @@ describe('CourseDetailPageComponent', () => {
     expect(courseService.loadCourseDetail).toHaveBeenCalledWith('c1');
   });
 
-  it('should show module error on delete failure', async () => {
+  it('should show toast error on module delete failure', async () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
     courseService.deleteModule.mockRejectedValueOnce(new Error('Cannot delete module'));
 
     const { fixture } = await render(CourseDetailPageComponent, {
@@ -510,6 +557,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -520,7 +568,7 @@ describe('CourseDetailPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Cannot delete module')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Cannot delete module');
   });
 
   // --- Enrollment tests ---
@@ -529,6 +577,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail({ isEnrolled: false, enrollment_type: 'open' }),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -537,6 +586,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -547,6 +597,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail({ isEnrolled: true }),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -555,6 +606,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -565,6 +617,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail({ isEnrolled: false }),
     });
+    const toast = createMockToastService();
 
     await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -573,6 +626,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -583,6 +637,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     const { container } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -591,6 +646,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -601,6 +657,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     const { container } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -609,6 +666,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_tenant_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -619,6 +677,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     const { container } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -627,6 +686,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -639,6 +699,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     const { container } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -647,6 +708,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -657,6 +719,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     const { container } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -665,6 +728,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, claims: { is_tenant_admin: true } }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -675,6 +739,7 @@ describe('CourseDetailPageComponent', () => {
     const courseService = createMockCourseService({
       courseDetail: createMockCourseDetail(),
     });
+    const toast = createMockToastService();
 
     const { container } = await render(CourseDetailPageComponent, {
       componentImports: defaultImports,
@@ -683,6 +748,7 @@ describe('CourseDetailPageComponent', () => {
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
         { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
       ],
     });
 

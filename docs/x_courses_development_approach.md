@@ -1110,20 +1110,53 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 
 ### Phase 10: Polish & Final Testing
 
-#### 10A - Error Handling
-- [ ] Global HTTP error interceptor
-- [ ] Toast notifications for success/error/info
-- [ ] Retry logic for network errors
-- [ ] Graceful degradation (loading states, error states)
-- [ ] Auth session expiry handling (redirect to login)
+#### 10A - Error Handling & Toast System (Complete)
+- [x] `extractErrorMessage()` utility — `core/utils/error.utils.ts`, replaced `#extractErrorMessage` in 5 services (CourseService, TenantManagement, UserManagement, AccessRequest, LecturerAssignment)
+- [x] ToastService: signal-based queue, auto-dismiss (4s success/info, 6s warning, 8s error), persistent option, max 5 toasts
+- [x] ToastContainerComponent: fixed bottom-right, 4 variants (emerald success, rose error, amber warning, blue info), dismiss button, role="alert"
+- [x] Auth session expiry handling:
+  - [x] `#signOutInitiated` flag distinguishes user-initiated vs involuntary sign-out
+  - [x] User-initiated: redirect to `/login` (no toast)
+  - [x] Involuntary: persistent error toast + redirect to `/login?returnUrl=...`
+  - [x] `returnUrl` preserved through guard → login → post-auth redirect
+- [x] HTTP error interceptor (`httpErrorInterceptor`):
+  - [x] 1 retry with 1s delay for GET/HEAD 5xx and network errors (idempotent methods only)
+  - [x] Auto-toast: network error (0), forbidden (403), rate limit (429), server error (500+)
+  - [x] No toast for 401 (auth handler covers) or 404 (callers handle contextually)
+- [x] 3 pilot components migrated to toast: UserManagement, TenantManagement, LecturerAssignment
+- [x] Convention established: **load errors stay inline (error signal in template), action success/error use toast**
+- [x] **Tests:** 39 new frontend tests (1079 total), 354 RLS, 85 backend, build OK
 
-#### 10B - Performance
+#### 10B - Toast Audit & Bug Fixes (Complete)
+- [x] 5-agent deep audit identified 3 HIGH bugs, 4 MEDIUM error-handling issues, 13 components needing toast, 1 security gap, 2 code duplication hotspots → documented in `docs/toast-audit.md`
+- [x] **Bug fix (HIGH):** POST retry in interceptor — added `(req.method === 'GET' || req.method === 'HEAD')` guard. `POST /api/invite` on 502 no longer retries (was sending emails twice)
+- [x] **Bug fix (HIGH):** Double-toast prevention — exported `isToastedByInterceptor(err)` helper. Applied in 3 caller sites: AccessRequestPage, ProgressDashboard, UserManagementPage
+- [x] **Bug fix (HIGH):** `getSession()` rejection in AuthService — added `.catch(() => { set(null); setLoading(false) })`. Prevents infinite spinner on IndexedDB corruption
+- [x] **Bug fix (MEDIUM):** ProfileService silent error — `#fetchProfile` now destructures `{ data, error }`, logs errors via `console.error`
+- [x] Shared date utilities — `core/utils/date.utils.ts`:
+  - [x] `formatDate()` extracted from 7 components (~70 lines saved): user-management-page, access-request-page, lecturer-assignment-page, enrollment-manager, quiz-taker, exam-taker, exam-grading-page
+  - [x] `formatRelativeTime()` extracted from 6 components (~90 lines saved): my-questions-page, notification-list-page, my-issues-page, questions-board-page, issue-management-page, comment-section
+  - [x] Template access pattern: `readonly formatDate = formatDate;` as class property
+- [x] Error handling consistency — `extractErrorMessage` adopted across all services:
+  - [x] 8 load methods across 6 services (comment, expert-question, issue, progress, exam-grading, notification)
+  - [x] 8 throw-without-fallback methods now have descriptive fallback messages (comment: 6, expert-question: 1, issue: 1)
+  - [x] ~22 mutation methods across 4 admin services (tenant-management, user-management, access-request, lecturer-assignment)
+- [x] Toast migration — 13 components migrated:
+  - [x] **Course CRUD (3):** course-form-page, course-detail-page, module-form-page — action errors/success → toast, load errors stay inline
+  - [x] **Teaching (3):** exam-grading-page, questions-board-page, issue-management-page — removed gradeError/responseError/saveError signals
+  - [x] **Admin/Analytics (2):** access-request-page (removed reviewSuccess/reviewError), progress-dashboard-page (removed reminderResult/reminderError)
+  - [x] **Interactive (5):** comment-section (6 methods, removed actionError), ask-expert (error→toast, kept submitted state), report-issue (error→toast, kept submitted state), enrollment-manager (validation inline, backend→toast), progress-manager (split error signal)
+- [x] **Security:** Role guards added to 4 stub catch-all routes: `teaching/:path` (lecturer/PA), `admin/:path` (TA/PA), `csm/:path` (CSM/PA), `platform/:path` (PA)
+- [x] **Cleanup:** `loadAvailableTenantsList()` moved from 2 page components into TenantManagementService — eliminated direct Supabase queries in components
+- [x] **Tests:** 17 new frontend tests (1096 total), 354 RLS, 85 backend, build OK
+
+#### 10C - Performance
 - [ ] Lazy loading for feature modules
 - [ ] Virtual scrolling for large tables (progress dashboard, user lists)
 - [ ] Debounce search inputs
 - [ ] Optimize RLS queries (verify index usage)
 
-#### 10C - Shared Component Tests
+#### 10D - Shared Component Tests
 - [ ] DataTableComponent tests
 - [ ] ConfirmationDialogComponent tests
 - [ ] LoadingSpinnerComponent tests
@@ -1132,7 +1165,7 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [ ] FileUploadComponent tests
 - [ ] ModuleTypeIconComponent tests
 
-#### 10D - Complete RLS Permission Matrix
+#### 10E - Complete RLS Permission Matrix
 - [ ] All 30 tables covered
 - [ ] 5-category test organization:
   - [ ] **TEN** — Tenant Isolation (users can't see other tenants' data)
@@ -1142,14 +1175,14 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
   - [ ] **INH** — Inherited Access (module subtables inherit from course access)
 - [ ] **Target:** ~245 total RLS tests
 
-#### 10E - Test Coverage Review
+#### 10F - Test Coverage Review
 - [ ] Ensure all services have tests
 - [ ] Ensure all major components have tests
 - [ ] Review and fix any failing tests
 - [ ] Generate coverage report
 - [ ] Document any intentional gaps
 
-#### 10F - Content Staleness Dashboard
+#### 10G - Content Staleness Dashboard
 - [ ] Dashboard for Platform Admin + Lecturer (assigned courses)
 - [ ] Shows courses not updated beyond staleness_threshold_days
 - [ ] Based on MAX(modules.updated_at) per course vs courses.staleness_threshold_days

@@ -6,8 +6,12 @@ import {
 } from 'lucide-angular';
 import { AccessRequestService } from '../../../core/services/access-request.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
+import { TenantManagementService } from '../../../core/services/tenant-management.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { AccessRequestForBoard } from '../../../core/models/access-request.model';
+import { formatDate } from '../../../core/utils/date.utils';
+import { extractErrorMessage } from '../../../core/utils/error.utils';
+import { isToastedByInterceptor } from '../../../core/interceptors/http-error.interceptor';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
@@ -263,16 +267,6 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                           </div>
                         }
 
-                        @if (reviewError()) {
-                          <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                            {{ reviewError() }}
-                          </div>
-                        }
-                        @if (reviewSuccess()) {
-                          <div class="mt-2 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
-                            {{ reviewSuccess() }}
-                          </div>
-                        }
                       </div>
                     </td>
                   </tr>
@@ -288,7 +282,8 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 export class AccessRequestPageComponent implements OnInit {
   readonly service = inject(AccessRequestService);
   readonly #auth = inject(AuthService);
-  readonly #supabaseService = inject(SupabaseService);
+  readonly #tenantService = inject(TenantManagementService);
+  readonly #toast = inject(ToastService);
 
   readonly icons = {
     UserPlus, Search, Loader2, Check, X,
@@ -306,8 +301,6 @@ export class AccessRequestPageComponent implements OnInit {
   // Review
   readonly reviewNotes = signal('');
   readonly reviewing = signal(false);
-  readonly reviewError = signal('');
-  readonly reviewSuccess = signal('');
 
   // Tenant picker (PA only, for unknown-domain requests)
   readonly selectedTenantId = signal('');
@@ -350,15 +343,7 @@ export class AccessRequestPageComponent implements OnInit {
     }
   }
 
-  formatDate(dateStr: string): string {
-    try {
-      return new Date(dateStr).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'short', year: 'numeric',
-      });
-    } catch {
-      return dateStr;
-    }
-  }
+  readonly formatDate = formatDate;
 
   clearFilters() {
     this.searchTerm.set('');
@@ -372,8 +357,6 @@ export class AccessRequestPageComponent implements OnInit {
     }
     this.expandedRequestId.set(req.id);
     this.reviewNotes.set(req.review_notes ?? '');
-    this.reviewError.set('');
-    this.reviewSuccess.set('');
     this.selectedTenantId.set('');
   }
 
@@ -383,21 +366,21 @@ export class AccessRequestPageComponent implements OnInit {
 
     const tenantId = req.tenant_id ?? this.selectedTenantId();
     if (!tenantId) {
-      this.reviewError.set('Please select a tenant before approving');
+      this.#toast.error('Please select a tenant before approving');
       return;
     }
 
     this.reviewing.set(true);
-    this.reviewError.set('');
-    this.reviewSuccess.set('');
 
     try {
       await this.service.approveAndInvite(req.id, req.email, tenantId, userId);
-      this.reviewSuccess.set('Approved and invitation sent!');
+      this.#toast.success('Request approved and invitation sent');
       this.expandedRequestId.set(null);
       await this.service.loadRequests();
     } catch (err) {
-      this.reviewError.set(err instanceof Error ? err.message : 'Failed to approve request');
+      if (!isToastedByInterceptor(err)) {
+        this.#toast.error(extractErrorMessage(err, 'Failed to approve request'));
+      }
     } finally {
       this.reviewing.set(false);
     }
@@ -408,8 +391,6 @@ export class AccessRequestPageComponent implements OnInit {
     if (!userId) return;
 
     this.reviewing.set(true);
-    this.reviewError.set('');
-    this.reviewSuccess.set('');
 
     try {
       await this.service.reviewRequest(
@@ -417,10 +398,11 @@ export class AccessRequestPageComponent implements OnInit {
         { status: 'rejected', review_notes: this.reviewNotes().trim() || undefined },
         userId,
       );
+      this.#toast.success('Request rejected');
       this.expandedRequestId.set(null);
       await this.service.loadRequests();
     } catch (err) {
-      this.reviewError.set(err instanceof Error ? err.message : 'Failed to reject request');
+      this.#toast.error(extractErrorMessage(err, 'Failed to reject request'));
     } finally {
       this.reviewing.set(false);
     }
@@ -428,12 +410,8 @@ export class AccessRequestPageComponent implements OnInit {
 
   private async loadAvailableTenants() {
     try {
-      const { data } = await this.#supabaseService.client
-        .from('tenants')
-        .select('id, name')
-        .order('name');
-
-      this.availableTenants.set(data ?? []);
+      const tenants = await this.#tenantService.loadAvailableTenantsList();
+      this.availableTenants.set(tenants);
     } catch {
       // Non-critical
     }

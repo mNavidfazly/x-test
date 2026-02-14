@@ -2,20 +2,24 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { TenantManagementPageComponent } from './tenant-management-page.component';
 import { TenantManagementService } from '../../../core/services/tenant-management.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { createMockTenantManagementService, createMockTenantForBoard } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockTenantManagementService>;
 }) {
   const service = options?.service ?? createMockTenantManagementService();
+  const toast = createMockToastService();
 
   return render(TenantManagementPageComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       { provide: TenantManagementService, useValue: service },
+      { provide: ToastService, useValue: toast },
     ],
-  }).then(result => ({ ...result, service }));
+  }).then(result => ({ ...result, service, toast }));
 }
 
 describe('TenantManagementPageComponent', () => {
@@ -188,13 +192,13 @@ describe('TenantManagementPageComponent', () => {
     expect(service.loadTenants).toHaveBeenCalledTimes(2); // init + after create
   });
 
-  it('should show create error on rejection', async () => {
+  it('should show create error toast on rejection', async () => {
     const service = createMockTenantManagementService({
       tenants: [createMockTenantForBoard()],
     });
     service.createTenant.mockRejectedValue(new Error('Duplicate domain'));
 
-    const { fixture } = await renderPage({ service });
+    const { fixture, toast } = await renderPage({ service });
 
     // Open form
     fireEvent.click(screen.getByText('Add Tenant'));
@@ -207,7 +211,7 @@ describe('TenantManagementPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Duplicate domain')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Duplicate domain');
   });
 
   it('should expand row and show details tab', async () => {
@@ -284,7 +288,7 @@ describe('TenantManagementPageComponent', () => {
     });
   });
 
-  it('should show save error on rejection', async () => {
+  it('should show save error toast on rejection', async () => {
     const service = createMockTenantManagementService({
       tenants: [
         createMockTenantForBoard({ id: 't1', name: 'Test Tenant' }),
@@ -292,7 +296,7 @@ describe('TenantManagementPageComponent', () => {
     });
     service.updateTenant.mockRejectedValue(new Error('Update failed'));
 
-    const { fixture } = await renderPage({ service });
+    const { fixture, toast } = await renderPage({ service });
 
     fireEvent.click(screen.getByText('Test Tenant'));
     fixture.detectChanges();
@@ -301,7 +305,7 @@ describe('TenantManagementPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Update failed')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Update failed');
   });
 
   it('should show delete confirmation two-click pattern', async () => {

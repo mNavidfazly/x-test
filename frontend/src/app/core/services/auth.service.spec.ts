@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
+import { ToastService } from './toast.service';
+import { createMockToastService } from '../../__mocks__/toast.mock';
 import { JwtClaims } from '../models/auth.model';
 
 function buildJwt(claims: Partial<JwtClaims> & Record<string, unknown> = {}): string {
@@ -41,6 +44,7 @@ describe('AuthService', () => {
   let mockVerifyOtp: ReturnType<typeof vi.fn>;
   let mockSignOut: ReturnType<typeof vi.fn>;
   let mockSignInWithOAuth: ReturnType<typeof vi.fn>;
+  let mockToast: ReturnType<typeof createMockToastService>;
 
   function createService(initialSession: unknown = null) {
     mockGetSession = vi.fn().mockResolvedValue({ data: { session: initialSession } });
@@ -49,6 +53,8 @@ describe('AuthService', () => {
     mockVerifyOtp = vi.fn().mockResolvedValue({ data: { user: {}, session: {} }, error: null });
     mockSignOut = vi.fn().mockResolvedValue({ error: null });
     mockSignInWithOAuth = vi.fn().mockResolvedValue({ data: {}, error: null });
+
+    mockToast = createMockToastService();
 
     const mockSupabase = {
       client: {
@@ -69,8 +75,10 @@ describe('AuthService', () => {
 
     TestBed.configureTestingModule({
       providers: [
+        provideRouter([]),
         AuthService,
         { provide: SupabaseService, useValue: mockSupabase },
+        { provide: ToastService, useValue: mockToast },
       ],
     });
 
@@ -241,6 +249,7 @@ describe('AuthService', () => {
   });
 
   it('should handle malformed JWT gracefully', async () => {
+    const toast = createMockToastService();
     const mockSupabase = {
       client: {
         auth: {
@@ -266,8 +275,10 @@ describe('AuthService', () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
+        provideRouter([]),
         AuthService,
         { provide: SupabaseService, useValue: mockSupabase },
+        { provide: ToastService, useValue: toast },
       ],
     });
 
@@ -277,5 +288,110 @@ describe('AuthService', () => {
     // Should still create user with default claims, not crash
     expect(service.isAuthenticated()).toBe(true);
     expect(service.currentUser()?.claims.tenant_id).toBe('');
+  });
+
+  // --- Session expiry / sign-out handling ---
+
+  it('should redirect to /login on user-initiated signOut (no toast)', async () => {
+    const service = createService(buildSession());
+    await vi.waitFor(() => expect(service.loading()).toBe(false));
+
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    await service.signOut();
+    authStateCallback('SIGNED_OUT', null);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login']);
+    expect(mockToast.error).not.toHaveBeenCalled();
+  });
+
+  it('should show toast and redirect with returnUrl on involuntary session expiry', async () => {
+    const service = createService(buildSession());
+    await vi.waitFor(() => expect(service.loading()).toBe(false));
+
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    // Simulate being on a deep page
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/courses/123/modules');
+
+    // Involuntary sign-out (no signOut() called)
+    authStateCallback('SIGNED_OUT', null);
+
+    expect(mockToast.error).toHaveBeenCalledWith(
+      'Your session has expired. Please sign in again.',
+      { persistent: true },
+    );
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], {
+      queryParams: { returnUrl: '/courses/123/modules' },
+    });
+  });
+
+  it('should not include returnUrl when on root page during session expiry', async () => {
+    const service = createService(buildSession());
+    await vi.waitFor(() => expect(service.loading()).toBe(false));
+
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    vi.spyOn(router, 'url', 'get').mockReturnValue('/');
+
+    authStateCallback('SIGNED_OUT', null);
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/login'], { queryParams: {} });
+  });
+
+  it('should not redirect or toast when SIGNED_OUT fires but user was not authenticated', async () => {
+    const service = createService(); // no initial session
+    await vi.waitFor(() => expect(service.loading()).toBe(false));
+
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+
+    authStateCallback('SIGNED_OUT', null);
+
+    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(mockToast.error).not.toHaveBeenCalled();
+  });
+
+  it('signOut sets flag before calling supabase signOut', async () => {
+    const service = createService(buildSession());
+    await vi.waitFor(() => expect(service.loading()).toBe(false));
+
+    expect(mockSignOut).not.toHaveBeenCalled();
+    await service.signOut();
+    expect(mockSignOut).toHaveBeenCalled();
+  });
+
+  it('should recover from getSession rejection (IndexedDB corruption)', async () => {
+    mockToast = createMockToastService();
+    const mockSupabase = {
+      client: {
+        auth: {
+          getSession: vi.fn().mockRejectedValue(new Error('IndexedDB error')),
+          onAuthStateChange: vi.fn(() => ({
+            data: { subscription: { unsubscribe: vi.fn() } },
+          })),
+          signInWithPassword: vi.fn(),
+          signInWithOtp: vi.fn(),
+          signOut: vi.fn(),
+        },
+      },
+    };
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        AuthService,
+        { provide: SupabaseService, useValue: mockSupabase },
+        { provide: ToastService, useValue: mockToast },
+      ],
+    });
+
+    const service = TestBed.inject(AuthService);
+    await vi.waitFor(() => expect(service.loading()).toBe(false));
+
+    expect(service.currentUser()).toBeNull();
+    expect(service.isAuthenticated()).toBe(false);
   });
 });

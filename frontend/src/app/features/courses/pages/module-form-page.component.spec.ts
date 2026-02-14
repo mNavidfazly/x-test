@@ -21,6 +21,8 @@ import { createMockCourseService } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { ToastService } from '../../../core/services/toast.service';
+import { createMockToastService } from '../../../__mocks__/toast.mock';
 
 function createMockBunnyUploadService() {
   return {
@@ -64,6 +66,7 @@ async function renderCreateMode(overrides?: {
   const authService =
     overrides?.authService ??
     createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } });
+  const toast = createMockToastService();
   const courseId = overrides?.courseId ?? 'course-1';
   const lectureId = overrides?.lectureId ?? 'lecture-1';
 
@@ -73,6 +76,7 @@ async function renderCreateMode(overrides?: {
       provideRouter([]),
       { provide: CourseService, useValue: courseService },
       { provide: AuthService, useValue: authService },
+      { provide: ToastService, useValue: toast },
       { provide: SupabaseService, useValue: createMockSupabaseService() },
       { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
       {
@@ -89,7 +93,7 @@ async function renderCreateMode(overrides?: {
   await new Promise((r) => setTimeout(r));
   result.fixture.detectChanges();
 
-  return { ...result, courseService, authService };
+  return { ...result, courseService, authService, toast };
 }
 
 /** Helper: render in edit mode (with moduleId) */
@@ -103,6 +107,7 @@ async function renderEditMode(overrides?: {
   const authService =
     overrides?.authService ??
     createMockAuthService({ isAuthenticated: true, claims: { is_platform_admin: true } });
+  const toast = createMockToastService();
   const courseId = overrides?.courseId ?? 'course-1';
   const moduleId = overrides?.moduleId ?? 'mod-1';
 
@@ -112,6 +117,7 @@ async function renderEditMode(overrides?: {
       provideRouter([]),
       { provide: CourseService, useValue: courseService },
       { provide: AuthService, useValue: authService },
+      { provide: ToastService, useValue: toast },
       { provide: SupabaseService, useValue: createMockSupabaseService() },
       { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
       {
@@ -125,7 +131,7 @@ async function renderEditMode(overrides?: {
   await new Promise((r) => setTimeout(r));
   result.fixture.detectChanges();
 
-  return { ...result, courseService, authService };
+  return { ...result, courseService, authService, toast };
 }
 
 describe('ModuleFormPageComponent', () => {
@@ -199,6 +205,7 @@ describe('ModuleFormPageComponent', () => {
     // Regular learner — no platform admin, no lecturer_can_edit_course_ids
 
     const courseService = createMockCourseService();
+    const toast = createMockToastService();
 
     const result = await render(ModuleFormPageComponent, {
       componentImports: defaultImports,
@@ -206,6 +213,7 @@ describe('ModuleFormPageComponent', () => {
         provideRouter([{ path: '**', component: DummyComponent }]),
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: authService },
+        { provide: ToastService, useValue: toast },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         {
@@ -304,17 +312,17 @@ describe('ModuleFormPageComponent', () => {
 
   // --- Save failure ---
 
-  it('should show error message on save failure', async () => {
+  it('should show toast error on save failure', async () => {
     const courseService = createMockCourseService();
     courseService.updateModule.mockRejectedValueOnce(new Error('Network error'));
 
-    const { fixture } = await renderEditMode({ courseService, moduleId: 'mod-1' });
+    const { fixture, toast } = await renderEditMode({ courseService, moduleId: 'mod-1' });
 
     fireEvent.click(screen.getByText('Save Changes'));
     await new Promise((r) => setTimeout(r));
     fixture.detectChanges();
 
-    expect(screen.getByText('Network error')).toBeTruthy();
+    expect(toast.error).toHaveBeenCalledWith('Network error');
   });
 
   // --- Missing lecture ID ---
@@ -325,6 +333,7 @@ describe('ModuleFormPageComponent', () => {
       isAuthenticated: true,
       claims: { is_platform_admin: true },
     });
+    const toast = createMockToastService();
 
     const result = await render(ModuleFormPageComponent, {
       componentImports: defaultImports,
@@ -332,6 +341,7 @@ describe('ModuleFormPageComponent', () => {
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
         { provide: AuthService, useValue: authService },
+        { provide: ToastService, useValue: toast },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         {

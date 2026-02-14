@@ -4,6 +4,7 @@ import { LucideAngularModule, Flag, Clock, CheckCircle2, XCircle, Search, Chevro
 import { IssueService } from '../../../core/services/issue.service';
 import { IssueStatus, IssueType } from '../../../core/models/issue.model';
 import { LucideIconData } from 'lucide-angular';
+import { formatRelativeTime } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-my-issues-page',
@@ -136,6 +137,7 @@ export class MyIssuesPageComponent implements OnInit {
   readonly issueService = inject(IssueService);
 
   readonly icons = { Flag, Clock, CheckCircle2, XCircle, Search, ChevronDown, ChevronUp, BookOpen, Loader2 };
+  readonly formatRelativeTime = formatRelativeTime;
 
   readonly expandedId = signal<string | null>(null);
 
@@ -182,21 +184,5 @@ export class MyIssuesPageComponent implements OnInit {
       case 'accessibility': return 'Accessibility';
       case 'other': return 'Other';
     }
-  }
-
-  formatRelativeTime(dateStr: string): string {
-    const now = Date.now();
-    const then = new Date(dateStr).getTime();
-    const diffMs = now - then;
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHr = Math.floor(diffMs / 3600000);
-    const diffDay = Math.floor(diffMs / 86400000);
-
-    if (diffMin < 1) return 'just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
-    if (diffHr < 24) return `${diffHr}h ago`;
-    if (diffDay < 7) return `${diffDay}d ago`;
-
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 }

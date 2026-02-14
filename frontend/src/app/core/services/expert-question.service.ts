@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { ExpertQuestion, ExpertQuestionForBoard, BoardCourseSummary } from '../models/expert-question.model';
+import { extractErrorMessage } from '../utils/error.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ExpertQuestionService {
@@ -58,8 +59,7 @@ export class ExpertQuestionService {
 
       this.#questions.set(questions);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
-      this.#error.set(msg || 'Failed to load questions');
+      this.#error.set(extractErrorMessage(err, 'Failed to load questions'));
     } finally {
       this.#loading.set(false);
     }
@@ -79,7 +79,7 @@ export class ExpertQuestionService {
         question_text: questionText,
       });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to submit question'));
     await this.loadMyQuestions();
   }
 
@@ -128,11 +128,7 @@ export class ExpertQuestionService {
       this.#boardQuestions.set(questions);
       this.#boardCourses.set(courses);
     } catch (err) {
-      this.#boardError.set(
-        err instanceof Error ? err.message :
-        typeof err === 'object' && err && 'message' in err ? String((err as any).message) :
-        'Failed to load questions',
-      );
+      this.#boardError.set(extractErrorMessage(err, 'Failed to load questions'));
     } finally {
       this.#boardLoading.set(false);
     }

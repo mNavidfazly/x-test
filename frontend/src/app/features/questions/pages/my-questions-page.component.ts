@@ -4,6 +4,7 @@ import { LucideAngularModule, HelpCircle, Clock, CheckCircle2, XCircle, ChevronD
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
 import { ExpertQuestionStatus } from '../../../core/models/expert-question.model';
 import { LucideIconData } from 'lucide-angular';
+import { formatRelativeTime } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-my-questions-page',
@@ -136,6 +137,7 @@ export class MyQuestionsPageComponent implements OnInit {
   readonly expertQuestionService = inject(ExpertQuestionService);
 
   readonly icons = { HelpCircle, Clock, CheckCircle2, XCircle, ChevronDown, ChevronUp, BookOpen, Loader2 };
+  readonly formatRelativeTime = formatRelativeTime;
 
   readonly expandedId = signal<string | null>(null);
 
@@ -170,21 +172,5 @@ export class MyQuestionsPageComponent implements OnInit {
       case 'answered': return this.icons.CheckCircle2;
       case 'closed': return this.icons.XCircle;
     }
-  }
-
-  formatRelativeTime(dateStr: string): string {
-    const now = Date.now();
-    const then = new Date(dateStr).getTime();
-    const diffMs = now - then;
-    const diffMin = Math.floor(diffMs / 60000);
-    const diffHr = Math.floor(diffMs / 3600000);
-    const diffDay = Math.floor(diffMs / 86400000);
-
-    if (diffMin < 1) return 'just now';
-    if (diffMin < 60) return `${diffMin}m ago`;
-    if (diffHr < 24) return `${diffHr}h ago`;
-    if (diffDay < 7) return `${diffDay}d ago`;
-
-    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 }

@@ -10,6 +10,8 @@ import { NotificationService } from '../../core/services/notification.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
 import { createMockNotificationService } from '../../__mocks__/course.mock';
+import { ToastService } from '../../core/services/toast.service';
+import { createMockToastService } from '../../__mocks__/toast.mock';
 
 @Component({ selector: 'app-test-child', standalone: true, template: '<p>Test child content</p>' })
 class TestChildComponent {}
@@ -26,6 +28,7 @@ async function renderLayout() {
       { provide: AuthService, useValue: auth },
       { provide: ProfileService, useValue: profile },
       { provide: NotificationService, useValue: notifications },
+      { provide: ToastService, useValue: createMockToastService() },
     ],
   });
 

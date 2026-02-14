@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
+import { extractErrorMessage } from '../utils/error.utils';
 import {
   UserForBoard,
   InviteUserData,
@@ -23,12 +24,6 @@ export class UserManagementService {
   readonly users = this.#users.asReadonly();
   readonly loading = this.#loading.asReadonly();
   readonly error = this.#error.asReadonly();
-
-  #extractErrorMessage(err: unknown, fallback: string): string {
-    if (err instanceof Error) return err.message;
-    if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
-    return fallback;
-  }
 
   async loadUsers(): Promise<void> {
     const user = this.#auth.currentUser();
@@ -60,7 +55,7 @@ export class UserManagementService {
 
       this.#users.set(users);
     } catch (err) {
-      this.#error.set(this.#extractErrorMessage(err, 'Failed to load users'));
+      this.#error.set(extractErrorMessage(err, 'Failed to load users'));
     } finally {
       this.#loading.set(false);
     }
@@ -90,7 +85,7 @@ export class UserManagementService {
       .update(payload)
       .eq('id', userId);
 
-    if (error) throw new Error(error.message || 'Failed to update user roles');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update user roles'));
   }
 
   async updateUserProfile(userId: string, data: UpdateUserProfileData): Promise<void> {
@@ -102,6 +97,6 @@ export class UserManagementService {
       .update({ full_name: data.full_name })
       .eq('id', userId);
 
-    if (error) throw new Error(error.message || 'Failed to update profile');
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update profile'));
   }
 }

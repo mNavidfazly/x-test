@@ -7,6 +7,7 @@ import {
   DashboardUserProgress, DashboardCourseProgress,
   DashboardCourseSummary, ReminderRequest, ReminderResponse,
 } from '../models/course.model';
+import { extractErrorMessage } from '../utils/error.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ProgressService {
@@ -146,11 +147,7 @@ export class ProgressService {
       this.#users.set(users);
       this.#courses.set(courses.map(c => ({ id: c.id, title: c.title })));
     } catch (err) {
-      this.#error.set(
-        err instanceof Error ? err.message :
-        typeof err === 'object' && err && 'message' in err ? String((err as any).message) :
-        'Failed to load progress data',
-      );
+      this.#error.set(extractErrorMessage(err, 'Failed to load progress data'));
     } finally {
       this.#loading.set(false);
     }

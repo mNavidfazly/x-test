@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { Comment } from '../models/comment.model';
+import { extractErrorMessage } from '../utils/error.utils';
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
@@ -49,8 +50,7 @@ export class CommentService {
 
       this.#comments.set(comments);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : (err as { message?: string })?.message;
-      this.#error.set(msg || 'Failed to load comments');
+      this.#error.set(extractErrorMessage(err, 'Failed to load comments'));
     } finally {
       this.#loading.set(false);
     }
@@ -69,7 +69,7 @@ export class CommentService {
         body,
       });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to add comment'));
     await this.loadComments(this.#currentModuleId);
   }
 
@@ -79,7 +79,7 @@ export class CommentService {
       .update({ body })
       .eq('id', commentId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update comment'));
     await this.loadComments(this.#currentModuleId);
   }
 
@@ -89,7 +89,7 @@ export class CommentService {
       .delete()
       .eq('id', commentId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to delete comment'));
     await this.loadComments(this.#currentModuleId);
   }
 
@@ -106,7 +106,7 @@ export class CommentService {
         body,
       });
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to add reply'));
     await this.loadComments(this.#currentModuleId);
   }
 
@@ -116,7 +116,7 @@ export class CommentService {
       .update({ body })
       .eq('id', replyId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update reply'));
     await this.loadComments(this.#currentModuleId);
   }
 
@@ -126,7 +126,7 @@ export class CommentService {
       .delete()
       .eq('id', replyId);
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to delete reply'));
     await this.loadComments(this.#currentModuleId);
   }
 }

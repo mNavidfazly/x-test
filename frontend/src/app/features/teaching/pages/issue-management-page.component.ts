@@ -4,7 +4,9 @@ import {
   Clock, Eye, CheckCircle2, XCircle, Save, ChevronDown, ChevronUp,
 } from 'lucide-angular';
 import { IssueService } from '../../../core/services/issue.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { IssueForBoard, IssueStatus, IssueType } from '../../../core/models/issue.model';
+import { formatRelativeTime } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-issue-management-page',
@@ -255,11 +257,6 @@ import { IssueForBoard, IssueStatus, IssueType } from '../../../core/models/issu
                           >Cancel</button>
                         </div>
 
-                        @if (saveError()) {
-                          <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                            {{ saveError() }}
-                          </div>
-                        }
                       </div>
                     </td>
                   </tr>
@@ -274,8 +271,10 @@ import { IssueForBoard, IssueStatus, IssueType } from '../../../core/models/issu
 })
 export class IssueManagementPageComponent implements OnInit {
   readonly issueService = inject(IssueService);
+  #toast = inject(ToastService);
 
   readonly icons = { Flag, Search, Loader2, Clock, Eye, CheckCircle2, XCircle, Save, ChevronDown, ChevronUp };
+  readonly formatRelativeTime = formatRelativeTime;
 
   // Filters
   readonly searchTerm = signal('');
@@ -288,7 +287,6 @@ export class IssueManagementPageComponent implements OnInit {
   readonly editStatus = signal<IssueStatus>('open');
   readonly editInternalNotes = signal('');
   readonly saving = signal(false);
-  readonly saveError = signal('');
 
   // Filtered issues
   readonly filteredIssues = computed(() => {
@@ -352,22 +350,22 @@ export class IssueManagementPageComponent implements OnInit {
     this.expandedIssueId.set(issue.id);
     this.editStatus.set(issue.status);
     this.editInternalNotes.set(issue.internal_notes ?? '');
-    this.saveError.set('');
   }
 
   async onSaveIssue(issueId: string) {
     this.saving.set(true);
-    this.saveError.set('');
 
     try {
       await this.issueService.updateIssue(issueId, {
         status: this.editStatus(),
         internal_notes: this.editInternalNotes(),
       });
+      this.#toast.success('Issue updated');
       this.expandedIssueId.set(null);
       await this.issueService.loadBoardIssues();
     } catch (err) {
-      this.saveError.set(err instanceof Error ? err.message : 'Failed to save changes');
+      const msg = err instanceof Error ? err.message : 'Failed to save changes';
+      this.#toast.error(msg);
     } finally {
       this.saving.set(false);
     }
@@ -392,23 +390,5 @@ export class IssueManagementPageComponent implements OnInit {
   truncateText(text: string, maxLength: number): string {
     if (text.length <= maxLength) return text;
     return text.substring(0, maxLength) + '...';
-  }
-
-  formatRelativeTime(iso: string): string {
-    const now = Date.now();
-    const then = new Date(iso).getTime();
-    const diffMs = now - then;
-    const diffMins = Math.floor(diffMs / 60000);
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-
-    const diffHours = Math.floor(diffMins / 60);
-    if (diffHours < 24) return `${diffHours}h ago`;
-
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 7) return `${diffDays}d ago`;
-
-    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
   }
 }

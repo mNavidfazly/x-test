@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
 import { BunnyUploadService } from './bunny-upload.service';
+import { extractErrorMessage } from '../utils/error.utils';
 import {
   CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem, ModuleVideo,
@@ -102,7 +103,7 @@ export class CourseService {
 
       this.#courses.set(result);
     } catch (err) {
-      this.#error.set(this.#extractErrorMessage(err, 'Failed to load courses'));
+      this.#error.set(extractErrorMessage(err, 'Failed to load courses'));
     } finally {
       this.#loading.set(false);
     }
@@ -182,7 +183,7 @@ export class CourseService {
         progressMap,
       });
     } catch (err) {
-      this.#error.set(this.#extractErrorMessage(err, 'Failed to load course'));
+      this.#error.set(extractErrorMessage(err, 'Failed to load course'));
     } finally {
       this.#loading.set(false);
     }
@@ -257,7 +258,7 @@ export class CourseService {
 
       this.#moduleViewer.set({ module, content, files, progress, navigation });
     } catch (err) {
-      this.#error.set(this.#extractErrorMessage(err, 'Failed to load module'));
+      this.#error.set(extractErrorMessage(err, 'Failed to load module'));
     } finally {
       this.#loading.set(false);
     }
@@ -285,7 +286,7 @@ export class CourseService {
       }, { onConflict: 'user_id,tenant_id,module_id' });
 
     if (error) {
-      this.#error.set(this.#extractErrorMessage(error, 'Failed to mark complete'));
+      this.#error.set(extractErrorMessage(error, 'Failed to mark complete'));
       return;
     }
 
@@ -307,7 +308,7 @@ export class CourseService {
       .from('course_enrollments')
       .insert({ user_id: userId, tenant_id: tenantId, course_id: courseId });
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to enroll'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to enroll'));
     await this.loadCourseDetail(courseId);
   }
 
@@ -315,7 +316,7 @@ export class CourseService {
     const { error } = await this.#supabase.client
       .rpc('enroll_with_password', { p_course_id: courseId, p_password: password });
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to enroll'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to enroll'));
     await this.loadCourseDetail(courseId);
   }
 
@@ -324,7 +325,7 @@ export class CourseService {
       .from('course_enrollments')
       .insert({ user_id: userId, tenant_id: tenantId, course_id: courseId });
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to enroll user'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to enroll user'));
   }
 
   async unenrollUser(enrollmentId: string): Promise<void> {
@@ -333,7 +334,7 @@ export class CourseService {
       .delete()
       .eq('id', enrollmentId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to unenroll user'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to unenroll user'));
   }
 
   async loadEnrolledUsers(courseId: string): Promise<EnrolledUser[]> {
@@ -343,7 +344,7 @@ export class CourseService {
       .eq('course_id', courseId)
       .order('enrolled_at', { ascending: false });
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load enrolled users'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load enrolled users'));
 
     return (data ?? []).map((row) => {
       const profile = row.profiles as unknown as { email: string; full_name: string | null } | null;
@@ -365,7 +366,7 @@ export class CourseService {
       .eq('tenant_id', tenantId)
       .maybeSingle();
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to look up user'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to look up user'));
     return data ? { id: data.id, full_name: data.full_name } : null;
   }
 
@@ -385,8 +386,8 @@ export class CourseService {
         .eq('course_id', courseId),
     ]);
 
-    if (enrollmentsRes.error) throw new Error(this.#extractErrorMessage(enrollmentsRes.error, 'Failed to load enrollments'));
-    if (progressRes.error) throw new Error(this.#extractErrorMessage(progressRes.error, 'Failed to load progress'));
+    if (enrollmentsRes.error) throw new Error(extractErrorMessage(enrollmentsRes.error, 'Failed to load enrollments'));
+    if (progressRes.error) throw new Error(extractErrorMessage(progressRes.error, 'Failed to load progress'));
 
     const detail = this.#courseDetail();
     const totalModules = detail
@@ -441,7 +442,7 @@ export class CourseService {
         marked_by: 'admin' as const,
       }, { onConflict: 'user_id,tenant_id,module_id' });
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to mark module complete'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to mark module complete'));
   }
 
   async adminResetModuleProgress(userId: string, moduleId: string): Promise<void> {
@@ -456,7 +457,7 @@ export class CourseService {
       .eq('user_id', userId)
       .eq('module_id', moduleId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to reset module progress'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to reset module progress'));
   }
 
   // --- Phase 5A: Quiz Taking methods ---
@@ -601,7 +602,7 @@ export class CourseService {
       .select('id, quiz_id, attempt_number, started_at, submitted_at, score, passed')
       .single();
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to start quiz'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to start quiz'));
     return data as QuizAttempt;
   }
 
@@ -619,7 +620,7 @@ export class CourseService {
       const { error: ansErr } = await client
         .from('quiz_attempt_answers')
         .insert(answerRows);
-      if (ansErr) throw new Error(this.#extractErrorMessage(ansErr, 'Failed to save answers'));
+      if (ansErr) throw new Error(extractErrorMessage(ansErr, 'Failed to save answers'));
     }
 
     // 2. Mark as submitted
@@ -627,19 +628,19 @@ export class CourseService {
       .from('quiz_attempts')
       .update({ submitted_at: new Date().toISOString() })
       .eq('id', attemptId);
-    if (subErr) throw new Error(this.#extractErrorMessage(subErr, 'Failed to submit quiz'));
+    if (subErr) throw new Error(extractErrorMessage(subErr, 'Failed to submit quiz'));
 
     // 3. Grade via RPC
     const { data: gradeData, error: gradeErr } = await client
       .rpc('grade_quiz_attempt', { p_attempt_id: attemptId });
-    if (gradeErr) throw new Error(this.#extractErrorMessage(gradeErr, 'Failed to grade quiz'));
+    if (gradeErr) throw new Error(extractErrorMessage(gradeErr, 'Failed to grade quiz'));
 
     const grade = gradeData as QuizGradeResult;
 
     // 4. Get per-question results via RPC
     const { data: resultRows, error: resErr } = await client
       .rpc('get_quiz_results', { p_attempt_id: attemptId });
-    if (resErr) throw new Error(this.#extractErrorMessage(resErr, 'Failed to load results'));
+    if (resErr) throw new Error(extractErrorMessage(resErr, 'Failed to load results'));
 
     const questions = (resultRows ?? []) as QuizQuestionResult[];
 
@@ -662,12 +663,12 @@ export class CourseService {
       .select('id, quiz_id, attempt_number, started_at, submitted_at, score, passed')
       .eq('id', attemptId)
       .single();
-    if (aErr) throw new Error(this.#extractErrorMessage(aErr, 'Failed to load attempt'));
+    if (aErr) throw new Error(extractErrorMessage(aErr, 'Failed to load attempt'));
 
     // Get per-question results
     const { data: resultRows, error: resErr } = await client
       .rpc('get_quiz_results', { p_attempt_id: attemptId });
-    if (resErr) throw new Error(this.#extractErrorMessage(resErr, 'Failed to load results'));
+    if (resErr) throw new Error(extractErrorMessage(resErr, 'Failed to load results'));
 
     const questions = (resultRows ?? []) as QuizQuestionResult[];
     const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
@@ -758,7 +759,7 @@ export class CourseService {
 
     if (error) {
       await this.#supabase.client.storage.from('exam-submissions').remove([storagePath]);
-      throw new Error(this.#extractErrorMessage(error, 'Failed to submit exam'));
+      throw new Error(extractErrorMessage(error, 'Failed to submit exam'));
     }
 
     const signedUrl = await this.#getSignedUrlFromBucket('exam-submissions', storagePath);
@@ -781,7 +782,7 @@ export class CourseService {
       .select('id')
       .single();
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to create course'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to create course'));
     return { id: result.id };
   }
 
@@ -791,7 +792,7 @@ export class CourseService {
       .update(data)
       .eq('id', id);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update course'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update course'));
   }
 
   async deleteCourse(id: string): Promise<void> {
@@ -806,7 +807,7 @@ export class CourseService {
       .delete()
       .eq('id', id);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete course'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to delete course'));
 
     await this.#removeStorageFiles(storagePaths);
     this.#cleanupBunnyVideos(bunnyVideoIds);
@@ -818,7 +819,7 @@ export class CourseService {
       .select('id, name, domain, is_master')
       .order('name');
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load tenants'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load tenants'));
     return (data ?? []) as TenantSummary[];
   }
 
@@ -828,7 +829,7 @@ export class CourseService {
       .select('tenant_id, tenants(name)')
       .eq('course_id', courseId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load tenant assignments'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load tenant assignments'));
     return (data ?? []).map((row) => ({
       tenant_id: row.tenant_id,
       tenant_name: (row.tenants as unknown as { name: string } | null)?.name ?? '',
@@ -840,7 +841,7 @@ export class CourseService {
       .from('tenant_courses')
       .insert({ course_id: courseId, tenant_id: tenantId });
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to assign course to tenant'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to assign course to tenant'));
   }
 
   async removeCourseFromTenant(courseId: string, tenantId: string): Promise<void> {
@@ -850,7 +851,7 @@ export class CourseService {
       .eq('course_id', courseId)
       .eq('tenant_id', tenantId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to remove course from tenant'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to remove course from tenant'));
   }
 
   // --- Phase 3B: Lecture CRUD methods ---
@@ -872,7 +873,7 @@ export class CourseService {
       .select('id')
       .single();
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to create lecture'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to create lecture'));
     return { id: result.id };
   }
 
@@ -882,7 +883,7 @@ export class CourseService {
       .update(data)
       .eq('id', lectureId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update lecture'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update lecture'));
   }
 
   async deleteLecture(lectureId: string): Promise<void> {
@@ -912,7 +913,7 @@ export class CourseService {
       .delete()
       .eq('id', lectureId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete lecture'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to delete lecture'));
 
     await this.#removeStorageFiles(storagePaths);
     this.#cleanupBunnyVideos(bunnyVideoIds);
@@ -924,14 +925,14 @@ export class CourseService {
       .update({ sort_order: orderB })
       .eq('id', idA);
 
-    if (resA.error) throw new Error(this.#extractErrorMessage(resA.error, 'Failed to reorder lectures'));
+    if (resA.error) throw new Error(extractErrorMessage(resA.error, 'Failed to reorder lectures'));
 
     const resB = await this.#supabase.client
       .from('lectures')
       .update({ sort_order: orderA })
       .eq('id', idB);
 
-    if (resB.error) throw new Error(this.#extractErrorMessage(resB.error, 'Failed to reorder lectures'));
+    if (resB.error) throw new Error(extractErrorMessage(resB.error, 'Failed to reorder lectures'));
   }
 
   // --- Phase 3C: Module CRUD methods ---
@@ -956,7 +957,7 @@ export class CourseService {
       .select('id')
       .single();
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to create module'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to create module'));
 
     try {
       await this.#insertModuleContent(result.id, payload.content);
@@ -982,7 +983,7 @@ export class CourseService {
       .update(updateData)
       .eq('id', moduleId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update module'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to update module'));
 
     await this.#upsertModuleContent(moduleId, payload.content);
   }
@@ -999,7 +1000,7 @@ export class CourseService {
       .delete()
       .eq('id', moduleId);
 
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete module'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to delete module'));
 
     await this.#removeStorageFiles(storagePaths);
     this.#cleanupBunnyVideos(bunnyVideoIds);
@@ -1011,14 +1012,14 @@ export class CourseService {
       .update({ sort_order: orderB })
       .eq('id', idA);
 
-    if (resA.error) throw new Error(this.#extractErrorMessage(resA.error, 'Failed to reorder modules'));
+    if (resA.error) throw new Error(extractErrorMessage(resA.error, 'Failed to reorder modules'));
 
     const resB = await this.#supabase.client
       .from('modules')
       .update({ sort_order: orderA })
       .eq('id', idB);
 
-    if (resB.error) throw new Error(this.#extractErrorMessage(resB.error, 'Failed to reorder modules'));
+    if (resB.error) throw new Error(extractErrorMessage(resB.error, 'Failed to reorder modules'));
   }
 
   // --- Module files methods ---
@@ -1029,7 +1030,7 @@ export class CourseService {
       .select('id, file_url, file_name, file_size')
       .eq('module_id', moduleId)
       .order('file_name', { ascending: true });
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to load module files'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to load module files'));
     return (data ?? []) as ModuleFile[];
   }
 
@@ -1037,7 +1038,7 @@ export class CourseService {
     const { error } = await this.#supabase.client
       .from('module_files')
       .insert({ module_id: moduleId, ...file });
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to add module file'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to add module file'));
   }
 
   async deleteModuleFile(fileId: string): Promise<void> {
@@ -1045,7 +1046,7 @@ export class CourseService {
       .from('module_files')
       .delete()
       .eq('id', fileId);
-    if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to delete module file'));
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to delete module file'));
   }
 
   async loadModuleForEdit(moduleId: string): Promise<{ module: ModuleDetail; content: ModuleContentFormData }> {
@@ -1057,7 +1058,7 @@ export class CourseService {
       .eq('id', moduleId)
       .single();
 
-    if (moduleRes.error) throw new Error(this.#extractErrorMessage(moduleRes.error, 'Failed to load module'));
+    if (moduleRes.error) throw new Error(extractErrorMessage(moduleRes.error, 'Failed to load module'));
 
     const mod = moduleRes.data as {
       id: string; title: string; description: string | null;
@@ -1083,7 +1084,7 @@ export class CourseService {
             bunny_library_id: content.data.bunny_library_id,
             original_filename: content.data.original_filename,
           });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save video content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to save video content'));
         break;
       }
       case 'pdf': {
@@ -1092,7 +1093,7 @@ export class CourseService {
         const { error } = await this.#supabase.client
           .from('module_pdfs')
           .insert({ module_id: moduleId, file_url: d.file_url, file_name: d.file_name, page_count: d.page_count });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save PDF content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to save PDF content'));
         break;
       }
       case 'exam': {
@@ -1110,7 +1111,7 @@ export class CourseService {
             allowed_file_types: d.allowed_file_types,
             exam_file_url: d.exam_file_url,
           });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save exam content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to save exam content'));
         break;
       }
       case 'markdown': {
@@ -1119,7 +1120,7 @@ export class CourseService {
         const { error } = await this.#supabase.client
           .from('module_markdown')
           .insert({ module_id: moduleId, content: d.content });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save markdown content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to save markdown content'));
         break;
       }
       case 'quiz': {
@@ -1135,7 +1136,7 @@ export class CourseService {
             randomize_questions: d.randomize_questions, randomize_answers: d.randomize_answers,
           })
           .select('id').single();
-        if (quizErr) throw new Error(this.#extractErrorMessage(quizErr, 'Failed to save quiz'));
+        if (quizErr) throw new Error(extractErrorMessage(quizErr, 'Failed to save quiz'));
         await this.#insertQuizQuestions(quizRow.id, d.questions);
         break;
       }
@@ -1150,7 +1151,7 @@ export class CourseService {
             external_quiz_url: d.external_quiz_url,
             passing_score: d.passing_score,
           });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to save external quiz reference'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to save external quiz reference'));
         break;
       }
       default:
@@ -1170,7 +1171,7 @@ export class CourseService {
             bunny_library_id: content.data.bunny_library_id,
             original_filename: content.data.original_filename,
           }, { onConflict: 'module_id' });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update video content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to update video content'));
         break;
       }
       case 'pdf': {
@@ -1184,7 +1185,7 @@ export class CourseService {
             file_name: d.file_name,
             page_count: d.page_count,
           }, { onConflict: 'module_id' });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update PDF content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to update PDF content'));
         break;
       }
       case 'exam': {
@@ -1202,7 +1203,7 @@ export class CourseService {
             allowed_file_types: d.allowed_file_types,
             exam_file_url: d.exam_file_url,
           }, { onConflict: 'module_id' });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update exam content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to update exam content'));
         break;
       }
       case 'markdown': {
@@ -1211,7 +1212,7 @@ export class CourseService {
         const { error } = await this.#supabase.client
           .from('module_markdown')
           .upsert({ module_id: moduleId, content: d.content }, { onConflict: 'module_id' });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update markdown content'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to update markdown content'));
         break;
       }
       case 'quiz': {
@@ -1227,7 +1228,7 @@ export class CourseService {
             randomize_questions: d.randomize_questions, randomize_answers: d.randomize_answers,
           }, { onConflict: 'module_id' })
           .select('id').single();
-        if (quizErr) throw new Error(this.#extractErrorMessage(quizErr, 'Failed to update quiz'));
+        if (quizErr) throw new Error(extractErrorMessage(quizErr, 'Failed to update quiz'));
         // Delete existing questions (CASCADE deletes options)
         await this.#supabase.client.from('quiz_questions').delete().eq('quiz_id', quizRow.id);
         // Re-insert all questions + options
@@ -1245,7 +1246,7 @@ export class CourseService {
             external_quiz_url: d.external_quiz_url,
             passing_score: d.passing_score,
           }, { onConflict: 'module_id' });
-        if (error) throw new Error(this.#extractErrorMessage(error, 'Failed to update external quiz reference'));
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to update external quiz reference'));
         break;
       }
       default:
@@ -1555,7 +1556,7 @@ export class CourseService {
           correct_answer: q.correct_answer,
         })
         .select('id').single();
-      if (qErr) throw new Error(this.#extractErrorMessage(qErr, 'Failed to save question'));
+      if (qErr) throw new Error(extractErrorMessage(qErr, 'Failed to save question'));
 
       if (q.options.length > 0) {
         const { error: oErr } = await this.#supabase.client
@@ -1566,14 +1567,9 @@ export class CourseService {
             is_correct: o.is_correct,
             sort_order: o.sort_order,
           })));
-        if (oErr) throw new Error(this.#extractErrorMessage(oErr, 'Failed to save options'));
+        if (oErr) throw new Error(extractErrorMessage(oErr, 'Failed to save options'));
       }
     }
   }
 
-  #extractErrorMessage(err: unknown, fallback: string): string {
-    if (err instanceof Error) return err.message;
-    if (err && typeof err === 'object' && 'message' in err) return String((err as { message: unknown }).message);
-    return fallback;
-  }
 }

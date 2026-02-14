@@ -4,7 +4,9 @@ import {
   Download, RotateCcw, Clock, Check, X, AlertTriangle, FileText,
 } from 'lucide-angular';
 import { ExamGradingService } from '../../../core/services/exam-grading.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { GradingSubmission } from '../../../core/models/course.model';
+import { formatDate } from '../../../core/utils/date.utils';
 
 @Component({
   selector: 'app-exam-grading-page',
@@ -222,11 +224,6 @@ import { GradingSubmission } from '../../../core/models/course.model';
                             class="text-sm text-slate-600 hover:text-slate-800"
                           >Cancel</button>
                         </div>
-                        @if (gradeError()) {
-                          <div class="mt-2 rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-sm text-rose-700">
-                            {{ gradeError() }}
-                          </div>
-                        }
                       </div>
 
                       <!-- Reset confirmation -->
@@ -269,6 +266,7 @@ import { GradingSubmission } from '../../../core/models/course.model';
 })
 export class ExamGradingPageComponent implements OnInit {
   readonly gradingService = inject(ExamGradingService);
+  #toast = inject(ToastService);
 
   readonly icons = { ClipboardCheck, Search, Loader2, Download, RotateCcw, Clock, Check, X, AlertTriangle, FileText };
 
@@ -282,7 +280,6 @@ export class ExamGradingPageComponent implements OnInit {
   readonly gradeScore = signal<number | null>(null);
   readonly gradeFeedback = signal('');
   readonly grading = signal(false);
-  readonly gradeError = signal('');
 
   // Reset state
   readonly resetConfirmId = signal<string | null>(null);
@@ -346,7 +343,6 @@ export class ExamGradingPageComponent implements OnInit {
     this.expandedSubmissionId.set(sub.id);
     this.gradeScore.set(sub.score);
     this.gradeFeedback.set(sub.feedback ?? '');
-    this.gradeError.set('');
     this.resetConfirmId.set(null);
   }
 
@@ -360,17 +356,18 @@ export class ExamGradingPageComponent implements OnInit {
     if (score === null || score < 0 || score > 100) return;
 
     this.grading.set(true);
-    this.gradeError.set('');
 
     try {
       await this.gradingService.gradeSubmission(submissionId, {
         score,
         feedback: this.gradeFeedback(),
       });
+      this.#toast.success('Submission graded');
       this.expandedSubmissionId.set(null);
       await this.gradingService.loadGradingData();
     } catch (err) {
-      this.gradeError.set(err instanceof Error ? err.message : 'Failed to grade submission');
+      const msg = err instanceof Error ? err.message : 'Failed to grade submission';
+      this.#toast.error(msg);
     } finally {
       this.grading.set(false);
     }
@@ -381,11 +378,13 @@ export class ExamGradingPageComponent implements OnInit {
 
     try {
       await this.gradingService.resetSubmission(submissionId);
+      this.#toast.success('Submission reset');
       this.expandedSubmissionId.set(null);
       this.resetConfirmId.set(null);
       await this.gradingService.loadGradingData();
     } catch (err) {
-      this.gradeError.set(err instanceof Error ? err.message : 'Failed to reset submission');
+      const msg = err instanceof Error ? err.message : 'Failed to reset submission';
+      this.#toast.error(msg);
     } finally {
       this.resetting.set(false);
     }
@@ -397,8 +396,5 @@ export class ExamGradingPageComponent implements OnInit {
     this.statusFilter.set('all');
   }
 
-  formatDate(iso: string): string {
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  }
+  readonly formatDate = formatDate;
 }
