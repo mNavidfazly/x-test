@@ -19,6 +19,24 @@ async def invite_user(
     supabase: Annotated[Client, Depends(get_supabase)],
 ) -> InviteUserResponse:
     """Invite a new user by email. Creates auth user + sends invite email."""
+    try:
+        return _do_invite(body, user, supabase)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Unhandled error in invite_user: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal error: {type(e).__name__}: {e}",
+        )
+
+
+def _do_invite(
+    body: InviteUserRequest,
+    user: UserClaims,
+    supabase: Client,
+) -> InviteUserResponse:
+    """Core invite logic (sync helper to avoid async exception issues)."""
     # Authorization: Platform Admin or Tenant Admin only
     if not (user.is_platform_admin or user.is_tenant_admin):
         raise HTTPException(
@@ -76,7 +94,7 @@ async def invite_user(
         logger.error("Failed to invite user %s: %s", body.email, e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to send invitation",
+            detail=f"Failed to send invitation: {type(e).__name__}: {e}",
         )
 
     return InviteUserResponse(
