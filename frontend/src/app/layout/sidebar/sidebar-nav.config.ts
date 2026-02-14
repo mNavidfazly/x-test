@@ -42,7 +42,7 @@ export const NAV_SECTIONS: NavSection[] = [
   },
   {
     label: 'Tenant Admin',
-    roles: ['tenant_admin'],
+    roles: ['tenant_admin', 'platform_admin'],
     items: [
       { label: 'User Management', route: '/admin/users', icon: Users },
     ],

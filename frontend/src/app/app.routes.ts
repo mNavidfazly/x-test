@@ -163,6 +163,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'admin/users',
+        canActivate: [roleGuard('tenant_admin', 'platform_admin')],
+        loadComponent: () =>
+          import('./features/admin/pages/user-management-page.component').then(
+            (m) => m.UserManagementPageComponent,
+          ),
+      },
+      {
         path: 'admin/:path',
         loadComponent: () =>
           import('./shared/components/stub-page.component').then(

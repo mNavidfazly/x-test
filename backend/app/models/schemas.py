@@ -90,3 +90,13 @@ class ExternalQuizResultResponse(BaseModel):
     status: str
     user_id: Optional[str] = None
     result_id: Optional[str] = None
+
+
+class InviteUserRequest(BaseModel):
+    email: str
+    tenant_id: Optional[str] = None
+
+
+class InviteUserResponse(BaseModel):
+    message: str
+    user_id: Optional[str] = None

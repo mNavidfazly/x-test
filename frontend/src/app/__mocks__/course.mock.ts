@@ -988,3 +988,51 @@ export function createMockTenantManagementService(options?: {
 }
 
 export type MockTenantManagementService = ReturnType<typeof createMockTenantManagementService>;
+
+// ---------------------------------------------------------------------------
+// User Management mocks
+// ---------------------------------------------------------------------------
+
+import { UserForBoard } from '../core/models/user-management.model';
+import { UserManagementService } from '../core/services/user-management.service';
+
+export function createMockUserForBoard(overrides?: Partial<UserForBoard>): UserForBoard {
+  return {
+    id: 'user-1',
+    email: 'alice@test.com',
+    full_name: 'Alice Test',
+    avatar_url: null,
+    is_tenant_admin: false,
+    is_platform_admin: false,
+    tenant_id: 'tenant-1',
+    tenant_name: 'Test Tenant',
+    created_at: '2026-01-01T00:00:00Z',
+    updated_at: '2026-02-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+export function createMockUserManagementService(options?: {
+  users?: UserForBoard[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const users = signal<UserForBoard[]>(options?.users ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    users: users.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadUsers: vi.fn().mockResolvedValue(undefined),
+    inviteUser: vi.fn().mockResolvedValue(undefined),
+    updateUserRoles: vi.fn().mockResolvedValue(undefined),
+    updateUserProfile: vi.fn().mockResolvedValue(undefined),
+    _setUsers: users.set.bind(users),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockUserManagementService = ReturnType<typeof createMockUserManagementService>;
