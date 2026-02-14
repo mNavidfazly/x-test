@@ -104,18 +104,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| UM-01 | PA — Navigation + Page Load | Platform Admin | ⏳ | — |
-| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ⏳ | — |
-| UM-03 | Summary Cards | Platform Admin | ⏳ | — |
-| UM-04 | Filter by Search | Tenant Admin | ⏳ | — |
-| UM-05 | Filter by Role | Platform Admin | ⏳ | — |
-| UM-06 | Expand Row + Edit Profile | Platform Admin | ⏳ | — |
-| UM-07 | Toggle Tenant Admin Role | Platform Admin | ⏳ | — |
-| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ⏳ | — |
-| UM-09 | Self-Role Protection | Platform Admin | ⏳ | — |
-| UM-10 | Invite User (TA Flow) | Tenant Admin | ⏳ | — |
-| UM-11 | Invite User (PA Flow) | Platform Admin | ⏳ | — |
-| UM-12 | Role Access Control | Multiple | ⏳ | — |
+| UM-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 14 Feb 2026 |
+| UM-03 | Summary Cards | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-04 | Filter by Search | Tenant Admin | ✅ | 14 Feb 2026 |
+| UM-05 | Filter by Role | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-06 | Expand Row + Edit Profile | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-07 | Toggle Tenant Admin Role | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-09 | Self-Role Protection | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-10 | Invite User (TA Flow) | Tenant Admin | ✅ | 14 Feb 2026 |
+| UM-11 | Invite User (PA Flow) | Platform Admin | ✅ | 14 Feb 2026 |
+| UM-12 | Role Access Control | Multiple | ✅ | 14 Feb 2026 |
 
 ---
 
@@ -172,9 +172,9 @@ WHERE p.email IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify that Platform Admin can see "User Management" in the sidebar (under "Tenant Admin" section — PA was added to this section's roles), navigate to `/admin/users`, and see the full user table with tenant column, PA-specific summary cards, and filter bar.
 
@@ -225,9 +225,9 @@ ORDER BY p.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify that Tenant Admin sees only users from their own tenant (RLS-scoped by `profiles_select_tenant`), does NOT see the tenant column, does NOT see the "Platform Admins" summary card, and does NOT see the Platform Admin role toggle in expanded rows.
 
@@ -276,9 +276,9 @@ WHERE tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com');
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify that summary stat cards show accurate counts for the current (filtered) user list. PA sees 4 cards, TA sees 3.
 
@@ -319,9 +319,9 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify search filter correctly filters users by name or email (case-insensitive).
 
@@ -349,9 +349,9 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify the role dropdown filter correctly filters users by role category.
 
@@ -382,9 +382,9 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify the expand/collapse row behavior and profile name editing: click a user row to expand, see name input pre-filled, modify name, save, verify persistence.
 
@@ -428,9 +428,9 @@ FROM profiles WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify that PA can toggle the `is_tenant_admin` flag on another user, and the role badge updates accordingly. Then toggle back to restore original state.
 
@@ -474,9 +474,9 @@ FROM profiles WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify that PA can toggle the `is_platform_admin` flag on another master-tenant user. TA should NOT see this toggle at all.
 
@@ -520,9 +520,9 @@ WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify that a user cannot modify their own admin flags — checkboxes are disabled and a "Cannot modify own role" message is shown. This prevents accidental self-lockout.
 
@@ -552,9 +552,9 @@ WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify the TA invite workflow: open invite form (no tenant picker), enter email, submit via FastAPI, see success message. The backend uses the TA's JWT `tenant_id` to determine which tenant to create the user in.
 
@@ -614,9 +614,9 @@ DELETE FROM auth.users WHERE email = 'e2e-invite-ta@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify the PA invite workflow: open invite form WITH tenant picker, select a tenant, enter email, submit. Also tests the duplicate email error case.
 
@@ -676,9 +676,9 @@ DELETE FROM auth.users WHERE email = 'e2e-invite-pa@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 14 Feb 2026 |
+| **Status** | ✅ |
+| **Tester** | Claude E2E |
 
 **Purpose**: Verify that ONLY Tenant Admin and Platform Admin can access `/admin/users`. Learners, Lecturers, and CSMs should be blocked by the route guard.
 
@@ -717,7 +717,7 @@ DELETE FROM auth.users WHERE email = 'e2e-invite-pa@calypsoclient.com';
 
 | # | Story | Bug Description | Severity | Fix | Status |
 |---|-------|----------------|----------|-----|--------|
-| — | — | — | — | — | — |
+| UM-BUG-01 | UM-10/11 | `POST /api/invite` crashes with `AttributeError: 'NoneType' object has no attribute 'data'` — Python postgrest-py `maybe_single().execute()` returns `None` for 0 rows (not a response with `data=None`). Backend crashed before CORS middleware could add headers, causing browser CORS error. | **Critical** | Added null checks: `tenant_result is None or not tenant_result.data` and `existing is not None and existing.data`. Updated test mocks to use `None` for 0-row cases. | ✅ Fixed (commit 521c658) |
 
 ---
 
@@ -777,7 +777,7 @@ ALTER TABLE profiles ENABLE TRIGGER protect_role_fields;
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| — | — | — | — | — | — |
+| 14 Feb 2026 | Claude E2E | UM-01 to UM-12 | 12 | 0 | 1 bug found+fixed (UM-BUG-01: maybe_single returns None). All 12 stories pass after fix. 5 roles tested (PA, TA, Learner, Lecturer, CSM). |
 
 ---
 
