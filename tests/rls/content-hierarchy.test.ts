@@ -28,6 +28,8 @@ import {
   createModulePdf,
   createModuleMarkdown,
   createModuleFile,
+  createModuleAudio,
+  createModuleDownload,
   getExistingMasterTenant,
   cleanupTestData,
   TestDataTracker,
@@ -47,7 +49,8 @@ describe('content hierarchy RLS', () => {
   // Users
   let platformAdmin: TestUser;
   let csmUser: TestUser;
-  let lecturerUser: TestUser;
+  let lecturerUser: TestUser;      // read-only (canEdit: false)
+  let lecturerEditUser: TestUser;   // can edit (canEdit: true)
   let learnerA: TestUser;
   let learnerB: TestUser;
 
@@ -55,6 +58,7 @@ describe('content hierarchy RLS', () => {
   let platformAdminClient: SupabaseClient;
   let csmClient: SupabaseClient;
   let lecturerClient: SupabaseClient;
+  let lecturerEditClient: SupabaseClient;
   let learnerAClient: SupabaseClient;
   let learnerBClient: SupabaseClient;
 
@@ -69,12 +73,20 @@ describe('content hierarchy RLS', () => {
   let pdfA1: { id: string };
   let markdownA2: { id: string };
   let fileA1: { id: string };
+  let moduleA1Audio: { id: string };
+  let moduleA1Download: { id: string };
+  let audioA1: { id: string };
+  let downloadA1: { id: string };
 
   // Course B (not assigned to any tenant)
   let courseB: { id: string; title: string };
   let lectureB1: { id: string };
   let moduleB1Video: { id: string };
   let videoB1: { id: string };
+  let moduleB1Audio: { id: string };
+  let moduleB1Download: { id: string };
+  let audioB1: { id: string };
+  let downloadB1: { id: string };
 
   beforeAll(async () => {
     // --- Tenants ---
@@ -110,6 +122,15 @@ describe('content hierarchy RLS', () => {
     markdownA2 = await createModuleMarkdown(tracker, moduleA2Md.id);
     fileA1 = await createModuleFile(tracker, moduleA1Video.id);
 
+    moduleA1Audio = await createModule(tracker, lectureA1.id, courseA.id, {
+      title: 'ModuleA1-Audio', moduleType: 'audio', sortOrder: 2,
+    });
+    moduleA1Download = await createModule(tracker, lectureA1.id, courseA.id, {
+      title: 'ModuleA1-Download', moduleType: 'download', sortOrder: 3,
+    });
+    audioA1 = await createModuleAudio(tracker, moduleA1Audio.id);
+    downloadA1 = await createModuleDownload(tracker, moduleA1Download.id);
+
     // --- Course B hierarchy ---
     courseB = await createCourse(tracker, { title: 'Content-CourseB' });
     lectureB1 = await createLecture(tracker, courseB.id, { title: 'LectureB1', sortOrder: 0 });
@@ -118,6 +139,15 @@ describe('content hierarchy RLS', () => {
     });
     videoB1 = await createModuleVideo(tracker, moduleB1Video.id);
 
+    moduleB1Audio = await createModule(tracker, lectureB1.id, courseB.id, {
+      title: 'ModuleB1-Audio', moduleType: 'audio', sortOrder: 1,
+    });
+    moduleB1Download = await createModule(tracker, lectureB1.id, courseB.id, {
+      title: 'ModuleB1-Download', moduleType: 'download', sortOrder: 2,
+    });
+    audioB1 = await createModuleAudio(tracker, moduleB1Audio.id);
+    downloadB1 = await createModuleDownload(tracker, moduleB1Download.id);
+
     // --- Assign courseA to tenantA ---
     await createTenantCourse(tracker, tenantA.id, courseA.id);
 
@@ -125,17 +155,20 @@ describe('content hierarchy RLS', () => {
     platformAdmin = await createUser(tracker, masterTenant.id, 'platform_admin');
     csmUser = await createUser(tracker, masterTenant.id, 'learner');
     lecturerUser = await createUser(tracker, masterTenant.id, 'learner');
+    lecturerEditUser = await createUser(tracker, masterTenant.id, 'learner');
     learnerA = await createUser(tracker, tenantA.id, 'learner');
     learnerB = await createUser(tracker, tenantB.id, 'learner');
 
     // --- Role assignments (before sign-in) ---
     await createCSMAssignment(tracker, csmUser.id, tenantA.id, platformAdmin.id);
     await createLecturerAssignment(tracker, lecturerUser.id, courseA.id, platformAdmin.id);
+    await createLecturerAssignment(tracker, lecturerEditUser.id, courseA.id, platformAdmin.id, { canEdit: true });
 
     // --- Sign in ---
     platformAdminClient = await createClientAs(platformAdmin);
     csmClient = await createClientAs(csmUser);
     lecturerClient = await createClientAs(lecturerUser);
+    lecturerEditClient = await createClientAs(lecturerEditUser);
     learnerAClient = await createClientAs(learnerA);
     learnerBClient = await createClientAs(learnerB);
   });
@@ -453,6 +486,318 @@ describe('content hierarchy RLS', () => {
 
       const ids = data!.map((f: any) => f.id);
       expect(ids).toContain(fileA1.id);
+    });
+  });
+
+  // ═══ MODULE AUDIO ══════════════════════════════════════════════════════════
+
+  describe('module_audio SELECT', () => {
+    it('MA-001: tenant user sees audio for assigned course', async () => {
+      const { data, error } = await learnerAClient
+        .from('module_audio')
+        .select('*')
+        .eq('module_id', moduleA1Audio.id);
+
+      expect(error).toBeNull();
+      expect(data).toHaveLength(1);
+      expect(data![0].id).toBe(audioA1.id);
+    });
+
+    it('MA-002: tenant user cannot see audio for unassigned course', async () => {
+      await expect(
+        learnerAClient.from('module_audio').select('*').eq('module_id', moduleB1Audio.id),
+      ).toDenyAccess('select');
+    });
+
+    it('MA-003: platform admin sees ALL module_audio', async () => {
+      const { data, error } = await platformAdminClient
+        .from('module_audio')
+        .select('*');
+
+      expect(error).toBeNull();
+      expect(data!.length).toBeGreaterThanOrEqual(2);
+
+      const ids = data!.map((a: any) => a.id);
+      expect(ids).toContain(audioA1.id);
+      expect(ids).toContain(audioB1.id);
+    });
+
+    it('MA-004: lecturer (read) sees audio for assigned course', async () => {
+      const { data, error } = await lecturerClient
+        .from('module_audio')
+        .select('*');
+
+      expect(error).toBeNull();
+      const ids = data!.map((a: any) => a.id);
+      expect(ids).toContain(audioA1.id);
+      expect(ids).not.toContain(audioB1.id);
+    });
+
+    it('MA-005: lecturer (read) cannot see audio for unassigned course', async () => {
+      const { data, error } = await lecturerClient
+        .from('module_audio')
+        .select('*')
+        .eq('module_id', moduleB1Audio.id);
+
+      expect(error).toBeNull();
+      expect(data).toHaveLength(0);
+    });
+  });
+
+  describe('module_audio INSERT', () => {
+    it('MA-006: platform admin can INSERT module_audio', async () => {
+      const newModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'PA-Audio-Insert', moduleType: 'audio', sortOrder: 10,
+      });
+      const { data, error } = await platformAdminClient
+        .from('module_audio')
+        .insert({ module_id: newModule.id, file_url: 'test.mp3', file_name: 'test.mp3', mime_type: 'audio/mpeg' })
+        .select()
+        .single();
+
+      expect(error).toBeNull();
+      expect(data).toBeTruthy();
+    });
+
+    it('MA-007: lecturer (can_edit) can INSERT module_audio', async () => {
+      const newModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'Lect-Audio-Insert', moduleType: 'audio', sortOrder: 11,
+      });
+      const { data, error } = await lecturerEditClient
+        .from('module_audio')
+        .insert({ module_id: newModule.id, file_url: 'lect.mp3', file_name: 'lect.mp3', mime_type: 'audio/mpeg' })
+        .select()
+        .single();
+
+      expect(error).toBeNull();
+      expect(data).toBeTruthy();
+    });
+
+    it('MA-008: learner cannot INSERT module_audio', async () => {
+      const newModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'Learner-Audio-Insert', moduleType: 'audio', sortOrder: 12,
+      });
+      const { error } = await learnerAClient
+        .from('module_audio')
+        .insert({ module_id: newModule.id, file_url: 'bad.mp3', file_name: 'bad.mp3', mime_type: 'audio/mpeg' });
+
+      expect(error).toBeTruthy();
+    });
+  });
+
+  describe('module_audio UPDATE', () => {
+    it('MA-009: platform admin can UPDATE module_audio', async () => {
+      const { error } = await platformAdminClient
+        .from('module_audio')
+        .update({ file_name: 'updated-pa.mp3' })
+        .eq('id', audioA1.id);
+
+      expect(error).toBeNull();
+    });
+
+    it('MA-010: lecturer (can_edit) can UPDATE module_audio', async () => {
+      const { error } = await lecturerEditClient
+        .from('module_audio')
+        .update({ file_name: 'updated-lect.mp3' })
+        .eq('id', audioA1.id);
+
+      expect(error).toBeNull();
+    });
+
+    it('MA-011: read-only lecturer cannot UPDATE module_audio', async () => {
+      const { data } = await lecturerClient
+        .from('module_audio')
+        .update({ file_name: 'hacked.mp3' })
+        .eq('id', audioA1.id)
+        .select();
+
+      expect(data).toHaveLength(0);
+    });
+  });
+
+  describe('module_audio DELETE', () => {
+    it('MA-012: platform admin can DELETE module_audio', async () => {
+      const tempModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'PA-Audio-Del', moduleType: 'audio', sortOrder: 20,
+      });
+      const tempAudio = await createModuleAudio(tracker, tempModule.id);
+
+      const { error } = await platformAdminClient
+        .from('module_audio')
+        .delete()
+        .eq('id', tempAudio.id);
+
+      expect(error).toBeNull();
+    });
+
+    it('MA-013: lecturer (can_edit) can DELETE module_audio', async () => {
+      const tempModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'Lect-Audio-Del', moduleType: 'audio', sortOrder: 21,
+      });
+      const tempAudio = await createModuleAudio(tracker, tempModule.id);
+
+      const { error } = await lecturerEditClient
+        .from('module_audio')
+        .delete()
+        .eq('id', tempAudio.id);
+
+      expect(error).toBeNull();
+    });
+  });
+
+  // ═══ MODULE DOWNLOADS ═══════════════════════════════════════════════════════
+
+  describe('module_downloads SELECT', () => {
+    it('MD-001: tenant user sees downloads for assigned course', async () => {
+      const { data, error } = await learnerAClient
+        .from('module_downloads')
+        .select('*')
+        .eq('module_id', moduleA1Download.id);
+
+      expect(error).toBeNull();
+      expect(data).toHaveLength(1);
+      expect(data![0].id).toBe(downloadA1.id);
+    });
+
+    it('MD-002: tenant user cannot see downloads for unassigned course', async () => {
+      await expect(
+        learnerAClient.from('module_downloads').select('*').eq('module_id', moduleB1Download.id),
+      ).toDenyAccess('select');
+    });
+
+    it('MD-003: platform admin sees ALL module_downloads', async () => {
+      const { data, error } = await platformAdminClient
+        .from('module_downloads')
+        .select('*');
+
+      expect(error).toBeNull();
+      expect(data!.length).toBeGreaterThanOrEqual(2);
+
+      const ids = data!.map((d: any) => d.id);
+      expect(ids).toContain(downloadA1.id);
+      expect(ids).toContain(downloadB1.id);
+    });
+
+    it('MD-004: lecturer (read) sees downloads for assigned course', async () => {
+      const { data, error } = await lecturerClient
+        .from('module_downloads')
+        .select('*');
+
+      expect(error).toBeNull();
+      const ids = data!.map((d: any) => d.id);
+      expect(ids).toContain(downloadA1.id);
+      expect(ids).not.toContain(downloadB1.id);
+    });
+
+    it('MD-005: lecturer (read) cannot see downloads for unassigned course', async () => {
+      const { data, error } = await lecturerClient
+        .from('module_downloads')
+        .select('*')
+        .eq('module_id', moduleB1Download.id);
+
+      expect(error).toBeNull();
+      expect(data).toHaveLength(0);
+    });
+  });
+
+  describe('module_downloads INSERT', () => {
+    it('MD-006: platform admin can INSERT module_downloads', async () => {
+      const newModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'PA-DL-Insert', moduleType: 'download', sortOrder: 30,
+      });
+      const { data, error } = await platformAdminClient
+        .from('module_downloads')
+        .insert({ module_id: newModule.id, file_url: 'test.zip', file_name: 'test.zip' })
+        .select()
+        .single();
+
+      expect(error).toBeNull();
+      expect(data).toBeTruthy();
+    });
+
+    it('MD-007: lecturer (can_edit) can INSERT module_downloads', async () => {
+      const newModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'Lect-DL-Insert', moduleType: 'download', sortOrder: 31,
+      });
+      const { data, error } = await lecturerEditClient
+        .from('module_downloads')
+        .insert({ module_id: newModule.id, file_url: 'lect.zip', file_name: 'lect.zip' })
+        .select()
+        .single();
+
+      expect(error).toBeNull();
+      expect(data).toBeTruthy();
+    });
+
+    it('MD-008: learner cannot INSERT module_downloads', async () => {
+      const newModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'Learner-DL-Insert', moduleType: 'download', sortOrder: 32,
+      });
+      const { error } = await learnerAClient
+        .from('module_downloads')
+        .insert({ module_id: newModule.id, file_url: 'bad.zip', file_name: 'bad.zip' });
+
+      expect(error).toBeTruthy();
+    });
+  });
+
+  describe('module_downloads UPDATE', () => {
+    it('MD-009: platform admin can UPDATE module_downloads', async () => {
+      const { error } = await platformAdminClient
+        .from('module_downloads')
+        .update({ file_name: 'updated-pa.zip' })
+        .eq('id', downloadA1.id);
+
+      expect(error).toBeNull();
+    });
+
+    it('MD-010: lecturer (can_edit) can UPDATE module_downloads', async () => {
+      const { error } = await lecturerEditClient
+        .from('module_downloads')
+        .update({ file_name: 'updated-lect.zip' })
+        .eq('id', downloadA1.id);
+
+      expect(error).toBeNull();
+    });
+
+    it('MD-011: read-only lecturer cannot UPDATE module_downloads', async () => {
+      const { data } = await lecturerClient
+        .from('module_downloads')
+        .update({ file_name: 'hacked.zip' })
+        .eq('id', downloadA1.id)
+        .select();
+
+      expect(data).toHaveLength(0);
+    });
+  });
+
+  describe('module_downloads DELETE', () => {
+    it('MD-012: platform admin can DELETE module_downloads', async () => {
+      const tempModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'PA-DL-Del', moduleType: 'download', sortOrder: 40,
+      });
+      const tempDl = await createModuleDownload(tracker, tempModule.id);
+
+      const { error } = await platformAdminClient
+        .from('module_downloads')
+        .delete()
+        .eq('id', tempDl.id);
+
+      expect(error).toBeNull();
+    });
+
+    it('MD-013: lecturer (can_edit) can DELETE module_downloads', async () => {
+      const tempModule = await createModule(tracker, lectureA1.id, courseA.id, {
+        title: 'Lect-DL-Del', moduleType: 'download', sortOrder: 41,
+      });
+      const tempDl = await createModuleDownload(tracker, tempModule.id);
+
+      const { error } = await lecturerEditClient
+        .from('module_downloads')
+        .delete()
+        .eq('id', tempDl.id);
+
+      expect(error).toBeNull();
     });
   });
 });

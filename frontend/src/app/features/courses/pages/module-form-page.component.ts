@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowLeft, Loader2, Clock, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, LucideIconData } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Loader2, Clock, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, Headphones, FolderArchive, LucideIconData } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -12,8 +12,10 @@ import { ExamFormComponent } from '../components/exam-form.component';
 import { MarkdownFormComponent } from '../components/markdown-form.component';
 import { QuizFormComponent } from '../components/quiz-form.component';
 import { ExternalQuizFormComponent } from '../components/external-quiz-form.component';
+import { AudioFormComponent } from '../components/audio-form.component';
+import { DownloadFormComponent } from '../components/download-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
-import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, QuizFormData, ExternalQuizFormData, ModuleSavePayload } from '../../../core/models/course.model';
+import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, QuizFormData, ExternalQuizFormData, AudioFormData, DownloadFormData, ModuleSavePayload } from '../../../core/models/course.model';
 
 interface TypeOption {
   value: ModuleType;
@@ -25,7 +27,7 @@ interface TypeOption {
 @Component({
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FormsModule, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, ModuleFilesEditorComponent],
+  imports: [RouterLink, FormsModule, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-2xl">
@@ -175,6 +177,30 @@ interface TypeOption {
           />
         }
 
+        <!-- Audio form -->
+        @if (selectedType() === 'audio') {
+          <app-audio-form
+            [initialModuleData]="moduleFormData()"
+            [initialAudioData]="audioFormData()"
+            [isEditMode]="isEditMode()"
+            [courseId]="courseId()"
+            (save)="onSave($event)"
+            (cancel)="onCancel()"
+          />
+        }
+
+        <!-- Download form -->
+        @if (selectedType() === 'download') {
+          <app-download-form
+            [initialModuleData]="moduleFormData()"
+            [initialDownloadData]="downloadFormData()"
+            [isEditMode]="isEditMode()"
+            [courseId]="courseId()"
+            (save)="onSave($event)"
+            (cancel)="onCancel()"
+          />
+        }
+
         <!-- Module files editor (edit mode only, all types) -->
         @if (isEditMode() && moduleId()) {
           <app-module-files-editor
@@ -240,6 +266,12 @@ export class ModuleFormPageComponent implements OnInit {
   readonly externalQuizFormData = signal<ExternalQuizFormData>({
     external_quiz_id: '', external_quiz_url: '', passing_score: null,
   });
+  readonly audioFormData = signal<AudioFormData>({
+    file_url: '', file_name: '', file_size: null, duration_seconds: null, mime_type: 'audio/mpeg',
+  });
+  readonly downloadFormData = signal<DownloadFormData>({
+    file_url: '', file_name: '', file_size: null,
+  });
 
   readonly availableTypes: TypeOption[] = [
     { value: 'video', label: 'Video', hint: 'Upload a video', icon: Video },
@@ -248,6 +280,8 @@ export class ModuleFormPageComponent implements OnInit {
     { value: 'quiz', label: 'Quiz', hint: 'Interactive quiz', icon: HelpCircle },
     { value: 'exam', label: 'Exam', hint: 'Graded exam submission', icon: ClipboardCheck },
     { value: 'external_quiz', label: 'External Quiz', hint: 'Link to an external quiz', icon: ExternalLink },
+    { value: 'audio', label: 'Audio', hint: 'Upload an audio file', icon: Headphones },
+    { value: 'download', label: 'Downloadable Files', hint: 'ZIP archive for download', icon: FolderArchive },
   ];
 
   async ngOnInit() {
@@ -328,6 +362,12 @@ export class ModuleFormPageComponent implements OnInit {
       }
       if (content.type === 'external_quiz' && content.data) {
         this.externalQuizFormData.set(content.data);
+      }
+      if (content.type === 'audio' && content.data) {
+        this.audioFormData.set(content.data);
+      }
+      if (content.type === 'download' && content.data) {
+        this.downloadFormData.set(content.data);
       }
     } catch (err) {
       this.errorMessage.set(err instanceof Error ? err.message : 'Failed to load module');

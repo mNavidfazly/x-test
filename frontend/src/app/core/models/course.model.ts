@@ -1,5 +1,5 @@
 export type EnrollmentType = 'invite_only' | 'password_protected' | 'open';
-export type ModuleType = 'video' | 'pdf' | 'markdown' | 'quiz' | 'exam' | 'external_quiz';
+export type ModuleType = 'video' | 'pdf' | 'markdown' | 'quiz' | 'exam' | 'external_quiz' | 'audio' | 'download';
 export type ProgressStatus = 'not_started' | 'in_progress' | 'completed';
 
 export interface CourseLecturer {
@@ -192,6 +192,20 @@ export interface GradeExamPayload {
   feedback: string;
 }
 
+export interface ModuleAudio {
+  file_url: string;
+  file_name: string;
+  file_size: number | null;
+  duration_seconds: number | null;
+  mime_type: string;
+}
+
+export interface ModuleDownload {
+  file_url: string;
+  file_name: string;
+  file_size: number | null;
+}
+
 export interface ExternalQuizContent {
   external_quiz_id: string;
   external_quiz_url: string;
@@ -300,7 +314,9 @@ export type ModuleContent =
   | { type: 'markdown'; data: ModuleMarkdownContent }
   | { type: 'quiz'; data: QuizContent | null }
   | { type: 'exam'; data: ExamContent }
-  | { type: 'external_quiz'; data: ExternalQuizContent };
+  | { type: 'external_quiz'; data: ExternalQuizContent }
+  | { type: 'audio'; data: ModuleAudio }
+  | { type: 'download'; data: ModuleDownload };
 
 export interface ModuleNavItem {
   id: string;
@@ -411,6 +427,20 @@ export interface ExternalQuizFormData {
   passing_score: number | null;
 }
 
+export interface AudioFormData {
+  file_url: string;
+  file_name: string;
+  file_size: number | null;
+  duration_seconds: number | null;
+  mime_type: string;
+}
+
+export interface DownloadFormData {
+  file_url: string;
+  file_name: string;
+  file_size: number | null;
+}
+
 export interface QuizOptionFormData {
   option_text: string;
   is_correct: boolean;
@@ -444,7 +474,9 @@ export type ModuleContentFormData =
   | { type: 'markdown'; data: MarkdownFormData }
   | { type: 'quiz'; data: QuizFormData | null }
   | { type: 'exam'; data: ExamFormData }
-  | { type: 'external_quiz'; data: ExternalQuizFormData };
+  | { type: 'external_quiz'; data: ExternalQuizFormData }
+  | { type: 'audio'; data: AudioFormData }
+  | { type: 'download'; data: DownloadFormData };
 
 export interface ModuleSavePayload {
   module: ModuleFormData;

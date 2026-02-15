@@ -7,7 +7,7 @@ import { BehaviorSubject, EMPTY } from 'rxjs';
 import { ModuleViewerPageComponent } from './module-viewer-page.component';
 import { CourseService } from '../../../core/services/course.service';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
-import { createMockCourseService, createMockCourseDetail, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, createMockCommentService, createMockExpertQuestionService, createMockIssueService, MockCourseService } from '../../../__mocks__/course.mock';
+import { createMockCourseService, createMockCourseDetail, createMockModuleViewerData, createMockModuleVideo, createMockModulePdf, createMockModuleMarkdown, createMockExternalQuizContent, createMockModuleAudio, createMockModuleDownload, createMockCommentService, createMockExpertQuestionService, createMockIssueService, MockCourseService } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
 import { provideMarkdown } from 'ngx-markdown';
@@ -18,6 +18,8 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
 import { QuizTakerComponent } from '../components/quiz-taker.component';
 import { ExamTakerComponent } from '../components/exam-taker.component';
+import { MockAudioViewerComponent } from '../../../__mocks__/audio-viewer.mock';
+import { DownloadViewerComponent } from '../components/download-viewer.component';
 import { CommentSectionComponent } from '../components/comment-section.component';
 import { AskExpertComponent } from '../components/ask-expert.component';
 import { ReportIssueComponent } from '../components/report-issue.component';
@@ -66,7 +68,7 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, MockAudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
@@ -347,5 +349,51 @@ describe('ModuleViewerPageComponent', () => {
     fixture.componentInstance.onExamCompleted();
 
     expect(mockCourseService.loadModuleViewer).toHaveBeenCalledTimes(1);
+  });
+
+  // --- Audio viewer integration ---
+
+  it('should render audio viewer for audio module', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Audio Lesson', description: null, module_type: 'audio', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'audio', data: createMockModuleAudio() },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.getByText('Audio Lesson')).toBeTruthy();
+    expect(document.querySelector('app-audio-viewer')).toBeTruthy();
+  });
+
+  it('should show mark complete for audio module', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Audio', description: null, module_type: 'audio', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'audio', data: createMockModuleAudio() },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.getByText('Mark as complete')).toBeTruthy();
+  });
+
+  // --- Download viewer integration ---
+
+  it('should render download viewer for download module', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Resources Pack', description: 'Download files', module_type: 'download', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'download', data: createMockModuleDownload() },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.getByText('Resources Pack')).toBeTruthy();
+    expect(document.querySelector('app-download-viewer')).toBeTruthy();
+  });
+
+  it('should show mark complete for download module', async () => {
+    const viewer = createMockModuleViewerData({
+      module: { id: 'mod-1', title: 'Download', description: null, module_type: 'download', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
+      content: { type: 'download', data: createMockModuleDownload() },
+    });
+    await renderPage({ viewer });
+
+    expect(screen.getByText('Mark as complete')).toBeTruthy();
   });
 });

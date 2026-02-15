@@ -26,6 +26,7 @@ E2E testing scenarios for the Exam Flow system (Phase 5C). These stories verify 
 | Environment | Frontend | Backend |
 |-------------|----------|---------|
 | **Production** | https://x-courses-v2.vercel.app | https://x-courses-v2-production.up.railway.app |
+| **Production (Custom Domain)** | https://xcourses.x-lng.com | https://x-courses-v2-production.up.railway.app |
 | **Local Dev** | http://localhost:4200 | http://localhost:8000 |
 
 ### Test Users

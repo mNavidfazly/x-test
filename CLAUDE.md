@@ -141,7 +141,7 @@ Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-l
 
 | Enum | Values |
 |------|--------|
-| `module_type` | `video`, `pdf`, `markdown`, `quiz`, `exam` |
+| `module_type` | `video`, `pdf`, `markdown`, `quiz`, `exam`, `external_quiz`, `audio`, `download` |
 | `enrollment_type` | `invite_only`, `password_protected`, `open` |
 | `progress_status` | `not_started`, `in_progress`, `completed` |
 | `marked_by_type` | `user`, `system`, `admin` |

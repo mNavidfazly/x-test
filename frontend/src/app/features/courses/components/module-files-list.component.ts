@@ -1,14 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { LucideAngularModule, FileDown } from 'lucide-angular';
 import { ModuleFile } from '../../../core/models/course.model';
-
-function formatFileSize(bytes: number | null): string {
-  if (bytes == null) return '';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1073741824) return `${(bytes / 1048576).toFixed(1)} MB`;
-  return `${(bytes / 1073741824).toFixed(1)} GB`;
-}
+import { formatFileSize } from '../../../core/utils/file.utils';
 
 @Component({
   selector: 'app-module-files-list',

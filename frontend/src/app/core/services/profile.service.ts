@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { UserProfile, FullProfileData } from '../models/profile.model';
 import { extractErrorMessage } from '../utils/error.utils';
+import { compressImage } from '../utils/image.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ProfileService {
@@ -75,10 +76,12 @@ export class ProfileService {
     if (!file.type.startsWith('image/')) throw new Error('Only image files are allowed');
     if (file.size > 5 * 1024 * 1024) throw new Error('Image must be under 5 MB');
 
+    const compressed = await compressImage(file);
+
     const path = `${user.id}/avatar`;
     const { error: uploadErr } = await this.#supabase.client.storage
       .from('avatars')
-      .upload(path, file, { upsert: true, contentType: file.type });
+      .upload(path, compressed, { upsert: true, contentType: compressed.type });
 
     if (uploadErr) throw new Error(`Failed to upload avatar: ${uploadErr.message}`);
 

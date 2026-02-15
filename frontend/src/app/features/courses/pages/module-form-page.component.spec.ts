@@ -15,14 +15,29 @@ import { ExamFormComponent } from '../components/exam-form.component';
 import { MarkdownFormComponent } from '../components/markdown-form.component';
 import { QuizFormComponent } from '../components/quiz-form.component';
 import { ExternalQuizFormComponent } from '../components/external-quiz-form.component';
+import { AudioFormComponent } from '../components/audio-form.component';
+import { DownloadFormComponent } from '../components/download-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
+import { SupabaseTusUploadService } from '../../../core/services/supabase-tus-upload.service';
 import { createMockCourseService } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { ToastService } from '../../../core/services/toast.service';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
+
+function createMockTusUploadService() {
+  return {
+    uploading: signal(false),
+    progress: signal(0),
+    error: signal<string | null>(null),
+    uploadedPath: signal<string | null>(null),
+    upload: vi.fn().mockResolvedValue('uploaded-path'),
+    abort: vi.fn(),
+    reset: vi.fn(),
+  };
+}
 
 function createMockBunnyUploadService() {
   return {
@@ -53,7 +68,7 @@ function mockActivatedRoute(
   };
 }
 
-const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
+const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
 
 /** Helper: render in create mode (no moduleId, with courseId + lectureId) */
 async function renderCreateMode(overrides?: {
@@ -79,6 +94,7 @@ async function renderCreateMode(overrides?: {
       { provide: ToastService, useValue: toast },
       { provide: SupabaseService, useValue: createMockSupabaseService() },
       { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
+      { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute(
@@ -120,6 +136,7 @@ async function renderEditMode(overrides?: {
       { provide: ToastService, useValue: toast },
       { provide: SupabaseService, useValue: createMockSupabaseService() },
       { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
+      { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute({ courseId, moduleId }),
@@ -163,7 +180,7 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.queryByText('Choose a module type:')).toBeNull();
   });
 
-  it('should show all 6 type options', async () => {
+  it('should show all 8 type options', async () => {
     await renderCreateMode();
 
     expect(screen.getByText('Video')).toBeTruthy();
@@ -172,6 +189,8 @@ describe('ModuleFormPageComponent', () => {
     expect(screen.getByText('Quiz')).toBeTruthy();
     expect(screen.getByText('Exam')).toBeTruthy();
     expect(screen.getByText('External Quiz')).toBeTruthy();
+    expect(screen.getByText('Audio')).toBeTruthy();
+    expect(screen.getByText('Downloadable Files')).toBeTruthy();
   });
 
   // --- Type selection ---
@@ -216,6 +235,7 @@ describe('ModuleFormPageComponent', () => {
         { provide: ToastService, useValue: toast },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
+        { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(
@@ -344,6 +364,7 @@ describe('ModuleFormPageComponent', () => {
         { provide: ToastService, useValue: toast },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
+        { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(
@@ -635,5 +656,74 @@ describe('ModuleFormPageComponent', () => {
       'mod-1',
       expect.objectContaining({ significantUpdate: true }),
     );
+  });
+
+  // --- Audio form ---
+
+  it('should show Audio form when Audio type selected', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('Audio'));
+    fixture.detectChanges();
+
+    expect(screen.getByText('Audio File')).toBeTruthy();
+    expect(screen.getByLabelText('Duration (minutes)')).toBeTruthy();
+  });
+
+  it('should load Audio data in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-audio', title: 'Audio Lesson', description: 'Listen', module_type: 'audio', sort_order: 0, lecture_id: 'l1', course_id: 'c1', estimated_duration_minutes: 15 },
+      content: {
+        type: 'audio',
+        data: {
+          file_url: 'course-1/audio.mp3',
+          file_name: 'audio.mp3',
+          file_size: 5242880,
+          duration_seconds: 300,
+          mime_type: 'audio/mpeg',
+        },
+      },
+    });
+
+    await renderEditMode({ courseService, moduleId: 'mod-audio' });
+
+    expect(courseService.loadModuleForEdit).toHaveBeenCalledWith('mod-audio');
+    expect(screen.getByText('Audio File')).toBeTruthy();
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Audio Lesson');
+    expect(screen.getByText('audio.mp3')).toBeTruthy();
+  });
+
+  // --- Download form ---
+
+  it('should show Download form when Downloadable Files type selected', async () => {
+    const { fixture } = await renderCreateMode();
+
+    fireEvent.click(screen.getByText('Downloadable Files'));
+    fixture.detectChanges();
+
+    expect(screen.getByText('ZIP File')).toBeTruthy();
+  });
+
+  it('should load Download data in edit mode', async () => {
+    const courseService = createMockCourseService();
+    courseService.loadModuleForEdit.mockResolvedValueOnce({
+      module: { id: 'mod-dl', title: 'Resources Pack', description: 'Download me', module_type: 'download', sort_order: 0, lecture_id: 'l1', course_id: 'c1', estimated_duration_minutes: 15 },
+      content: {
+        type: 'download',
+        data: {
+          file_url: 'course-1/resources.zip',
+          file_name: 'resources.zip',
+          file_size: 52428800,
+        },
+      },
+    });
+
+    await renderEditMode({ courseService, moduleId: 'mod-dl' });
+
+    expect(courseService.loadModuleForEdit).toHaveBeenCalledWith('mod-dl');
+    expect(screen.getByText('ZIP File')).toBeTruthy();
+    expect((screen.getByLabelText('Title') as HTMLInputElement).value).toBe('Resources Pack');
+    expect(screen.getByText('resources.zip')).toBeTruthy();
   });
 });

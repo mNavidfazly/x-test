@@ -158,6 +158,8 @@ export async function cleanupTestData(tracker: TestDataTracker): Promise<void> {
     'module_pdfs',
     'module_markdown',
     'module_files',
+    'module_audio',
+    'module_downloads',
   ]) {
     if (tracker.moduleIds.length > 0) {
       await adminClient.from(table).delete().in('module_id', tracker.moduleIds);
@@ -624,6 +626,48 @@ export async function createModuleFile(
     .single();
 
   if (error) throw new Error(`Failed to create module_file: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createModuleAudio(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { fileUrl?: string; fileName?: string; fileSize?: number; durationSeconds?: number; mimeType?: string } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('module_audio')
+    .insert({
+      module_id: moduleId,
+      file_url: overrides.fileUrl ?? `https://storage.example.com/${faker.string.alphanumeric(12)}.mp3`,
+      file_name: overrides.fileName ?? `${faker.system.fileName()}.mp3`,
+      file_size: overrides.fileSize ?? 5242880,
+      duration_seconds: overrides.durationSeconds ?? 300,
+      mime_type: overrides.mimeType ?? 'audio/mpeg',
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create module_audio: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createModuleDownload(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: { fileUrl?: string; fileName?: string; fileSize?: number } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('module_downloads')
+    .insert({
+      module_id: moduleId,
+      file_url: overrides.fileUrl ?? `https://storage.example.com/${faker.string.alphanumeric(12)}.zip`,
+      file_name: overrides.fileName ?? `${faker.system.fileName()}.zip`,
+      file_size: overrides.fileSize ?? 52428800,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create module_download: ${error.message}`);
   return { id: data.id };
 }
 

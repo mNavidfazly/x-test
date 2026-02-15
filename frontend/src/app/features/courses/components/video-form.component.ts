@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Upload, CheckCircle, AlertCircle, Film, RefreshCw } from 'lucide-angular';
 import { ModuleFormData, VideoFormData, ModuleSavePayload } from '../../../core/models/course.model';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
+import { formatFileSize } from '../../../core/utils/file.utils';
 
 const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
 
@@ -282,10 +283,5 @@ export class VideoFormComponent {
     });
   }
 
-  formatFileSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
-  }
+  readonly formatFileSize = formatFileSize;
 }

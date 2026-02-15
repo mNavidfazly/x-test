@@ -12,6 +12,7 @@ import {
   CourseFormData, TenantSummary, TenantAssignment, LectureFormData,
   ModuleSavePayload, ModuleContentFormData,
   PdfFormData, ExamFormData, ExamContent, ModulePdf, MarkdownFormData, ModuleMarkdownContent,
+  AudioFormData, DownloadFormData, ModuleAudio, ModuleDownload,
   QuizFormData, QuizContent, QuizQuestionType, QuizQuestionFormData,
   ExternalQuizFormData, ExternalQuizContent,
   EnrolledUser, UserProgressSummary, UserProgressRecord, MarkedByType,
@@ -1136,6 +1137,36 @@ export class CourseService {
         if (error) throw new Error(extractErrorMessage(error, 'Failed to save PDF content'));
         break;
       }
+      case 'audio': {
+        if (!content.data) break;
+        const d = content.data as AudioFormData;
+        const { error } = await this.#supabase.client
+          .from('module_audio')
+          .insert({
+            module_id: moduleId,
+            file_url: d.file_url,
+            file_name: d.file_name,
+            file_size: d.file_size,
+            duration_seconds: d.duration_seconds,
+            mime_type: d.mime_type,
+          });
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to save audio content'));
+        break;
+      }
+      case 'download': {
+        if (!content.data) break;
+        const d = content.data as DownloadFormData;
+        const { error } = await this.#supabase.client
+          .from('module_downloads')
+          .insert({
+            module_id: moduleId,
+            file_url: d.file_url,
+            file_name: d.file_name,
+            file_size: d.file_size,
+          });
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to save download content'));
+        break;
+      }
       case 'exam': {
         if (!content.data) break;
         const d = content.data as ExamFormData;
@@ -1228,6 +1259,36 @@ export class CourseService {
         if (error) throw new Error(extractErrorMessage(error, 'Failed to update PDF content'));
         break;
       }
+      case 'audio': {
+        if (!content.data) break;
+        const d = content.data as AudioFormData;
+        const { error } = await this.#supabase.client
+          .from('module_audio')
+          .upsert({
+            module_id: moduleId,
+            file_url: d.file_url,
+            file_name: d.file_name,
+            file_size: d.file_size,
+            duration_seconds: d.duration_seconds,
+            mime_type: d.mime_type,
+          }, { onConflict: 'module_id' });
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to update audio content'));
+        break;
+      }
+      case 'download': {
+        if (!content.data) break;
+        const d = content.data as DownloadFormData;
+        const { error } = await this.#supabase.client
+          .from('module_downloads')
+          .upsert({
+            module_id: moduleId,
+            file_url: d.file_url,
+            file_name: d.file_name,
+            file_size: d.file_size,
+          }, { onConflict: 'module_id' });
+        if (error) throw new Error(extractErrorMessage(error, 'Failed to update download content'));
+        break;
+      }
       case 'exam': {
         if (!content.data) break;
         const d = content.data as ExamFormData;
@@ -1310,6 +1371,20 @@ export class CourseService {
         return {
           type: 'pdf',
           data: { file_url: d.file_url, file_name: d.file_name, page_count: d.page_count },
+        };
+      }
+      case 'audio': {
+        const d = content.data as ModuleAudio;
+        return {
+          type: 'audio',
+          data: { file_url: d.file_url, file_name: d.file_name, file_size: d.file_size, duration_seconds: d.duration_seconds, mime_type: d.mime_type },
+        };
+      }
+      case 'download': {
+        const d = content.data as ModuleDownload;
+        return {
+          type: 'download',
+          data: { file_url: d.file_url, file_name: d.file_name, file_size: d.file_size },
         };
       }
       case 'exam': {
@@ -1397,6 +1472,26 @@ export class CourseService {
         const pdfSignedUrl = await this.#getSignedUrl(d.file_url);
         d.file_url = pdfSignedUrl ?? '';
         return { type: 'pdf', data: d };
+      }
+      case 'audio': {
+        const res = await client.from('module_audio')
+          .select('file_url, file_name, file_size, duration_seconds, mime_type')
+          .eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as any;
+        const signedUrl = await this.#getSignedUrl(d.file_url);
+        d.file_url = signedUrl ?? '';
+        return { type: 'audio', data: d };
+      }
+      case 'download': {
+        const res = await client.from('module_downloads')
+          .select('file_url, file_name, file_size')
+          .eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as any;
+        const signedUrl = await this.#getSignedUrl(d.file_url);
+        d.file_url = signedUrl ?? '';
+        return { type: 'download', data: d };
       }
       case 'markdown': {
         const res = await client.from('module_markdown').select('content').eq('module_id', moduleId).single();
@@ -1514,10 +1609,12 @@ export class CourseService {
     const client = this.#supabase.client;
     const paths: string[] = [];
 
-    const [pdfRes, filesRes, examRes] = await Promise.all([
+    const [pdfRes, filesRes, examRes, audioRes, downloadRes] = await Promise.all([
       client.from('module_pdfs').select('file_url').eq('module_id', moduleId).maybeSingle(),
       client.from('module_files').select('file_url').eq('module_id', moduleId),
       client.from('exams').select('exam_file_url').eq('module_id', moduleId).maybeSingle(),
+      client.from('module_audio').select('file_url').eq('module_id', moduleId).maybeSingle(),
+      client.from('module_downloads').select('file_url').eq('module_id', moduleId).maybeSingle(),
     ]);
 
     if (pdfRes.data?.file_url) paths.push(pdfRes.data.file_url as string);
@@ -1527,6 +1624,8 @@ export class CourseService {
       }
     }
     if (examRes.data?.exam_file_url) paths.push(examRes.data.exam_file_url as string);
+    if (audioRes.data?.file_url) paths.push(audioRes.data.file_url as string);
+    if (downloadRes.data?.file_url) paths.push(downloadRes.data.file_url as string);
 
     return paths;
   }

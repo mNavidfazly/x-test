@@ -16,6 +16,14 @@ E2E testing scenarios for the Bunny Stream integration (Phase 3C-4). These stori
 | **Primary Test User** | et@calypso-commodities.com (Platform Admin) |
 | **Tenant** | Calypso (master tenant) |
 
+### Alternative URLs
+
+| Environment | Frontend | Backend |
+|-------------|----------|----------|
+| **Production** | https://x-courses-v2.vercel.app | https://x-courses-v2-production.up.railway.app |
+| **Production (Custom Domain)** | https://xcourses.x-lng.com | https://x-courses-v2-production.up.railway.app |
+| **Local Dev** | http://localhost:4200 | http://localhost:8000 |
+
 ### Test Users
 
 > Full setup instructions: [TEST_USERS.md](TEST_USERS.md)
@@ -44,10 +52,11 @@ All test users use password: `TestUser123!`
 |----|-------|-------|--------|--------------|
 | BS-01 | Video Type Selector Updated | Platform Admin | ✅ Passed | 2026-02-15 |
 | BS-02 | Video Form — File Picker UI | Platform Admin | ✅ Passed | 2026-02-15 |
-| BS-03 | Video Form — Upload + Save Flow | Platform Admin | ✅ Passed | 2026-02-15 |
+| BS-03 | Video Form — Upload + Save Flow (Real Video) | Platform Admin | ✅ Passed | 2026-02-15 |
 | BS-04 | Video Viewer — Encoding States | Platform Admin | ⚠️ Partial | 2026-02-15 |
 | BS-05 | Video Upload-to-Playback Round-Trip | Platform Admin | ⚠️ Partial | 2026-02-15 |
 | BS-06 | Learner Cannot Init Upload | Learner | ✅ Passed | 2026-02-15 |
+| BS-07 | Video Module Delete — Bunny Cleanup | Platform Admin | ⏳ Not Tested | — |
 
 ---
 
@@ -117,15 +126,15 @@ All test users use password: `TestUser123!`
 
 ---
 
-## BS-03: Video Form — Upload + Save Flow
+## BS-03: Video Form — Upload + Save Flow (Real Video)
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-15 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
-**Purpose**: Verify the full video upload flow: select file, TUS upload with progress bar, successful upload state, and save with correct Bunny payload.
+**Purpose**: Verify the full video upload flow using a real production video file: select file, TUS upload with progress bar, successful upload state, and save with correct Bunny payload.
 
 **Covers**: VideoFormComponent (file select, upload trigger, progress bar, success state), BunnyUploadService (initAndUpload, signals), FastAPI `POST /api/video/init-upload`, TUS upload to Bunny CDN
 
@@ -133,7 +142,7 @@ All test users use password: `TestUser123!`
 - Logged in as Platform Admin
 - Backend running with valid Bunny credentials (`BUNNY_API_KEY`, `BUNNY_LIBRARY_ID`)
 - On module creation page, Video type selected, Title filled in
-- A test video file available (any small .mp4, < 50 MB)
+- **Real test video**: `docs/e2e-user-stories/X-Crude_Optimization_Model.mp4` (21 MB, real commodity trading content)
 
 **Steps**:
 
@@ -267,6 +276,58 @@ All test users use password: `TestUser123!`
 
 ---
 
+## BS-07: Video Module Delete — Bunny Cleanup
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | — |
+| **Status** | ⏳ Not Tested |
+| **Tester** | — |
+
+**Purpose**: Verify that deleting a video module not only removes the DB rows (cascade) but also deletes the actual video from Bunny Stream via `DELETE /api/video/{bunny_video_id}`.
+
+**Covers**: CourseService.deleteModule (`#collectModuleStoragePaths` + `#deleteBunnyVideos`), BunnyUploadService.deleteVideo, FastAPI `DELETE /api/video/{id}`, Bunny Stream API `DELETE /library/{libraryId}/videos/{videoId}`
+
+**Preconditions**:
+- Logged in as Platform Admin
+- A video module exists with a fully encoded Bunny video (encoding_status >= 3)
+- The `bunny_video_id` is known (from `module_videos` table or Bunny API)
+
+**Steps**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| 1 | Navigate to the course containing the video module | Course detail page loads, video module visible in lecture | ☐ |
+| 2 | Note the `bunny_video_id` from `module_videos` table (via browser console or Supabase dashboard) | Record the Bunny video GUID for later verification | ☐ |
+| 3 | Verify the video exists on Bunny: `curl -H "AccessKey: <key>" "https://video.bunnycdn.com/library/<id>/videos/<videoId>"` | Returns 200 with video metadata (status, title, storageSize > 0) | ☐ |
+| 4 | Click the trash icon on the video module | Inline confirmation: "Delete this module?" with "Yes, Delete" and "Cancel" | ☐ |
+| 5 | Click "Yes, Delete" | Module removed from lecture list in UI | ☐ |
+| 6 | Verify DB cleanup: query `module_videos` for the deleted module ID | Returns 0 rows — subtable row cascade-deleted | ☐ |
+| 7 | Verify Bunny cleanup: `curl -H "AccessKey: <key>" "https://video.bunnycdn.com/library/<id>/videos/<videoId>"` | Returns 404 — video deleted from Bunny Stream | ☐ |
+
+**Cascade Delete (Lecture-level)**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| C1 | Create a lecture with a video module (upload + wait for encoding) | Video module exists, Bunny video encoded | ☐ |
+| C2 | Delete the entire lecture (trash icon on lecture header → confirm) | Lecture + all modules deleted from UI | ☐ |
+| C3 | Verify Bunny cleanup: query Bunny API for the video ID | Returns 404 — Bunny video also deleted despite cascade (CourseService collects IDs before delete) | ☐ |
+
+**Edge Cases**:
+
+| # | Action | Expected Outcome | ✓ |
+|---|--------|------------------|---|
+| E1 | Delete a video module while Bunny API is unreachable | Module still deleted from DB (Bunny cleanup is best-effort, fire-and-forget). No error shown to user. | ☐ |
+| E2 | Delete a video module that has encoding_status < 3 (still processing) | Module deleted, Bunny delete still attempted for the video ID | ☐ |
+
+**Notes**:
+- `CourseService.deleteModule()` collects `bunny_video_id` from `module_videos` BEFORE the DB delete (cascade would remove the row)
+- `CourseService.deleteLecture()` queries all child module IDs, then collects all Bunny video IDs before cascade delete
+- Bunny delete is fire-and-forget (`subscribe` with no error handling) — if Bunny API fails, the video becomes an orphan
+- FastAPI `DELETE /api/video/{id}` returns 200 even if the Bunny API call fails (best-effort cleanup)
+
+---
+
 ## BS-06: Learner Cannot Init Upload
 
 | Field | Value |
@@ -310,6 +371,7 @@ All test users use password: `TestUser123!`
 | 1 | **Double /api prefix** — BunnyUploadService paths included `/api/video/...` but ApiService.baseUrl already includes `/api`, resulting in `http://localhost:8000/api/api/video/init-upload` | High | Removed `/api` prefix from paths in `bunny-upload.service.ts` |
 | 2 | **ES256 JWT auth** — Supabase migrated to ES256 JWTs but backend `decode_jwt()` only supported HS256, causing 401 on all authenticated requests | Critical | Rewrote `backend/app/services/auth.py` to detect algorithm from token header, fetch JWKS for ES256, fallback to HS256 |
 | 3 | **hasVideo() reactivity** — `computed()` read `this.videoForm.bunny_video_id` (plain object property, not reactive), so success state never showed after upload | Medium | Made `hasVideo()` also check `this.bunnyUpload.uploadedVideoId()` (a signal). Added `#uploadedFilename` signal. |
+| 4 | **Missing Bunny env vars on Railway** — `BUNNY_API_KEY`, `BUNNY_LIBRARY_ID`, `BUNNY_CDN_HOSTNAME`, `BUNNY_TOKEN_KEY` were not set on Railway production. Backend defaulted to `library_id=0` and empty API key, causing `httpx.HTTPStatusError: 401` from `video.bunnycdn.com/library/0/videos`. The unhandled 500 prevented CORS middleware from adding headers, making browsers report it as a CORS error instead of a server error. | Critical | Set 4 Bunny env vars on Railway via `railway variables --set`. Backend needs better error handling for Bunny API failures (wrap in try/except, return proper HTTP error). |
 
 ## Test Execution Log
 
@@ -318,6 +380,7 @@ All test users use password: `TestUser123!`
 | 2026-02-11 | Claude (Playwright MCP) | BS-01 to BS-06 | 6 | 0 | 3 bugs found and fixed. BS-04/BS-05 encoding states tested via manual webhook curl (Bunny can't reach localhost). All 409 frontend tests + 56 backend tests pass. |
 | 2026-02-14 | Claude (Playwright MCP) | BS-01 to BS-06 (regression) | 4 | 0 | **Regression: 4 pass, 2 partial.** BS-01: Video type card "Upload a video" confirmed in 6-type selector. BS-02: Video form file picker UI (Title, Description, dashed drop zone "MP4, WebM, MOV — max 2 GB", disabled Create Module button). BS-03: Form present, upload not tested (requires real file). BS-06: Learner/read-only lecturer have no edit UI — permission denial confirmed. **BS-04/BS-05 PARTIAL**: Video module edit returns "Failed to load module" — `module_videos` subtable data missing for test video (deleted during previous E2E cleanup). This is a test data issue, not a code regression. Code unchanged since 2026-02-11. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | BS-01 to BS-06 (regression) | 4 | 0 | 4 ✅, 2 ⚠️ Partial. BS-01/02: Video form verified during CW-05 check (file picker, MP4/WebM/MOV, 2GB). BS-03: form structure OK. BS-06: permission denial via PM-13. BS-04/05 remain Partial (missing module_videos data). Zero code regressions. |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | BS-01 to BS-06 (**PRODUCTION** at xcourses.x-lng.com) | 4 | 0 | **First real production test with actual Bunny uploads.** BS-01: 6-type selector, "Upload a video" ✅. BS-02: File picker, 21.5MB shown, disabled button ✅. BS-03: Uploaded `X-Crude_Optimization_Model.mp4` (21MB) via TUS → "Video uploaded successfully" → module created ✅. BS-04: Processing state verified (spinner + "Video is being processed"), encoding progress stays 0% — Bunny encoding queue slow, waiting for ready/failed state ⚠️. BS-05: Pending encoding completion ⚠️. BS-06: Learner sees no edit UI, `/modules/new` redirected to dashboard ✅. **Bug found**: Missing `BUNNY_API_KEY`/`BUNNY_LIBRARY_ID` on Railway caused 500 → CORS error (fixed by setting env vars). **Note**: Small test files (<1MB) may report TUS success but Bunny receives `storageSize: 0` — use real videos (>5MB) for reliable uploads. |
 
 ---
 

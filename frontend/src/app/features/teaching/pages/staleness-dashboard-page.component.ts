@@ -4,7 +4,7 @@ import {
   LucideAngularModule, LucideIconData, Clock, Search, Loader2,
   AlertTriangle, CheckCircle2, Package, ExternalLink,
   ChevronDown, ChevronRight, CalendarClock,
-  Video, FileText, Type, HelpCircle, ClipboardCheck,
+  Video, FileText, Type, HelpCircle, ClipboardCheck, Headphones, FolderArchive,
 } from 'lucide-angular';
 import { StalenessService } from '../../../core/services/staleness.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -262,6 +262,7 @@ export class StalenessDashboardPageComponent implements OnInit {
   readonly #moduleTypeIcons: Record<string, LucideIconData> = {
     video: Video, pdf: FileText, markdown: Type,
     quiz: HelpCircle, exam: ClipboardCheck, external_quiz: ExternalLink,
+    audio: Headphones, download: FolderArchive,
   };
 
   readonly searchTerm = signal('');

@@ -3,6 +3,7 @@ import { vi } from 'vitest';
 import {
   CourseWithProgress, CourseDetail, CourseLecturer, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
+  ModuleAudio, ModuleDownload, AudioFormData, DownloadFormData,
   CourseFormData, TenantSummary, LectureFormData,
   ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData,
   QuizFormData, QuizContent, ModuleSavePayload,
@@ -188,6 +189,46 @@ export function createMockModuleFile(overrides?: Partial<ModuleFile>): ModuleFil
     file_url: 'https://storage.supabase.co/attachment.zip',
     file_name: 'resources.zip',
     file_size: 1048576,
+    ...overrides,
+  };
+}
+
+export function createMockModuleAudio(overrides?: Partial<ModuleAudio>): ModuleAudio {
+  return {
+    file_url: 'https://storage.supabase.co/test-audio.mp3',
+    file_name: 'test-audio.mp3',
+    file_size: 5242880,
+    duration_seconds: 300,
+    mime_type: 'audio/mpeg',
+    ...overrides,
+  };
+}
+
+export function createMockAudioFormData(overrides?: Partial<AudioFormData>): AudioFormData {
+  return {
+    file_url: 'course-1/1707840600000-test-audio.mp3',
+    file_name: 'test-audio.mp3',
+    file_size: 5242880,
+    duration_seconds: 300,
+    mime_type: 'audio/mpeg',
+    ...overrides,
+  };
+}
+
+export function createMockModuleDownload(overrides?: Partial<ModuleDownload>): ModuleDownload {
+  return {
+    file_url: 'https://storage.supabase.co/test-resources.zip',
+    file_name: 'resources.zip',
+    file_size: 52428800,
+    ...overrides,
+  };
+}
+
+export function createMockDownloadFormData(overrides?: Partial<DownloadFormData>): DownloadFormData {
+  return {
+    file_url: 'course-1/1707840600000-resources.zip',
+    file_name: 'resources.zip',
+    file_size: 52428800,
     ...overrides,
   };
 }

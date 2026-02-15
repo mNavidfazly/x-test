@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import {
   LucideAngularModule, FolderOpen, Search, ChevronDown, ChevronUp, ChevronRight,
   Plus, X, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink,
-  AlertTriangle, Loader2,
+  Headphones, FolderArchive, AlertTriangle, Loader2,
 } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
 import { ContentManagementService } from '../../../core/services/content-management.service';
@@ -28,6 +28,8 @@ const MODULE_TYPE_ICONS: Record<string, LucideIconData> = {
   quiz: HelpCircle,
   exam: ClipboardCheck,
   external_quiz: ExternalLink,
+  audio: Headphones,
+  download: FolderArchive,
 };
 
 const MODULE_TYPE_LABELS: Record<string, string> = {
@@ -37,6 +39,8 @@ const MODULE_TYPE_LABELS: Record<string, string> = {
   quiz: 'Quiz',
   exam: 'Exam',
   external_quiz: 'External Quiz',
+  audio: 'Audio',
+  download: 'Downloadable Files',
 };
 
 const ENROLLMENT_LABELS: Record<string, string> = {
@@ -59,6 +63,8 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
   { value: 'markdown', label: 'Markdown' },
   { value: 'quiz', label: 'Quiz' },
   { value: 'exam', label: 'Exam' },
+  { value: 'audio', label: 'Audio' },
+  { value: 'download', label: 'Downloadable Files' },
 ];
 
 @Component({

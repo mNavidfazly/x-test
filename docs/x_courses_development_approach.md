@@ -1336,6 +1336,19 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **Notifications excluded** — no `actor_id` field, would need migration + 13 trigger updates. Separate future phase.
 - [x] **Tests:** 20 new tests (12 avatar utils + 8 user-avatar component), 1397 total frontend tests, build OK
 
+#### 11E - Audio Module + Downloadable Files Module (Complete)
+- [x] **Migration 00040** (`supabase/migrations/00040_audio_and_download_module_types.sql`): Extends `module_type` enum with `audio` and `download`. Creates `module_audio` table (file_url, file_name, file_size, duration_seconds, mime_type) and `module_downloads` table (file_url, file_name, file_size). 18 RLS policies (9 per table) matching existing subtable pattern using `jwt_claim()` / `jwt_claim_array()`.
+- [x] **SupabaseTusUploadService** (`core/services/supabase-tus-upload.service.ts`): Reusable TUS resumable upload service for large files (200-500MB). Uses `tus-js-client` v4.3.1, 6MB chunk size (Supabase requirement), direct storage hostname (bypasses Kong gateway). Signals: `uploading`, `progress`, `error`, `uploadedPath`. Supports abort and resume. Pattern follows existing `BunnyUploadService`.
+- [x] **Shared `formatFileSize()` utility** (`core/utils/file.utils.ts`): Extracted from 2 duplicate implementations. Handles null, bytes, KB, MB, GB.
+- [x] **AudioFormComponent** (`features/courses/components/audio-form.component.ts`): TUS upload form for audio files (MP3/WAV, max 200MB). Optional duration field (minutes → seconds conversion). Uses `FileUploadComponent` + `SupabaseTusUploadService`. Abort on destroy via `DestroyRef`.
+- [x] **AudioViewerComponent** (`features/courses/components/audio-viewer.component.ts`): WaveSurfer.js v7 waveform player. Initializes via `effect()` watching `audio()` input + `viewChild` container signal. Controls: play/pause, time display (mm:ss), volume slider, speed selector (0.5x-2x). Context menu disabled (download deterrent). Loading/error states via shared components.
+- [x] **DownloadFormComponent** (`features/courses/components/download-form.component.ts`): TUS upload form for ZIP files (max 500MB). Same pattern as AudioFormComponent minus duration field.
+- [x] **DownloadViewerComponent** (`features/courses/components/download-viewer.component.ts`): Presentational card with file info, optional description, and download link. Uses shared `formatFileSize()`. Icons: `FolderArchive`, `Download`.
+- [x] **CourseService updates** (`core/services/course.service.ts`): 4 switch-case methods updated (`#fetchModuleContent`, `#insertModuleContent`, `#upsertModuleContent`, `#contentToFormData`) + `#collectModuleStoragePaths()` extended for cleanup.
+- [x] **Page updates**: ModuleFormPage (2 type cards + 2 form sections + 2 edit branches), ModuleViewerPage (2 `@case` blocks + `canMarkComplete` updated), ModuleItem (icons + linkable types), ContentManagementPage + StalenessDashboard (icon/label/filter maps).
+- [x] **MockAudioViewerComponent** (`__mocks__/audio-viewer.mock.ts`): jsdom-safe mock (WaveSurfer.js can't run in jsdom).
+- [x] **Tests:** 58 new frontend tests (9 TUS service + 10 audio form + 6 audio viewer + 8 download form + 6 download viewer + 5 module-form-page + 4 module-viewer-page + 6 file utils + 4 existing spec updates), 1455 total. 26 new RLS tests (13 module_audio + 13 module_downloads — SELECT/INSERT/UPDATE/DELETE per role). Build OK.
+
 ---
 
 ## 4. FastAPI Endpoints Summary

@@ -19,6 +19,7 @@ Manual E2E testing scenarios using Playwright MCP browser automation. These stor
 | Environment | URL |
 |-------------|-----|
 | **Production** | https://x-crude-frontend.vercel.app |
+| **Production (Custom Domain)** | https://xcourses.x-lng.com |
 | **Local Dev** | http://localhost:4200 |
 
 ## Status Legend

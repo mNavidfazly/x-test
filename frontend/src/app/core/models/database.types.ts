@@ -855,6 +855,76 @@ export type Database = {
           },
         ]
       }
+      module_audio: {
+        Row: {
+          duration_seconds: number | null
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          mime_type: string
+          module_id: string
+        }
+        Insert: {
+          duration_seconds?: number | null
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          mime_type?: string
+          module_id: string
+        }
+        Update: {
+          duration_seconds?: number | null
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          mime_type?: string
+          module_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_audio_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: true
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      module_downloads: {
+        Row: {
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          module_id: string
+        }
+        Insert: {
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          module_id: string
+        }
+        Update: {
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          module_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "module_downloads_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: true
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       module_files: {
         Row: {
           file_name: string
@@ -1818,6 +1888,8 @@ export type Database = {
         | "quiz"
         | "exam"
         | "external_quiz"
+        | "audio"
+        | "download"
       notification_type:
         | "course_assigned"
         | "new_module"
@@ -1985,6 +2057,8 @@ export const Constants = {
         "quiz",
         "exam",
         "external_quiz",
+        "audio",
+        "download",
       ],
       notification_type: [
         "course_assigned",

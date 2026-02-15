@@ -11,6 +11,8 @@ import { ModuleFilesListComponent } from '../components/module-files-list.compon
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
 import { QuizTakerComponent } from '../components/quiz-taker.component';
 import { ExamTakerComponent } from '../components/exam-taker.component';
+import { AudioViewerComponent } from '../components/audio-viewer.component';
+import { DownloadViewerComponent } from '../components/download-viewer.component';
 import { CommentSectionComponent } from '../components/comment-section.component';
 import { AskExpertComponent } from '../components/ask-expert.component';
 import { ReportIssueComponent } from '../components/report-issue.component';
@@ -18,7 +20,7 @@ import { ReportIssueComponent } from '../components/report-issue.component';
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, AudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
   // Note: CommentSectionComponent, AskExpertComponent, ReportIssueComponent are kept in imports
   // for type checking but automatically deferred by @defer blocks in the template.
   host: { class: 'block' },
@@ -79,6 +81,15 @@ import { ReportIssueComponent } from '../components/report-issue.component';
               <app-exam-taker
                 [moduleId]="courseService.moduleViewer()!.module.id"
                 (examCompleted)="onExamCompleted()" />
+            }
+            @case ('audio') {
+              <app-audio-viewer [audio]="$any(courseService.moduleViewer()!.content.data)" />
+            }
+            @case ('download') {
+              <app-download-viewer
+                [download]="$any(courseService.moduleViewer()!.content.data)"
+                [description]="courseService.moduleViewer()!.module.description"
+              />
             }
             @default {
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
@@ -201,7 +212,7 @@ export class ModuleViewerPageComponent {
     const detail = this.courseService.courseDetail();
     if (!detail?.isEnrolled) return false;
     const t = viewer.module.module_type;
-    return t === 'video' || t === 'pdf' || t === 'markdown' || t === 'external_quiz';
+    return t === 'video' || t === 'pdf' || t === 'markdown' || t === 'external_quiz' || t === 'audio' || t === 'download';
   });
 
   readonly isCompleted = computed(() => {

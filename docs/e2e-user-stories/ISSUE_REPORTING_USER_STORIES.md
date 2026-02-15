@@ -16,6 +16,14 @@ E2E testing scenarios for the Issue Reporting system (Phase 7A). These stories v
 | **Primary Test User** | learner@calypso-commodities.com (Learner) |
 | **Tenant** | Calypso (master tenant) |
 
+### Alternative URLs
+
+| Environment | Frontend | Backend |
+|-------------|----------|----------|
+| **Production** | https://x-courses-v2.vercel.app | https://x-courses-v2-production.up.railway.app |
+| **Production (Custom Domain)** | https://xcourses.x-lng.com | https://x-courses-v2-production.up.railway.app |
+| **Local Dev** | http://localhost:4200 | http://localhost:8000 |
+
 ### Test Users
 
 > Full setup instructions: [TEST_USERS.md](TEST_USERS.md)
