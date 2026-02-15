@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/angular';
+import { render, screen, fireEvent, within } from '@testing-library/angular';
 import { provideRouter, RouterLink } from '@angular/router';
 import { StalenessDashboardPageComponent } from './staleness-dashboard-page.component';
 import { StalenessService } from '../../../core/services/staleness.service';
@@ -12,6 +12,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockStalenessService>;
@@ -20,7 +21,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(StalenessDashboardPageComponent, {
-    componentImports: [MockLucideIconComponent, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
     providers: [
       { provide: StalenessService, useValue: service },
       { provide: ToastService, useValue: toast },
@@ -194,7 +195,9 @@ describe('StalenessDashboardPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const statusSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(statusSelect, { target: { value: 'has_stale' } });
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Has Stale Modules'));
     fixture.detectChanges();
 
     expect(screen.getByText('Has Stale Course')).toBeTruthy();
@@ -212,7 +215,10 @@ describe('StalenessDashboardPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const statusSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(statusSelect, { target: { value: 'all_fresh' } });
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('All Fresh'));
     fixture.detectChanges();
 
     expect(screen.queryByText('Has Stale Course')).toBeFalsy();
@@ -230,7 +236,10 @@ describe('StalenessDashboardPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const statusSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(statusSelect, { target: { value: 'no_modules' } });
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('No Modules'));
     fixture.detectChanges();
 
     expect(screen.queryByText('Has Modules')).toBeFalsy();
@@ -651,7 +660,9 @@ describe('StalenessDashboardPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const statusSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(statusSelect, { target: { value: 'has_postponed' } });
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Has Postponed'));
     fixture.detectChanges();
 
     expect(screen.queryByText('Stale Course')).toBeFalsy();

@@ -13,11 +13,12 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 @Component({
   selector: 'app-teaching-overview-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -44,15 +45,12 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
             class="search-input"
           />
         </div>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="statusOptions"
           [value]="statusFilter()"
-          (change)="statusFilter.set($any($event.target).value)"
-        >
-          <option value="all">All Courses</option>
-          <option value="needs_attention">Needs Attention</option>
-          <option value="all_clear">All Clear</option>
-        </select>
+          (valueChange)="statusFilter.set($any($event))"
+          ariaLabel="Status filter"
+        />
         @if (searchTerm() || statusFilter() !== 'all') {
           <button
             type="button"
@@ -276,6 +274,12 @@ export class TeachingOverviewPageComponent implements OnInit {
     ExternalLink, BarChart3, Pencil, CheckCircle2,
     AlertTriangle, Users,
   };
+
+  readonly statusOptions: SelectOption[] = [
+    { value: 'all', label: 'All Courses' },
+    { value: 'needs_attention', label: 'Needs Attention' },
+    { value: 'all_clear', label: 'All Clear' },
+  ];
 
   readonly searchTerm = signal('');
   readonly statusFilter = signal<'all' | 'needs_attention' | 'all_clear'>('all');

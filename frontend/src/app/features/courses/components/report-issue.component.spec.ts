@@ -49,15 +49,20 @@ describe('ReportIssueComponent', () => {
 
     fireEvent.click(screen.getByText('Report Issue'));
 
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    expect(select).toBeTruthy();
-    // 4 real options + 1 disabled placeholder
-    const options = select.querySelectorAll('option');
-    expect(options.length).toBe(5);
-    expect(options[1].textContent).toContain('Content Error');
-    expect(options[2].textContent).toContain('Technical Problem');
-    expect(options[3].textContent).toContain('Accessibility Issue');
-    expect(options[4].textContent).toContain('Other');
+    const combobox = screen.getByRole('combobox');
+    expect(combobox).toBeTruthy();
+
+    // Open the custom select dropdown
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+
+    // 4 options visible in the dropdown
+    const options = screen.getAllByRole('option');
+    expect(options.length).toBe(4);
+    expect(options[0].textContent).toContain('Content Error');
+    expect(options[1].textContent).toContain('Technical Problem');
+    expect(options[2].textContent).toContain('Accessibility Issue');
+    expect(options[3].textContent).toContain('Other');
   });
 
   it('should disable submit when description is empty', async () => {
@@ -65,9 +70,11 @@ describe('ReportIssueComponent', () => {
 
     fireEvent.click(screen.getByText('Report Issue'));
 
-    // Select an issue type
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'technical' } });
+    // Select an issue type via custom select
+    const combobox = screen.getByRole('combobox');
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Technical Problem'));
     fixture.detectChanges();
 
     const submitBtn = screen.getByText('Submit Report');
@@ -93,8 +100,11 @@ describe('ReportIssueComponent', () => {
 
     fireEvent.click(screen.getByText('Report Issue'));
 
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'content_error' } });
+    // Select issue type via custom select
+    const combobox = screen.getByRole('combobox');
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Content Error'));
     fixture.detectChanges();
 
     const textarea = screen.getByPlaceholderText('Describe the issue...');
@@ -108,12 +118,15 @@ describe('ReportIssueComponent', () => {
   });
 
   it('should show success message after successful submission', async () => {
-    const { mockService, fixture } = await renderReportIssue();
+    const { fixture } = await renderReportIssue();
 
     fireEvent.click(screen.getByText('Report Issue'));
 
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'technical' } });
+    // Select issue type via custom select
+    const combobox = screen.getByRole('combobox');
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Technical Problem'));
     fixture.detectChanges();
 
     const textarea = screen.getByPlaceholderText('Describe the issue...');
@@ -135,8 +148,11 @@ describe('ReportIssueComponent', () => {
 
     fireEvent.click(screen.getByText('Report Issue'));
 
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'other' } });
+    // Select issue type via custom select
+    const combobox = screen.getByRole('combobox');
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Other'));
     fixture.detectChanges();
 
     const textarea = screen.getByPlaceholderText('Describe the issue...');
@@ -155,8 +171,11 @@ describe('ReportIssueComponent', () => {
 
     fireEvent.click(screen.getByText('Report Issue'));
 
-    const select = fixture.nativeElement.querySelector('select') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'content_error' } });
+    // Select issue type via custom select
+    const combobox = screen.getByRole('combobox');
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Content Error'));
     fixture.detectChanges();
 
     const textarea = screen.getByPlaceholderText('Describe the issue...');

@@ -15,6 +15,7 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state.comp
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockUserManagementService>;
@@ -31,7 +32,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(UserManagementPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent, CustomSelectComponent],
     providers: [
       { provide: UserManagementService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -55,7 +56,7 @@ function renderPageAsPA(options?: {
   const toast = createMockToastService();
 
   return render(UserManagementPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent, CustomSelectComponent],
     providers: [
       { provide: UserManagementService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -193,8 +194,9 @@ describe('UserManagementPageComponent', () => {
 
     const { fixture } = await renderPage({ service });
 
-    const roleSelect = screen.getByDisplayValue('All Roles');
-    fireEvent.change(roleSelect, { target: { value: 'tenant_admin' } });
+    fireEvent.click(screen.getByText('All Roles'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Tenant Admins' }));
     fixture.detectChanges();
 
     expect(screen.queryByText('Regular Alice')).toBeFalsy();

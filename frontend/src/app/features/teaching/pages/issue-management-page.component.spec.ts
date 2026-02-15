@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/angular';
+import { render, screen, fireEvent, within } from '@testing-library/angular';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { IssueManagementPageComponent } from './issue-management-page.component';
 import { IssueService } from '../../../core/services/issue.service';
@@ -12,6 +12,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderBoard(options?: {
   issueService?: ReturnType<typeof createMockIssueService>;
@@ -21,7 +22,7 @@ function renderBoard(options?: {
   const toast = createMockToastService();
 
   return render(IssueManagementPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
     providers: [
       { provide: IssueService, useValue: issueService },
       { provide: ToastService, useValue: toast },
@@ -166,8 +167,11 @@ describe('IssueManagementPageComponent', () => {
     const { fixture } = await renderBoard({ issueService });
 
     const selects = screen.getAllByRole('combobox');
-    const courseSelect = selects[0]; // first select is course dropdown
-    fireEvent.change(courseSelect, { target: { value: 'c1' } });
+    const courseSelect = selects[0]; // first combobox is course dropdown
+    fireEvent.click(courseSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('Course A'));
     fixture.detectChanges();
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
@@ -185,8 +189,11 @@ describe('IssueManagementPageComponent', () => {
     const { fixture } = await renderBoard({ issueService });
 
     const selects = screen.getAllByRole('combobox');
-    const statusSelect = selects[1]; // second select is status
-    fireEvent.change(statusSelect, { target: { value: 'open' } });
+    const statusSelect = selects[1]; // second combobox is status
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('Open'));
     fixture.detectChanges();
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
@@ -204,8 +211,11 @@ describe('IssueManagementPageComponent', () => {
     const { fixture } = await renderBoard({ issueService });
 
     const selects = screen.getAllByRole('combobox');
-    const typeSelect = selects[2]; // third select is issue type
-    fireEvent.change(typeSelect, { target: { value: 'technical' } });
+    const typeSelect = selects[2]; // third combobox is issue type
+    fireEvent.click(typeSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('Technical'));
     fixture.detectChanges();
 
     expect(screen.queryByText('alice@test.com')).toBeFalsy();
@@ -269,11 +279,11 @@ describe('IssueManagementPageComponent', () => {
     fireEvent.click(screen.getByText('alice@test.com'));
     fixture.detectChanges();
 
-    const statusSelect = screen.getAllByRole('combobox').find(el =>
-      (el as HTMLSelectElement).value === 'investigating',
-    ) as HTMLSelectElement;
-    expect(statusSelect).toBeTruthy();
-    expect(statusSelect.value).toBe('investigating');
+    // The 4th combobox is the edit status select in the expanded row
+    const comboboxes = screen.getAllByRole('combobox');
+    const editStatusCombobox = comboboxes[3]; // 3 filter comboboxes + 1 edit status
+    expect(editStatusCombobox).toBeTruthy();
+    expect(editStatusCombobox.textContent).toContain('Investigating');
 
     const textarea = screen.getByPlaceholderText('Add internal notes (not visible to reporter)...') as HTMLTextAreaElement;
     expect(textarea.value).toBe('Checking with the author.');

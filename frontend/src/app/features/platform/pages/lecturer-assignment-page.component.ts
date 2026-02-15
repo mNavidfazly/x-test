@@ -33,11 +33,12 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 @Component({
   selector: 'app-lecturer-assignment-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -75,30 +76,22 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label class="section-label mb-1">Lecturer</label>
-              <select
-                class="select-field w-full"
+              <app-custom-select
+                [options]="lecturerPickerOptions()"
                 [value]="selectedLecturerId()"
-                (change)="onLecturerChange($any($event.target).value)"
-              >
-                <option value="">Select a lecturer...</option>
-                @for (l of availableLecturers(); track l.id) {
-                  <option [value]="l.id">{{ l.email }}{{ l.full_name ? ' (' + l.full_name + ')' : '' }}</option>
-                }
-              </select>
+                (valueChange)="onLecturerChange($event)"
+                placeholder="Select a lecturer..."
+              />
             </div>
             <div>
               <label class="section-label mb-1">Course</label>
-              <select
-                class="select-field w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              <app-custom-select
+                [options]="coursePickerOptions()"
                 [value]="selectedCourseId()"
-                (change)="selectedCourseId.set($any($event.target).value)"
+                (valueChange)="selectedCourseId.set($event)"
                 [disabled]="!selectedLecturerId() || coursesLoading()"
-              >
-                <option value="">{{ coursesLoading() ? 'Loading courses...' : 'Select a course...' }}</option>
-                @for (c of availableCourses(); track c.id) {
-                  <option [value]="c.id">{{ c.title }}</option>
-                }
-              </select>
+                [placeholder]="coursesLoading() ? 'Loading courses...' : 'Select a course...'"
+              />
             </div>
           </div>
           <div class="flex items-center gap-3">
@@ -297,6 +290,15 @@ export class LecturerAssignmentPageComponent implements OnInit {
   readonly availableCourses = signal<AvailableCourse[]>([]);
   readonly coursesLoading = signal(false);
   readonly adding = signal(false);
+  readonly lecturerPickerOptions = computed<SelectOption[]>(() =>
+    this.availableLecturers().map(l => ({
+      value: l.id,
+      label: l.email + (l.full_name ? ' (' + l.full_name + ')' : ''),
+    })),
+  );
+  readonly coursePickerOptions = computed<SelectOption[]>(() =>
+    this.availableCourses().map(c => ({ value: c.id, label: c.title })),
+  );
 
   // Expanded row
   readonly expandedAssignmentId = signal<string | null>(null);

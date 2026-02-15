@@ -11,6 +11,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function createMockOverviewService(options?: {
   courses?: TeachingCourseOverview[];
@@ -48,7 +49,7 @@ function renderPage(options?: {
   const service = options?.service ?? createMockOverviewService();
 
   return render(TeachingOverviewPageComponent, {
-    componentImports: [MockLucideIconComponent, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
     providers: [
       { provide: TeachingOverviewService, useValue: service },
       provideRouter([]),
@@ -221,7 +222,9 @@ describe('TeachingOverviewPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const statusSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(statusSelect, { target: { value: 'needs_attention' } });
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Needs Attention'));
     fixture.detectChanges();
 
     expect(screen.getByText('Busy Course')).toBeTruthy();
@@ -239,7 +242,9 @@ describe('TeachingOverviewPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const statusSelect = screen.getAllByRole('combobox')[0];
-    fireEvent.change(statusSelect, { target: { value: 'all_clear' } });
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('All Clear'));
     fixture.detectChanges();
 
     expect(screen.queryByText('Busy Course')).toBeFalsy();

@@ -4,6 +4,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Upload, Link, X, Image } from 'lucide-angular';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 import { CourseFormData, EnrollmentType } from '../../../core/models/course.model';
 
 export interface CourseFormSaveEvent {
@@ -14,7 +15,7 @@ export interface CourseFormSaveEvent {
 @Component({
   selector: 'app-course-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, LucideAngularModule, FileUploadComponent],
+  imports: [FormsModule, LucideAngularModule, FileUploadComponent, CustomSelectComponent],
   host: { class: 'block' },
   template: `
     <div class="space-y-5">
@@ -110,16 +111,13 @@ export interface CourseFormSaveEvent {
 
       <!-- Enrollment Type -->
       <div>
-        <label for="enrollmentType" class="form-label">Enrollment Type</label>
-        <select
-          id="enrollmentType"
-          [(ngModel)]="form.enrollment_type"
-          class="select-field w-full bg-white"
-        >
-          <option value="open">Open</option>
-          <option value="invite_only">Invite only</option>
-          <option value="password_protected">Password protected</option>
-        </select>
+        <label class="form-label">Enrollment Type</label>
+        <app-custom-select
+          [options]="enrollmentTypeOptions"
+          [value]="form.enrollment_type"
+          ariaLabel="Enrollment Type"
+          (valueChange)="form.enrollment_type = $any($event)"
+        />
       </div>
 
       <!-- Password (conditional) -->
@@ -175,6 +173,12 @@ export interface CourseFormSaveEvent {
 })
 export class CourseFormComponent {
   readonly icons = { Upload, Link, X, Image };
+
+  readonly enrollmentTypeOptions: SelectOption[] = [
+    { value: 'open', label: 'Open' },
+    { value: 'invite_only', label: 'Invite only' },
+    { value: 'password_protected', label: 'Password protected' },
+  ];
 
   readonly initialData = input.required<CourseFormData>();
   readonly isEditMode = input(false);

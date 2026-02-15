@@ -19,13 +19,14 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state.comp
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
 @Component({
   selector: 'app-user-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -64,16 +65,12 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
             @if (isPlatformAdmin()) {
               <div>
                 <label class="section-label mb-1">Tenant</label>
-                <select
-                  class="select-field w-full"
+                <app-custom-select
+                  [options]="inviteTenantOptions()"
                   [value]="inviteTenantId()"
-                  (change)="inviteTenantId.set($any($event.target).value)"
-                >
-                  <option value="">Select a tenant...</option>
-                  @for (t of availableTenants(); track t.id) {
-                    <option [value]="t.id">{{ t.name }}</option>
-                  }
-                </select>
+                  (valueChange)="inviteTenantId.set($event)"
+                  placeholder="Select a tenant..."
+                />
               </div>
             }
           </div>
@@ -112,16 +109,11 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
             class="search-input"
           />
         </div>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="roleFilterOptions"
           [value]="roleFilter()"
-          (change)="roleFilter.set($any($event.target).value)"
-        >
-          <option value="all">All Roles</option>
-          <option value="tenant_admin">Tenant Admins</option>
-          <option value="platform_admin">Platform Admins</option>
-          <option value="regular">Regular Users</option>
-        </select>
+          (valueChange)="roleFilter.set($any($event))"
+        />
         @if (searchTerm() || roleFilter() !== 'all') {
           <button
             type="button"
@@ -345,6 +337,13 @@ export class UserManagementPageComponent implements OnInit {
     Mail, UserPlus, Edit, ChevronLeft, ChevronRight,
   };
 
+  readonly roleFilterOptions: SelectOption[] = [
+    { value: 'all', label: 'All Roles' },
+    { value: 'tenant_admin', label: 'Tenant Admins' },
+    { value: 'platform_admin', label: 'Platform Admins' },
+    { value: 'regular', label: 'Regular Users' },
+  ];
+
   // Filter
   readonly searchTerm = signal('');
   readonly roleFilter = signal<RoleFilter>('all');
@@ -356,6 +355,9 @@ export class UserManagementPageComponent implements OnInit {
   readonly inviteTenantId = signal('');
   readonly inviting = signal(false);
   readonly availableTenants = signal<{ id: string; name: string }[]>([]);
+  readonly inviteTenantOptions = computed<SelectOption[]>(() =>
+    this.availableTenants().map(t => ({ value: t.id, label: t.name })),
+  );
 
   // Expanded row
   readonly expandedUserId = signal<string | null>(null);

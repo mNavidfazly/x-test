@@ -15,6 +15,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 const AUTH_METHOD_LABELS: Record<AuthMethod, string> = {
   email_password: 'Email',
@@ -27,7 +28,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
 @Component({
   selector: 'app-tenant-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -355,16 +356,13 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                             <!-- Add course -->
                             @if (availableCourses().length > 0) {
                               <div class="flex items-center gap-2">
-                                <select
-                                  class="select-field flex-1"
+                                <app-custom-select
+                                  class="flex-1"
+                                  [options]="coursePickerOptions()"
                                   [value]="selectedCourseId()"
-                                  (change)="selectedCourseId.set($any($event.target).value)"
-                                >
-                                  <option value="">Select a course...</option>
-                                  @for (course of availableCourses(); track course.id) {
-                                    <option [value]="course.id">{{ course.title }}</option>
-                                  }
-                                </select>
+                                  (valueChange)="selectedCourseId.set($event)"
+                                  placeholder="Select a course..."
+                                />
                                 <button
                                   type="button"
                                   (click)="onAssignCourse(tenant.id)"
@@ -423,16 +421,13 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                             <!-- Add CSM -->
                             @if (availableCsms().length > 0) {
                               <div class="flex items-center gap-2">
-                                <select
-                                  class="select-field flex-1"
+                                <app-custom-select
+                                  class="flex-1"
+                                  [options]="csmPickerOptions()"
                                   [value]="selectedCsmId()"
-                                  (change)="selectedCsmId.set($any($event.target).value)"
-                                >
-                                  <option value="">Select a CSM...</option>
-                                  @for (csm of availableCsms(); track csm.id) {
-                                    <option [value]="csm.id">{{ csm.email }}{{ csm.full_name ? ' (' + csm.full_name + ')' : '' }}</option>
-                                  }
-                                </select>
+                                  (valueChange)="selectedCsmId.set($event)"
+                                  placeholder="Select a CSM..."
+                                />
                                 <button
                                   type="button"
                                   (click)="onAssignCsm(tenant.id)"
@@ -494,12 +489,18 @@ export class TenantManagementPageComponent implements OnInit {
   readonly availableCourses = signal<AvailableCourse[]>([]);
   readonly selectedCourseId = signal('');
   readonly coursesLoading = signal(false);
+  readonly coursePickerOptions = computed<SelectOption[]>(() =>
+    this.availableCourses().map(c => ({ value: c.id, label: c.title })),
+  );
 
   // CSM assignments (csms tab)
   readonly csmAssignments = signal<CsmAssignment[]>([]);
   readonly availableCsms = signal<AvailableCsm[]>([]);
   readonly selectedCsmId = signal('');
   readonly csmsLoading = signal(false);
+  readonly csmPickerOptions = computed<SelectOption[]>(() =>
+    this.availableCsms().map(c => ({ value: c.id, label: c.email + (c.full_name ? ' (' + c.full_name + ')' : '') })),
+  );
 
   // Delete
   readonly confirmingDelete = signal(false);

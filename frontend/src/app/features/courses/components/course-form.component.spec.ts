@@ -5,11 +5,12 @@ import { createMockCourseFormData } from '../../../__mocks__/course.mock';
 import { FormsModule } from '@angular/forms';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 describe('CourseFormComponent', () => {
   it('should render all form fields', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData(),
       },
@@ -24,7 +25,7 @@ describe('CourseFormComponent', () => {
 
   it('should pre-populate fields from initialData', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData({
           title: 'X-LNG Advanced',
@@ -39,7 +40,7 @@ describe('CourseFormComponent', () => {
 
   it('should show Create Course button in create mode', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData(),
         isEditMode: false,
@@ -51,7 +52,7 @@ describe('CourseFormComponent', () => {
 
   it('should show Save Changes button in edit mode', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData(),
         isEditMode: true,
@@ -63,7 +64,7 @@ describe('CourseFormComponent', () => {
 
   it('should show password field only for password_protected enrollment', async () => {
     const { fixture } = await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData({ enrollment_type: 'open' }),
       },
@@ -71,9 +72,11 @@ describe('CourseFormComponent', () => {
 
     expect(screen.queryByLabelText('Enrollment Password')).toBeNull();
 
-    // Change enrollment type to password_protected
-    const select = screen.getByLabelText('Enrollment Type') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'password_protected' } });
+    // Change enrollment type to password_protected via custom select
+    const combobox = screen.getByRole('combobox', { name: 'Enrollment Type' });
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Password protected'));
     fixture.detectChanges();
 
     expect(screen.getByLabelText('Enrollment Password')).toBeTruthy();
@@ -81,7 +84,7 @@ describe('CourseFormComponent', () => {
 
   it('should show password hint in edit mode', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData({ enrollment_type: 'password_protected' }),
         isEditMode: true,
@@ -93,7 +96,7 @@ describe('CourseFormComponent', () => {
 
   it('should disable save button when title is empty', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData({ title: '' }),
       },
@@ -105,7 +108,7 @@ describe('CourseFormComponent', () => {
 
   it('should emit save with form data and null thumbnailFile on save click', async () => {
     const { fixture } = await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData({ title: 'My Course' }),
       },
@@ -125,7 +128,7 @@ describe('CourseFormComponent', () => {
 
   it('should emit cancel on cancel click', async () => {
     const { fixture } = await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData(),
       },
@@ -143,7 +146,7 @@ describe('CourseFormComponent', () => {
 
   it('should show Upload and URL mode tabs', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData(),
       },
@@ -155,7 +158,7 @@ describe('CourseFormComponent', () => {
 
   it('should show URL input when URL mode is selected', async () => {
     const { fixture } = await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData(),
       },
@@ -170,7 +173,7 @@ describe('CourseFormComponent', () => {
 
   it('should default to URL mode when initialData has an external URL', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData({ thumbnail_url: 'https://example.com/img.jpg' }),
       },
@@ -182,7 +185,7 @@ describe('CourseFormComponent', () => {
 
   it('should show thumbnail preview when currentThumbnailSignedUrl is set', async () => {
     await render(CourseFormComponent, {
-      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialData: createMockCourseFormData(),
         currentThumbnailSignedUrl: 'https://signed.url/thumb.jpg',

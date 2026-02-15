@@ -15,11 +15,12 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 @Component({
   selector: 'app-progress-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -86,16 +87,11 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
             class="search-input"
           />
         </div>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="courseFilterOptions()"
           [value]="selectedCourseId() ?? ''"
-          (change)="selectedCourseId.set($any($event.target).value || null)"
-        >
-          <option value="">All Courses</option>
-          @for (course of progressService.courses(); track course.id) {
-            <option [value]="course.id">{{ course.title }}</option>
-          }
-        </select>
+          (valueChange)="selectedCourseId.set($event || null)"
+        />
         <div class="flex items-center gap-1 text-sm text-slate-600">
           <lucide-icon [img]="icons.Filter" [size]="14" class="text-slate-400"></lucide-icon>
           <input
@@ -251,6 +247,11 @@ export class ProgressDashboardPageComponent implements OnInit {
   readonly #toast = inject(ToastService);
 
   readonly icons = { BarChart3, Search, Mail, Loader2, Users, Check, X, AlertTriangle, Filter, ChevronLeft, ChevronRight };
+
+  readonly courseFilterOptions = computed<SelectOption[]>(() => [
+    { value: '', label: 'All Courses' },
+    ...this.progressService.courses().map(c => ({ value: c.id, label: c.title })),
+  ]);
 
   // Filters
   readonly searchTerm = signal('');

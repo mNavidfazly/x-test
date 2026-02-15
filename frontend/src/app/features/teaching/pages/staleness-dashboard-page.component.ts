@@ -15,11 +15,12 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 @Component({
   selector: 'app-staleness-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -46,17 +47,12 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
             class="search-input"
           />
         </div>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="statusOptions"
           [value]="statusFilter()"
-          (change)="statusFilter.set($any($event.target).value)"
-        >
-          <option value="all">All Status</option>
-          <option value="has_stale">Has Stale Modules</option>
-          <option value="has_postponed">Has Postponed</option>
-          <option value="all_fresh">All Fresh</option>
-          <option value="no_modules">No Modules</option>
-        </select>
+          (valueChange)="statusFilter.set($any($event))"
+          ariaLabel="Status filter"
+        />
         @if (searchTerm() || statusFilter() !== 'all') {
           <button
             type="button"
@@ -264,6 +260,14 @@ export class StalenessDashboardPageComponent implements OnInit {
     quiz: HelpCircle, exam: ClipboardCheck, external_quiz: ExternalLink,
     audio: Headphones, download: FolderArchive,
   };
+
+  readonly statusOptions: SelectOption[] = [
+    { value: 'all', label: 'All Status' },
+    { value: 'has_stale', label: 'Has Stale Modules' },
+    { value: 'has_postponed', label: 'Has Postponed' },
+    { value: 'all_fresh', label: 'All Fresh' },
+    { value: 'no_modules', label: 'No Modules' },
+  ];
 
   readonly searchTerm = signal('');
   readonly statusFilter = signal<'all' | 'has_stale' | 'has_postponed' | 'all_fresh' | 'no_modules'>('all');

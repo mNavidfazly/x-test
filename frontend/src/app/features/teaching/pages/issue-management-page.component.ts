@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 import { ActivatedRoute } from '@angular/router';
 import {
   LucideAngularModule, Flag, Search, Loader2,
@@ -18,7 +19,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
 @Component({
   selector: 'app-issue-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -45,37 +46,24 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
             class="search-input"
           />
         </div>
-        <select
-          class="select-field"
-          (change)="selectedCourseId.set($any($event.target).value || null)"
-        >
-          <option value="" [selected]="!selectedCourseId()">All Courses</option>
-          @for (course of issueService.boardCourses(); track course.id) {
-            <option [value]="course.id" [selected]="course.id === selectedCourseId()">{{ course.title }}</option>
-          }
-        </select>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="courseOptions()"
+          [value]="selectedCourseId() ?? ''"
+          (valueChange)="selectedCourseId.set($event || null)"
+          ariaLabel="Course filter"
+        />
+        <app-custom-select
+          [options]="statusFilterOptions"
           [value]="statusFilter()"
-          (change)="statusFilter.set($any($event.target).value)"
-        >
-          <option value="all">All Status</option>
-          <option value="open">Open</option>
-          <option value="investigating">Investigating</option>
-          <option value="resolved">Resolved</option>
-          <option value="closed">Closed</option>
-        </select>
-        <select
-          class="select-field"
+          (valueChange)="statusFilter.set($any($event))"
+          ariaLabel="Status filter"
+        />
+        <app-custom-select
+          [options]="typeOptions"
           [value]="typeFilter()"
-          (change)="typeFilter.set($any($event.target).value)"
-        >
-          <option value="all">All Types</option>
-          <option value="content_error">Content Error</option>
-          <option value="technical">Technical</option>
-          <option value="accessibility">Accessibility</option>
-          <option value="other">Other</option>
-        </select>
+          (valueChange)="typeFilter.set($any($event))"
+          ariaLabel="Type filter"
+        />
         @if (searchTerm() || selectedCourseId() || statusFilter() !== 'all' || typeFilter() !== 'all') {
           <button
             type="button"
@@ -202,16 +190,12 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                         <!-- Status dropdown -->
                         <div class="mb-3">
                           <label class="block section-label mb-1">Status</label>
-                          <select
-                            class="select-field w-48"
+                          <app-custom-select
+                            [options]="editStatusOptions"
                             [value]="editStatus()"
-                            (change)="editStatus.set($any($event.target).value)"
-                          >
-                            <option value="open">Open</option>
-                            <option value="investigating">Investigating</option>
-                            <option value="resolved">Resolved</option>
-                            <option value="closed">Closed</option>
-                          </select>
+                            (valueChange)="editStatus.set($any($event))"
+                            ariaLabel="Issue status"
+                          />
                         </div>
 
                         <!-- Internal notes -->
@@ -267,6 +251,34 @@ export class IssueManagementPageComponent implements OnInit {
 
   readonly icons = { Flag, Search, Loader2, Clock, Eye, CheckCircle2, XCircle, Save, ChevronDown, ChevronUp };
   readonly formatRelativeTime = formatRelativeTime;
+
+  readonly statusFilterOptions: SelectOption[] = [
+    { value: 'all', label: 'All Status' },
+    { value: 'open', label: 'Open' },
+    { value: 'investigating', label: 'Investigating' },
+    { value: 'resolved', label: 'Resolved' },
+    { value: 'closed', label: 'Closed' },
+  ];
+
+  readonly typeOptions: SelectOption[] = [
+    { value: 'all', label: 'All Types' },
+    { value: 'content_error', label: 'Content Error' },
+    { value: 'technical', label: 'Technical' },
+    { value: 'accessibility', label: 'Accessibility' },
+    { value: 'other', label: 'Other' },
+  ];
+
+  readonly editStatusOptions: SelectOption[] = [
+    { value: 'open', label: 'Open' },
+    { value: 'investigating', label: 'Investigating' },
+    { value: 'resolved', label: 'Resolved' },
+    { value: 'closed', label: 'Closed' },
+  ];
+
+  readonly courseOptions = computed<SelectOption[]>(() => [
+    { value: '', label: 'All Courses' },
+    ...this.issueService.boardCourses().map(c => ({ value: c.id, label: c.title })),
+  ]);
 
   // Filters
   readonly searchTerm = signal('');

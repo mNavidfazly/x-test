@@ -14,6 +14,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockAccessRequestService>;
@@ -30,7 +31,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(AccessRequestPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
     providers: [
       { provide: AccessRequestService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -54,7 +55,7 @@ function renderPageAsPA(options?: {
   const toast = createMockToastService();
 
   return render(AccessRequestPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
     providers: [
       { provide: AccessRequestService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -197,8 +198,9 @@ describe('AccessRequestPageComponent', () => {
 
     const { fixture } = await renderPage({ service });
 
-    const statusSelect = screen.getByDisplayValue('All Statuses');
-    fireEvent.change(statusSelect, { target: { value: 'pending' } });
+    fireEvent.click(screen.getByText('All Statuses'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Pending' }));
     fixture.detectChanges();
 
     expect(screen.getByText('Pending Alice')).toBeTruthy();

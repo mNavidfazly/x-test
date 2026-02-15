@@ -15,6 +15,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockLecturerAssignmentService>;
@@ -30,7 +31,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(LecturerAssignmentPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
     providers: [
       { provide: LecturerAssignmentService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -211,9 +212,10 @@ describe('LecturerAssignmentPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    // Course dropdown should be disabled
-    const courseSelect = screen.getByDisplayValue('Select a course...');
-    expect((courseSelect as HTMLSelectElement).disabled).toBe(true);
+    // Course dropdown trigger should be disabled — text is inside a <span> within the <button>
+    const courseSelectText = screen.getByText('Select a course...');
+    const courseSelectButton = courseSelectText.closest('button')!;
+    expect(courseSelectButton.disabled).toBe(true);
   });
 
   it('should call addAssignment with correct args', async () => {
@@ -233,14 +235,16 @@ describe('LecturerAssignmentPageComponent', () => {
     fixture.detectChanges();
 
     // Select lecturer
-    const lecturerSelect = screen.getByDisplayValue('Select a lecturer...');
-    fireEvent.change(lecturerSelect, { target: { value: 'l1' } });
+    fireEvent.click(screen.getByText('Select a lecturer...'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'lect@m.com (Lect One)' }));
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
     // Select course
-    const courseSelect = screen.getByDisplayValue('Select a course...');
-    fireEvent.change(courseSelect, { target: { value: 'c1' } });
+    fireEvent.click(screen.getByText('Select a course...'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Course A' }));
     fixture.detectChanges();
 
     // Click add
@@ -269,14 +273,16 @@ describe('LecturerAssignmentPageComponent', () => {
     fixture.detectChanges();
 
     // Select lecturer
-    const lecturerSelect = screen.getByDisplayValue('Select a lecturer...');
-    fireEvent.change(lecturerSelect, { target: { value: 'l1' } });
+    fireEvent.click(screen.getByText('Select a lecturer...'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'lect@m.com (Lect One)' }));
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
     // Select course
-    const courseSelect = screen.getByDisplayValue('Select a course...');
-    fireEvent.change(courseSelect, { target: { value: 'c1' } });
+    fireEvent.click(screen.getByText('Select a course...'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Course A' }));
     fixture.detectChanges();
 
     // Click add

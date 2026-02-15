@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/angular';
+import { render, screen, fireEvent, within } from '@testing-library/angular';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { QuestionsBoardPageComponent } from './questions-board-page.component';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
@@ -12,6 +12,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderBoard(options?: {
   questionService?: ReturnType<typeof createMockExpertQuestionService>;
@@ -21,7 +22,7 @@ function renderBoard(options?: {
   const toast = createMockToastService();
 
   return render(QuestionsBoardPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
     providers: [
       { provide: ExpertQuestionService, useValue: questionService },
       { provide: ToastService, useValue: toast },
@@ -152,8 +153,11 @@ describe('QuestionsBoardPageComponent', () => {
     const { fixture } = await renderBoard({ questionService });
 
     const selects = screen.getAllByRole('combobox');
-    const courseSelect = selects[0]; // first select is course dropdown
-    fireEvent.change(courseSelect, { target: { value: 'c1' } });
+    const courseSelect = selects[0]; // first combobox is course dropdown
+    fireEvent.click(courseSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('Course A'));
     fixture.detectChanges();
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
@@ -171,8 +175,11 @@ describe('QuestionsBoardPageComponent', () => {
     const { fixture } = await renderBoard({ questionService });
 
     const selects = screen.getAllByRole('combobox');
-    const statusSelect = selects[1]; // second select is status
-    fireEvent.change(statusSelect, { target: { value: 'pending' } });
+    const statusSelect = selects[1]; // second combobox is status
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('Pending'));
     fixture.detectChanges();
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
@@ -191,7 +198,10 @@ describe('QuestionsBoardPageComponent', () => {
 
     const selects = screen.getAllByRole('combobox');
     const statusSelect = selects[1];
-    fireEvent.change(statusSelect, { target: { value: 'answered' } });
+    fireEvent.click(statusSelect);
+    fixture.detectChanges();
+    const listbox = screen.getByRole('listbox');
+    fireEvent.click(within(listbox).getByText('Answered'));
     fixture.detectChanges();
 
     expect(screen.queryByText('alice@test.com')).toBeFalsy();

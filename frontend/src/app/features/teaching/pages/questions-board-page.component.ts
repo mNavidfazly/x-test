@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 import { ActivatedRoute } from '@angular/router';
 import {
   LucideAngularModule, MessageSquare, Search, Loader2,
@@ -18,7 +19,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
 @Component({
   selector: 'app-questions-board-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -45,25 +46,18 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
             class="search-input"
           />
         </div>
-        <select
-          class="select-field"
-          (change)="selectedCourseId.set($any($event.target).value || null)"
-        >
-          <option value="" [selected]="!selectedCourseId()">All Courses</option>
-          @for (course of questionService.boardCourses(); track course.id) {
-            <option [value]="course.id" [selected]="course.id === selectedCourseId()">{{ course.title }}</option>
-          }
-        </select>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="courseOptions()"
+          [value]="selectedCourseId() ?? ''"
+          (valueChange)="selectedCourseId.set($event || null)"
+          ariaLabel="Course filter"
+        />
+        <app-custom-select
+          [options]="statusOptions"
           [value]="statusFilter()"
-          (change)="statusFilter.set($any($event.target).value)"
-        >
-          <option value="all">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="answered">Answered</option>
-          <option value="closed">Closed</option>
-        </select>
+          (valueChange)="statusFilter.set($any($event))"
+          ariaLabel="Status filter"
+        />
         @if (searchTerm() || selectedCourseId() || statusFilter() !== 'all') {
           <button
             type="button"
@@ -270,6 +264,18 @@ export class QuestionsBoardPageComponent implements OnInit {
 
   readonly icons = { MessageSquare, Search, Loader2, Clock, Check, CheckCircle2, XCircle, Send, HelpCircle };
   readonly formatRelativeTime = formatRelativeTime;
+
+  readonly statusOptions: SelectOption[] = [
+    { value: 'all', label: 'All Status' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'answered', label: 'Answered' },
+    { value: 'closed', label: 'Closed' },
+  ];
+
+  readonly courseOptions = computed<SelectOption[]>(() => [
+    { value: '', label: 'All Courses' },
+    ...this.questionService.boardCourses().map(c => ({ value: c.id, label: c.title })),
+  ]);
 
   // Filters
   readonly searchTerm = signal('');

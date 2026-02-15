@@ -20,6 +20,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 const MODULE_TYPE_ICONS: Record<string, LucideIconData> = {
   video: Video,
@@ -49,14 +50,14 @@ const ENROLLMENT_LABELS: Record<string, string> = {
   password_protected: 'Password',
 };
 
-const STALENESS_OPTIONS: { value: StalenessFilter; label: string }[] = [
+const STALENESS_OPTIONS: SelectOption[] = [
   { value: 'all', label: 'All Staleness' },
   { value: 'has_stale', label: 'Has Stale' },
   { value: 'all_fresh', label: 'All Fresh' },
   { value: 'has_postponed', label: 'Has Postponed' },
 ];
 
-const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
+const MODULE_TYPE_OPTIONS: SelectOption[] = [
   { value: 'all', label: 'All Types' },
   { value: 'video', label: 'Video' },
   { value: 'pdf', label: 'PDF' },
@@ -70,7 +71,7 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
 @Component({
   selector: 'app-content-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -95,24 +96,16 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
             class="search-input"
           />
         </div>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="stalenessOptions"
           [value]="stalenessFilter()"
-          (change)="stalenessFilter.set($any($event.target).value)"
-        >
-          @for (opt of stalenessOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-        <select
-          class="select-field"
+          (valueChange)="stalenessFilter.set($any($event))"
+        />
+        <app-custom-select
+          [options]="moduleTypeOptions"
           [value]="moduleTypeFilter()"
-          (change)="moduleTypeFilter.set($any($event.target).value)"
-        >
-          @for (opt of moduleTypeOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
+          (valueChange)="moduleTypeFilter.set($any($event))"
+        />
         <label class="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
           <input
             type="checkbox"
@@ -289,16 +282,13 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
 
                             @if (availableTenants().length > 0) {
                               <div class="flex items-center gap-2">
-                                <select
-                                  class="select-field flex-1"
+                                <app-custom-select
+                                  class="flex-1"
+                                  [options]="tenantPickerOptions()"
                                   [value]="selectedTenantId()"
-                                  (change)="selectedTenantId.set($any($event.target).value)"
-                                >
-                                  <option value="">Select a tenant...</option>
-                                  @for (tenant of availableTenants(); track tenant.id) {
-                                    <option [value]="tenant.id">{{ tenant.name }}</option>
-                                  }
-                                </select>
+                                  (valueChange)="selectedTenantId.set($event)"
+                                  placeholder="Select a tenant..."
+                                />
                                 <button
                                   type="button"
                                   (click)="onAssignTenant(course.id)"
@@ -371,6 +361,9 @@ export class ContentManagementPageComponent implements OnInit {
   readonly tenantsLoading = signal(false);
   readonly selectedTenantId = signal('');
   readonly assigningTenant = signal(false);
+  readonly tenantPickerOptions = computed<SelectOption[]>(() =>
+    this.availableTenants().map(t => ({ value: t.id, label: t.name })),
+  );
 
   // Computed: filtered courses
   readonly filteredCourses = computed(() => {

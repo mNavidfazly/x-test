@@ -344,6 +344,31 @@
     @apply border-teal-400 bg-teal-50/30;
   }
 
+  /* === Custom Select === */
+  .custom-select-trigger {
+    @apply w-full flex items-center justify-between gap-2
+           rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-left
+           focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500
+           transition-[border-color,box-shadow] duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .custom-select-panel {
+    @apply absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg
+           overflow-y-auto py-1 animate-select-slide-down;
+    max-height: 18rem;
+    z-index: var(--z-overlay);
+  }
+  .custom-select-option {
+    @apply flex items-center justify-between gap-2 px-3 py-2 text-sm text-slate-700
+           transition-colors duration-100;
+  }
+  .custom-select-option-highlighted {
+    @apply bg-slate-50;
+  }
+  .custom-select-option-selected {
+    @apply text-teal-700 font-medium;
+  }
+
   /* === Animations === */
   .page-enter {
     @apply animate-page-enter;

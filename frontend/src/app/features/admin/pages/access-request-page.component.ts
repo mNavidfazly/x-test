@@ -17,13 +17,14 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
 @Component({
   selector: 'app-access-request-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent],
   host: { class: 'block page-enter' },
   template: `
     <div>
@@ -48,16 +49,11 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
             class="search-input w-72"
           />
         </div>
-        <select
-          class="select-field"
+        <app-custom-select
+          [options]="statusFilterOptions"
           [value]="statusFilter()"
-          (change)="statusFilter.set($any($event.target).value)"
-        >
-          <option value="all">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-        </select>
+          (valueChange)="statusFilter.set($any($event))"
+        />
         @if (searchTerm() || statusFilter() !== 'all') {
           <button
             type="button"
@@ -184,16 +180,12 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                                 <lucide-icon [img]="icons.AlertTriangle" [size]="12" class="inline text-amber-500"></lucide-icon>
                                 Assign Tenant (required for approval)
                               </label>
-                              <select
-                                class="select-field w-full"
+                              <app-custom-select
+                                [options]="tenantOptions()"
                                 [value]="selectedTenantId()"
-                                (change)="selectedTenantId.set($any($event.target).value)"
-                              >
-                                <option value="">Select a tenant...</option>
-                                @for (t of availableTenants(); track t.id) {
-                                  <option [value]="t.id">{{ t.name }}</option>
-                                }
-                              </select>
+                                (valueChange)="selectedTenantId.set($event)"
+                                placeholder="Select a tenant..."
+                              />
                             </div>
                           }
 
@@ -266,6 +258,13 @@ export class AccessRequestPageComponent implements OnInit {
     Clock, Building2,
   };
 
+  readonly statusFilterOptions: SelectOption[] = [
+    { value: 'all', label: 'All Statuses' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'approved', label: 'Approved' },
+    { value: 'rejected', label: 'Rejected' },
+  ];
+
   // Filter
   readonly searchTerm = signal('');
   readonly statusFilter = signal<StatusFilter>('all');
@@ -280,6 +279,9 @@ export class AccessRequestPageComponent implements OnInit {
   // Tenant picker (PA only, for unknown-domain requests)
   readonly selectedTenantId = signal('');
   readonly availableTenants = signal<{ id: string; name: string }[]>([]);
+  readonly tenantOptions = computed<SelectOption[]>(() =>
+    this.availableTenants().map(t => ({ value: t.id, label: t.name })),
+  );
 
   // Computed
   readonly isPlatformAdmin = computed(() =>

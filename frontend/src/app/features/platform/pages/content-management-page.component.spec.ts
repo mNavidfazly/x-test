@@ -20,6 +20,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockContentManagementService>;
@@ -35,7 +36,7 @@ function renderPage(options?: {
   return render(ContentManagementPageComponent, {
     componentImports: [
       MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent,
-      EmptyStateComponent, StatCardComponent, StatusBadgeComponent,
+      EmptyStateComponent, StatCardComponent, StatusBadgeComponent, CustomSelectComponent,
     ],
     providers: [
       { provide: ContentManagementService, useValue: service },
@@ -190,8 +191,9 @@ describe('ContentManagementPageComponent', () => {
 
     const { fixture } = await renderPage({ service });
 
-    const stalenessSelect = screen.getByDisplayValue('All Staleness');
-    await fireEvent.change(stalenessSelect, { target: { value: 'has_stale' } });
+    fireEvent.click(screen.getByText('All Staleness'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Has Stale' }));
     fixture.detectChanges();
 
     expect(screen.getByText('Stale Course')).toBeTruthy();
@@ -208,8 +210,9 @@ describe('ContentManagementPageComponent', () => {
 
     const { fixture } = await renderPage({ service });
 
-    const typeSelect = screen.getByDisplayValue('All Types');
-    await fireEvent.change(typeSelect, { target: { value: 'video' } });
+    fireEvent.click(screen.getByText('All Types'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Video' }));
     fixture.detectChanges();
 
     expect(screen.getByText('Video Course')).toBeTruthy();
@@ -245,8 +248,9 @@ describe('ContentManagementPageComponent', () => {
     expect(screen.queryByText('Clear filters')).toBeNull();
 
     // Activate a filter
-    const stalenessSelect = screen.getByDisplayValue('All Staleness');
-    await fireEvent.change(stalenessSelect, { target: { value: 'has_stale' } });
+    fireEvent.click(screen.getByText('All Staleness'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Has Stale' }));
     fixture.detectChanges();
 
     expect(screen.getByText('Clear filters')).toBeTruthy();
@@ -368,9 +372,10 @@ describe('ContentManagementPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    // Select a tenant from dropdown
-    const select = screen.getByDisplayValue('Select a tenant...');
-    await fireEvent.change(select, { target: { value: 't1' } });
+    // Select a tenant from custom dropdown
+    fireEvent.click(screen.getByText('Select a tenant...'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'New Tenant' }));
     fixture.detectChanges();
 
     // Click Add
@@ -477,8 +482,9 @@ describe('ContentManagementPageComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    const select = screen.getByDisplayValue('Select a tenant...');
-    await fireEvent.change(select, { target: { value: 't1' } });
+    fireEvent.click(screen.getByText('Select a tenant...'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Tenant' }));
     fixture.detectChanges();
 
     await fireEvent.click(screen.getByText('Add'));

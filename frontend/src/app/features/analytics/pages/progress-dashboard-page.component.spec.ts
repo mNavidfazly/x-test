@@ -13,6 +13,7 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 
 function renderDashboard(options?: {
   progressService?: ReturnType<typeof createMockProgressService>;
@@ -26,7 +27,7 @@ function renderDashboard(options?: {
   const toast = createMockToastService();
 
   return render(ProgressDashboardPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, CustomSelectComponent],
     providers: [
       { provide: ProgressService, useValue: progressService },
       { provide: AuthService, useValue: authService },
@@ -114,8 +115,9 @@ describe('ProgressDashboardPageComponent', () => {
 
     const { fixture } = await renderDashboard({ progressService });
 
-    const courseSelect = screen.getByRole('combobox');
-    fireEvent.change(courseSelect, { target: { value: 'c1' } });
+    fireEvent.click(screen.getByText('All Courses'));
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: 'Course A' }));
     fixture.detectChanges();
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();

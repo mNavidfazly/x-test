@@ -3,11 +3,12 @@ import { LucideAngularModule, Flag, Send, Loader2, X, CheckCircle2 } from 'lucid
 import { IssueService } from '../../../core/services/issue.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { IssueType } from '../../../core/models/issue.model';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 @Component({
   selector: 'app-report-issue',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, CustomSelectComponent],
   host: { class: 'block' },
   template: `
     @if (submitted()) {
@@ -36,17 +37,13 @@ import { IssueType } from '../../../core/models/issue.model';
         </div>
         <p class="text-xs text-slate-500 mb-3">Describe the issue and we'll notify the course team.</p>
 
-        <select
+        <app-custom-select
+          [options]="issueTypeOptions"
           [value]="issueType() ?? ''"
-          (change)="onTypeChange($event)"
-          class="select-field w-full mb-3"
-        >
-          <option value="" disabled>Select issue type...</option>
-          <option value="content_error">Content Error</option>
-          <option value="technical">Technical Problem</option>
-          <option value="accessibility">Accessibility Issue</option>
-          <option value="other">Other</option>
-        </select>
+          placeholder="Select issue type..."
+          (valueChange)="onTypeChange($event)"
+          class="mb-3"
+        />
 
         <textarea
           [value]="description()"
@@ -99,12 +96,19 @@ export class ReportIssueComponent {
 
   readonly icons = { Flag, Send, Loader2, X, CheckCircle2 };
 
+  readonly issueTypeOptions: SelectOption[] = [
+    { value: 'content_error', label: 'Content Error' },
+    { value: 'technical', label: 'Technical Problem' },
+    { value: 'accessibility', label: 'Accessibility Issue' },
+    { value: 'other', label: 'Other' },
+  ];
+
   onToggle() {
     this.isOpen.update(v => !v);
   }
 
-  onTypeChange(event: Event) {
-    this.issueType.set((event.target as HTMLSelectElement).value as IssueType);
+  onTypeChange(value: string) {
+    this.issueType.set(value as IssueType);
   }
 
   onInput(event: Event) {
