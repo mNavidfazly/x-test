@@ -3,6 +3,7 @@ export type BadgeType = 'expert' | 'calypso';
 export interface CommentAuthor {
   full_name: string | null;
   email: string;
+  avatar_url: string | null;
 }
 
 export interface CommentReply {

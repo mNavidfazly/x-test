@@ -18,13 +18,14 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
 
 type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
 @Component({
   selector: 'app-user-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -171,9 +172,12 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                 >
                   <td class="px-3 py-3 text-slate-700 font-medium">
                     <div class="flex items-center gap-2">
-                      <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
-                        {{ getInitials(user) }}
-                      </div>
+                      <app-user-avatar
+                        [avatarUrl]="user.avatar_url"
+                        [name]="user.full_name ?? user.email"
+                        size="sm"
+                        color="slate"
+                      />
                       {{ user.full_name ?? '\u2014' }}
                     </div>
                   </td>
@@ -416,13 +420,6 @@ export class UserManagementPageComponent implements OnInit {
 
   ngOnInit() {
     this.service.loadUsers();
-  }
-
-  getInitials(user: UserForBoard): string {
-    if (user.full_name) {
-      return user.full_name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
-    }
-    return user.email[0].toUpperCase();
   }
 
   readonly formatDate = formatDate;

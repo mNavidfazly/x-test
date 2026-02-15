@@ -5,11 +5,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { Comment, CommentReply } from '../../../core/models/comment.model';
 import { formatRelativeTime } from '../../../core/utils/date.utils';
+import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
 
 @Component({
   selector: 'app-comment-section',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, UserAvatarComponent],
   host: { class: 'block' },
   template: `
     <div>
@@ -62,9 +63,12 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
             <div class="bg-white border border-slate-200 rounded-xl p-4">
               <!-- Comment header -->
               <div class="flex items-center gap-2 mb-2">
-                <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-700 text-xs font-semibold flex items-center justify-center shrink-0">
-                  {{ getInitials(comment.author?.full_name ?? comment.author?.email ?? '?') }}
-                </div>
+                <app-user-avatar
+                  [avatarUrl]="comment.author?.avatar_url ?? null"
+                  [name]="comment.author?.full_name ?? comment.author?.email ?? '?'"
+                  size="sm"
+                  class="shrink-0"
+                />
                 <span class="text-sm font-semibold text-slate-900">{{ comment.author?.full_name ?? comment.author?.email ?? 'Unknown' }}</span>
                 @if (comment.badge_type === 'expert') {
                   <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 text-xs font-semibold">
@@ -123,9 +127,13 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
               @for (reply of comment.replies; track reply.id) {
                 <div class="ml-8 mt-3 border-l-2 border-slate-200 pl-4">
                   <div class="flex items-center gap-2 mb-1">
-                    <div class="w-6 h-6 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center shrink-0">
-                      {{ getInitials(reply.author?.full_name ?? reply.author?.email ?? '?') }}
-                    </div>
+                    <app-user-avatar
+                      [avatarUrl]="reply.author?.avatar_url ?? null"
+                      [name]="reply.author?.full_name ?? reply.author?.email ?? '?'"
+                      size="xs"
+                      color="slate"
+                      class="shrink-0"
+                    />
                     <span class="text-sm font-semibold text-slate-900">{{ reply.author?.full_name ?? reply.author?.email ?? 'Unknown' }}</span>
                     @if (reply.badge_type === 'expert') {
                       <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 text-xs font-semibold">
@@ -247,15 +255,6 @@ export class CommentSectionComponent implements OnInit {
     if (this.#isPlatformAdmin()) return true;
     if (this.#isTenantAdmin() && item.tenant_id === this.#userTenantId()) return true;
     return false;
-  }
-
-  getInitials(name: string): string {
-    return name
-      .split(/[\s@]/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(p => p[0].toUpperCase())
-      .join('');
   }
 
   onNewCommentInput(event: Event) {

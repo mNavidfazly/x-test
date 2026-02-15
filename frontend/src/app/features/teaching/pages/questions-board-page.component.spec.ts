@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { QuestionsBoardPageComponent } from './questions-board-page.component';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -14,6 +15,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 
 function renderBoard(options?: {
   questionService?: ReturnType<typeof createMockExpertQuestionService>;
+  queryParams?: Record<string, string>;
 }) {
   const questionService = options?.questionService ?? createMockExpertQuestionService();
   const toast = createMockToastService();
@@ -23,6 +25,7 @@ function renderBoard(options?: {
     providers: [
       { provide: ExpertQuestionService, useValue: questionService },
       { provide: ToastService, useValue: toast },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(options?.queryParams ?? {}) } } },
     ],
   }).then(result => ({ ...result, questionService, toast }));
 }
@@ -373,5 +376,19 @@ describe('QuestionsBoardPageComponent', () => {
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
     expect(screen.getByText('bob@test.com')).toBeTruthy();
+  });
+
+  it('should pre-filter by courseId from query params', async () => {
+    const questionService = createMockExpertQuestionService({
+      boardQuestions: [
+        createMockExpertQuestionForBoard({ id: 'eq-1', course_id: 'c1', asker: { full_name: 'Alice', email: 'alice@test.com' } }),
+        createMockExpertQuestionForBoard({ id: 'eq-2', course_id: 'c2', asker: { full_name: 'Bob', email: 'bob@test.com' } }),
+      ],
+    });
+
+    await renderBoard({ questionService, queryParams: { courseId: 'c1' } });
+
+    expect(screen.getByText('alice@test.com')).toBeTruthy();
+    expect(screen.queryByText('bob@test.com')).toBeFalsy();
   });
 });

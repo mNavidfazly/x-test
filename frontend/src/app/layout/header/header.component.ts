@@ -6,11 +6,12 @@ import { LucideAngularModule, Menu, Bell, ChevronDown, User, LogOut } from 'luci
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
 
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule],
+  imports: [RouterLink, LucideAngularModule, UserAvatarComponent],
   host: { class: 'block' },
   template: `
     <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6">
@@ -50,17 +51,11 @@ import { NotificationService } from '../../core/services/notification.service';
             aria-label="User menu"
           >
             <!-- Avatar -->
-            @if (avatarUrl()) {
-              <img
-                [src]="avatarUrl()"
-                [alt]="displayName()"
-                class="w-8 h-8 rounded-full object-cover"
-              />
-            } @else {
-              <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-sm font-semibold">
-                {{ initials() }}
-              </div>
-            }
+            <app-user-avatar
+              [avatarUrl]="avatarUrl()"
+              [name]="displayName()"
+              size="sm"
+            />
             <span class="hidden sm:block text-sm font-medium text-slate-700 max-w-[120px] truncate">
               {{ displayName() }}
             </span>
@@ -113,19 +108,6 @@ export class HeaderComponent {
   });
 
   avatarUrl = computed(() => this.#profile.profile()?.avatar_url ?? null);
-
-  initials = computed(() => {
-    const name = this.displayName();
-    if (!name || name.includes('@')) {
-      return name.charAt(0).toUpperCase();
-    }
-    return name
-      .split(' ')
-      .map((part) => part.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  });
 
   async onSignOut() {
     this.menuOpen.set(false);

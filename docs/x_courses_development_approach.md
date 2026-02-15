@@ -1260,6 +1260,82 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **Architecture:** Single column on `modules` + client-side aggregation via `reduce()`. No denormalized columns, no triggers, no new RLS policies. Consistent with existing `moduleCount`/`progressPercent` patterns.
 - [x] **Tests:** 9 new formatDuration tests, ~44 existing test fixes (mock factories + inline mock updates), 1266 total frontend tests, build OK
 
+### Phase 11: Dashboard & Landing Experience
+
+#### 11A - Teaching Overview Page
+- [ ] **TeachingOverviewService** (`core/services/teaching-overview.service.ts`): 3 signals + 1 method. 6 parallel lightweight Supabase queries (courses, enrollments, pending exams, pending questions, open issues, modules) + client-side `Map<courseId, count>` aggregation. Staleness computed client-side (reuses StalenessService date arithmetic). No new migration.
+- [ ] **TeachingOverviewPageComponent** (`features/teaching/pages/`):
+  - [ ] Per-course table with permission badges (Edit/Grade/Read), enrolled count, and cross-domain action item counts
+  - [ ] 4 stat cards: Pending Exams, Open Questions, Open Issues, Stale Modules
+  - [ ] Expandable rows with direct RouterLinks to teaching board pages and course edit
+  - [ ] Filters: search by title + status (All/Needs Attention/All Clear)
+  - [ ] Follows exact same visual pattern as sibling teaching pages (10G/5D/6C/7B)
+- [ ] **Route:** `/teaching/courses` with `roleGuard('lecturer', 'platform_admin')` — replaces catch-all stub
+- [ ] **Sidebar:** Rename "My Courses" → "Teaching Overview" in Teaching section
+- [ ] **Tests:** ~41 new tests (15 service + 26 page)
+
+#### 11B - Role-Adaptive Dashboard (Complete)
+- [x] **DashboardService** (`features/dashboard/dashboard.service.ts`): Lightweight parallel count queries using `{ count: 'exact', head: true }` pattern. Role-conditional: only fires queries relevant to user's JWT claims. Uses `Promise.allSettled()` for resilience.
+  - [x] Pending access requests count (TA, PA)
+  - [x] Open issues count (Lecturer, PA)
+  - [x] Ungraded exam submissions count (Lecturer with can_grade, PA)
+  - [x] Unanswered expert questions count (Lecturer, PA)
+  - [x] Total users count (TA, PA)
+  - [x] Total courses count (PA)
+  - [x] Total tenants count (PA)
+- [x] **DashboardActionCardComponent** (`features/dashboard/components/`): Presentational card with icon, count, label, routerLink. Uses .card @apply class + colored icon backgrounds.
+- [x] **DashboardComponent rewrite** (`features/dashboard/dashboard.component.ts`): Replace 42-line placeholder with role-adaptive dashboard (~255 lines). 4 sections:
+  - [x] Welcome header: time-of-day greeting + full_name (ProfileService) + role badges (StatusBadgeComponent)
+  - [x] Needs Your Attention: action item card grid (pending requests, open issues, ungraded exams, unanswered questions) — only for admin/teaching roles
+  - [x] Overview stats: StatCard grid (total users, courses, tenants, assigned courses/tenants) — only for admin/teaching/CSM
+  - [x] My Courses: top 6 enrolled courses by recent activity using CourseCardComponent + EmptyState fallback
+- [x] **Reuses:** CourseService.loadCourses(), CourseCardComponent, ProfileService.profile(), AuthService roles/claims, 5 shared components
+- [x] **No new migrations** — all data already exists, RLS auto-scopes counts
+- [x] **Tests:** 19 service + 4 action card + 28 page = 51 new tests, 1317 total frontend tests, build OK
+
+#### 11C - Lecturer Display on Course Pages (Complete)
+- [x] **Migration 00039** (`supabase/migrations/00039_lecturer_assignments_learner_select.sql`): New RLS SELECT policy `lecturer_assignments_select_authenticated` on `lecturer_course_assignments` — allows any authenticated user to read lecturer assignments (data is non-sensitive, course access already gated by `tenant_courses`).
+- [x] **Model changes** (`core/models/course.model.ts`): `CourseLecturer` interface (user_id, full_name, email, avatar_url). Added `lecturers: CourseLecturer[]` to both `CourseWithProgress` and `CourseDetail`.
+- [x] **CourseService** (`core/services/course.service.ts`):
+  - [x] `loadCourses()`: 5th parallel query on `lecturer_course_assignments` with FK join to `profiles!user_id`. Builds `Map<courseId, CourseLecturer[]>`, attaches to each course.
+  - [x] `loadCourseDetail()`: 4th parallel query scoped to specific courseId.
+  - [x] `#resolveAvatarUrls()`: Batch avatar resolution using `createSignedUrls()` on `avatars` bucket (same pattern as `#resolveThumbnailUrls()`).
+- [x] **CourseCardComponent** (`features/courses/components/`): Overlapping avatar stack (w-8 h-8, `flex -space-x-2`) between description and progress bar. `displayedLecturers()` (first 3), `lecturerLabel()` ("Name1, Name2" / "Name1 +N more"), `getInitials()` helper.
+- [x] **CourseDetailPageComponent** (`features/courses/pages/`): "Instructors" section with avatar chips — each lecturer as `bg-white border rounded-xl` card with w-8 h-8 avatar, name, and email. Initials fallback for no-avatar lecturers.
+- [x] **AskExpertComponent** (`features/courses/components/`): New `lecturers` input. Expert identity shown in all 3 states — collapsed (avatar stack + names below button), open form ("Your question goes to {names}"), success ("{names} will be notified"). Falls back to generic text when no lecturers.
+- [x] **ModuleViewerPageComponent**: Passes `courseService.courseDetail()?.lecturers ?? []` to `<app-ask-expert>`.
+- [x] **Mock factories** (`__mocks__/course.mock.ts`): `lecturers: []` defaults in `createMockCourseWithProgress()` and `createMockCourseDetail()`. New `createMockCourseLecturer()` factory.
+- [x] **Tests:** 6 course card + 4 course detail + 4 ask expert + 5 dashboard/service fixes = 19 test changes, 1377 total frontend tests, build OK
+
+#### 11D - User Avatars Across Platform (Complete)
+- [x] **No new migrations** — `profiles.avatar_url` already exists, avatars bucket + signed URLs already work.
+- [x] **Shared `resolveAvatarUrls()` utility** (`core/utils/avatar.utils.ts`): Generic batch resolver with deduplication. `Map<path, indices[]>` ensures 30 comments from 8 users = 8 signed URL requests. Also exports `getInitials(name: string)` (replaces 3+ duplicated implementations).
+- [x] **UserAvatarComponent** (`shared/components/user-avatar.component.ts`): Shared presentational component replacing 5+ duplicated avatar/initials patterns. 4 sizes (xs=24px, sm=32px, md=40px, lg=112px), 2 color variants (teal, slate), `extraClass` input for stacked borders. `OnPush`, standalone, no service injection.
+- [x] **Model updates** — added `avatar_url: string | null` to 4 interfaces:
+  - [x] `CommentAuthor` in `comment.model.ts`
+  - [x] `QuestionAsker` in `expert-question.model.ts`
+  - [x] `IssueReporter` in `issue.model.ts`
+  - [x] `GradingSubmission.learner_avatar_url` in `course.model.ts`
+- [x] **Service FK join updates** (5 services + 1 refactor):
+  - [x] `CommentService`: FK join adds `avatar_url`, batch resolve for all comment + reply authors
+  - [x] `ExpertQuestionService`: FK join adds `avatar_url`, resolve askers
+  - [x] `IssueService`: FK join adds `avatar_url`, resolve reporters
+  - [x] `ExamGradingService`: FK join adds `avatar_url`, wrapper approach for flattened model
+  - [x] `UserManagementService`: added `resolveAvatarUrls()` call (already had `avatar_url` via `SELECT *`)
+  - [x] `CourseService`: refactored `#resolveAvatarUrls()` to delegate to shared utility
+- [x] **Template updates** (9 components):
+  - [x] Header: replaced inline avatar/initials with `<app-user-avatar size="sm">`
+  - [x] CommentSection: replaced teal initials (sm) + slate reply initials (xs)
+  - [x] CourseCard: replaced inline lecturer avatar
+  - [x] QuestionsBoardPage: avatar + text combo in Learner column
+  - [x] IssueManagementPage: avatar + text combo in Reporter column
+  - [x] ExamGradingPage: avatar + text combo in Learner column
+  - [x] UserManagementPage: replaced slate initials with shared component
+  - [x] Dashboard: added current user avatar next to greeting
+  - [x] ProfilePage: no change (kept camera overlay pattern, already works)
+- [x] **Notifications excluded** — no `actor_id` field, would need migration + 13 trigger updates. Separate future phase.
+- [x] **Tests:** 20 new tests (12 avatar utils + 8 user-avatar component), 1397 total frontend tests, build OK
+
 ---
 
 ## 4. FastAPI Endpoints Summary

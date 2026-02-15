@@ -1,8 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
-import { Comment } from '../models/comment.model';
+import { Comment, CommentAuthor } from '../models/comment.model';
 import { extractErrorMessage } from '../utils/error.utils';
+import { resolveAvatarUrls } from '../utils/avatar.utils';
 
 @Injectable({ providedIn: 'root' })
 export class CommentService {
@@ -28,10 +29,10 @@ export class CommentService {
         .from('comments')
         .select(`
           *,
-          author:profiles!user_id(full_name, email),
+          author:profiles!user_id(full_name, email, avatar_url),
           comment_replies(
             *,
-            author:profiles!user_id(full_name, email)
+            author:profiles!user_id(full_name, email, avatar_url)
           )
         `)
         .eq('module_id', moduleId)
@@ -39,7 +40,7 @@ export class CommentService {
 
       if (error) throw error;
 
-      const fallbackAuthor = { full_name: null, email: 'Unknown user' };
+      const fallbackAuthor: CommentAuthor = { full_name: null, email: 'Unknown user', avatar_url: null };
       const comments = (data ?? []).map((c: any) => ({
         ...c,
         author: c.author ?? fallbackAuthor,
@@ -47,6 +48,16 @@ export class CommentService {
           (a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
         ).map((r: any) => ({ ...r, author: r.author ?? fallbackAuthor })),
       })) as Comment[];
+
+      // Batch-resolve avatar URLs for all comment/reply authors
+      const allAuthors: CommentAuthor[] = [];
+      for (const c of comments) {
+        if (c.author) allAuthors.push(c.author);
+        for (const r of c.replies) {
+          if (r.author) allAuthors.push(r.author);
+        }
+      }
+      await resolveAvatarUrls(this.#supabase.client, allAuthors);
 
       this.#comments.set(comments);
     } catch (err) {

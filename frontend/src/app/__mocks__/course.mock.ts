@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import {
-  CourseWithProgress, CourseDetail, ModuleViewerData,
+  CourseWithProgress, CourseDetail, CourseLecturer, ModuleViewerData,
   ModuleVideo, ModulePdf, ModuleMarkdownContent, ModuleFile,
   CourseFormData, TenantSummary, LectureFormData,
   ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData,
@@ -101,6 +101,17 @@ export function createMockCourseWithProgress(overrides?: Partial<CourseWithProgr
     isEnrolled: true,
     lastActivity: '2026-01-15T10:00:00Z',
     totalDurationMinutes: 150,
+    lecturers: [],
+    ...overrides,
+  };
+}
+
+export function createMockCourseLecturer(overrides?: Partial<CourseLecturer>): CourseLecturer {
+  return {
+    user_id: 'lecturer-1',
+    full_name: 'Jane Doe',
+    email: 'jane.doe@calypso-commodities.com',
+    avatar_url: null,
     ...overrides,
   };
 }
@@ -138,6 +149,7 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
       'mod-1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
       'mod-2': { status: 'in_progress', completed_at: null },
     },
+    lecturers: [],
     ...overrides,
   };
 }

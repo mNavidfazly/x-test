@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { LucideAngularModule, BookOpen, Clock, ArrowRight } from 'lucide-angular';
 import { CourseWithProgress } from '../../../core/models/course.model';
 import { formatDuration } from '../../../core/utils/date.utils';
+import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
 
 const BADGE_STYLES: Record<string, string> = {
   open: 'bg-emerald-100 text-emerald-700',
@@ -19,7 +20,7 @@ const BADGE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-course-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule],
+  imports: [RouterLink, LucideAngularModule, UserAvatarComponent],
   host: { class: 'block' },
   template: `
     <a [routerLink]="['/courses', course().id]"
@@ -49,6 +50,23 @@ const BADGE_LABELS: Record<string, string> = {
         <!-- Description -->
         @if (course().description) {
           <p class="text-xs text-slate-500 line-clamp-2 mb-3">{{ course().description }}</p>
+        }
+
+        <!-- Lecturers -->
+        @if (course().lecturers.length > 0) {
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex -space-x-2">
+              @for (lecturer of displayedLecturers(); track lecturer.user_id) {
+                <app-user-avatar
+                  [avatarUrl]="lecturer.avatar_url"
+                  [name]="lecturer.full_name ?? lecturer.email"
+                  size="sm"
+                  extraClass="border-2 border-white"
+                />
+              }
+            </div>
+            <p class="text-xs text-slate-500 truncate">{{ lecturerLabel() }}</p>
+          </div>
         }
 
         <!-- Progress Bar -->
@@ -114,6 +132,16 @@ export class CourseCardComponent {
     if (label === 'Review') return 'text-emerald-600';
     if (label === 'Continue') return 'text-teal-600';
     return 'text-slate-500';
+  });
+
+  readonly displayedLecturers = computed(() => this.course().lecturers.slice(0, 3));
+
+  readonly lecturerLabel = computed(() => {
+    const lecturers = this.course().lecturers;
+    if (lecturers.length === 0) return '';
+    const names = lecturers.map(l => l.full_name ?? l.email.split('@')[0]);
+    if (names.length <= 2) return names.join(', ');
+    return `${names[0]} +${names.length - 1} more`;
   });
 
   readonly formattedDuration = computed(() => formatDuration(this.course().totalDurationMinutes));

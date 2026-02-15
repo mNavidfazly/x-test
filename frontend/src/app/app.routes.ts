@@ -132,6 +132,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'teaching/courses',
+        canActivate: [roleGuard('lecturer', 'platform_admin')],
+        loadComponent: () =>
+          import('./features/teaching/pages/teaching-overview-page.component').then(
+            (m) => m.TeachingOverviewPageComponent,
+          ),
+      },
+      {
         path: 'teaching/grading',
         canActivate: [roleGuard('lecturer', 'platform_admin')],
         loadComponent: () =>

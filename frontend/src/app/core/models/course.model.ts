@@ -2,6 +2,13 @@ export type EnrollmentType = 'invite_only' | 'password_protected' | 'open';
 export type ModuleType = 'video' | 'pdf' | 'markdown' | 'quiz' | 'exam' | 'external_quiz';
 export type ProgressStatus = 'not_started' | 'in_progress' | 'completed';
 
+export interface CourseLecturer {
+  user_id: string;
+  full_name: string | null;
+  email: string;
+  avatar_url: string | null;
+}
+
 export interface CourseWithProgress {
   id: string;
   title: string;
@@ -14,6 +21,7 @@ export interface CourseWithProgress {
   isEnrolled: boolean;
   lastActivity: string | null;
   totalDurationMinutes: number;
+  lecturers: CourseLecturer[];
 }
 
 export interface LectureWithModules {
@@ -41,6 +49,7 @@ export interface CourseDetail {
   isEnrolled: boolean;
   lectures: LectureWithModules[];
   progressMap: Record<string, ModuleProgress>;
+  lecturers: CourseLecturer[];
 }
 
 export interface EnrolledUser {
@@ -167,6 +176,7 @@ export interface GradingSubmission {
   graded_at: string | null;
   learner_email: string;
   learner_name: string | null;
+  learner_avatar_url: string | null;
   course_title: string;
   exam_title: string;
   passing_score: number;

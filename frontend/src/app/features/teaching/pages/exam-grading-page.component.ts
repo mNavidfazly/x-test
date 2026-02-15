@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   LucideAngularModule, ClipboardCheck, Search, Loader2,
   Download, RotateCcw, Clock, Check, X, AlertTriangle, FileText,
@@ -12,11 +13,12 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
 
 @Component({
   selector: 'app-exam-grading-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -42,12 +44,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
         </div>
         <select
           class="select-field"
-          [value]="selectedCourseId() ?? ''"
           (change)="selectedCourseId.set($any($event.target).value || null)"
         >
-          <option value="">All Courses</option>
+          <option value="" [selected]="!selectedCourseId()">All Courses</option>
           @for (course of gradingService.courses(); track course.id) {
-            <option [value]="course.id">{{ course.title }}</option>
+            <option [value]="course.id" [selected]="course.id === selectedCourseId()">{{ course.title }}</option>
           }
         </select>
         <select
@@ -104,11 +105,21 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                   class="table-row cursor-pointer"
                   (click)="onExpandSubmission(sub)"
                 >
-                  <td class="px-3 py-3 text-slate-700 truncate max-w-[200px]">
-                    {{ sub.learner_email }}
-                    @if (sub.learner_name) {
-                      <div class="text-xs text-slate-400">{{ sub.learner_name }}</div>
-                    }
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2 max-w-[200px]">
+                      <app-user-avatar
+                        [avatarUrl]="sub.learner_avatar_url"
+                        [name]="sub.learner_name ?? sub.learner_email"
+                        size="sm"
+                        class="shrink-0"
+                      />
+                      <div class="min-w-0">
+                        <div class="text-sm text-slate-700 truncate">{{ sub.learner_email }}</div>
+                        @if (sub.learner_name) {
+                          <div class="text-xs text-slate-400 truncate">{{ sub.learner_name }}</div>
+                        }
+                      </div>
+                    </div>
                   </td>
                   <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ sub.course_title }}</td>
                   <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ sub.exam_title }}</td>
@@ -252,6 +263,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 export class ExamGradingPageComponent implements OnInit {
   readonly gradingService = inject(ExamGradingService);
   #toast = inject(ToastService);
+  #route = inject(ActivatedRoute);
 
   readonly icons = { ClipboardCheck, Search, Loader2, Download, RotateCcw, Clock, Check, X, AlertTriangle, FileText };
 
@@ -317,6 +329,10 @@ export class ExamGradingPageComponent implements OnInit {
   });
 
   ngOnInit() {
+    const courseId = this.#route.snapshot.queryParamMap.get('courseId');
+    if (courseId) {
+      this.selectedCourseId.set(courseId);
+    }
     this.gradingService.loadGradingData();
   }
 

@@ -27,6 +27,7 @@ export interface ExpertQuestion {
 export interface QuestionAsker {
   full_name: string | null;
   email: string;
+  avatar_url: string | null;
 }
 
 export interface ExpertQuestionForBoard {

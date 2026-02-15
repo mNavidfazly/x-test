@@ -9,7 +9,7 @@ import { LectureFormComponent } from '../components/lecture-form.component';
 import { EnrollmentCtaComponent } from '../components/enrollment-cta.component';
 import { EnrollmentManagerComponent } from '../components/enrollment-manager.component';
 import { ProgressManagerComponent } from '../components/progress-manager.component';
-import { createMockCourseService, createMockCourseDetail } from '../../../__mocks__/course.mock';
+import { createMockCourseService, createMockCourseDetail, createMockCourseLecturer } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { ToastService } from '../../../core/services/toast.service';
@@ -755,5 +755,103 @@ describe('CourseDetailPageComponent', () => {
     });
 
     expect(container.querySelector('app-progress-manager')).toBeNull();
+  });
+
+  // --- Instructor display tests ---
+
+  it('should show Instructors section when lecturers exist', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail({
+        lecturers: [
+          createMockCourseLecturer({ user_id: 'l1', full_name: 'Dr. Chen', email: 'chen@calypso.com' }),
+        ],
+      }),
+    });
+    const toast = createMockToastService();
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
+      ],
+    });
+
+    expect(screen.getByText('Instructors')).toBeTruthy();
+    expect(screen.getByText('Dr. Chen')).toBeTruthy();
+    expect(screen.getByText('chen@calypso.com')).toBeTruthy();
+  });
+
+  it('should show avatar image in instructors section', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail({
+        lecturers: [
+          createMockCourseLecturer({ full_name: 'Dr. Chen', avatar_url: 'https://example.com/chen.jpg' }),
+        ],
+      }),
+    });
+    const toast = createMockToastService();
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
+      ],
+    });
+
+    const img = screen.getByAltText('Dr. Chen');
+    expect(img).toBeTruthy();
+    expect(img.getAttribute('src')).toBe('https://example.com/chen.jpg');
+  });
+
+  it('should show initials fallback in instructors section', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail({
+        lecturers: [
+          createMockCourseLecturer({ full_name: 'Dr. Chen', avatar_url: null }),
+        ],
+      }),
+    });
+    const toast = createMockToastService();
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
+      ],
+    });
+
+    expect(screen.getByText('DC')).toBeTruthy();
+  });
+
+  it('should hide Instructors section when lecturers is empty', async () => {
+    const courseService = createMockCourseService({
+      courseDetail: createMockCourseDetail({ lecturers: [] }),
+    });
+    const toast = createMockToastService();
+
+    await render(CourseDetailPageComponent, {
+      componentImports: defaultImports,
+      providers: [
+        provideRouter([]),
+        { provide: CourseService, useValue: courseService },
+        { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
+        { provide: ActivatedRoute, useValue: mockActivatedRoute('c1') },
+        { provide: ToastService, useValue: toast },
+      ],
+    });
+
+    expect(screen.queryByText('Instructors')).toBeNull();
   });
 });

@@ -10,6 +10,7 @@ import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
 import { createMockNotificationService } from '../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../__mocks__/lucide.mock';
+import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
 
 async function renderHeader(options?: {
   email?: string;
@@ -33,7 +34,7 @@ async function renderHeader(options?: {
   const menuToggleSpy = vi.fn();
 
   await render(HeaderComponent, {
-    componentImports: [MockLucideIconComponent],
+    componentImports: [MockLucideIconComponent, UserAvatarComponent],
     componentOutputs: { menuToggle: { emit: menuToggleSpy } as any },
     providers: [
       provideRouter([]),

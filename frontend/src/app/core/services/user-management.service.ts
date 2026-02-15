@@ -4,6 +4,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { extractErrorMessage } from '../utils/error.utils';
+import { resolveAvatarUrls } from '../utils/avatar.utils';
 import {
   UserForBoard,
   InviteUserData,
@@ -52,6 +53,8 @@ export class UserManagementService {
         created_at: row.created_at,
         updated_at: row.updated_at,
       }));
+
+      await resolveAvatarUrls(this.#supabase.client, users);
 
       this.#users.set(users);
     } catch (err) {

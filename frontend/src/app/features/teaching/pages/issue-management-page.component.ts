@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   LucideAngularModule, Flag, Search, Loader2,
   Clock, Eye, CheckCircle2, XCircle, Save, ChevronDown, ChevronUp,
@@ -12,11 +13,12 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
 
 @Component({
   selector: 'app-issue-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -45,12 +47,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
         </div>
         <select
           class="select-field"
-          [value]="selectedCourseId() ?? ''"
           (change)="selectedCourseId.set($any($event.target).value || null)"
         >
-          <option value="">All Courses</option>
+          <option value="" [selected]="!selectedCourseId()">All Courses</option>
           @for (course of issueService.boardCourses(); track course.id) {
-            <option [value]="course.id">{{ course.title }}</option>
+            <option [value]="course.id" [selected]="course.id === selectedCourseId()">{{ course.title }}</option>
           }
         </select>
         <select
@@ -120,11 +121,21 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                   class="table-row cursor-pointer"
                   (click)="onExpandIssue(issue)"
                 >
-                  <td class="px-3 py-3 text-slate-700 truncate max-w-[200px]">
-                    {{ issue.reporter?.email ?? '[Unknown]' }}
-                    @if (issue.reporter?.full_name) {
-                      <div class="text-xs text-slate-400">{{ issue.reporter!.full_name }}</div>
-                    }
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2 max-w-[200px]">
+                      <app-user-avatar
+                        [avatarUrl]="issue.reporter?.avatar_url ?? null"
+                        [name]="issue.reporter?.full_name ?? issue.reporter?.email ?? '?'"
+                        size="sm"
+                        class="shrink-0"
+                      />
+                      <div class="min-w-0">
+                        <div class="text-sm text-slate-700 truncate">{{ issue.reporter?.email ?? '[Unknown]' }}</div>
+                        @if (issue.reporter?.full_name) {
+                          <div class="text-xs text-slate-400 truncate">{{ issue.reporter!.full_name }}</div>
+                        }
+                      </div>
+                    </div>
                   </td>
                   <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ issue.course?.title ?? '\u2014' }}</td>
                   <td class="px-3 py-3 text-slate-600">{{ formatIssueType(issue.issue_type) }}</td>
@@ -252,6 +263,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 export class IssueManagementPageComponent implements OnInit {
   readonly issueService = inject(IssueService);
   #toast = inject(ToastService);
+  #route = inject(ActivatedRoute);
 
   readonly icons = { Flag, Search, Loader2, Clock, Eye, CheckCircle2, XCircle, Save, ChevronDown, ChevronUp };
   readonly formatRelativeTime = formatRelativeTime;
@@ -319,6 +331,10 @@ export class IssueManagementPageComponent implements OnInit {
   );
 
   ngOnInit() {
+    const courseId = this.#route.snapshot.queryParamMap.get('courseId');
+    if (courseId) {
+      this.selectedCourseId.set(courseId);
+    }
     this.issueService.loadBoardIssues();
   }
 

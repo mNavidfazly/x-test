@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   LucideAngularModule, MessageSquare, Search, Loader2,
   Clock, Check, CheckCircle2, XCircle, Send, HelpCircle,
@@ -12,11 +13,12 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
 
 @Component({
   selector: 'app-questions-board-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -45,12 +47,11 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
         </div>
         <select
           class="select-field"
-          [value]="selectedCourseId() ?? ''"
           (change)="selectedCourseId.set($any($event.target).value || null)"
         >
-          <option value="">All Courses</option>
+          <option value="" [selected]="!selectedCourseId()">All Courses</option>
           @for (course of questionService.boardCourses(); track course.id) {
-            <option [value]="course.id">{{ course.title }}</option>
+            <option [value]="course.id" [selected]="course.id === selectedCourseId()">{{ course.title }}</option>
           }
         </select>
         <select
@@ -107,11 +108,21 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                   class="table-row cursor-pointer"
                   (click)="onExpandQuestion(q)"
                 >
-                  <td class="px-3 py-3 text-slate-700 truncate max-w-[200px]">
-                    {{ q.asker?.email ?? '[Unknown]' }}
-                    @if (q.asker?.full_name) {
-                      <div class="text-xs text-slate-400">{{ q.asker!.full_name }}</div>
-                    }
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2 max-w-[200px]">
+                      <app-user-avatar
+                        [avatarUrl]="q.asker?.avatar_url ?? null"
+                        [name]="q.asker?.full_name ?? q.asker?.email ?? '?'"
+                        size="sm"
+                        class="shrink-0"
+                      />
+                      <div class="min-w-0">
+                        <div class="text-sm text-slate-700 truncate">{{ q.asker?.email ?? '[Unknown]' }}</div>
+                        @if (q.asker?.full_name) {
+                          <div class="text-xs text-slate-400 truncate">{{ q.asker!.full_name }}</div>
+                        }
+                      </div>
+                    </div>
                   </td>
                   <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ q.course?.title ?? '\u2014' }}</td>
                   <td class="px-3 py-3 text-slate-600 truncate max-w-[120px]">{{ q.module?.title ?? '\u2014' }}</td>
@@ -255,6 +266,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 export class QuestionsBoardPageComponent implements OnInit {
   readonly questionService = inject(ExpertQuestionService);
   #toast = inject(ToastService);
+  #route = inject(ActivatedRoute);
 
   readonly icons = { MessageSquare, Search, Loader2, Clock, Check, CheckCircle2, XCircle, Send, HelpCircle };
   readonly formatRelativeTime = formatRelativeTime;
@@ -311,6 +323,10 @@ export class QuestionsBoardPageComponent implements OnInit {
   );
 
   ngOnInit() {
+    const courseId = this.#route.snapshot.queryParamMap.get('courseId');
+    if (courseId) {
+      this.selectedCourseId.set(courseId);
+    }
     this.questionService.loadBoardQuestions();
   }
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { ExamGradingPageComponent } from './exam-grading-page.component';
 import { ExamGradingService } from '../../../core/services/exam-grading.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -14,6 +15,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 
 function renderGrading(options?: {
   gradingService?: ReturnType<typeof createMockExamGradingService>;
+  queryParams?: Record<string, string>;
 }) {
   const gradingService = options?.gradingService ?? createMockExamGradingService();
   const toast = createMockToastService();
@@ -23,6 +25,7 @@ function renderGrading(options?: {
     providers: [
       { provide: ExamGradingService, useValue: gradingService },
       { provide: ToastService, useValue: toast },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(options?.queryParams ?? {}) } } },
     ],
   }).then(result => ({ ...result, gradingService, toast }));
 }
@@ -359,5 +362,19 @@ describe('ExamGradingPageComponent', () => {
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
     expect(screen.getByText('bob@test.com')).toBeTruthy();
+  });
+
+  it('should pre-filter by courseId from query params', async () => {
+    const gradingService = createMockExamGradingService({
+      submissions: [
+        createMockGradingSubmission({ id: 's1', learner_email: 'alice@test.com', course_id: 'c1' }),
+        createMockGradingSubmission({ id: 's2', learner_email: 'bob@test.com', course_id: 'c2' }),
+      ],
+    });
+
+    await renderGrading({ gradingService, queryParams: { courseId: 'c1' } });
+
+    expect(screen.getByText('alice@test.com')).toBeTruthy();
+    expect(screen.queryByText('bob@test.com')).toBeFalsy();
   });
 });

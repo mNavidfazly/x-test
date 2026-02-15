@@ -3,13 +3,15 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { AskExpertComponent } from './ask-expert.component';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { createMockExpertQuestionService } from '../../../__mocks__/course.mock';
+import { createMockExpertQuestionService, createMockCourseLecturer } from '../../../__mocks__/course.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
+import { CourseLecturer } from '../../../core/models/course.model';
 
 describe('AskExpertComponent', () => {
   const renderAskExpert = async (options?: {
     courseId?: string;
     moduleId?: string;
+    lecturers?: CourseLecturer[];
     mockService?: ReturnType<typeof createMockExpertQuestionService>;
   }) => {
     const mockService = options?.mockService ?? createMockExpertQuestionService();
@@ -19,6 +21,7 @@ describe('AskExpertComponent', () => {
       componentInputs: {
         courseId: options?.courseId ?? 'course-1',
         moduleId: options?.moduleId ?? 'mod-1',
+        ...(options?.lecturers !== undefined ? { lecturers: options.lecturers } : {}),
       },
       providers: [
         { provide: ExpertQuestionService, useValue: mockService },
@@ -168,5 +171,60 @@ describe('AskExpertComponent', () => {
     await new Promise(r => setTimeout(r));
 
     expect(mockService.askQuestion).not.toHaveBeenCalled();
+  });
+
+  // --- Expert identity display tests ---
+
+  it('should show expert names in collapsed state when lecturers provided', async () => {
+    await renderAskExpert({
+      lecturers: [
+        createMockCourseLecturer({ user_id: 'l1', full_name: 'Dr. Chen' }),
+        createMockCourseLecturer({ user_id: 'l2', full_name: 'Jane Smith' }),
+      ],
+    });
+
+    expect(screen.getByText('Dr. Chen, Jane Smith')).toBeTruthy();
+  });
+
+  it('should show expert avatars and names in open form', async () => {
+    const { fixture } = await renderAskExpert({
+      lecturers: [
+        createMockCourseLecturer({ user_id: 'l1', full_name: 'Dr. Chen', avatar_url: 'https://example.com/chen.jpg' }),
+      ],
+    });
+
+    fireEvent.click(screen.getByText('Ask an Expert'));
+    fixture.detectChanges();
+
+    expect(screen.getByText(/Your question goes to Dr. Chen/)).toBeTruthy();
+    expect(screen.getByAltText('Dr. Chen')).toBeTruthy();
+  });
+
+  it('should show expert name in success state after submission', async () => {
+    const { fixture } = await renderAskExpert({
+      lecturers: [
+        createMockCourseLecturer({ user_id: 'l1', full_name: 'Dr. Chen' }),
+      ],
+    });
+
+    fireEvent.click(screen.getByText('Ask an Expert'));
+
+    const textarea = screen.getByPlaceholderText('Type your question...');
+    fireEvent.input(textarea, { target: { value: 'My question' } });
+    fixture.detectChanges();
+
+    fireEvent.click(screen.getByText('Send Question'));
+    await new Promise(r => setTimeout(r));
+    fixture.detectChanges();
+
+    expect(screen.getByText(/Dr. Chen will be notified/)).toBeTruthy();
+  });
+
+  it('should show nothing extra when lecturers input is empty', async () => {
+    await renderAskExpert({ lecturers: [] });
+
+    // Should just show the button, no expert names
+    expect(screen.getByText('Ask an Expert')).toBeTruthy();
+    expect(screen.queryByText(/Dr\.|will be notified|goes to/)).toBeNull();
   });
 });

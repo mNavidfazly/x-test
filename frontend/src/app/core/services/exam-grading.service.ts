@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { GradingSubmission, GradingCourseSummary, GradeExamPayload } from '../models/course.model';
 import { extractErrorMessage } from '../utils/error.utils';
+import { resolveAvatarUrls } from '../utils/avatar.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ExamGradingService {
@@ -31,7 +32,7 @@ export class ExamGradingService {
       // RLS auto-scopes: lecturer sees only can_grade courses, PA sees all
       const submissionsRes = await client
         .from('exam_submissions')
-        .select('id, user_id, tenant_id, exam_id, course_id, file_url, submitted_at, deadline, score, feedback, graded_by, graded_at, profiles!user_id(email, full_name), exams(title, passing_score), courses!course_id(title)')
+        .select('id, user_id, tenant_id, exam_id, course_id, file_url, submitted_at, deadline, score, feedback, graded_by, graded_at, profiles!user_id(email, full_name, avatar_url), exams(title, passing_score), courses!course_id(title)')
         .order('submitted_at', { ascending: false });
 
       if (submissionsRes.error) throw submissionsRes.error;
@@ -40,7 +41,7 @@ export class ExamGradingService {
         id: string; user_id: string; tenant_id: string; exam_id: string; course_id: string;
         file_url: string; submitted_at: string; deadline: string;
         score: number | null; feedback: string | null; graded_by: string | null; graded_at: string | null;
-        profiles: { email: string; full_name: string | null } | null;
+        profiles: { email: string; full_name: string | null; avatar_url: string | null } | null;
         exams: { title: string; passing_score: number } | null;
         courses: { title: string } | null;
       }[];
@@ -72,12 +73,20 @@ export class ExamGradingService {
             graded_at: sub.graded_at,
             learner_email: sub.profiles?.email ?? '',
             learner_name: sub.profiles?.full_name ?? null,
+            learner_avatar_url: sub.profiles?.avatar_url ?? null,
             course_title: sub.courses?.title ?? 'Unknown',
             exam_title: sub.exams?.title ?? 'Unknown',
             passing_score: sub.exams?.passing_score ?? 0,
           };
         }),
       );
+
+      // Batch-resolve learner avatar URLs
+      const avatarWrappers = submissions.map(s => ({ avatar_url: s.learner_avatar_url }));
+      await resolveAvatarUrls(this.#supabase.client, avatarWrappers);
+      for (let i = 0; i < submissions.length; i++) {
+        submissions[i].learner_avatar_url = avatarWrappers[i].avatar_url;
+      }
 
       // Derive course list from submissions (only courses with actual submissions)
       const courseMap = new Map<string, string>();

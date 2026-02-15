@@ -78,6 +78,32 @@ const BADGE_LABELS: Record<string, string> = {
             </p>
           }
 
+          <!-- Instructors -->
+          @if (courseService.courseDetail()!.lecturers.length > 0) {
+            <div class="mb-4">
+              <p class="section-label mb-2">Instructors</p>
+              <div class="flex flex-wrap gap-3">
+                @for (lecturer of courseService.courseDetail()!.lecturers; track lecturer.user_id) {
+                  <div class="flex items-center gap-2.5 bg-white border border-slate-200 rounded-xl px-3 py-2">
+                    @if (lecturer.avatar_url) {
+                      <img [src]="lecturer.avatar_url"
+                           [alt]="lecturer.full_name ?? lecturer.email"
+                           class="w-8 h-8 rounded-full object-cover" />
+                    } @else {
+                      <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-700 text-xs font-semibold flex items-center justify-center">
+                        {{ getInitials(lecturer.full_name ?? lecturer.email) }}
+                      </div>
+                    }
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold text-slate-900 truncate">{{ lecturer.full_name ?? lecturer.email.split('@')[0] }}</p>
+                      <p class="text-xs text-slate-400 truncate">{{ lecturer.email }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
           <!-- Progress summary -->
           @if (totalModules() > 0) {
             <div class="flex items-center gap-3">
@@ -240,6 +266,10 @@ export class CourseDetailPageComponent implements OnInit {
 
   readonly confirmingDelete = signal(false);
   readonly deleting = signal(false);
+
+  getInitials(name: string): string {
+    return name.split(/[\s@]/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+  }
 
   // Lecture CRUD state
   readonly editingLectureId = signal<string | null>(null);

@@ -1,8 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
-import { ExpertQuestion, ExpertQuestionForBoard, BoardCourseSummary } from '../models/expert-question.model';
+import { ExpertQuestion, ExpertQuestionForBoard, BoardCourseSummary, QuestionAsker } from '../models/expert-question.model';
 import { extractErrorMessage } from '../utils/error.utils';
+import { resolveAvatarUrls } from '../utils/avatar.utils';
 
 @Injectable({ providedIn: 'root' })
 export class ExpertQuestionService {
@@ -101,7 +102,7 @@ export class ExpertQuestionService {
           *,
           course:courses!course_id(title),
           module:modules!module_id(title),
-          asker:profiles!user_id(full_name, email)
+          asker:profiles!user_id(full_name, email, avatar_url)
         `)
         .order('created_at', { ascending: false });
 
@@ -124,6 +125,9 @@ export class ExpertQuestionService {
       const courses: BoardCourseSummary[] = Array.from(courseMap.entries())
         .map(([id, title]) => ({ id, title }))
         .sort((a, b) => a.title.localeCompare(b.title));
+
+      const askers = questions.map(q => q.asker).filter(Boolean) as QuestionAsker[];
+      await resolveAvatarUrls(this.#supabase.client, askers);
 
       this.#boardQuestions.set(questions);
       this.#boardCourses.set(courses);

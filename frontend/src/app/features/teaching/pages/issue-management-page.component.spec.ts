@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { IssueManagementPageComponent } from './issue-management-page.component';
 import { IssueService } from '../../../core/services/issue.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -14,6 +15,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 
 function renderBoard(options?: {
   issueService?: ReturnType<typeof createMockIssueService>;
+  queryParams?: Record<string, string>;
 }) {
   const issueService = options?.issueService ?? createMockIssueService();
   const toast = createMockToastService();
@@ -23,6 +25,7 @@ function renderBoard(options?: {
     providers: [
       { provide: IssueService, useValue: issueService },
       { provide: ToastService, useValue: toast },
+      { provide: ActivatedRoute, useValue: { snapshot: { queryParamMap: convertToParamMap(options?.queryParams ?? {}) } } },
     ],
   }).then(result => ({ ...result, issueService, toast }));
 }
@@ -349,5 +352,19 @@ describe('IssueManagementPageComponent', () => {
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
     expect(screen.getByText('bob@test.com')).toBeTruthy();
+  });
+
+  it('should pre-filter by courseId from query params', async () => {
+    const issueService = createMockIssueService({
+      boardIssues: [
+        createMockIssueForBoard({ id: 'iss-1', course_id: 'c1', reporter: { full_name: 'Alice', email: 'alice@test.com' } }),
+        createMockIssueForBoard({ id: 'iss-2', course_id: 'c2', reporter: { full_name: 'Bob', email: 'bob@test.com' } }),
+      ],
+    });
+
+    await renderBoard({ issueService, queryParams: { courseId: 'c1' } });
+
+    expect(screen.getByText('alice@test.com')).toBeTruthy();
+    expect(screen.queryByText('bob@test.com')).toBeFalsy();
   });
 });

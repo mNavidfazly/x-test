@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { LucideAngularModule, HelpCircle, Send, Loader2, X, CheckCircle2 } from 'lucide-angular';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { CourseLecturer } from '../../../core/models/course.model';
 
 @Component({
   selector: 'app-ask-expert',
@@ -14,7 +15,14 @@ import { ToastService } from '../../../core/services/toast.service';
         <lucide-icon [img]="icons.CheckCircle2" [size]="20" class="text-emerald-600 shrink-0 mt-0.5"></lucide-icon>
         <div>
           <p class="text-sm font-semibold text-emerald-800">Your question has been sent!</p>
-          <p class="text-xs text-emerald-600 mt-1">The course expert(s) will be notified. You can track your questions on the My Questions page.</p>
+          <p class="text-xs text-emerald-600 mt-1">
+            @if (expertNames()) {
+              {{ expertNames() }} will be notified.
+            } @else {
+              The course expert(s) will be notified.
+            }
+            You can track your questions on the My Questions page.
+          </p>
           <button
             type="button"
             (click)="onReset()"
@@ -33,7 +41,25 @@ import { ToastService } from '../../../core/services/toast.service';
             <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
           </button>
         </div>
-        <p class="text-xs text-slate-500 mb-3">Your question will be sent to the course expert(s).</p>
+        @if (lecturers().length > 0) {
+          <div class="flex items-center gap-2 mb-3">
+            <div class="flex -space-x-1.5">
+              @for (l of lecturers().slice(0, 3); track l.user_id) {
+                @if (l.avatar_url) {
+                  <img [src]="l.avatar_url" [alt]="l.full_name ?? l.email"
+                       class="w-6 h-6 rounded-full object-cover border-2 border-white" />
+                } @else {
+                  <div class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold flex items-center justify-center border-2 border-white">
+                    {{ getInitials(l.full_name ?? l.email) }}
+                  </div>
+                }
+              }
+            </div>
+            <p class="text-xs text-slate-500">Your question goes to {{ expertNames() }}</p>
+          </div>
+        } @else {
+          <p class="text-xs text-slate-500 mb-3">Your question will be sent to the course expert(s).</p>
+        }
         <textarea
           [value]="questionText()"
           (input)="onInput($event)"
@@ -59,20 +85,40 @@ import { ToastService } from '../../../core/services/toast.service';
         </div>
       </div>
     } @else {
-      <button
-        type="button"
-        (click)="onToggle()"
-        class="inline-flex items-center gap-1.5 bg-white border border-teal-300 text-teal-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-teal-50 active:scale-95 transition-all duration-200"
-      >
-        <lucide-icon [img]="icons.HelpCircle" [size]="16"></lucide-icon>
-        Ask an Expert
-      </button>
+      <div>
+        <button
+          type="button"
+          (click)="onToggle()"
+          class="inline-flex items-center gap-1.5 bg-white border border-teal-300 text-teal-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-teal-50 active:scale-95 transition-all duration-200"
+        >
+          <lucide-icon [img]="icons.HelpCircle" [size]="16"></lucide-icon>
+          Ask an Expert
+        </button>
+        @if (lecturers().length > 0) {
+          <div class="flex items-center gap-2 mt-2">
+            <div class="flex -space-x-1.5">
+              @for (l of lecturers().slice(0, 3); track l.user_id) {
+                @if (l.avatar_url) {
+                  <img [src]="l.avatar_url" [alt]="l.full_name ?? l.email"
+                       class="w-6 h-6 rounded-full object-cover border-2 border-white" />
+                } @else {
+                  <div class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold flex items-center justify-center border-2 border-white">
+                    {{ getInitials(l.full_name ?? l.email) }}
+                  </div>
+                }
+              }
+            </div>
+            <span class="text-xs text-slate-400">{{ expertNames() }}</span>
+          </div>
+        }
+      </div>
     }
   `,
 })
 export class AskExpertComponent {
   readonly courseId = input.required<string>();
   readonly moduleId = input.required<string>();
+  readonly lecturers = input<CourseLecturer[]>([]);
 
   #expertQuestionService = inject(ExpertQuestionService);
   #toast = inject(ToastService);
@@ -83,6 +129,18 @@ export class AskExpertComponent {
   readonly submitted = signal(false);
 
   readonly icons = { HelpCircle, Send, Loader2, X, CheckCircle2 };
+
+  readonly expertNames = computed(() => {
+    const lecturers = this.lecturers();
+    if (lecturers.length === 0) return '';
+    const names = lecturers.map(l => l.full_name ?? l.email.split('@')[0]);
+    if (names.length <= 2) return names.join(', ');
+    return `${names[0]} +${names.length - 1} more`;
+  });
+
+  getInitials(name: string): string {
+    return name.split(/[\s@]/).filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+  }
 
   onToggle() {
     this.isOpen.update(v => !v);

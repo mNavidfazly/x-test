@@ -1,8 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
-import { Issue, IssueType, IssueStatus, IssueForBoard, BoardIssueSummary } from '../models/issue.model';
+import { Issue, IssueType, IssueStatus, IssueForBoard, IssueReporter, BoardIssueSummary } from '../models/issue.model';
 import { extractErrorMessage } from '../utils/error.utils';
+import { resolveAvatarUrls } from '../utils/avatar.utils';
 
 @Injectable({ providedIn: 'root' })
 export class IssueService {
@@ -108,7 +109,7 @@ export class IssueService {
           *,
           course:courses!issues_course_id_fkey(title),
           module:modules!issues_module_id_fkey(title),
-          reporter:profiles!user_id(full_name, email)
+          reporter:profiles!user_id(full_name, email, avatar_url)
         `)
         .order('created_at', { ascending: false });
 
@@ -131,6 +132,9 @@ export class IssueService {
       const courses: BoardIssueSummary[] = Array.from(courseMap.entries())
         .map(([id, title]) => ({ id, title }))
         .sort((a, b) => a.title.localeCompare(b.title));
+
+      const reporters = issues.map(i => i.reporter).filter(Boolean) as IssueReporter[];
+      await resolveAvatarUrls(this.#supabase.client, reporters);
 
       this.#boardIssues.set(issues);
       this.#boardCourses.set(courses);

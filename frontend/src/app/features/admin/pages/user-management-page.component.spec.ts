@@ -14,6 +14,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
+import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockUserManagementService>;
@@ -30,7 +31,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(UserManagementPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
     providers: [
       { provide: UserManagementService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -54,7 +55,7 @@ function renderPageAsPA(options?: {
   const toast = createMockToastService();
 
   return render(UserManagementPageComponent, {
-    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
     providers: [
       { provide: UserManagementService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -456,10 +457,9 @@ describe('UserManagementPageComponent', () => {
       ],
     });
 
-    const { container } = await renderPage({ service });
+    await renderPage({ service });
 
-    const avatar = container.querySelector('.w-7.h-7.rounded-full');
-    expect(avatar?.textContent?.trim()).toBe('AB');
+    expect(screen.getByText('AB')).toBeTruthy();
   });
 
   it('should clear filters on button click', async () => {

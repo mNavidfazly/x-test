@@ -34,7 +34,7 @@ describe('CourseService', () => {
   });
 
   describe('loadCourses', () => {
-    it('should load and merge course data from 4 parallel queries', async () => {
+    it('should load and merge course data from 5 parallel queries', async () => {
       let callCount = 0;
       supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) => {
         callCount++;
@@ -94,6 +94,7 @@ describe('CourseService', () => {
         isEnrolled: true,
         lastActivity: '2026-01-20T12:00:00Z',
         totalDurationMinutes: 50,
+        lecturers: [],
       });
 
       expect(courses[1]).toEqual({
@@ -108,6 +109,7 @@ describe('CourseService', () => {
         isEnrolled: false,
         lastActivity: null,
         totalDurationMinutes: 45,
+        lecturers: [],
       });
     });
 

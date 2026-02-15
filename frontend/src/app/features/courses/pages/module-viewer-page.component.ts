@@ -103,6 +103,7 @@ import { ReportIssueComponent } from '../components/report-issue.component';
             <app-ask-expert
               [courseId]="courseId()"
               [moduleId]="courseService.moduleViewer()!.module.id"
+              [lecturers]="courseService.courseDetail()?.lecturers ?? []"
             />
           </div>
         } @placeholder {

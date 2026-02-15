@@ -23,6 +23,7 @@ export interface Issue {
 export interface IssueReporter {
   full_name: string | null;
   email: string;
+  avatar_url: string | null;
 }
 
 export interface IssueForBoard {

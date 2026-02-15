@@ -5,8 +5,9 @@ import { AuthService } from './auth.service';
 import { BunnyUploadService } from './bunny-upload.service';
 import { extractErrorMessage } from '../utils/error.utils';
 import { isStoragePath } from '../utils/storage.utils';
+import { resolveAvatarUrls } from '../utils/avatar.utils';
 import {
-  CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
+  CourseWithProgress, CourseDetail, CourseLecturer, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem, ModuleVideo,
   CourseFormData, TenantSummary, TenantAssignment, LectureFormData,
   ModuleSavePayload, ModuleContentFormData,
@@ -49,14 +50,15 @@ export class CourseService {
         return;
       }
 
-      const [coursesRes, modulesRes, progressRes, enrollmentsRes] = await Promise.all([
+      const [coursesRes, modulesRes, progressRes, enrollmentsRes, lecturerRes] = await Promise.all([
         client.from('courses').select('id, title, description, thumbnail_url, enrollment_type').order('title'),
         client.from('modules').select('id, course_id, estimated_duration_minutes'),
         client.from('user_progress').select('module_id, course_id, status, updated_at').eq('user_id', userId),
         client.from('course_enrollments').select('course_id').eq('user_id', userId),
+        client.from('lecturer_course_assignments').select('course_id, user:profiles!user_id(id, full_name, email, avatar_url)'),
       ]);
 
-      const firstError = [coursesRes, modulesRes, progressRes, enrollmentsRes].find(r => r.error);
+      const firstError = [coursesRes, modulesRes, progressRes, enrollmentsRes, lecturerRes].find(r => r.error);
       if (firstError?.error) throw firstError.error;
 
       const courses = coursesRes.data ?? [];
@@ -65,6 +67,17 @@ export class CourseService {
       const enrollments = enrollmentsRes.data ?? [];
 
       const enrolledCourseIds = new Set(enrollments.map((e: { course_id: string }) => e.course_id));
+
+      const lecturersByCourse = new Map<string, CourseLecturer[]>();
+      for (const row of (lecturerRes.data ?? [])) {
+        const r = row as any;
+        if (!r.user) continue;
+        const list = lecturersByCourse.get(r.course_id) ?? [];
+        if (!list.some((l: CourseLecturer) => l.user_id === r.user.id)) {
+          list.push({ user_id: r.user.id, full_name: r.user.full_name, email: r.user.email, avatar_url: r.user.avatar_url });
+        }
+        lecturersByCourse.set(r.course_id, list);
+      }
 
       const moduleCountByCourse = new Map<string, number>();
       const durationByCourse = new Map<string, number>();
@@ -102,10 +115,12 @@ export class CourseService {
           isEnrolled: enrolledCourseIds.has(c.id),
           lastActivity: lastActivityByCourse.get(c.id) ?? null,
           totalDurationMinutes: durationByCourse.get(c.id) ?? 0,
+          lecturers: lecturersByCourse.get(c.id) ?? [],
         };
       });
 
       await this.#resolveThumbnailUrls(result);
+      await this.#resolveAvatarUrls(result.flatMap(c => c.lecturers));
       this.#courses.set(result);
     } catch (err) {
       this.#error.set(extractErrorMessage(err, 'Failed to load courses'));
@@ -128,7 +143,7 @@ export class CourseService {
         return;
       }
 
-      const [courseRes, progressRes, enrollmentRes] = await Promise.all([
+      const [courseRes, progressRes, enrollmentRes, lecturerRes] = await Promise.all([
         client
           .from('courses')
           .select('id, title, description, thumbnail_url, enrollment_type, lectures(id, title, description, sort_order, modules(id, title, module_type, sort_order, estimated_duration_minutes))')
@@ -147,11 +162,16 @@ export class CourseService {
           .eq('course_id', courseId)
           .eq('user_id', userId)
           .maybeSingle(),
+        client
+          .from('lecturer_course_assignments')
+          .select('user:profiles!user_id(id, full_name, email, avatar_url)')
+          .eq('course_id', courseId),
       ]);
 
       if (courseRes.error) throw courseRes.error;
       if (progressRes.error) throw progressRes.error;
       if (enrollmentRes.error) throw enrollmentRes.error;
+      if (lecturerRes.error) throw lecturerRes.error;
 
       const course = courseRes.data as {
         id: string;
@@ -178,6 +198,12 @@ export class CourseService {
         ? await this.#getSignedThumbnailUrl(course.thumbnail_url!)
         : course.thumbnail_url;
 
+      const lecturers: CourseLecturer[] = (lecturerRes.data ?? [])
+        .map((row: any) =>
+          row.user ? { user_id: row.user.id, full_name: row.user.full_name, email: row.user.email, avatar_url: row.user.avatar_url } : null)
+        .filter((l: CourseLecturer | null): l is CourseLecturer => l !== null);
+      await this.#resolveAvatarUrls(lecturers);
+
       this.#courseDetail.set({
         id: course.id,
         title: course.title,
@@ -190,6 +216,7 @@ export class CourseService {
           modules: l.modules.map(m => ({ ...m, module_type: m.module_type as ModuleType })),
         })),
         progressMap,
+        lecturers,
       });
     } catch (err) {
       this.#error.set(extractErrorMessage(err, 'Failed to load course'));
@@ -1639,5 +1666,9 @@ export class CourseService {
         courses[storagePaths[i].index].thumbnail_url = result.signedUrl;
       }
     }
+  }
+
+  async #resolveAvatarUrls(lecturers: CourseLecturer[]): Promise<void> {
+    await resolveAvatarUrls(this.#supabase.client, lecturers);
   }
 }
