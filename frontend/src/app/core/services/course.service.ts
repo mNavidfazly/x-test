@@ -4,6 +4,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
 import { BunnyUploadService } from './bunny-upload.service';
 import { extractErrorMessage } from '../utils/error.utils';
+import { isStoragePath } from '../utils/storage.utils';
 import {
   CourseWithProgress, CourseDetail, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem, ModuleVideo,
@@ -101,6 +102,7 @@ export class CourseService {
         };
       });
 
+      await this.#resolveThumbnailUrls(result);
       this.#courses.set(result);
     } catch (err) {
       this.#error.set(extractErrorMessage(err, 'Failed to load courses'));
@@ -169,11 +171,15 @@ export class CourseService {
         progressMap[rec.module_id] = { status: rec.status as ModuleProgress['status'], completed_at: rec.completed_at };
       }
 
+      const resolvedThumbnail = isStoragePath(course.thumbnail_url)
+        ? await this.#getSignedThumbnailUrl(course.thumbnail_url!)
+        : course.thumbnail_url;
+
       this.#courseDetail.set({
         id: course.id,
         title: course.title,
         description: course.description,
-        thumbnail_url: course.thumbnail_url,
+        thumbnail_url: resolvedThumbnail,
         enrollment_type: course.enrollment_type as EnrollmentType,
         isEnrolled: !!enrollmentRes.data,
         lectures: (course.lectures ?? []).map(l => ({
@@ -1572,4 +1578,59 @@ export class CourseService {
     }
   }
 
+  // --- Thumbnail upload methods ---
+
+  async uploadThumbnail(courseId: string, file: File): Promise<string> {
+    const ext = file.name.split('.').pop() ?? 'jpg';
+    const path = `${courseId}/thumbnail-${Date.now()}.${ext}`;
+    const { data, error } = await this.#supabase.client.storage
+      .from('course-files')
+      .upload(path, file, { upsert: false, contentType: file.type });
+
+    if (error) throw new Error(`Failed to upload thumbnail: ${error.message}`);
+    return data.path;
+  }
+
+  async deleteThumbnailIfStoragePath(url: string | null): Promise<void> {
+    if (!isStoragePath(url)) return;
+    await this.#supabase.client.storage
+      .from('course-files')
+      .remove([url!]);
+  }
+
+  async getCourseThumbnailSignedUrl(path: string): Promise<string | null> {
+    return this.#getSignedThumbnailUrl(path);
+  }
+
+  async #getSignedThumbnailUrl(path: string): Promise<string | null> {
+    const { data, error } = await this.#supabase.client.storage
+      .from('course-files')
+      .createSignedUrl(path, 3600);
+
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  }
+
+  async #resolveThumbnailUrls(courses: CourseWithProgress[]): Promise<void> {
+    const storagePaths: { index: number; path: string }[] = [];
+    for (let i = 0; i < courses.length; i++) {
+      if (isStoragePath(courses[i].thumbnail_url)) {
+        storagePaths.push({ index: i, path: courses[i].thumbnail_url! });
+      }
+    }
+    if (storagePaths.length === 0) return;
+
+    const { data, error } = await this.#supabase.client.storage
+      .from('course-files')
+      .createSignedUrls(storagePaths.map(s => s.path), 3600);
+
+    if (error || !data) return;
+
+    for (let i = 0; i < storagePaths.length; i++) {
+      const result = data[i];
+      if (result && !result.error && result.signedUrl) {
+        courses[storagePaths[i].index].thumbnail_url = result.signedUrl;
+      }
+    }
+  }
 }

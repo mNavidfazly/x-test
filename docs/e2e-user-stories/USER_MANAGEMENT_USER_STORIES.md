@@ -781,6 +781,7 @@ ALTER TABLE profiles ENABLE TRIGGER protect_role_fields;
 |------|--------|-----------------|------|------|-------|
 | 14 Feb 2026 | Claude E2E | UM-01 to UM-12 | 12 | 0 | 1 bug found+fixed (UM-BUG-01: maybe_single returns None). All 12 stories pass after fix. 5 roles tested (PA, TA, Learner, Lecturer, CSM). |
 | 15 Feb 2026 | Claude (Playwright MCP) | UM-01 to UM-12 | 12 | 0 | Full regression run. PA board: 9 users (Total:9, TA:1, PA:1, Regular:7), role filter dropdown, Invite User button, cross-tenant view with Tenant column. No regressions. |
+| 15 Feb 2026 | Claude Opus 4.6 (Playwright MCP) | UM-01 to UM-12 (Phase 10C regression) | 12 | 0 | Post-10C regression. PA: 9 users, 4 cards (9/1/1/7), Tenant col, search debounce ("admin"→1 user), role filter ("Platform Admins"→1), expand row (name+role checkboxes), self-protection (both checkboxes disabled+"Cannot modify own role"), invite form (email+tenant picker, 3 tenants). TA: 2 users, 3 cards (no PA), no Tenant col, invite form (email only, no tenant picker), expand shows only TA checkbox. Learner blocked→/dashboard. No regressions from pagination/debounce. |
 
 ---
 

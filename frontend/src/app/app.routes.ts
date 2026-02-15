@@ -127,8 +127,8 @@ export const routes: Routes = [
       {
         path: 'profile',
         loadComponent: () =>
-          import('./shared/components/stub-page.component').then(
-            (m) => m.StubPageComponent,
+          import('./features/profile/pages/profile-page.component').then(
+            (m) => m.ProfilePageComponent,
           ),
       },
       {

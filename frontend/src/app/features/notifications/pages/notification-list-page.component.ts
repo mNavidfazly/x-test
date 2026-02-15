@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  LucideAngularModule, Bell, CheckCheck, Loader2,
+  LucideAngularModule, Bell, CheckCheck, Loader2, ChevronDown,
 } from 'lucide-angular';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -73,7 +73,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
       } @else {
         <!-- Notification list -->
         <div class="space-y-2">
-          @for (notification of notificationService.notifications(); track notification.id) {
+          @for (notification of visibleNotifications(); track notification.id) {
             <button
               type="button"
               (click)="onNotificationClick(notification)"
@@ -108,6 +108,19 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
             </button>
           }
         </div>
+
+        @if (hasMore()) {
+          <div class="text-center mt-4">
+            <button
+              type="button"
+              (click)="onLoadMore()"
+              class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all duration-200"
+            >
+              <lucide-icon [img]="icons.ChevronDown" [size]="16"></lucide-icon>
+              Load more ({{ notificationService.notifications().length - visibleCount() }} remaining)
+            </button>
+          </div>
+        }
       }
     </div>
   `,
@@ -116,8 +129,17 @@ export class NotificationListPageComponent implements OnInit {
   readonly notificationService = inject(NotificationService);
   #router = inject(Router);
 
-  readonly icons = { Bell, CheckCheck, Loader2 };
+  readonly icons = { Bell, CheckCheck, Loader2, ChevronDown };
   readonly formatRelativeTime = formatRelativeTime;
+
+  // Load-more pagination
+  readonly visibleCount = signal(50);
+  readonly visibleNotifications = computed(() =>
+    this.notificationService.notifications().slice(0, this.visibleCount()),
+  );
+  readonly hasMore = computed(() =>
+    this.notificationService.notifications().length > this.visibleCount(),
+  );
 
   ngOnInit() {
     this.notificationService.loadNotifications();
@@ -143,5 +165,9 @@ export class NotificationListPageComponent implements OnInit {
 
   getIconColorClass(type: NotificationType): string {
     return getNotificationMeta(type).colorClass;
+  }
+
+  onLoadMore(): void {
+    this.visibleCount.update(v => v + 50);
   }
 }

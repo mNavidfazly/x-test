@@ -826,7 +826,7 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodit
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-14 | Claude (Playwright MCP) | NT-01 to NT-10, NT-12 | 11 | 0 | NT-11 skipped (Supabase auth uses localStorage — two users can't coexist in one browser context). NT-12 fully verified (all 4 roles: learner, lecturer, PA, CSM). NT-03 verified on sign-out. NT-09 used lecturer instead of PA to resolve issue. 0 bugs found. |
-| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | NT-01 through NT-12 (regression) | 11 | 0 | Full regression run. PA notification page: 50 unread, Mark all as read button, multiple types (access requests, issues, course assigned). Bell badge "50". NT-11 still ⏳ (requires 2 browser instances). No regressions. |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | NT-01 through NT-12 (Phase 10C regression) | 11 | 0 | Post-10C regression. Learner: 16 notifications, 4 unread, bell badge "4", Mark all as read visible, multiple types (new_module, issue_resolved, question_answered, course_assigned, exam_graded, exam_reset). PA: 50 notifications (all read after previous mark-all-as-read), no bell badge, multiple types (access_requests, issues, course_assigned). visibleCount signal works (50 shown, no "Load more" since DB limit is 50). NT-11 still ⏳ (requires 2 browser instances). No regressions from Load more / visibleCount changes. |
 
 ---
 

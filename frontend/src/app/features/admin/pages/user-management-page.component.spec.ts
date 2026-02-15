@@ -144,8 +144,12 @@ describe('UserManagementPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    vi.useFakeTimers();
     fireEvent.input(searchInput, { target: { value: 'Bob' } });
     fixture.detectChanges();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    vi.useRealTimers();
 
     expect(screen.queryByText('Alice Test')).toBeFalsy();
     expect(screen.getByText('Bob Admin')).toBeTruthy();
@@ -162,8 +166,12 @@ describe('UserManagementPageComponent', () => {
     const { fixture } = await renderPage({ service });
 
     const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    vi.useFakeTimers();
     fireEvent.input(searchInput, { target: { value: 'other.com' } });
     fixture.detectChanges();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    vi.useRealTimers();
 
     expect(screen.queryByText('Alice')).toBeFalsy();
     expect(screen.getByText('Bob')).toBeTruthy();
@@ -461,16 +469,91 @@ describe('UserManagementPageComponent', () => {
 
     // Apply filter
     const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    vi.useFakeTimers();
     fireEvent.input(searchInput, { target: { value: 'Alice' } });
     fixture.detectChanges();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    vi.useRealTimers();
 
     expect(screen.queryByText('Bob')).toBeFalsy();
 
-    // Clear
+    // Clear — also need to advance debounce timer since searchTerm reset propagates through debouncedSignal
+    vi.useFakeTimers();
     fireEvent.click(screen.getByText('Clear filters'));
     fixture.detectChanges();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    vi.useRealTimers();
 
     expect(screen.getByText('Alice')).toBeTruthy();
     expect(screen.getByText('Bob')).toBeTruthy();
+  });
+
+  it('should show pagination when more than 50 users', async () => {
+    const users = Array.from({ length: 60 }, (_, i) =>
+      createMockUserForBoard({ id: `u${i}`, full_name: `User ${i}`, email: `user${i}@test.com` }),
+    );
+    const service = createMockUserManagementService({ users });
+
+    await renderPage({ service });
+
+    expect(screen.getByText(/Showing 1.50 of 60/)).toBeTruthy();
+    expect(screen.getByText('Next')).toBeTruthy();
+    expect(screen.getByText('Previous')).toBeTruthy();
+  });
+
+  it('should hide pagination when 50 or fewer users', async () => {
+    const service = createMockUserManagementService({
+      users: [
+        createMockUserForBoard({ id: 'u1', full_name: 'Alice' }),
+        createMockUserForBoard({ id: 'u2', full_name: 'Bob' }),
+      ],
+    });
+
+    await renderPage({ service });
+
+    expect(screen.queryByText('Next')).toBeFalsy();
+    expect(screen.queryByText('Previous')).toBeFalsy();
+  });
+
+  it('should navigate to next page', async () => {
+    const users = Array.from({ length: 60 }, (_, i) =>
+      createMockUserForBoard({ id: `u${i}`, full_name: `User ${i}`, email: `user${i}@test.com` }),
+    );
+    const service = createMockUserManagementService({ users });
+
+    const { fixture } = await renderPage({ service });
+
+    fireEvent.click(screen.getByText('Next'));
+    fixture.detectChanges();
+
+    expect(screen.getByText(/Showing 51.60 of 60/)).toBeTruthy();
+  });
+
+  it('should reset page to 1 on search filter change', async () => {
+    const users = Array.from({ length: 60 }, (_, i) =>
+      createMockUserForBoard({ id: `u${i}`, full_name: `User ${i}`, email: `user${i}@test.com` }),
+    );
+    const service = createMockUserManagementService({ users });
+
+    const { fixture } = await renderPage({ service });
+
+    // Go to page 2
+    fireEvent.click(screen.getByText('Next'));
+    fixture.detectChanges();
+    expect(screen.getByText(/Showing 51.60 of 60/)).toBeTruthy();
+
+    // Search — should reset to page 1
+    const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    vi.useFakeTimers();
+    fireEvent.input(searchInput, { target: { value: 'User 1' } });
+    fixture.detectChanges();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    vi.useRealTimers();
+
+    // Page should be reset (no "51-60" showing)
+    expect(screen.queryByText(/Showing 51/)).toBeFalsy();
   });
 });

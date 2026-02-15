@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/angular';
+import { DeferBlockState } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { signal } from '@angular/core';
 import { BehaviorSubject, EMPTY } from 'rxjs';
@@ -296,7 +297,12 @@ describe('ModuleViewerPageComponent', () => {
 
   it('should render ask expert component when module is loaded', async () => {
     const viewer = createMockModuleViewerData();
-    await renderPage({ viewer });
+    const { fixture } = await renderPage({ viewer });
+
+    const deferBlocks = await fixture.getDeferBlocks();
+    for (const block of deferBlocks) {
+      await block.render(DeferBlockState.Complete);
+    }
 
     expect(document.querySelector('app-ask-expert')).toBeTruthy();
   });
@@ -305,7 +311,12 @@ describe('ModuleViewerPageComponent', () => {
 
   it('should render comment section when module is loaded', async () => {
     const viewer = createMockModuleViewerData();
-    await renderPage({ viewer });
+    const { fixture } = await renderPage({ viewer });
+
+    const deferBlocks = await fixture.getDeferBlocks();
+    for (const block of deferBlocks) {
+      await block.render(DeferBlockState.Complete);
+    }
 
     expect(document.querySelector('app-comment-section')).toBeTruthy();
   });
@@ -314,7 +325,12 @@ describe('ModuleViewerPageComponent', () => {
 
   it('should render report issue component when module is loaded', async () => {
     const viewer = createMockModuleViewerData();
-    await renderPage({ viewer });
+    const { fixture } = await renderPage({ viewer });
+
+    const deferBlocks = await fixture.getDeferBlocks();
+    for (const block of deferBlocks) {
+      await block.render(DeferBlockState.Complete);
+    }
 
     expect(document.querySelector('app-report-issue')).toBeTruthy();
   });

@@ -174,4 +174,50 @@ describe('NotificationListPageComponent', () => {
     await renderPage({ notifications, unreadCount: 2 });
     expect(screen.getByText('2 unread')).toBeTruthy();
   });
+
+  it('should only show first 50 notifications initially', async () => {
+    const notifications = Array.from({ length: 60 }, (_, i) =>
+      createMockNotification({ id: `n${i}`, title: `Notification ${i}` }),
+    );
+    await renderPage({ notifications });
+
+    expect(screen.getByText('Notification 0')).toBeTruthy();
+    expect(screen.getByText('Notification 49')).toBeTruthy();
+    expect(screen.queryByText('Notification 50')).toBeFalsy();
+  });
+
+  it('should show "Load more" button when more than 50 notifications', async () => {
+    const notifications = Array.from({ length: 60 }, (_, i) =>
+      createMockNotification({ id: `n${i}`, title: `Notification ${i}` }),
+    );
+    await renderPage({ notifications });
+
+    expect(screen.getByText(/Load more/)).toBeTruthy();
+    expect(screen.getByText(/10 remaining/)).toBeTruthy();
+  });
+
+  it('should hide "Load more" button when 50 or fewer notifications', async () => {
+    const notifications = Array.from({ length: 10 }, (_, i) =>
+      createMockNotification({ id: `n${i}`, title: `Notification ${i}` }),
+    );
+    await renderPage({ notifications });
+
+    expect(screen.queryByText(/Load more/)).toBeFalsy();
+  });
+
+  it('should show more notifications on "Load more" click', async () => {
+    const notifications = Array.from({ length: 60 }, (_, i) =>
+      createMockNotification({ id: `n${i}`, title: `Notification ${i}` }),
+    );
+    const { fixture } = await renderPage({ notifications });
+
+    fireEvent.click(screen.getByText(/Load more/));
+    fixture.detectChanges();
+
+    // Now all 60 should be visible
+    expect(screen.getByText('Notification 50')).toBeTruthy();
+    expect(screen.getByText('Notification 59')).toBeTruthy();
+    // No more "Load more" button
+    expect(screen.queryByText(/Load more/)).toBeFalsy();
+  });
 });

@@ -4,10 +4,11 @@ import { LucideAngularModule, ArrowLeft, Loader2, Trash2 } from 'lucide-angular'
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
-import { CourseFormComponent } from '../components/course-form.component';
+import { CourseFormComponent, CourseFormSaveEvent } from '../components/course-form.component';
 import { TenantAssignmentComponent } from '../components/tenant-assignment.component';
 import { CourseFormData, TenantSummary, EnrollmentType } from '../../../core/models/course.model';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
+import { isStoragePath } from '../../../core/utils/storage.utils';
 
 @Component({
   selector: 'app-course-form-page',
@@ -38,6 +39,7 @@ import { extractErrorMessage } from '../../../core/utils/error.utils';
         <app-course-form
           [initialData]="formData()"
           [isEditMode]="isEditMode()"
+          [currentThumbnailSignedUrl]="currentThumbnailSignedUrl()"
           (save)="onSave($event)"
           (cancel)="onCancel()"
         />
@@ -110,6 +112,7 @@ export class CourseFormPageComponent implements OnInit {
 
   readonly tenants = signal<TenantSummary[]>([]);
   readonly assignedTenantIds = signal<string[]>([]);
+  readonly currentThumbnailSignedUrl = signal<string | null>(null);
 
   readonly courseId = computed(() => this.#route.snapshot.paramMap.get('courseId'));
   readonly isEditMode = computed(() => !!this.courseId());
@@ -163,6 +166,10 @@ export class CourseFormPageComponent implements OnInit {
         return;
       }
 
+      // detail.thumbnail_url is already resolved by loadCourseDetail (signed URL if storage path)
+      // We pass the resolved URL for preview, but keep the raw value for the form
+      this.currentThumbnailSignedUrl.set(detail.thumbnail_url);
+
       this.formData.set({
         title: detail.title,
         description: detail.description,
@@ -188,16 +195,31 @@ export class CourseFormPageComponent implements OnInit {
     }
   }
 
-  async onSave(data: CourseFormData) {
+  async onSave(event: CourseFormSaveEvent) {
     this.saving.set(true);
+    const { data, thumbnailFile } = event;
 
     try {
       const cid = this.courseId();
       if (cid) {
+        // Edit mode
+        if (thumbnailFile) {
+          // Delete old thumbnail if it was a storage path
+          const oldUrl = this.formData().thumbnail_url;
+          await this.#courseService.deleteThumbnailIfStoragePath(oldUrl);
+          // Upload new
+          const storagePath = await this.#courseService.uploadThumbnail(cid, thumbnailFile);
+          data.thumbnail_url = storagePath;
+        }
         await this.#courseService.updateCourse(cid, data);
         this.#router.navigate(['/courses', cid]);
       } else {
+        // Create mode: create course first, then upload thumbnail
         const { id } = await this.#courseService.createCourse(data);
+        if (thumbnailFile) {
+          const storagePath = await this.#courseService.uploadThumbnail(id, thumbnailFile);
+          await this.#courseService.updateCourse(id, { ...data, thumbnail_url: storagePath });
+        }
         this.#router.navigate(['/courses', id]);
       }
     } catch (err) {

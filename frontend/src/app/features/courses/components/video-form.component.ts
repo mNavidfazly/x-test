@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Upload, CheckCircle, AlertCircle, Film, RefreshCw } from 'lucide-angular';
 import { ModuleFormData, VideoFormData, ModuleSavePayload } from '../../../core/models/course.model';
@@ -163,6 +163,9 @@ export class VideoFormComponent {
   readonly cancel = output<void>();
 
   readonly bunnyUpload = inject(BunnyUploadService);
+  readonly #destroyRef = inject(DestroyRef);
+
+  #uploadCheckInterval: ReturnType<typeof setInterval> | null = null;
 
   protected readonly Upload = Upload;
   protected readonly CheckCircle = CheckCircle;
@@ -200,6 +203,15 @@ export class VideoFormComponent {
     this.videoForm = { ...videoData };
 
     this.bunnyUpload.reset();
+
+    this.#destroyRef.onDestroy(() => this.#clearUploadCheck());
+  }
+
+  #clearUploadCheck() {
+    if (this.#uploadCheckInterval !== null) {
+      clearInterval(this.#uploadCheckInterval);
+      this.#uploadCheckInterval = null;
+    }
   }
 
   onFileSelected(event: Event) {
@@ -227,7 +239,8 @@ export class VideoFormComponent {
     this.#uploadedFilename.set(file.name);
 
     // Watch for upload completion — sync signal state into plain form data
-    const checkComplete = setInterval(() => {
+    this.#clearUploadCheck();
+    this.#uploadCheckInterval = setInterval(() => {
       const videoId = this.bunnyUpload.uploadedVideoId();
       if (videoId) {
         this.videoForm.bunny_video_id = videoId;
@@ -235,10 +248,10 @@ export class VideoFormComponent {
         this.videoForm.original_filename = file.name;
         this.selectedFile.set(null);
         this.replacing.set(false);
-        clearInterval(checkComplete);
+        this.#clearUploadCheck();
       }
       if (this.bunnyUpload.error()) {
-        clearInterval(checkComplete);
+        this.#clearUploadCheck();
       }
     }, 100);
   }

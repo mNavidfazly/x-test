@@ -814,7 +814,7 @@ LIMIT 10;
 | 2026-02-13 | Claude (Run 1) | 14/14 | 14 | 0 | 1 bug found+fixed (CM-BUG-01: profiles_select_tenant). Migration 00032 applied. |
 | 2026-02-13 | Claude (Run 2) | 14/14 | 14 | 0 | Clean re-run after bug fix. All stories pass. 0 new bugs. |
 | 2026-02-14 | Claude (Playwright MCP) | CM-01 through CM-14 (regression) | 14 | 0 | Full regression — all 14 PASS. Verified: Discussion section loads (4 comments), post comment+reply, delete reply+comment, Expert badge (lecturer), Calypso badge (PA+CSM), Edit/Delete on own only, Reply on others. No regressions. |
-| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | CM-01 through CM-14 (regression) | 14 | 0 | Full regression run. Discussion (4) on Market Participants module: Learner comment, Lecturer "Expert" badge, PA "Calypso" badge + Edit/Delete, CSM "Calypso" badge. Reply/Delete buttons on all, Edit only on own. No regressions. |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | CM-01 through CM-14 (Phase 10C regression) | 14 | 0 | Post-10C regression. `@defer (on viewport)` verified: comment-section, ask-expert, report-issue all render on module viewer. Discussion (4) on Market Participants: badges (Expert amber, Calypso teal x2, NULL learner), PA Edit only on own + Delete on all, Learner Edit+Delete own only + Reply on all others. Module nav: Next→Discussion(0) empty state, Previous→Discussion(4) restores. No regressions from @defer changes. |
 
 ---
 

@@ -18,6 +18,8 @@ import { ReportIssueComponent } from '../components/report-issue.component';
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
+  // Note: CommentSectionComponent, AskExpertComponent, ReportIssueComponent are kept in imports
+  // for type checking but automatically deferred by @defer blocks in the template.
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-5xl mx-auto">
@@ -88,29 +90,41 @@ import { ReportIssueComponent } from '../components/report-issue.component';
           </div>
         }
 
-        <!-- Ask Expert -->
-        <div class="mt-6 mb-6">
-          <app-ask-expert
-            [courseId]="courseId()"
-            [moduleId]="courseService.moduleViewer()!.module.id"
-          />
-        </div>
+        <!-- Ask Expert (deferred — below the fold) -->
+        @defer (on viewport) {
+          <div class="mt-6 mb-6">
+            <app-ask-expert
+              [courseId]="courseId()"
+              [moduleId]="courseService.moduleViewer()!.module.id"
+            />
+          </div>
+        } @placeholder {
+          <div class="mt-6 mb-6 h-10"></div>
+        }
 
-        <!-- Report Issue -->
-        <div class="mt-4 mb-6">
-          <app-report-issue
-            [courseId]="courseId()"
-            [moduleId]="courseService.moduleViewer()!.module.id"
-          />
-        </div>
+        <!-- Report Issue (deferred — below the fold) -->
+        @defer (on viewport) {
+          <div class="mt-4 mb-6">
+            <app-report-issue
+              [courseId]="courseId()"
+              [moduleId]="courseService.moduleViewer()!.module.id"
+            />
+          </div>
+        } @placeholder {
+          <div class="mt-4 mb-6 h-10"></div>
+        }
 
-        <!-- Comments -->
-        <div class="mt-8 pt-6 border-t border-slate-200">
-          <app-comment-section
-            [moduleId]="courseService.moduleViewer()!.module.id"
-            [courseId]="courseId()"
-          />
-        </div>
+        <!-- Comments (deferred — below the fold) -->
+        @defer (on viewport) {
+          <div class="mt-8 pt-6 border-t border-slate-200">
+            <app-comment-section
+              [moduleId]="courseService.moduleViewer()!.module.id"
+              [courseId]="courseId()"
+            />
+          </div>
+        } @placeholder {
+          <div class="mt-8 pt-6 border-t border-slate-200 h-20"></div>
+        }
 
         <!-- Bottom navigation bar -->
         <div class="flex items-center justify-between border-t border-slate-200 pt-4 mt-6">

@@ -27,7 +27,7 @@ const BADGE_LABELS: Record<string, string> = {
       <!-- Thumbnail -->
       @if (course().thumbnail_url) {
         <div class="aspect-video bg-slate-100 overflow-hidden">
-          <img [src]="course().thumbnail_url" [alt]="course().title"
+          <img [src]="course().thumbnail_url" [alt]="course().title" loading="lazy"
                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         </div>
       } @else {

@@ -218,4 +218,38 @@ describe('VideoFormComponent', () => {
 
     expect(screen.getByText('Click to select a video file')).toBeTruthy();
   });
+
+  it('should clear upload check interval on destroy', async () => {
+    const clearIntervalSpy = vi.spyOn(globalThis, 'clearInterval');
+    const bunnyUpload = createMockBunnyUploadService();
+
+    const { fixture } = await render(VideoFormComponent, {
+      componentImports: [MockLucideIconComponent],
+      componentInputs: {
+        initialModuleData: createMockModuleFormData(),
+        initialVideoData: createMockVideoFormData({ bunny_video_id: '' }),
+        courseId: 'course-1',
+      },
+      providers: [
+        { provide: BunnyUploadService, useValue: bunnyUpload },
+      ],
+    });
+
+    // Trigger upload to start the interval
+    const fileInput = fixture.nativeElement.querySelector('input[type="file"]');
+    const mockFile = new File(['video'], 'test.mp4', { type: 'video/mp4' });
+    Object.defineProperty(fileInput, 'files', { value: [mockFile] });
+    fireEvent.change(fileInput);
+    fixture.detectChanges();
+
+    fireEvent.click(screen.getByText('Upload'));
+    fixture.detectChanges();
+
+    // Destroy component — should clear the interval
+    clearIntervalSpy.mockClear();
+    fixture.destroy();
+
+    expect(clearIntervalSpy).toHaveBeenCalled();
+    clearIntervalSpy.mockRestore();
+  });
 });

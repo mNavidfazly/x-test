@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import {
   LucideAngularModule, BarChart3, Search, Mail, Loader2,
-  Users, Check, X, AlertTriangle, Filter,
+  Users, Check, X, AlertTriangle, Filter, ChevronLeft, ChevronRight,
 } from 'lucide-angular';
 import { ProgressService } from '../../../core/services/progress.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -10,6 +10,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { DashboardUserProgress } from '../../../core/models/course.model';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
 import { isToastedByInterceptor } from '../../../core/interceptors/http-error.interceptor';
+import { debouncedSignal } from '../../../core/utils/debounce.utils';
 
 @Component({
   selector: 'app-progress-dashboard-page',
@@ -181,7 +182,7 @@ import { isToastedByInterceptor } from '../../../core/interceptors/http-error.in
               </tr>
             </thead>
             <tbody>
-              @for (user of filteredUsers(); track user.user_id) {
+              @for (user of paginatedUsers(); track user.user_id) {
                 <tr class="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors">
                   <td class="px-3 py-3">
                     <input
@@ -227,6 +228,34 @@ import { isToastedByInterceptor } from '../../../core/interceptors/http-error.in
               }
             </tbody>
           </table>
+          @if (totalPages() > 1) {
+            <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200">
+              <span class="text-sm text-slate-600">
+                Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredUsers().length }}
+              </span>
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  (click)="currentPage.set(currentPage() - 1)"
+                  [disabled]="currentPage() === 1"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <lucide-icon [img]="icons.ChevronLeft" [size]="14"></lucide-icon>
+                  Previous
+                </button>
+                <span class="text-sm text-slate-500 tabular-nums">{{ currentPage() }} / {{ totalPages() }}</span>
+                <button
+                  type="button"
+                  (click)="currentPage.set(currentPage() + 1)"
+                  [disabled]="currentPage() === totalPages()"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  Next
+                  <lucide-icon [img]="icons.ChevronRight" [size]="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          }
         </div>
       }
     </div>
@@ -237,13 +266,18 @@ export class ProgressDashboardPageComponent implements OnInit {
   #auth = inject(AuthService);
   readonly #toast = inject(ToastService);
 
-  readonly icons = { BarChart3, Search, Mail, Loader2, Users, Check, X, AlertTriangle, Filter };
+  readonly icons = { BarChart3, Search, Mail, Loader2, Users, Check, X, AlertTriangle, Filter, ChevronLeft, ChevronRight };
 
   // Filters
   readonly searchTerm = signal('');
+  readonly debouncedSearch = debouncedSignal(this.searchTerm, 300);
   readonly selectedCourseId = signal<string | null>(null);
   readonly progressMin = signal(0);
   readonly progressMax = signal(100);
+
+  // Pagination
+  readonly currentPage = signal(1);
+  readonly pageSize = 50;
 
   // Bulk reminder
   readonly selectedUserIds = signal<Set<string>>(new Set());
@@ -260,7 +294,7 @@ export class ProgressDashboardPageComponent implements OnInit {
   // Filtered users
   readonly filteredUsers = computed(() => {
     let users = this.progressService.users();
-    const search = this.searchTerm().toLowerCase();
+    const search = this.debouncedSearch().toLowerCase();
     const courseId = this.selectedCourseId();
     const min = this.progressMin();
     const max = this.progressMax();
@@ -300,6 +334,22 @@ export class ProgressDashboardPageComponent implements OnInit {
   readonly atRiskCount = computed(() =>
     this.filteredUsers().filter(u => u.overallPercent < 25 && u.overallPercent < 100).length,
   );
+
+  // Pagination computeds
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize)));
+  readonly paginatedUsers = computed(() => {
+    const users = this.filteredUsers();
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return users.slice(start, start + this.pageSize);
+  });
+  readonly pageStart = computed(() => this.filteredUsers().length === 0 ? 0 : (this.currentPage() - 1) * this.pageSize + 1);
+  readonly pageEnd = computed(() => Math.min(this.currentPage() * this.pageSize, this.filteredUsers().length));
+
+  // Reset page to 1 whenever filters change
+  readonly #pageResetEffect = effect(() => {
+    this.filteredUsers(); // track dependency
+    untracked(() => this.currentPage.set(1));
+  });
 
   readonly allSelected = computed(() => {
     const filtered = this.filteredUsers();

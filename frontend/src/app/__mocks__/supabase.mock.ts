@@ -78,6 +78,10 @@ export function createMockSupabaseService(options?: {
             data: { signedUrl: 'https://test.supabase.co/storage/v1/object/sign/course-files/test/file.pdf?token=abc' },
             error: null,
           }),
+          createSignedUrls: vi.fn().mockResolvedValue({
+            data: [],
+            error: null,
+          }),
           remove: vi.fn().mockResolvedValue({ data: [], error: null }),
           list: vi.fn().mockResolvedValue({ data: [], error: null }),
         }),

@@ -82,8 +82,12 @@ describe('ProgressDashboardPageComponent', () => {
     const { fixture } = await renderDashboard({ progressService });
 
     const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    vi.useFakeTimers();
     fireEvent.input(searchInput, { target: { value: 'alice' } });
     fixture.detectChanges();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    vi.useRealTimers();
 
     expect(screen.getByText('alice@test.com')).toBeTruthy();
     expect(screen.queryByText('bob@test.com')).toBeFalsy();
@@ -289,5 +293,72 @@ describe('ProgressDashboardPageComponent', () => {
     expect(screen.getByText('1')).toBeTruthy();
     // At Risk (<25% and <100) = 2 (10% and 0%)
     expect(screen.getByText('2')).toBeTruthy();
+  });
+
+  it('should show pagination when more than 50 users', async () => {
+    const users = Array.from({ length: 60 }, (_, i) =>
+      createMockDashboardUserProgress({ user_id: `u${i}`, email: `user${i}@test.com` }),
+    );
+    const progressService = createMockProgressService({ users });
+
+    await renderDashboard({ progressService });
+
+    expect(screen.getByText(/Showing 1.50 of 60/)).toBeTruthy();
+    expect(screen.getByText('Next')).toBeTruthy();
+    expect(screen.getByText('Previous')).toBeTruthy();
+  });
+
+  it('should hide pagination when 50 or fewer users', async () => {
+    const progressService = createMockProgressService({
+      users: [
+        createMockDashboardUserProgress({ user_id: 'u1', email: 'a@t.com' }),
+        createMockDashboardUserProgress({ user_id: 'u2', email: 'b@t.com' }),
+      ],
+    });
+
+    await renderDashboard({ progressService });
+
+    expect(screen.queryByText('Next')).toBeFalsy();
+    expect(screen.queryByText('Previous')).toBeFalsy();
+  });
+
+  it('should navigate to next page', async () => {
+    const users = Array.from({ length: 60 }, (_, i) =>
+      createMockDashboardUserProgress({ user_id: `u${i}`, email: `user${i}@test.com` }),
+    );
+    const progressService = createMockProgressService({ users });
+
+    const { fixture } = await renderDashboard({ progressService });
+
+    fireEvent.click(screen.getByText('Next'));
+    fixture.detectChanges();
+
+    expect(screen.getByText(/Showing 51.60 of 60/)).toBeTruthy();
+  });
+
+  it('should reset page to 1 on search filter change', async () => {
+    const users = Array.from({ length: 60 }, (_, i) =>
+      createMockDashboardUserProgress({ user_id: `u${i}`, email: `user${i}@test.com` }),
+    );
+    const progressService = createMockProgressService({ users });
+
+    const { fixture } = await renderDashboard({ progressService });
+
+    // Go to page 2
+    fireEvent.click(screen.getByText('Next'));
+    fixture.detectChanges();
+    expect(screen.getByText(/Showing 51.60 of 60/)).toBeTruthy();
+
+    // Search — should reset to page 1
+    const searchInput = screen.getByPlaceholderText('Search by name or email...');
+    vi.useFakeTimers();
+    fireEvent.input(searchInput, { target: { value: 'user1' } });
+    fixture.detectChanges();
+    vi.advanceTimersByTime(300);
+    fixture.detectChanges();
+    vi.useRealTimers();
+
+    // Page should be reset (no "51-60" showing)
+    expect(screen.queryByText(/Showing 51/)).toBeFalsy();
   });
 });

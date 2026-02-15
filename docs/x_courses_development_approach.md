@@ -1150,20 +1150,51 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **Cleanup:** `loadAvailableTenantsList()` moved from 2 page components into TenantManagementService — eliminated direct Supabase queries in components
 - [x] **Tests:** 17 new frontend tests (1096 total), 354 RLS, 85 backend, build OK
 
-#### 10C - Performance
-- [ ] Lazy loading for feature modules
-- [ ] Virtual scrolling for large tables (progress dashboard, user lists)
-- [ ] Debounce search inputs
-- [ ] Optimize RLS queries (verify index usage)
+#### 10C - Performance (Complete)
+- [x] **Lazy loading:** Already done — all 30 routes use `loadComponent` with dynamic `import()`. No changes needed.
+- [x] **Client-side pagination:** Added to progress-dashboard (50/page) and user-management (50/page) with signal-based `currentPage`, `paginatedUsers`, auto-reset on filter change. Notification-list: "Load more" button (50 increments).
+- [x] **Debounce search:** Created `debouncedSignal()` utility (`core/utils/debounce.utils.ts`). Applied to progress-dashboard and user-management (300ms). 7 other search inputs skipped — datasets too small.
+- [x] **RLS query indexes:** Migration 00036 — 5 indexes (ext_quiz_refs, enrollments user+course, module_files, issues user_id, comments user_id).
+- [x] **`@defer (on viewport)`:** Module viewer — comment section, ask expert, report issue now deferred below fold.
+- [x] **Bug fix:** Video-form `setInterval` leak — `#clearUploadCheck()` on `DestroyRef.onDestroy`. Course-card: `loading="lazy"` on thumbnail img.
+- [x] **Tests:** 20 new tests (6 debounce utility + 8 pagination + 4 load-more + 1 interval cleanup + 1 video-form), 1167 total frontend tests, build OK
 
-#### 10D - Shared Component Tests
-- [ ] DataTableComponent tests
-- [ ] ConfirmationDialogComponent tests
-- [ ] LoadingSpinnerComponent tests
-- [ ] EmptyStateComponent tests
-- [ ] BadgeComponent tests
-- [ ] FileUploadComponent tests
-- [ ] ModuleTypeIconComponent tests
+#### 10D - Profile Page & Course Thumbnail Upload (Complete)
+- [x] **Migration 00037:** Make `avatars` bucket private (`public = false`), drop `avatars_select_public`, add `avatars_select_authenticated` (any logged-in user can view any avatar)
+- [x] **Profile model:** Added `FullProfileData` interface in `core/models/profile.model.ts`
+- [x] **ProfileService — 4 new methods + signed URL resolution:**
+  - [x] `loadFullProfile()` — `.select('*, tenants!inner(name)')` with avatar signed URL resolution
+  - [x] `updateName(fullName)` — `.update({ full_name })` + `refreshProfile()` to update header
+  - [x] `uploadAvatar(file)` — validate image/5MB, upload to `avatars/{userId}/avatar` with `upsert:true`, update `profiles.avatar_url`, refresh
+  - [x] `removeAvatar()` — remove from storage, set `avatar_url: null`, refresh
+  - [x] `#resolveAvatarUrl(path)` — if starts with `http` return as-is (backward compat), else `createSignedUrl(path, 3600)` + `&v={timestamp}` cache-buster
+  - [x] Updated `#fetchProfile` effect to resolve avatar signed URLs — keeps header avatar fresh on token refresh (~1hr)
+- [x] **ProfilePageComponent** (`features/profile/pages/`):
+  - [x] Large centered avatar with camera overlay for upload, "Remove photo" link
+  - [x] Info card: Full Name (inline edit with pencil/check/x), Email (readonly), Organization (readonly), Roles (colored badges), Member Since
+  - [x] Hidden `<input type="file" accept="image/*">` triggered by avatar overlay click
+  - [x] Instant FileReader preview on file select, upload via ProfileService
+  - [x] Toast for all action success/error, inline error for load failure
+- [x] **`isStoragePath()` utility** (`core/utils/storage.utils.ts`): Returns `true` if URL does NOT start with `http://` or `https://` — distinguishes storage paths from external URLs
+- [x] **CourseService — 3 new methods + 2 modified:**
+  - [x] `uploadThumbnail(courseId, file)` — upload to `course-files/{courseId}/thumbnail-{timestamp}.{ext}`, return storage path
+  - [x] `deleteThumbnailIfStoragePath(url)` — if `isStoragePath(url)`, remove from storage (fire-and-forget)
+  - [x] `getCourseThumbnailSignedUrl(path)` — public wrapper around `#getSignedUrl`
+  - [x] Modified `loadCourses()` — batch `createSignedUrls()` via `#resolveThumbnailUrls()` for all storage-path thumbnails
+  - [x] Modified `loadCourseDetail()` — resolve `thumbnail_url` if it's a storage path
+- [x] **CourseFormComponent — Upload/URL dual-mode tabs:**
+  - [x] `thumbnailMode` signal (`'upload' | 'url'`), `#pendingFile` signal, `#filePreviewUrl` signal
+  - [x] `thumbnailPreviewUrl` computed (pending file > current signed URL > external URL)
+  - [x] `currentThumbnailSignedUrl` input for edit-mode preview
+  - [x] `FileUploadComponent` integration: accept `image/jpeg,image/png,image/webp`, maxSizeMB 5
+  - [x] Output type changed to `CourseFormSaveEvent { data: CourseFormData; thumbnailFile: File | null }`
+  - [x] `DestroyRef.onDestroy` to revoke ObjectURL on component destroy
+- [x] **CourseFormPageComponent — Upload orchestration:**
+  - [x] **Create mode:** two-step — create course → upload thumbnail → update course with storage path
+  - [x] **Edit mode:** delete old storage-path thumbnail → upload new → update course
+  - [x] `currentThumbnailSignedUrl` signal resolved in `ngOnInit` for edit-mode preview
+- [x] **Tests:** 37 new frontend tests (14 ProfileService + 20 ProfilePage + 3 isStoragePath), 1204 total, 354 RLS, 85 backend, build OK
+- [x] **E2E:** 11 stories (PT-01 to PT-11), all pass, 5 roles tested, 0 bugs found
 
 #### 10E - Complete RLS Permission Matrix
 - [ ] All 30 tables covered
@@ -1182,12 +1213,27 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [ ] Generate coverage report
 - [ ] Document any intentional gaps
 
-#### 10G - Content Staleness Dashboard
-- [ ] Dashboard for Platform Admin + Lecturer (assigned courses)
-- [ ] Shows courses not updated beyond staleness_threshold_days
-- [ ] Based on MAX(modules.updated_at) per course vs courses.staleness_threshold_days
-- [ ] Link to course edit page for quick updates
-- [ ] **Tests:** StalenessDashboardComponent
+#### 10G - Content Staleness Dashboard (Complete)
+- [x] **Migration 00035:** `staleness_postponed_until` column on modules, module-specific `set_module_updated_at()` trigger replacing generic `handle_updated_at` on modules only
+- [x] **StalenessService** (`core/services/staleness.service.ts`): 3 signals + 6 methods (loadStaleCourses, postponeModule, postponeAllModules, etc.)
+- [x] **StalenessDashboardPageComponent** (`features/teaching/pages/`):
+  - [x] Expandable course rows showing per-module staleness status
+  - [x] Per-module "Postpone" and per-course "Postpone All" buttons (30-day snooze)
+  - [x] Blue badges for postponed state (`bg-blue-100 text-blue-700`), CalendarClock icon
+  - [x] Self-healing: `staleness_postponed_until` ignored once module is actually updated
+  - [x] `IS NOT DISTINCT FROM` checks on mutable columns to detect pure-postpone updates
+- [x] **Route:** `/teaching/staleness` with `roleGuard('lecturer', 'platform_admin')`
+- [x] **Tests:** 51 new tests (20 service + 31 page), 1147 total frontend tests, build OK
+- [x] **E2E:** 14 stories (CS-01 to CS-14), all pass, 5 roles tested, 0 bugs found
+
+#### 10H - Shared Component Tests (Planned)
+- [ ] DataTableComponent tests
+- [ ] ConfirmationDialogComponent tests
+- [ ] LoadingSpinnerComponent tests
+- [ ] EmptyStateComponent tests
+- [ ] BadgeComponent tests
+- [ ] FileUploadComponent tests
+- [ ] ModuleTypeIconComponent tests
 
 ---
 

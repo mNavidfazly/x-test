@@ -31,7 +31,7 @@ describe('authGuard', () => {
     const mockAuth = createMockAuthService({ isAuthenticated: false });
     const { result, router } = runGuard(mockAuth);
     expect(result).toBe(false);
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+    expect(router.navigate).toHaveBeenCalledWith(['/login'], expect.objectContaining({ queryParams: expect.any(Object) }));
   });
 
   it('should wait for loading to complete before deciding', async () => {

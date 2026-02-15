@@ -1,11 +1,20 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import {
+  ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, output, signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule, Upload, Link, X, Image } from 'lucide-angular';
+import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 import { CourseFormData, EnrollmentType } from '../../../core/models/course.model';
+
+export interface CourseFormSaveEvent {
+  data: CourseFormData;
+  thumbnailFile: File | null;
+}
 
 @Component({
   selector: 'app-course-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, LucideAngularModule, FileUploadComponent],
   host: { class: 'block' },
   template: `
     <div class="space-y-5">
@@ -33,16 +42,70 @@ import { CourseFormData, EnrollmentType } from '../../../core/models/course.mode
         ></textarea>
       </div>
 
-      <!-- Thumbnail URL -->
+      <!-- Thumbnail -->
       <div>
-        <label for="thumbnail" class="block text-sm font-medium text-slate-700 mb-1">Thumbnail URL</label>
-        <input
-          id="thumbnail"
-          type="url"
-          [(ngModel)]="form.thumbnail_url"
-          placeholder="https://example.com/image.jpg (optional)"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
-        />
+        <label class="block text-sm font-medium text-slate-700 mb-2">Thumbnail</label>
+
+        <!-- Preview -->
+        @if (thumbnailPreviewUrl()) {
+          <div class="relative mb-3 rounded-lg overflow-hidden border border-slate-200 max-w-xs">
+            <img
+              [src]="thumbnailPreviewUrl()"
+              alt="Thumbnail preview"
+              class="w-full aspect-video object-cover"
+            />
+            <button
+              type="button"
+              (click)="clearThumbnail()"
+              class="absolute top-2 right-2 p-1 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+              aria-label="Clear thumbnail"
+            >
+              <lucide-icon [img]="icons.X" [size]="14"></lucide-icon>
+            </button>
+          </div>
+        }
+
+        <!-- Mode tabs -->
+        <div class="flex gap-1 mb-3">
+          <button
+            type="button"
+            (click)="thumbnailMode.set('upload')"
+            [class]="'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ' +
+              (thumbnailMode() === 'upload' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'text-slate-500 hover:bg-slate-100 border border-transparent')"
+          >
+            <lucide-icon [img]="icons.Upload" [size]="14"></lucide-icon>
+            Upload
+          </button>
+          <button
+            type="button"
+            (click)="thumbnailMode.set('url')"
+            [class]="'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ' +
+              (thumbnailMode() === 'url' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'text-slate-500 hover:bg-slate-100 border border-transparent')"
+          >
+            <lucide-icon [img]="icons.Link" [size]="14"></lucide-icon>
+            URL
+          </button>
+        </div>
+
+        <!-- Upload mode -->
+        @if (thumbnailMode() === 'upload') {
+          <app-file-upload
+            accept="image/jpeg,image/png,image/webp"
+            [maxSizeMB]="5"
+            (fileSelected)="onThumbnailFileSelected($event)"
+          />
+        }
+
+        <!-- URL mode -->
+        @if (thumbnailMode() === 'url') {
+          <input
+            id="thumbnail"
+            type="url"
+            [(ngModel)]="form.thumbnail_url"
+            placeholder="https://example.com/image.jpg (optional)"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+          />
+        }
       </div>
 
       <!-- Enrollment Type -->
@@ -111,10 +174,29 @@ import { CourseFormData, EnrollmentType } from '../../../core/models/course.mode
   `,
 })
 export class CourseFormComponent {
+  readonly icons = { Upload, Link, X, Image };
+
   readonly initialData = input.required<CourseFormData>();
   readonly isEditMode = input(false);
-  readonly save = output<CourseFormData>();
+  readonly currentThumbnailSignedUrl = input<string | null>(null);
+
+  readonly save = output<CourseFormSaveEvent>();
   readonly cancel = output<void>();
+
+  readonly thumbnailMode = signal<'upload' | 'url'>('upload');
+
+  readonly #pendingFile = signal<File | null>(null);
+  readonly #filePreviewUrl = signal<string | null>(null);
+
+  readonly thumbnailPreviewUrl = computed(() => {
+    // Priority: pending file preview > current signed URL > external URL in form
+    if (this.#filePreviewUrl()) return this.#filePreviewUrl();
+    if (this.currentThumbnailSignedUrl()) return this.currentThumbnailSignedUrl();
+    const url = this.form.thumbnail_url;
+    return url && url.startsWith('http') ? url : null;
+  });
+
+  #destroyRef = inject(DestroyRef);
 
   form: CourseFormData = {
     title: '',
@@ -125,13 +207,47 @@ export class CourseFormComponent {
     staleness_threshold_days: null,
   };
 
+  constructor() {
+    this.#destroyRef.onDestroy(() => {
+      const url = this.#filePreviewUrl();
+      if (url) URL.revokeObjectURL(url);
+    });
+  }
+
   ngOnInit() {
     const data = this.initialData();
     this.form = { ...data };
+    // If there's an existing external URL, default to URL mode
+    if (data.thumbnail_url?.startsWith('http')) {
+      this.thumbnailMode.set('url');
+    }
+  }
+
+  onThumbnailFileSelected(file: File) {
+    // Revoke old preview
+    const oldUrl = this.#filePreviewUrl();
+    if (oldUrl) URL.revokeObjectURL(oldUrl);
+
+    this.#pendingFile.set(file);
+    this.#filePreviewUrl.set(URL.createObjectURL(file));
+    // Clear the URL form field since we're uploading
+    this.form.thumbnail_url = null;
+  }
+
+  clearThumbnail() {
+    const url = this.#filePreviewUrl();
+    if (url) URL.revokeObjectURL(url);
+
+    this.#pendingFile.set(null);
+    this.#filePreviewUrl.set(null);
+    this.form.thumbnail_url = null;
   }
 
   onSave() {
     if (!this.form.title.trim()) return;
-    this.save.emit({ ...this.form });
+    this.save.emit({
+      data: { ...this.form },
+      thumbnailFile: this.#pendingFile(),
+    });
   }
 }

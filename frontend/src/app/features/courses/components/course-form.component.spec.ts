@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
-import { CourseFormComponent } from './course-form.component';
+import { CourseFormComponent, CourseFormSaveEvent } from './course-form.component';
 import { createMockCourseFormData } from '../../../__mocks__/course.mock';
+import { FormsModule } from '@angular/forms';
+import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 
 describe('CourseFormComponent', () => {
   it('should render all form fields', async () => {
     await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData(),
       },
@@ -13,13 +17,14 @@ describe('CourseFormComponent', () => {
 
     expect(screen.getByLabelText('Title')).toBeTruthy();
     expect(screen.getByLabelText('Description')).toBeTruthy();
-    expect(screen.getByLabelText('Thumbnail URL')).toBeTruthy();
+    expect(screen.getByText('Thumbnail')).toBeTruthy();
     expect(screen.getByLabelText('Enrollment Type')).toBeTruthy();
     expect(screen.getByLabelText('Staleness Threshold (days)')).toBeTruthy();
   });
 
   it('should pre-populate fields from initialData', async () => {
     await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData({
           title: 'X-LNG Advanced',
@@ -34,6 +39,7 @@ describe('CourseFormComponent', () => {
 
   it('should show Create Course button in create mode', async () => {
     await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData(),
         isEditMode: false,
@@ -45,6 +51,7 @@ describe('CourseFormComponent', () => {
 
   it('should show Save Changes button in edit mode', async () => {
     await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData(),
         isEditMode: true,
@@ -56,6 +63,7 @@ describe('CourseFormComponent', () => {
 
   it('should show password field only for password_protected enrollment', async () => {
     const { fixture } = await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData({ enrollment_type: 'open' }),
       },
@@ -73,6 +81,7 @@ describe('CourseFormComponent', () => {
 
   it('should show password hint in edit mode', async () => {
     await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData({ enrollment_type: 'password_protected' }),
         isEditMode: true,
@@ -84,6 +93,7 @@ describe('CourseFormComponent', () => {
 
   it('should disable save button when title is empty', async () => {
     await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData({ title: '' }),
       },
@@ -93,26 +103,29 @@ describe('CourseFormComponent', () => {
     expect(saveButton.disabled).toBe(true);
   });
 
-  it('should emit save with form data on save click', async () => {
+  it('should emit save with form data and null thumbnailFile on save click', async () => {
     const { fixture } = await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData({ title: 'My Course' }),
       },
     });
 
-    let emittedData: unknown = null;
-    fixture.componentInstance.save.subscribe((data: unknown) => {
-      emittedData = data;
+    let emittedEvent: CourseFormSaveEvent | null = null;
+    fixture.componentInstance.save.subscribe((event: CourseFormSaveEvent) => {
+      emittedEvent = event;
     });
 
     fireEvent.click(screen.getByText('Create Course'));
 
-    expect(emittedData).not.toBeNull();
-    expect((emittedData as { title: string }).title).toBe('My Course');
+    expect(emittedEvent).not.toBeNull();
+    expect(emittedEvent!.data.title).toBe('My Course');
+    expect(emittedEvent!.thumbnailFile).toBeNull();
   });
 
   it('should emit cancel on cancel click', async () => {
     const { fixture } = await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
       componentInputs: {
         initialData: createMockCourseFormData(),
       },
@@ -126,5 +139,57 @@ describe('CourseFormComponent', () => {
     fireEvent.click(screen.getByText('Cancel'));
 
     expect(cancelled).toBe(true);
+  });
+
+  it('should show Upload and URL mode tabs', async () => {
+    await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentInputs: {
+        initialData: createMockCourseFormData(),
+      },
+    });
+
+    expect(screen.getByText('Upload')).toBeTruthy();
+    expect(screen.getByText('URL')).toBeTruthy();
+  });
+
+  it('should show URL input when URL mode is selected', async () => {
+    const { fixture } = await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentInputs: {
+        initialData: createMockCourseFormData(),
+      },
+    });
+
+    // Click URL tab
+    fireEvent.click(screen.getByText('URL'));
+    fixture.detectChanges();
+
+    expect(screen.getByPlaceholderText(/https:\/\/example/)).toBeTruthy();
+  });
+
+  it('should default to URL mode when initialData has an external URL', async () => {
+    await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentInputs: {
+        initialData: createMockCourseFormData({ thumbnail_url: 'https://example.com/img.jpg' }),
+      },
+    });
+
+    // URL input should be visible by default
+    expect(screen.getByPlaceholderText(/https:\/\/example/)).toBeTruthy();
+  });
+
+  it('should show thumbnail preview when currentThumbnailSignedUrl is set', async () => {
+    await render(CourseFormComponent, {
+      componentImports: [MockLucideIconComponent, FileUploadComponent, FormsModule],
+      componentInputs: {
+        initialData: createMockCourseFormData(),
+        currentThumbnailSignedUrl: 'https://signed.url/thumb.jpg',
+      },
+    });
+
+    const img = screen.getByAltText('Thumbnail preview') as HTMLImageElement;
+    expect(img.src).toBe('https://signed.url/thumb.jpg');
   });
 });

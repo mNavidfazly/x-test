@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import {
   LucideAngularModule, Users, Search, Loader2,
   Plus, Save, X, ChevronDown, ChevronUp, Shield, ShieldCheck,
-  Mail, UserPlus, Edit,
+  Mail, UserPlus, Edit, ChevronLeft, ChevronRight,
 } from 'lucide-angular';
 import { UserManagementService } from '../../../core/services/user-management.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,6 +12,7 @@ import { UserForBoard } from '../../../core/models/user-management.model';
 import { formatDate } from '../../../core/utils/date.utils';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
 import { isToastedByInterceptor } from '../../../core/interceptors/http-error.interceptor';
+import { debouncedSignal } from '../../../core/utils/debounce.utils';
 
 type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
@@ -180,7 +181,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
               </tr>
             </thead>
             <tbody>
-              @for (user of filteredUsers(); track user.id) {
+              @for (user of paginatedUsers(); track user.id) {
                 <tr
                   class="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors cursor-pointer"
                   (click)="onExpandUser(user)"
@@ -318,6 +319,34 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
               }
             </tbody>
           </table>
+          @if (totalPages() > 1) {
+            <div class="flex items-center justify-between px-4 py-3 border-t border-slate-200">
+              <span class="text-sm text-slate-600">
+                Showing {{ pageStart() }}–{{ pageEnd() }} of {{ filteredUsers().length }}
+              </span>
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  (click)="currentPage.set(currentPage() - 1)"
+                  [disabled]="currentPage() === 1"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  <lucide-icon [img]="icons.ChevronLeft" [size]="14"></lucide-icon>
+                  Previous
+                </button>
+                <span class="text-sm text-slate-500 tabular-nums">{{ currentPage() }} / {{ totalPages() }}</span>
+                <button
+                  type="button"
+                  (click)="currentPage.set(currentPage() + 1)"
+                  [disabled]="currentPage() === totalPages()"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  Next
+                  <lucide-icon [img]="icons.ChevronRight" [size]="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          }
         </div>
       }
     </div>
@@ -332,12 +361,13 @@ export class UserManagementPageComponent implements OnInit {
   readonly icons = {
     Users, Search, Loader2, Plus, Save, X,
     ChevronDown, ChevronUp, Shield, ShieldCheck,
-    Mail, UserPlus, Edit,
+    Mail, UserPlus, Edit, ChevronLeft, ChevronRight,
   };
 
   // Filter
   readonly searchTerm = signal('');
   readonly roleFilter = signal<RoleFilter>('all');
+  readonly #debouncedSearch = debouncedSignal(this.searchTerm, 300);
 
   // Invite form
   readonly showInviteForm = signal(false);
@@ -361,9 +391,13 @@ export class UserManagementPageComponent implements OnInit {
     this.#auth.currentUser()?.claims.is_platform_admin === true,
   );
 
+  // Pagination
+  readonly currentPage = signal(1);
+  readonly pageSize = 50;
+
   readonly filteredUsers = computed(() => {
     let users = this.service.users();
-    const search = this.searchTerm().toLowerCase();
+    const search = this.#debouncedSearch().toLowerCase();
     const role = this.roleFilter();
 
     if (search) {
@@ -382,6 +416,20 @@ export class UserManagementPageComponent implements OnInit {
     }
 
     return users;
+  });
+
+  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filteredUsers().length / this.pageSize)));
+  readonly paginatedUsers = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize;
+    return this.filteredUsers().slice(start, start + this.pageSize);
+  });
+  readonly pageStart = computed(() => this.filteredUsers().length === 0 ? 0 : (this.currentPage() - 1) * this.pageSize + 1);
+  readonly pageEnd = computed(() => Math.min(this.currentPage() * this.pageSize, this.filteredUsers().length));
+
+  // Reset to page 1 when filters change
+  readonly #pageResetEffect = effect(() => {
+    this.filteredUsers();
+    untracked(() => this.currentPage.set(1));
   });
 
   readonly totalUsers = computed(() => this.filteredUsers().length);
