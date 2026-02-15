@@ -16,7 +16,8 @@ import { filterNavSections } from './sidebar-nav.config';
     <!-- Mobile backdrop -->
     @if (open()) {
       <div
-        class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        class="fixed inset-0 bg-black/50 lg:hidden"
+        [style.z-index]="'calc(var(--z-sidebar) - 1)'"
         (click)="close()"
       ></div>
     }

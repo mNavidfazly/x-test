@@ -8,9 +8,10 @@ import { HeaderComponent } from './header.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { CourseService } from '../../core/services/course.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
-import { createMockNotificationService } from '../../__mocks__/course.mock';
+import { createMockNotificationService, createMockCourseService } from '../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../__mocks__/lucide.mock';
 import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
 import { UserRole } from '../../core/models/auth.model';
@@ -50,6 +51,7 @@ async function renderHeader(options?: {
       { provide: AuthService, useValue: auth },
       { provide: ProfileService, useValue: profile },
       { provide: NotificationService, useValue: notifications },
+      { provide: CourseService, useValue: createMockCourseService() },
     ],
   });
 

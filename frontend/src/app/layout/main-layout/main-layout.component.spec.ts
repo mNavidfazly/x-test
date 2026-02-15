@@ -10,8 +10,9 @@ import { NotificationService } from '../../core/services/notification.service';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
-import { createMockNotificationService } from '../../__mocks__/course.mock';
+import { createMockNotificationService, createMockCourseService } from '../../__mocks__/course.mock';
 import { createMockSidebarService } from '../../__mocks__/sidebar.mock';
+import { CourseService } from '../../core/services/course.service';
 import { ToastService } from '../../core/services/toast.service';
 import { createMockToastService } from '../../__mocks__/toast.mock';
 
@@ -31,6 +32,7 @@ async function renderLayout() {
       { provide: ProfileService, useValue: profile },
       { provide: NotificationService, useValue: notifications },
       { provide: SidebarService, useValue: sidebar },
+      { provide: CourseService, useValue: createMockCourseService() },
       { provide: ToastService, useValue: createMockToastService() },
     ],
   });

@@ -8,7 +8,13 @@ import { LucideAngularModule, Menu, Bell, ChevronDown, User, LogOut } from 'luci
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { CourseService } from '../../core/services/course.service';
 import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
+
+interface BreadcrumbItem {
+  label: string;
+  route?: string;
+}
 
 const ROUTE_NAME_MAP: readonly [string, string][] = [
   ['/teaching/courses', 'Teaching Overview'],
@@ -48,11 +54,17 @@ const ROUTE_NAME_MAP: readonly [string, string][] = [
           <lucide-icon [img]="icons.Menu" [size]="20"></lucide-icon>
         </button>
 
-        @if (pageName()) {
+        @if (breadcrumbs().length) {
           <nav class="hidden lg:flex items-center gap-1.5 text-sm" aria-label="Breadcrumb">
-            <span class="italic font-semibold text-teal-600">X</span><span class="font-semibold text-slate-800">-Courses</span>
-            <span class="text-slate-300 mx-0.5">/</span>
-            <span class="text-slate-500">{{ pageName() }}</span>
+            <span class="font-semibold"><span class="italic text-teal-600">X</span><span class="text-slate-800">-Courses</span></span>
+            @for (crumb of breadcrumbs(); track $index; let last = $last) {
+              <span class="text-slate-300">/</span>
+              @if (crumb.route && !last) {
+                <a [routerLink]="crumb.route" class="text-slate-500 hover:text-teal-600 transition-colors truncate max-w-40">{{ crumb.label }}</a>
+              } @else {
+                <span class="text-slate-500 truncate max-w-48">{{ crumb.label }}</span>
+              }
+            }
           </nav>
         }
       </div>
@@ -142,6 +154,7 @@ export class HeaderComponent {
   #auth = inject(AuthService);
   #profile = inject(ProfileService);
   #notifications = inject(NotificationService);
+  #courseService = inject(CourseService);
   #router = inject(Router);
 
   unreadCount = this.#notifications.unreadCount;
@@ -154,12 +167,37 @@ export class HeaderComponent {
     { initialValue: this.#router.url },
   );
 
-  pageName = computed(() => {
+  breadcrumbs = computed<BreadcrumbItem[]>(() => {
     const url = this.#currentUrl();
+    const crumbs: BreadcrumbItem[] = [];
+
+    // Find the section name from ROUTE_NAME_MAP
     for (const [prefix, name] of ROUTE_NAME_MAP) {
-      if (url.startsWith(prefix)) return name;
+      if (url.startsWith(prefix)) {
+        crumbs.push({ label: name, route: prefix });
+        break;
+      }
     }
-    return null;
+
+    // Add course name if on a course detail or module page
+    const courseMatch = url.match(/^\/courses\/([0-9a-f-]{36})/);
+    if (courseMatch) {
+      const detail = this.#courseService.courseDetail();
+      if (detail?.id === courseMatch[1]) {
+        crumbs.push({ label: detail.title, route: `/courses/${detail.id}` });
+
+        // Add module title if on a module page
+        const moduleMatch = url.match(/\/modules\/([0-9a-f-]{36})$/);
+        if (moduleMatch) {
+          const viewer = this.#courseService.moduleViewer();
+          if (viewer?.module?.id === moduleMatch[1]) {
+            crumbs.push({ label: viewer.module.title });
+          }
+        }
+      }
+    }
+
+    return crumbs;
   });
 
   roleLabel = computed(() => {

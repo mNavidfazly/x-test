@@ -244,7 +244,7 @@
   }
   .sidebar-desktop-collapsed {
     @media (min-width: 1024px) {
-      width: 64px;
+      width: 64px !important;
     }
   }
 
