@@ -106,7 +106,7 @@ All test users use password: `TestUser123!`
 | 6 | Enter Title: "Bunny Test Video" | Title accepted | ☐ |
 | 7 | Verify "Create Module" still disabled | Title set but no video uploaded — button remains disabled | ☐ |
 | 8 | Verify "Cancel" button present and functional | Secondary styled button, clicking returns to course detail | ☐ |
-| 9 | Verify no "Video URL", "Thumbnail URL", or "Duration" text inputs exist | Old fields removed — only Title, Description, and file picker | ☐ |
+| 9 | Verify no "Video URL", "Thumbnail URL", or video "Duration" text inputs exist | Old video-specific fields removed — only Title, Description, file picker, and "Estimated Duration (minutes)" input (on parent form, for module time estimation) | ☐ |
 
 **Negative Cases**:
 
@@ -145,7 +145,7 @@ All test users use password: `TestUser123!`
 | 4 | Wait for upload to complete | Progress reaches 100%, upload area changes to success state | ☐ |
 | 5 | Verify success state | Green success badge (`bg-emerald-100 text-emerald-700`) with CheckCircle icon, filename displayed, "Video uploaded successfully" text, "Replace" button visible | ☐ |
 | 6 | Verify "Create Module" button is now enabled | Title filled + bunny_video_id set from upload success = valid | ☐ |
-| 7 | Click "Create Module" | Module saved (two-step: INSERT module → INSERT module_videos with bunny_video_id, bunny_library_id, original_filename) | ☐ |
+| 7 | Click "Create Module" | Module saved (two-step: INSERT module with estimated_duration_minutes → INSERT module_videos with bunny_video_id, bunny_library_id, original_filename) | ☐ |
 | 8 | Verify redirect to course detail | Module appears in lecture list with Video icon and title | ☐ |
 
 **Replace Flow**:

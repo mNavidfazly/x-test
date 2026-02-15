@@ -139,8 +139,9 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 | 7 | Verify progress bar (enrolled course) | Bar shows X/Y modules text + percentage, teal fill width matches percentage, `tabular-nums` for numbers | ☐ |
 | 8 | Verify action label logic | "Start" if enrolled with 0 progress, "Continue" if partial progress, "Review" if 100% complete, "View" if not enrolled | ☐ |
 | 9 | Verify module count | Footer shows "{N} modules" with BookOpen icon | ☐ |
-| 10 | Verify last activity date | If progress exists: shows relative date (Today, Yesterday, Xd ago, Xw ago, Xmo ago) with Clock icon | ☐ |
-| 11 | Click a course card | Navigated to `/courses/:courseId` — entire card is a RouterLink | ☐ |
+| 10 | Verify total course duration | Footer shows formatted duration (e.g., "2h 30m" or "45 min") with Clock icon next to module count | ☐ |
+| 11 | Verify last activity date | If progress exists: shows relative date (Today, Yesterday, Xd ago, Xw ago, Xmo ago) with Clock icon | ☐ |
+| 12 | Click a course card | Navigated to `/courses/:courseId` — entire card is a RouterLink | ☐ |
 
 **Negative Cases**:
 
@@ -189,20 +190,23 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 | 5 | Verify enrollment type badge | Colored badge (emerald/amber/slate) matching the course's enrollment_type, same style as course card | ☐ |
 | 6 | Verify NO "Edit" button | Pencil/edit button absent — only visible when `canEdit()` is true (Platform Admin or Lecturer with can_edit) | ☐ |
 | 7 | Verify progress summary bar | Full-width teal bar showing `X/Y modules completed` with percentage width, only shown if totalModules > 0 | ☐ |
-| 8 | Verify NO "Add Lecture" button | Dashed "Add Lecture" button absent — only visible when `canEdit()` is true | ☐ |
-| 9 | Verify NO "Delete Course" section | Bottom danger zone section absent — only visible to Platform Admin | ☐ |
-| 10 | Verify lectures displayed as accordions | Each lecture: collapsible header with chevron icon, title, and completion count badge (X/Y) | ☐ |
-| 11 | Verify lecture completion count badge | Badge shows "X/Y" where X = completed modules in lecture, Y = total modules in lecture | ☐ |
-| 12 | Verify completion badge styling | All complete: emerald background + text; incomplete: slate background + text | ☐ |
-| 13 | Click a lecture accordion header | Toggle: expanded shows module list, collapsed hides it; chevron rotates (ChevronRight -> ChevronDown) | ☐ |
-| 14 | Verify modules listed inside expanded lecture | Each module shows: type icon (left), title (middle), status badge (right) | ☐ |
-| 15 | Verify module type icons | Video = Video icon, PDF = FileText icon, Rich Text = Type icon, Quiz = HelpCircle icon, Exam = ClipboardCheck icon | ☐ |
-| 16 | Verify module status badges | "Done" (emerald, with Check icon) for completed, "In progress" (teal badge) for in_progress, "Not started" (slate text) for not started / no progress entry | ☐ |
-| 17 | Verify NO edit/delete/reorder buttons on lectures | Pencil, trash, ChevronUp/Down buttons absent on lecture accordion headers | ☐ |
-| 18 | Verify NO edit/delete/reorder buttons on modules | Pencil, trash, ChevronUp/Down buttons absent on module items | ☐ |
-| 19 | Verify NO "Add Module" button inside lectures | Dashed "Add Module" button absent inside each lecture | ☐ |
-| 20 | Verify video/pdf/markdown modules are clickable links | Modules with type video/pdf/markdown have a RouterLink; clicking navigates to `/courses/:courseId/modules/:moduleId` | ☐ |
-| 21 | Verify quiz/exam modules are NOT clickable | Quiz/exam modules show "Coming soon" text, no link, muted styling (text-slate-400) | ☐ |
+| 8 | Verify total course duration in header | Clock icon with formatted total duration (e.g., "2h 30m total") shown below description, above progress bar | ☐ |
+| 9 | Verify NO "Add Lecture" button | Dashed "Add Lecture" button absent — only visible when `canEdit()` is true | ☐ |
+| 10 | Verify NO "Delete Course" section | Bottom danger zone section absent — only visible to Platform Admin | ☐ |
+| 11 | Verify lectures displayed as accordions | Each lecture: collapsible header with chevron icon, title, and completion count badge (X/Y) | ☐ |
+| 12 | Verify lecture duration in accordion header | Each lecture header shows aggregated duration of its modules (e.g., "1h 15m") between title and completion badge | ☐ |
+| 13 | Verify lecture completion count badge | Badge shows "X/Y" where X = completed modules in lecture, Y = total modules in lecture | ☐ |
+| 14 | Verify completion badge styling | All complete: emerald background + text; incomplete: slate background + text | ☐ |
+| 15 | Click a lecture accordion header | Toggle: expanded shows module list, collapsed hides it; chevron rotates (ChevronRight -> ChevronDown) | ☐ |
+| 16 | Verify modules listed inside expanded lecture | Each module shows: type icon (left), title (middle), status badge (right) | ☐ |
+| 17 | Verify module duration on each module item | Each module shows its estimated duration (e.g., "30 min") after the title, before the status badge | ☐ |
+| 18 | Verify module type icons | Video = Video icon, PDF = FileText icon, Rich Text = Type icon, Quiz = HelpCircle icon, Exam = ClipboardCheck icon | ☐ |
+| 19 | Verify module status badges | "Done" (emerald, with Check icon) for completed, "In progress" (teal badge) for in_progress, "Not started" (slate text) for not started / no progress entry | ☐ |
+| 20 | Verify NO edit/delete/reorder buttons on lectures | Pencil, trash, ChevronUp/Down buttons absent on lecture accordion headers | ☐ |
+| 21 | Verify NO edit/delete/reorder buttons on modules | Pencil, trash, ChevronUp/Down buttons absent on module items | ☐ |
+| 22 | Verify NO "Add Module" button inside lectures | Dashed "Add Module" button absent inside each lecture | ☐ |
+| 23 | Verify video/pdf/markdown modules are clickable links | Modules with type video/pdf/markdown have a RouterLink; clicking navigates to `/courses/:courseId/modules/:moduleId` | ☐ |
+| 24 | Verify quiz/exam modules are NOT clickable | Quiz/exam modules show "Coming soon" text, no link, muted styling (text-slate-400) | ☐ |
 
 **Negative Cases**:
 
@@ -433,18 +437,19 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 |---|--------|------------------|---|
 | 1 | Navigate to the FIRST module in the course | Module viewer loads | ☐ |
 | 2 | Verify position indicator | Shows "1 of Y modules" (text-xs, slate-400) | ☐ |
-| 3 | Verify NO "Previous" link | Left side of bottom navigation bar is empty (first module has no prev) | ☐ |
-| 4 | Verify "Next" link present | Right side shows "Next" with ChevronRight icon, links to the second module | ☐ |
-| 5 | Click "Next" | Navigated to the second module, position indicator shows "2 of Y modules" | ☐ |
-| 6 | Verify "Previous" link now present | Left side shows "Previous" with ChevronLeft icon, links back to the first module | ☐ |
-| 7 | Click "Previous" | Navigated back to the first module, position indicator shows "1 of Y modules" | ☐ |
-| 8 | Navigate to the LAST module in the course | Module viewer loads for the last module | ☐ |
-| 9 | Verify position indicator | Shows "Y of Y modules" | ☐ |
-| 10 | Verify "Previous" link present | Links to the second-to-last module | ☐ |
-| 11 | Verify NO "Next" link | Right side of bottom navigation bar is empty (last module has no next) | ☐ |
-| 12 | Navigate to the last module of Lecture 1 | Module viewer loads for the last module in the first lecture | ☐ |
-| 13 | Click "Next" | Navigated to the FIRST module of Lecture 2 — cross-lecture boundary navigation | ☐ |
-| 14 | Verify cross-lecture navigation works | Module from the next lecture loads correctly with updated position indicator | ☐ |
+| 3 | Verify estimated duration in viewer header | Clock icon with duration text (e.g., "30 min") shown near the module position indicator | ☐ |
+| 4 | Verify NO "Previous" link | Left side of bottom navigation bar is empty (first module has no prev) | ☐ |
+| 5 | Verify "Next" link present | Right side shows "Next" with ChevronRight icon, links to the second module | ☐ |
+| 6 | Click "Next" | Navigated to the second module, position indicator shows "2 of Y modules" | ☐ |
+| 7 | Verify "Previous" link now present | Left side shows "Previous" with ChevronLeft icon, links back to the first module | ☐ |
+| 8 | Click "Previous" | Navigated back to the first module, position indicator shows "1 of Y modules" | ☐ |
+| 9 | Navigate to the LAST module in the course | Module viewer loads for the last module | ☐ |
+| 10 | Verify position indicator | Shows "Y of Y modules" | ☐ |
+| 11 | Verify "Previous" link present | Links to the second-to-last module | ☐ |
+| 12 | Verify NO "Next" link | Right side of bottom navigation bar is empty (last module has no next) | ☐ |
+| 13 | Navigate to the last module of Lecture 1 | Module viewer loads for the last module in the first lecture | ☐ |
+| 14 | Click "Next" | Navigated to the FIRST module of Lecture 2 — cross-lecture boundary navigation | ☐ |
+| 15 | Verify cross-lecture navigation works | Module from the next lecture loads correctly with updated position indicator | ☐ |
 
 **Notes/Learnings**:
 - Navigation is computed by flattening all modules from all lectures in sort order: `courseDetail.lectures.flatMap(l => l.modules)`

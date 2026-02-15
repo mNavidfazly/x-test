@@ -992,11 +992,13 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          estimated_duration_minutes: number
           id: string
           lecture_id: string
           module_type: Database["public"]["Enums"]["module_type"]
           significant_update_at: string | null
           sort_order: number
+          staleness_postponed_until: string | null
           title: string
           updated_at: string
           updated_by: string | null
@@ -1006,11 +1008,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          estimated_duration_minutes?: number
           id?: string
           lecture_id: string
           module_type: Database["public"]["Enums"]["module_type"]
           significant_update_at?: string | null
           sort_order?: number
+          staleness_postponed_until?: string | null
           title: string
           updated_at?: string
           updated_by?: string | null
@@ -1020,11 +1024,13 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          estimated_duration_minutes?: number
           id?: string
           lecture_id?: string
           module_type?: Database["public"]["Enums"]["module_type"]
           significant_update_at?: string | null
           sort_order?: number
+          staleness_postponed_until?: string | null
           title?: string
           updated_at?: string
           updated_by?: string | null

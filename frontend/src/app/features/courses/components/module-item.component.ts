@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, LucideIconData, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, Check, Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-angular';
 import { ModuleSummary, ModuleProgress } from '../../../core/models/course.model';
+import { formatDuration } from '../../../core/utils/date.utils';
 
 const TYPE_ICONS: Record<string, LucideIconData> = {
   video: Video,
@@ -27,6 +28,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
              class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer flex-1 min-w-0">
             <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
             <span class="text-sm text-slate-700 flex-1 truncate">{{ module().title }}</span>
+            <span class="text-xs text-slate-400 shrink-0 tabular-nums">{{ formattedDuration() }}</span>
             @if (progress(); as p) {
               @switch (p.status) {
                 @case ('completed') {
@@ -135,6 +137,8 @@ export class ModuleItemComponent {
 
   readonly icons = { Check, Pencil, ChevronUp, ChevronDown, Trash2 };
   readonly confirmingDelete = signal(false);
+
+  readonly formattedDuration = computed(() => formatDuration(this.module().estimated_duration_minutes));
 
   readonly typeIcon = computed(() => {
     return TYPE_ICONS[this.module().module_type] ?? FileText;

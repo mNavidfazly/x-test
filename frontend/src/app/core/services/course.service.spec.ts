@@ -50,9 +50,9 @@ describe('CourseService', () => {
           case 2: // modules
             return resolve({
               data: [
-                { id: 'm1', course_id: 'c1' },
-                { id: 'm2', course_id: 'c1' },
-                { id: 'm3', course_id: 'c2' },
+                { id: 'm1', course_id: 'c1', estimated_duration_minutes: 30 },
+                { id: 'm2', course_id: 'c1', estimated_duration_minutes: 20 },
+                { id: 'm3', course_id: 'c2', estimated_duration_minutes: 45 },
               ],
               error: null,
             });
@@ -93,6 +93,7 @@ describe('CourseService', () => {
         progressPercent: 50,
         isEnrolled: true,
         lastActivity: '2026-01-20T12:00:00Z',
+        totalDurationMinutes: 50,
       });
 
       expect(courses[1]).toEqual({
@@ -106,6 +107,7 @@ describe('CourseService', () => {
         progressPercent: 0,
         isEnrolled: false,
         lastActivity: null,
+        totalDurationMinutes: 45,
       });
     });
 

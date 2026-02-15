@@ -12,6 +12,17 @@ export function formatDate(dateStr: string | null | undefined): string {
 }
 
 /**
+ * Formats a duration in minutes into a human-readable string.
+ * Examples: 0 → "0 min", 45 → "45 min", 60 → "1h", 90 → "1h 30m", 120 → "2h"
+ */
+export function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}
+
+/**
  * Formats an ISO date string into relative time (e.g. "5m ago", "2h ago").
  * Falls back to short date for dates older than 7 days.
  */

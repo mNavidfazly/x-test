@@ -121,6 +121,7 @@ describe('ExternalQuizFormComponent', () => {
         description: 'Desc',
         module_type: 'external_quiz',
         lecture_id: 'l1',
+        estimated_duration_minutes: 15,
       },
       content: {
         type: 'external_quiz',

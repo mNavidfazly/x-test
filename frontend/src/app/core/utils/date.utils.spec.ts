@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { formatDate, formatRelativeTime } from './date.utils';
+import { formatDate, formatDuration, formatRelativeTime } from './date.utils';
 
 describe('formatDate', () => {
   it('should format a valid ISO date string', () => {
@@ -18,6 +18,35 @@ describe('formatDate', () => {
 
   it('should return — for empty string', () => {
     expect(formatDate('')).toBe('—');
+  });
+});
+
+describe('formatDuration', () => {
+  it('should return "0 min" for 0', () => {
+    expect(formatDuration(0)).toBe('0 min');
+  });
+
+  it('should return minutes for values under 60', () => {
+    expect(formatDuration(1)).toBe('1 min');
+    expect(formatDuration(45)).toBe('45 min');
+    expect(formatDuration(59)).toBe('59 min');
+  });
+
+  it('should return hours only when evenly divisible', () => {
+    expect(formatDuration(60)).toBe('1h');
+    expect(formatDuration(120)).toBe('2h');
+    expect(formatDuration(180)).toBe('3h');
+  });
+
+  it('should return hours and minutes for mixed values', () => {
+    expect(formatDuration(90)).toBe('1h 30m');
+    expect(formatDuration(75)).toBe('1h 15m');
+    expect(formatDuration(150)).toBe('2h 30m');
+  });
+
+  it('should handle large values', () => {
+    expect(formatDuration(600)).toBe('10h');
+    expect(formatDuration(601)).toBe('10h 1m');
   });
 });
 

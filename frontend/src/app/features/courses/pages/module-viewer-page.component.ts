@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
+import { formatDuration } from '../../../core/utils/date.utils';
 import { VideoViewerComponent } from '../components/video-viewer.component';
 import { PdfViewerComponent } from '../components/pdf-viewer.component';
 import { MarkdownViewerComponent } from '../components/markdown-viewer.component';
@@ -41,7 +42,13 @@ import { ReportIssueComponent } from '../components/report-issue.component';
       } @else if (courseService.moduleViewer()) {
         <!-- Header -->
         <div class="mb-6">
-          <p class="text-xs text-slate-400 mb-1">{{ courseService.moduleViewer()!.navigation.current }} of {{ courseService.moduleViewer()!.navigation.total }} modules</p>
+          <p class="flex items-center gap-3 text-xs text-slate-400 mb-1">
+            <span>{{ courseService.moduleViewer()!.navigation.current }} of {{ courseService.moduleViewer()!.navigation.total }} modules</span>
+            <span class="flex items-center gap-1 tabular-nums">
+              <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
+              {{ moduleDuration() }}
+            </span>
+          </p>
           <h1 class="page-title">{{ courseService.moduleViewer()!.module.title }}</h1>
           @if (courseService.moduleViewer()!.module.description) {
             <p class="text-sm text-slate-500 mt-1">{{ courseService.moduleViewer()!.module.description }}</p>
@@ -174,13 +181,18 @@ export class ModuleViewerPageComponent {
   readonly courseService = inject(CourseService);
   #route = inject(ActivatedRoute);
 
-  readonly icons = { ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen };
+  readonly icons = { ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock };
 
   // Reactive route params — toSignal converts the paramMap observable to a signal
   // so the effect below fires on every param change (e.g. Next/Previous navigation).
   readonly #params = toSignal(this.#route.paramMap);
   readonly courseId = computed(() => this.#params()?.get('courseId') ?? '');
   readonly #moduleId = computed(() => this.#params()?.get('moduleId') ?? '');
+
+  readonly moduleDuration = computed(() => {
+    const viewer = this.courseService.moduleViewer();
+    return viewer ? formatDuration(viewer.module.estimated_duration_minutes) : '';
+  });
 
   readonly canMarkComplete = computed(() => {
     const viewer = this.courseService.moduleViewer();

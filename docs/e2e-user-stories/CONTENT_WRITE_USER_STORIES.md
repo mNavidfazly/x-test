@@ -367,9 +367,10 @@ All test users use password: `TestUser123!`
 | 8 | Verify button still disabled (video URL still empty) | Button disabled — both title AND video URL required | ☐ |
 | 9 | Enter Video URL: "https://cdn.example.com/test-video.mp4" | URL accepted | ☐ |
 | 10 | Optionally enter Thumbnail URL and Duration | Fields accept input | ☐ |
-| 11 | Click "Create Module" | Module created (two-step: INSERT module → INSERT module_videos), redirected to `/courses/:courseId` | ☐ |
-| 12 | Verify module appears in the lecture | Video icon + "E2E Video Module" title shown in module list within the lecture accordion | ☐ |
-| 13 | Click on the module to view it | Navigated to `/courses/:courseId/modules/:moduleId`, video player rendered with the provided URL | ☐ |
+| 11 | Set "Estimated Duration (minutes)": "30" | Number input accepts value (on parent form, above the video sub-form) | ☐ |
+| 12 | Click "Create Module" | Module created (two-step: INSERT module → INSERT module_videos), redirected to `/courses/:courseId` | ☐ |
+| 13 | Verify module appears in the lecture | Video icon + "E2E Video Module" title shown in module list within the lecture accordion | ☐ |
+| 14 | Click on the module to view it | Navigated to `/courses/:courseId/modules/:moduleId`, video player rendered with the provided URL | ☐ |
 
 **Negative Cases**:
 
@@ -419,10 +420,11 @@ All test users use password: `TestUser123!`
 | 7 | Click the drop zone and select a PDF file | File name and size displayed in the drop zone (e.g., "test-document.pdf — 2.4 MB"), X button to remove | ☐ |
 | 8 | Verify "Create Module" button is now enabled | Title + file both present | ☐ |
 | 9 | Optionally enter Page count: "42" | Number field accepts input | ☐ |
-| 10 | Click "Create Module" | Upload starts: progress bar shown in drop zone, button shows loading/disabled state | ☐ |
-| 11 | Wait for upload + save to complete | File uploaded to `course-files/{courseId}/{timestamp}-{filename}`, module + module_pdfs rows created, redirected to `/courses/:courseId` | ☐ |
-| 12 | Verify module appears in lecture | FileText icon + "E2E PDF Module" title shown | ☐ |
-| 13 | Click on the module to view it | PDF viewer (iframe) rendered with the uploaded file URL, download button visible | ☐ |
+| 10 | Set "Estimated Duration (minutes)": "15" | Number input accepts value | ☐ |
+| 11 | Click "Create Module" | Upload starts: progress bar shown in drop zone, button shows loading/disabled state | ☐ |
+| 12 | Wait for upload + save to complete | File uploaded to `course-files/{courseId}/{timestamp}-{filename}`, module + module_pdfs rows created, redirected to `/courses/:courseId` | ☐ |
+| 13 | Verify module appears in lecture | FileText icon + "E2E PDF Module" title shown | ☐ |
+| 14 | Click on the module to view it | PDF viewer (iframe) rendered with the uploaded file URL, download button visible | ☐ |
 
 **Negative Cases**:
 
@@ -467,14 +469,15 @@ All test users use password: `TestUser123!`
 | 2 | Verify Tiptap editor renders | Editor area with toolbar visible. Toolbar buttons: Bold (B), Italic (I), Strikethrough (S), H2, H3, Bullet List, Ordered List, Code Block, Undo, Redo | ☐ |
 | 3 | Verify "Create Module" button is disabled (title empty) | Button disabled | ☐ |
 | 4 | Enter Title: "E2E Rich Text Module" | Title accepted, button enabled (markdown content can be empty) | ☐ |
-| 5 | Click into the Tiptap editor area | Editor gains focus, cursor visible | ☐ |
-| 6 | Type: "This is a test paragraph" | Text appears in the editor area | ☐ |
-| 7 | Select the text, click the Bold (B) toolbar button | Text becomes bold in the editor | ☐ |
-| 8 | Press Enter, type a new line, click H2 toolbar button | New line formatted as H2 heading | ☐ |
-| 9 | Click Bullet List button, type list items | Bullet list rendered in the editor | ☐ |
-| 10 | Click "Create Module" | Module created (INSERT module + INSERT module_markdown with markdown content), redirected to `/courses/:courseId` | ☐ |
-| 11 | Verify module appears in lecture | Type icon + "E2E Rich Text Module" title shown | ☐ |
-| 12 | Click on the module to view it | Navigated to module viewer, markdown content rendered with formatting (bold text, H2 heading, bullet list visible) | ☐ |
+| 5 | Set "Estimated Duration (minutes)": "10" | Number input accepts value | ☐ |
+| 6 | Click into the Tiptap editor area | Editor gains focus, cursor visible | ☐ |
+| 7 | Type: "This is a test paragraph" | Text appears in the editor area | ☐ |
+| 8 | Select the text, click the Bold (B) toolbar button | Text becomes bold in the editor | ☐ |
+| 9 | Press Enter, type a new line, click H2 toolbar button | New line formatted as H2 heading | ☐ |
+| 10 | Click Bullet List button, type list items | Bullet list rendered in the editor | ☐ |
+| 11 | Click "Create Module" | Module created (INSERT module + INSERT module_markdown with markdown content), redirected to `/courses/:courseId` | ☐ |
+| 12 | Verify module appears in lecture | Type icon + "E2E Rich Text Module" title shown | ☐ |
+| 13 | Click on the module to view it | Navigated to module viewer, markdown content rendered with formatting (bold text, H2 heading, bullet list visible) | ☐ |
 
 **Negative Cases**:
 
@@ -525,8 +528,9 @@ All test users use password: `TestUser123!`
 | 10 | Set Max File Size: "25" | Accepted (will be converted to 26214400 bytes on save) | ☐ |
 | 11 | Verify Allowed File Types checkboxes | PDF and ZIP checkboxes (may be pre-checked) | ☐ |
 | 12 | Optionally upload an exam file via the file drop zone | File selected, name/size shown | ☐ |
-| 13 | Click "Create Module" | Module created (INSERT module + INSERT exams), redirected to `/courses/:courseId` | ☐ |
-| 14 | Verify module appears in lecture | ClipboardCheck icon + "E2E Final Exam" title shown | ☐ |
+| 13 | Set "Estimated Duration (minutes)": "60" | Note: this is the estimated time to complete the module, separate from the exam's own `duration_minutes` setting | ☐ |
+| 14 | Click "Create Module" | Module created (INSERT module + INSERT exams), redirected to `/courses/:courseId` | ☐ |
+| 15 | Verify module appears in lecture | ClipboardCheck icon + "E2E Final Exam" title shown | ☐ |
 
 **Negative Cases**:
 
@@ -573,9 +577,10 @@ All test users use password: `TestUser123!`
 | 2 | Verify "Edit Module" heading and "Back to course" link | Page loads with correct heading | ☐ |
 | 3 | Verify module type is displayed but NOT editable | Type shown (e.g., "Video") but no type selector — type is immutable after creation | ☐ |
 | 4 | Verify type-specific form is pre-populated | All fields filled with current values from DB (title, description, type-specific fields) | ☐ |
-| 5 | Modify Title: append " (Updated)" | Title field updated | ☐ |
-| 6 | Click "Save Changes" | Module updated (UPDATE module + UPSERT subtable), redirected to `/courses/:courseId` | ☐ |
-| 7 | Verify updated title on course detail page | Module shows new title in the lecture accordion | ☐ |
+| 5 | Verify "Estimated Duration (minutes)" is pre-populated | Number input shows the saved duration value (default 15 for existing modules) | ☐ |
+| 6 | Modify Title: append " (Updated)" | Title field updated | ☐ |
+| 7 | Click "Save Changes" | Module updated (UPDATE module + UPSERT subtable), redirected to `/courses/:courseId` | ☐ |
+| 8 | Verify updated title on course detail page | Module shows new title in the lecture accordion | ☐ |
 
 **Module File Attachments (edit mode only)**:
 
@@ -711,13 +716,14 @@ All test users use password: `TestUser123!`
 | 5 | Verify module appears in lecture accordion with correct title | "E2E Markdown Round-Trip" visible | ☐ |
 | 6 | Click the module title to navigate to viewer | Navigated to `/courses/:courseId/modules/:moduleId` | ☐ |
 | 7 | Verify module title in viewer header | `<h1>` with "E2E Markdown Round-Trip" | ☐ |
-| 8 | Verify module counter shows "X of Y modules" | Navigation counter present | ☐ |
-| 9 | Verify **bold text** renders as `<strong>` in the prose section | Bold formatting preserved through Tiptap → markdown → ngx-markdown round-trip | ☐ |
-| 10 | Verify **H2 heading** renders as `<h2>` | Heading level preserved | ☐ |
-| 11 | Verify **bullet list** renders as `<ul><li>` elements | List formatting preserved | ☐ |
-| 12 | Verify **code block** renders with syntax highlighting | Code block visible, styled differently from prose | ☐ |
-| 13 | Verify "Mark as complete" button is present | Teal button visible (markdown type allows manual completion) | ☐ |
-| 14 | Verify "Back to course" link works | ArrowLeft link navigates back to course detail | ☐ |
+| 8 | Verify estimated duration shown in viewer header | Clock icon with duration text (e.g., "10 min") near the navigation counter | ☐ |
+| 9 | Verify module counter shows "X of Y modules" | Navigation counter present | ☐ |
+| 10 | Verify **bold text** renders as `<strong>` in the prose section | Bold formatting preserved through Tiptap → markdown → ngx-markdown round-trip | ☐ |
+| 11 | Verify **H2 heading** renders as `<h2>` | Heading level preserved | ☐ |
+| 12 | Verify **bullet list** renders as `<ul><li>` elements | List formatting preserved | ☐ |
+| 13 | Verify **code block** renders with syntax highlighting | Code block visible, styled differently from prose | ☐ |
+| 14 | Verify "Mark as complete" button is present | Teal button visible (markdown type allows manual completion) | ☐ |
+| 15 | Verify "Back to course" link works | ArrowLeft link navigates back to course detail | ☐ |
 
 **Notes/Learnings**:
 - Tiptap stores via `tiptap-markdown` which converts HTML DOM → markdown strings. The viewer uses `ngx-markdown` which parses markdown → HTML. These are two different libraries with potentially different markdown dialect support
@@ -754,13 +760,14 @@ All test users use password: `TestUser123!`
 | 4 | Enter Thumbnail URL: a valid image URL | URL accepted | ☐ |
 | 5 | Enter Duration: `596` (9 minutes 56 seconds) | Duration accepted | ☐ |
 | 6 | Click "Create Module" | Module created, redirected to course detail | ☐ |
-| 7 | Click the module title to navigate to viewer | Navigated to module viewer page | ☐ |
+| 7 | Verify estimated duration shown in viewer header | Clock icon with duration text (e.g., "30 min") — this is the estimated completion time, separate from video playback duration | ☐ |
 | 8 | Verify `<video>` element is present with `controls` attribute | HTML5 video player rendered | ☐ |
 | 9 | Verify `<video>` `src` attribute matches the entered Video URL | Correct URL bound to src | ☐ |
 | 10 | Verify `<video>` `poster` attribute matches the entered Thumbnail URL | Thumbnail image set as poster | ☐ |
 | 11 | Verify duration display shows "9:56" | `formattedDuration()` computed correctly from 596 seconds | ☐ |
 | 12 | Verify "Mark as complete" button is present | Video type allows manual completion | ☐ |
 | 13 | Verify prev/next navigation links are present (if other modules exist) | Navigation bar rendered correctly | ☐ |
+| 14 | Verify module position indicator | Counter shows "X of Y modules" | ☐ |
 
 **Notes/Learnings**:
 - The video viewer binds `[src]="video().video_url"` and `[poster]="video().thumbnail_url ?? ''"` directly from `loadModuleViewer` data
@@ -798,11 +805,12 @@ All test users use password: `TestUser123!`
 | 4 | Enter Page count: "1" | Number accepted | ☐ |
 | 5 | Click "Create Module" | File uploaded to Supabase Storage, module + module_pdfs created, redirected | ☐ |
 | 6 | Click the module title to navigate to viewer | Navigated to module viewer page | ☐ |
-| 7 | Verify `<iframe>` element is present | iframe rendered with `class="w-full h-[80vh]"` | ☐ |
-| 8 | Verify iframe `src` contains a valid Supabase Storage signed URL | URL contains `/object/sign/course-files/` and includes a `?token=` query parameter (signed URL from private bucket) | ☐ |
-| 9 | Verify page count displays "1 pages" | Text present above the iframe | ☐ |
-| 10 | Verify "Download PDF" link is present with `download` attribute | FileDown icon + "Download PDF" text, `href` matches `file_url` | ☐ |
-| 11 | Verify "Mark as complete" button is present | PDF type allows manual completion | ☐ |
+| 7 | Verify estimated duration shown in viewer header | Clock icon with duration text near the navigation counter | ☐ |
+| 8 | Verify `<iframe>` element is present | iframe rendered with `class="w-full h-[80vh]"` | ☐ |
+| 9 | Verify iframe `src` contains a valid Supabase Storage signed URL | URL contains `/object/sign/course-files/` and includes a `?token=` query parameter (signed URL from private bucket) | ☐ |
+| 10 | Verify page count displays "1 pages" | Text present above the iframe | ☐ |
+| 11 | Verify "Download PDF" link is present with `download` attribute | FileDown icon + "Download PDF" text, `href` matches `file_url` | ☐ |
+| 12 | Verify "Mark as complete" button is present | PDF type allows manual completion | ☐ |
 
 **Notes/Learnings**:
 - PDF viewing relies on `DomSanitizer.bypassSecurityTrustResourceUrl()` to whitelist the Supabase Storage URL for iframe embedding
@@ -838,11 +846,12 @@ All test users use password: `TestUser123!`
 | 3 | Click "Create Module" | Module + exams row created, redirected | ☐ |
 | 4 | Click the module title to navigate to viewer | Navigated to module viewer page | ☐ |
 | 5 | Verify module title "E2E Exam Round-Trip" in viewer header | Title displayed correctly | ☐ |
-| 6 | Verify "Coming soon" placeholder is displayed | BookOpen icon + "This module type will be available in a future update." text (NOT an error state) | ☐ |
-| 7 | Verify "Mark as complete" button is NOT present | `canMarkComplete()` returns false for exam type | ☐ |
-| 8 | Verify prev/next navigation still works | Navigation bar functional even for "coming soon" modules | ☐ |
-| 9 | Navigate to edit page (`/courses/:courseId/modules/:moduleId/edit`) | ExamFormComponent loads with pre-populated values | ☐ |
-| 10 | Verify Duration shows "60", Passing Score shows "70" | Data round-trip correct through edit flow | ☐ |
+| 6 | Verify estimated duration shown in viewer header | Clock icon with duration text (e.g., "60 min") — separate from the exam's own duration_minutes | ☐ |
+| 7 | Verify "Coming soon" placeholder is displayed | BookOpen icon + "This module type will be available in a future update." text (NOT an error state) | ☐ |
+| 8 | Verify "Mark as complete" button is NOT present | `canMarkComplete()` returns false for exam type | ☐ |
+| 9 | Verify prev/next navigation still works | Navigation bar functional even for "coming soon" modules | ☐ |
+| 10 | Navigate to edit page (`/courses/:courseId/modules/:moduleId/edit`) | ExamFormComponent loads with pre-populated values | ☐ |
+| 11 | Verify Duration shows "60", Passing Score shows "70" | Data round-trip correct through edit flow | ☐ |
 
 **Notes/Learnings**:
 - The exam viewer intentionally shows "Coming soon" (Phase 5C-5D). Important to verify it reaches `@default` block gracefully, not the error state
@@ -878,19 +887,21 @@ All test users use password: `TestUser123!`
 | 5 | Create Lecture 2: "Core Content" | Second lecture appears below first | ☐ |
 | 6 | Add PDF module to Lecture 2: "Study Guide" (with uploaded file) | Module created with file upload | ☐ |
 | 7 | Add Exam module to Lecture 2: "Final Assessment" (with settings) | Module created | ☐ |
-| 8 | Navigate to course detail, verify full structure | Two lectures visible, 2 modules each | ☐ |
-| 9 | Verify Lecture 1 shows module titles in correct order | "Welcome Video" first, "Course Overview" second | ☐ |
-| 10 | Verify Lecture 2 shows module titles in correct order | "Study Guide" first, "Final Assessment" second | ☐ |
-| 11 | Click "Welcome Video" to open module viewer | Video viewer renders, counter shows "1 of 4 modules" | ☐ |
-| 12 | Verify NO "Previous" navigation (first module) | Only "Next" link visible | ☐ |
-| 13 | Click "Next" | Navigated to "Course Overview" (markdown viewer), counter "2 of 4 modules" | ☐ |
-| 14 | Verify markdown content renders correctly | Formatted text visible in prose container | ☐ |
-| 15 | Click "Next" | Navigated to "Study Guide" (PDF viewer), counter "3 of 4 modules" — **crosses lecture boundary** | ☐ |
-| 16 | Verify PDF iframe loads | PDF viewer with download link visible | ☐ |
-| 17 | Click "Next" | Navigated to "Final Assessment" (exam — "Coming soon"), counter "4 of 4 modules" | ☐ |
-| 18 | Verify NO "Next" navigation (last module) | Only "Previous" link visible | ☐ |
-| 19 | Click "Previous" | Navigated back to "Study Guide", counter "3 of 4 modules" | ☐ |
-| 20 | Navigate back to course detail | All module types show correct icons | ☐ |
+| 8 | Verify each module shows its estimated duration in the lecture accordion | Duration text visible next to module title (e.g., "30 min", "10 min") | ☐ |
+| 9 | Navigate to course detail, verify full structure | Two lectures visible, 2 modules each | ☐ |
+| 10 | Verify lecture duration sums and total course duration in header | Each lecture accordion shows aggregated duration; course header shows total duration | ☐ |
+| 11 | Verify Lecture 1 shows module titles in correct order | "Welcome Video" first, "Course Overview" second | ☐ |
+| 12 | Verify Lecture 2 shows module titles in correct order | "Study Guide" first, "Final Assessment" second | ☐ |
+| 13 | Click "Welcome Video" to open module viewer | Video viewer renders, counter shows "1 of 4 modules" | ☐ |
+| 14 | Verify NO "Previous" navigation (first module) | Only "Next" link visible | ☐ |
+| 15 | Click "Next" | Navigated to "Course Overview" (markdown viewer), counter "2 of 4 modules" | ☐ |
+| 16 | Verify markdown content renders correctly | Formatted text visible in prose container | ☐ |
+| 17 | Click "Next" | Navigated to "Study Guide" (PDF viewer), counter "3 of 4 modules" — **crosses lecture boundary** | ☐ |
+| 18 | Verify PDF iframe loads | PDF viewer with download link visible | ☐ |
+| 19 | Click "Next" | Navigated to "Final Assessment" (exam — "Coming soon"), counter "4 of 4 modules" | ☐ |
+| 20 | Verify NO "Next" navigation (last module) | Only "Previous" link visible | ☐ |
+| 21 | Click "Previous" | Navigated back to "Study Guide", counter "3 of 4 modules" | ☐ |
+| 22 | Navigate back to course detail | All module types show correct icons | ☐ |
 
 **Notes/Learnings**:
 - The `#buildNavigation` method in CourseService flattens all modules across all lectures for prev/next. Cross-lecture boundary navigation is the most fragile path

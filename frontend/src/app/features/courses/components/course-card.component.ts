@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, BookOpen, Clock, ArrowRight } from 'lucide-angular';
 import { CourseWithProgress } from '../../../core/models/course.model';
+import { formatDuration } from '../../../core/utils/date.utils';
 
 const BADGE_STYLES: Record<string, string> = {
   open: 'bg-emerald-100 text-emerald-700',
@@ -71,6 +72,12 @@ const BADGE_LABELS: Record<string, string> = {
               <lucide-icon [img]="icons.BookOpen" [size]="12"></lucide-icon>
               {{ course().moduleCount }} modules
             </span>
+            @if (course().totalDurationMinutes > 0) {
+              <span class="flex items-center gap-1 tabular-nums">
+                <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
+                {{ formattedDuration() }}
+              </span>
+            }
             @if (course().lastActivity) {
               <span class="flex items-center gap-1">
                 <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
@@ -108,6 +115,8 @@ export class CourseCardComponent {
     if (label === 'Continue') return 'text-teal-600';
     return 'text-slate-500';
   });
+
+  readonly formattedDuration = computed(() => formatDuration(this.course().totalDurationMinutes));
 
   readonly relativeDate = computed(() => {
     const last = this.course().lastActivity;

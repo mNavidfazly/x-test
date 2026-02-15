@@ -51,7 +51,7 @@ export class CourseService {
 
       const [coursesRes, modulesRes, progressRes, enrollmentsRes] = await Promise.all([
         client.from('courses').select('id, title, description, thumbnail_url, enrollment_type').order('title'),
-        client.from('modules').select('id, course_id'),
+        client.from('modules').select('id, course_id, estimated_duration_minutes'),
         client.from('user_progress').select('module_id, course_id, status, updated_at').eq('user_id', userId),
         client.from('course_enrollments').select('course_id').eq('user_id', userId),
       ]);
@@ -67,9 +67,11 @@ export class CourseService {
       const enrolledCourseIds = new Set(enrollments.map((e: { course_id: string }) => e.course_id));
 
       const moduleCountByCourse = new Map<string, number>();
+      const durationByCourse = new Map<string, number>();
       for (const m of modules) {
-        const cid = (m as { course_id: string }).course_id;
-        moduleCountByCourse.set(cid, (moduleCountByCourse.get(cid) ?? 0) + 1);
+        const rec = m as { course_id: string; estimated_duration_minutes: number };
+        moduleCountByCourse.set(rec.course_id, (moduleCountByCourse.get(rec.course_id) ?? 0) + 1);
+        durationByCourse.set(rec.course_id, (durationByCourse.get(rec.course_id) ?? 0) + rec.estimated_duration_minutes);
       }
 
       const completedByCourse = new Map<string, number>();
@@ -99,6 +101,7 @@ export class CourseService {
           progressPercent: moduleCount > 0 ? Math.round((completedModules / moduleCount) * 100) : 0,
           isEnrolled: enrolledCourseIds.has(c.id),
           lastActivity: lastActivityByCourse.get(c.id) ?? null,
+          totalDurationMinutes: durationByCourse.get(c.id) ?? 0,
         };
       });
 
@@ -128,7 +131,7 @@ export class CourseService {
       const [courseRes, progressRes, enrollmentRes] = await Promise.all([
         client
           .from('courses')
-          .select('id, title, description, thumbnail_url, enrollment_type, lectures(id, title, description, sort_order, modules(id, title, module_type, sort_order))')
+          .select('id, title, description, thumbnail_url, enrollment_type, lectures(id, title, description, sort_order, modules(id, title, module_type, sort_order, estimated_duration_minutes))')
           .eq('id', courseId)
           .order('sort_order', { referencedTable: 'lectures' })
           .order('sort_order', { referencedTable: 'lectures.modules' })
@@ -161,7 +164,7 @@ export class CourseService {
           title: string;
           description: string | null;
           sort_order: number;
-          modules: { id: string; title: string; module_type: string; sort_order: number }[];
+          modules: { id: string; title: string; module_type: string; sort_order: number; estimated_duration_minutes: number }[];
         }[];
       };
 
@@ -212,7 +215,7 @@ export class CourseService {
       // Step 1: Fetch module metadata
       const moduleRes = await client
         .from('modules')
-        .select('id, title, description, module_type, sort_order, lecture_id, course_id')
+        .select('id, title, description, module_type, sort_order, lecture_id, course_id, estimated_duration_minutes')
         .eq('id', moduleId)
         .single();
 
@@ -221,6 +224,7 @@ export class CourseService {
       const mod = moduleRes.data as {
         id: string; title: string; description: string | null;
         module_type: string; sort_order: number; lecture_id: string; course_id: string;
+        estimated_duration_minutes: number;
       };
 
       // Step 2: Fetch content + files + progress in parallel
@@ -959,6 +963,7 @@ export class CourseService {
         description: payload.module.description,
         module_type: payload.module.module_type,
         sort_order: maxOrder + 1,
+        estimated_duration_minutes: payload.module.estimated_duration_minutes,
       })
       .select('id')
       .single();
@@ -979,6 +984,7 @@ export class CourseService {
     const updateData: Record<string, unknown> = {
       title: payload.module.title,
       description: payload.module.description,
+      estimated_duration_minutes: payload.module.estimated_duration_minutes,
     };
     if (payload.significantUpdate) {
       updateData['significant_update_at'] = new Date().toISOString();
@@ -1060,7 +1066,7 @@ export class CourseService {
 
     const moduleRes = await client
       .from('modules')
-      .select('id, title, description, module_type, sort_order, lecture_id, course_id')
+      .select('id, title, description, module_type, sort_order, lecture_id, course_id, estimated_duration_minutes')
       .eq('id', moduleId)
       .single();
 
@@ -1069,6 +1075,7 @@ export class CourseService {
     const mod = moduleRes.data as {
       id: string; title: string; description: string | null;
       module_type: string; sort_order: number; lecture_id: string; course_id: string;
+      estimated_duration_minutes: number;
     };
 
     const module: ModuleDetail = { ...mod, module_type: mod.module_type as ModuleType };

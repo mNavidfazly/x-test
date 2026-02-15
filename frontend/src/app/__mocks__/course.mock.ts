@@ -54,7 +54,7 @@ export function createMockCourseService(options?: {
     deleteModule: vi.fn().mockResolvedValue(undefined),
     swapModuleSortOrder: vi.fn().mockResolvedValue(undefined),
     loadModuleForEdit: vi.fn().mockResolvedValue({
-      module: { id: 'mod-1', title: 'Test Module', description: null, module_type: 'video', sort_order: 0, lecture_id: 'lecture-1', course_id: 'course-1' },
+      module: { id: 'mod-1', title: 'Test Module', description: null, module_type: 'video', sort_order: 0, lecture_id: 'lecture-1', course_id: 'course-1', estimated_duration_minutes: 15 },
       content: { type: 'video', data: { bunny_video_id: 'test-guid', bunny_library_id: 12345, original_filename: null } },
     }),
     loadModuleFiles: vi.fn().mockResolvedValue([]),
@@ -100,6 +100,7 @@ export function createMockCourseWithProgress(overrides?: Partial<CourseWithProgr
     progressPercent: 30,
     isEnrolled: true,
     lastActivity: '2026-01-15T10:00:00Z',
+    totalDurationMinutes: 150,
     ...overrides,
   };
 }
@@ -119,8 +120,8 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
         description: null,
         sort_order: 0,
         modules: [
-          { id: 'mod-1', title: 'Module 1', module_type: 'video', sort_order: 0 },
-          { id: 'mod-2', title: 'Module 2', module_type: 'pdf', sort_order: 1 },
+          { id: 'mod-1', title: 'Module 1', module_type: 'video', sort_order: 0, estimated_duration_minutes: 30 },
+          { id: 'mod-2', title: 'Module 2', module_type: 'pdf', sort_order: 1, estimated_duration_minutes: 15 },
         ],
       },
       {
@@ -129,7 +130,7 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
         description: 'Second lecture',
         sort_order: 1,
         modules: [
-          { id: 'mod-3', title: 'Module 3', module_type: 'quiz', sort_order: 0 },
+          { id: 'mod-3', title: 'Module 3', module_type: 'quiz', sort_order: 0, estimated_duration_minutes: 20 },
         ],
       },
     ],
@@ -189,6 +190,7 @@ export function createMockModuleViewerData(overrides?: Partial<ModuleViewerData>
       sort_order: 0,
       lecture_id: 'lecture-1',
       course_id: 'course-1',
+      estimated_duration_minutes: 30,
     },
     content: { type: 'video', data: createMockModuleVideo() },
     files: [],
@@ -243,6 +245,7 @@ export function createMockModuleFormData(overrides?: Partial<ModuleFormData>): M
     description: null,
     module_type: 'video',
     lecture_id: 'lecture-1',
+    estimated_duration_minutes: 15,
     ...overrides,
   };
 }

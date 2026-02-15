@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, BookOpen, Pencil, Trash2, Plus } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, BookOpen, Clock, Pencil, Trash2, Plus } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { LectureFormData } from '../../../core/models/course.model';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
+import { formatDuration } from '../../../core/utils/date.utils';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { StatusBadgeComponent, BadgeVariant } from '../../../shared/components/status-badge.component';
 import { LectureAccordionComponent } from '../components/lecture-accordion.component';
@@ -67,7 +68,14 @@ const BADGE_LABELS: Record<string, string> = {
           </div>
 
           @if (courseService.courseDetail()!.description) {
-            <p class="text-sm text-slate-500 mb-4">{{ courseService.courseDetail()!.description }}</p>
+            <p class="text-sm text-slate-500 mb-3">{{ courseService.courseDetail()!.description }}</p>
+          }
+
+          @if (totalDurationMinutes() > 0) {
+            <p class="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+              <lucide-icon [img]="icons.Clock" [size]="14" class="text-slate-400"></lucide-icon>
+              {{ formattedTotalDuration() }} total
+            </p>
           }
 
           <!-- Progress summary -->
@@ -226,7 +234,7 @@ export class CourseDetailPageComponent implements OnInit {
   #toast = inject(ToastService);
   #route = inject(ActivatedRoute);
   #router = inject(Router);
-  readonly icons = { ArrowLeft, BookOpen, Pencil, Trash2, Plus };
+  readonly icons = { ArrowLeft, BookOpen, Clock, Pencil, Trash2, Plus };
 
   private readonly enrollmentCta = viewChild(EnrollmentCtaComponent);
 
@@ -271,6 +279,16 @@ export class CourseDetailPageComponent implements OnInit {
     const detail = this.courseService.courseDetail();
     return BADGE_LABELS[detail?.enrollment_type ?? 'open'] ?? detail?.enrollment_type ?? '';
   });
+
+  readonly totalDurationMinutes = computed(() => {
+    const detail = this.courseService.courseDetail();
+    if (!detail) return 0;
+    return detail.lectures.reduce(
+      (sum, l) => sum + l.modules.reduce((s, m) => s + m.estimated_duration_minutes, 0), 0,
+    );
+  });
+
+  readonly formattedTotalDuration = computed(() => formatDuration(this.totalDurationMinutes()));
 
   readonly totalModules = computed(() => {
     const detail = this.courseService.courseDetail();

@@ -13,6 +13,7 @@ export interface CourseWithProgress {
   progressPercent: number;
   isEnrolled: boolean;
   lastActivity: string | null;
+  totalDurationMinutes: number;
 }
 
 export interface LectureWithModules {
@@ -28,6 +29,7 @@ export interface ModuleSummary {
   title: string;
   module_type: ModuleType;
   sort_order: number;
+  estimated_duration_minutes: number;
 }
 
 export interface CourseDetail {
@@ -83,6 +85,7 @@ export interface ModuleDetail {
   sort_order: number;
   lecture_id: string;
   course_id: string;
+  estimated_duration_minutes: number;
 }
 
 export type BunnyEncodingStatus = 0 | 1 | 2 | 3 | 4 | 5;
@@ -346,6 +349,7 @@ export interface ModuleFormData {
   description: string | null;
   module_type: ModuleType;
   lecture_id: string;
+  estimated_duration_minutes: number;
 }
 
 export interface VideoFormData {

@@ -166,6 +166,7 @@ describe('VideoFormComponent', () => {
         description: 'desc',
         module_type: 'video',
         lecture_id: 'lecture-1',
+        estimated_duration_minutes: 15,
       },
       content: {
         type: 'video',

@@ -228,6 +228,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'platform/content',
+        canActivate: [roleGuard('platform_admin')],
+        loadComponent: () =>
+          import('./features/platform/pages/content-management-page.component').then(
+            (m) => m.ContentManagementPageComponent,
+          ),
+      },
+      {
         path: 'platform/:path',
         canActivate: [roleGuard('platform_admin')],
         loadComponent: () =>

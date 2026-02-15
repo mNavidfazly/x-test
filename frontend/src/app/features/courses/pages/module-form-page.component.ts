@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Loader2, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, LucideIconData } from 'lucide-angular';
+import { FormsModule } from '@angular/forms';
+import { LucideAngularModule, ArrowLeft, Loader2, Clock, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, LucideIconData } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -24,7 +25,7 @@ interface TypeOption {
 @Component({
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, ModuleFilesEditorComponent],
+  imports: [RouterLink, FormsModule, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, ModuleFilesEditorComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-2xl">
@@ -82,6 +83,26 @@ interface TypeOption {
               <span class="font-medium">This is a significant update</span>
             </label>
             <p class="text-xs text-amber-600 mt-1 ml-6">Resets learner progress for this module. Use for content changes, not typo fixes.</p>
+          </div>
+        }
+
+        <!-- Estimated Duration (shown once a type is selected) -->
+        @if (selectedType()) {
+          <div class="mb-4">
+            <label class="form-label flex items-center gap-1.5 mb-1">
+              <lucide-icon [img]="icons.Clock" [size]="14" class="text-slate-400"></lucide-icon>
+              Estimated Duration (minutes)
+            </label>
+            <input
+              type="number"
+              class="input-field w-32"
+              [ngModel]="estimatedDuration()"
+              (ngModelChange)="estimatedDuration.set($event)"
+              min="1"
+              max="999"
+              placeholder="15"
+            />
+            <p class="text-xs text-slate-400 mt-1">How long this module takes to complete.</p>
           </div>
         }
 
@@ -172,7 +193,7 @@ export class ModuleFormPageComponent implements OnInit {
   #route = inject(ActivatedRoute);
   #router = inject(Router);
 
-  readonly icons = { ArrowLeft, Loader2 };
+  readonly icons = { ArrowLeft, Loader2, Clock };
 
   readonly loading = signal(false);
   readonly saving = signal(false);
@@ -180,6 +201,7 @@ export class ModuleFormPageComponent implements OnInit {
 
   readonly selectedType = signal<ModuleType | null>(null);
   readonly significantUpdate = signal(false);
+  readonly estimatedDuration = signal(15);
 
   readonly courseId = computed(() => this.#route.snapshot.paramMap.get('courseId') ?? '');
   readonly moduleId = computed(() => this.#route.snapshot.paramMap.get('moduleId') ?? '');
@@ -195,7 +217,7 @@ export class ModuleFormPageComponent implements OnInit {
   });
 
   readonly moduleFormData = signal<ModuleFormData>({
-    title: '', description: null, module_type: 'video', lecture_id: '',
+    title: '', description: null, module_type: 'video', lecture_id: '', estimated_duration_minutes: 15,
   });
   readonly videoFormData = signal<VideoFormData>({
     bunny_video_id: '', bunny_library_id: 0, original_filename: null,
@@ -256,6 +278,7 @@ export class ModuleFormPageComponent implements OnInit {
 
   async onSave(payload: ModuleSavePayload) {
     this.saving.set(true);
+    payload.module.estimated_duration_minutes = this.estimatedDuration();
     try {
       if (this.isEditMode()) {
         payload.significantUpdate = this.significantUpdate();
@@ -280,11 +303,13 @@ export class ModuleFormPageComponent implements OnInit {
     try {
       const { module, content } = await this.#courseService.loadModuleForEdit(this.moduleId());
       this.selectedType.set(module.module_type);
+      this.estimatedDuration.set(module.estimated_duration_minutes);
       this.moduleFormData.set({
         title: module.title,
         description: module.description,
         module_type: module.module_type,
         lecture_id: module.lecture_id,
+        estimated_duration_minutes: module.estimated_duration_minutes,
       });
       if (content.type === 'video' && content.data) {
         this.videoFormData.set(content.data);

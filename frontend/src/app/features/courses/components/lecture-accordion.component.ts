@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
-import { LucideAngularModule, ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus } from 'lucide-angular';
+import { LucideAngularModule, ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus, Clock } from 'lucide-angular';
+import { formatDuration } from '../../../core/utils/date.utils';
 import { LectureWithModules, ModuleProgress } from '../../../core/models/course.model';
 import { ModuleItemComponent } from './module-item.component';
 
@@ -20,6 +21,7 @@ import { ModuleItemComponent } from './module-item.component';
         >
           <lucide-icon [img]="isOpen() ? icons.ChevronDown : icons.ChevronRight" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
           <span class="text-sm font-semibold text-slate-900 flex-1 truncate">{{ lecture().title }}</span>
+          <span class="text-xs text-slate-400 tabular-nums shrink-0">{{ formattedLectureDuration() }}</span>
           <span class="text-xs font-semibold rounded-full px-2 py-0.5 shrink-0"
                 [class]="completedCount() === totalCount() && totalCount() > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'">
             {{ completedCount() }}/{{ totalCount() }}
@@ -143,12 +145,17 @@ export class LectureAccordionComponent {
   readonly moveModuleUp = output<string>();
   readonly moveModuleDown = output<string>();
 
-  readonly icons = { ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus };
+  readonly icons = { ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus, Clock };
 
   readonly isOpen = signal(true);
   readonly confirmingDelete = signal(false);
 
   readonly totalCount = computed(() => this.lecture().modules.length);
+
+  readonly lectureDuration = computed(() =>
+    this.lecture().modules.reduce((sum, m) => sum + m.estimated_duration_minutes, 0),
+  );
+  readonly formattedLectureDuration = computed(() => formatDuration(this.lectureDuration()));
 
   readonly completedCount = computed(() => {
     const map = this.progressMap();

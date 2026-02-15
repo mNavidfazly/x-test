@@ -4,7 +4,7 @@
 
 ## 1. Overview
 
-This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00037` as context for LLM-assisted development.
+This document describes the development approach for building X-Courses v2 (Multi-Tenant Learning Platform). It is designed to be used alongside `learning-platform-requirements.md` and `supabase/migrations/00001-00038` as context for LLM-assisted development.
 
 ### 1.1 Core Principles
 
@@ -1247,6 +1247,18 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **Consumer Migration:** ~15 page components migrated to use shared components. Test `componentImports` updated accordingly.
 - [x] **Inconsistency Normalization:** Error border-radius (→ `rounded-xl`), badge padding (→ `px-2.5`), search input width (→ `w-64`), loading icon size (→ 24), empty state padding (→ `py-12`), table cell padding (→ `px-3`).
 - [x] **Tests:** 18 new shared component tests (5 specs), 1222 total frontend tests, build OK
+
+#### 10I - Module Time Estimation (Complete)
+- [x] **Migration 00038:** `estimated_duration_minutes INTEGER NOT NULL DEFAULT 15` on `modules` table. Existing modules default to 15 min. No new RLS policies needed (existing 7 module policies cover the new column).
+- [x] **`formatDuration()` utility** (`date.utils.ts`): Converts minutes → `"45 min"` / `"1h 30m"` / `"2h"`. 9 test cases.
+- [x] **Module form:** "Estimated Duration (minutes)" number input on parent `ModuleFormPageComponent` — applies to all 6 module types (video, PDF, markdown, quiz, exam, external quiz). Default 15, range 1-999. Pre-populated in edit mode.
+- [x] **Course card:** Total course duration in footer (Clock icon + formatted duration, e.g., "2h 30m") next to module count.
+- [x] **Course detail header:** Total duration computed from `lectures.reduce()`, displayed below description with Clock icon.
+- [x] **Lecture accordion:** Per-lecture duration sum in header between title and completion badge.
+- [x] **Module item:** Individual module duration after title (`text-xs text-slate-400 tabular-nums`).
+- [x] **Module viewer:** Duration in header near navigation counter with Clock icon.
+- [x] **Architecture:** Single column on `modules` + client-side aggregation via `reduce()`. No denormalized columns, no triggers, no new RLS policies. Consistent with existing `moduleCount`/`progressPercent` patterns.
+- [x] **Tests:** 9 new formatDuration tests, ~44 existing test fixes (mock factories + inline mock updates), 1266 total frontend tests, build OK
 
 ---
 

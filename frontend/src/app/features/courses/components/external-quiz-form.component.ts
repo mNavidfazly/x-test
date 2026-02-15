@@ -128,6 +128,7 @@ export class ExternalQuizFormComponent implements OnInit {
         description: this.form.description,
         module_type: moduleData.module_type,
         lecture_id: moduleData.lecture_id,
+        estimated_duration_minutes: this.initialModuleData().estimated_duration_minutes,
       },
       content: { type: 'external_quiz', data: { ...this.quizForm } },
     });

@@ -93,6 +93,7 @@ export class MarkdownFormComponent {
         description: this.form.description,
         module_type: moduleData.module_type,
         lecture_id: moduleData.lecture_id,
+        estimated_duration_minutes: this.initialModuleData().estimated_duration_minutes,
       },
       content: { type: 'markdown', data: { content: this.markdownContent } },
     });

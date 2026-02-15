@@ -161,6 +161,7 @@ All test users use password: `TestUser123!`
 | 13 | Toggle all three checkboxes | All toggle correctly, checkmark visible when checked | ☐ |
 | 14 | Verify Questions section heading | "Questions" text visible with border-top separator, "Add Question" button (ghost style) | ☐ |
 | 15 | Verify empty questions state | Dashed border placeholder with "No questions yet. Click Add Question to start building your quiz." | ☐ |
+| 16 | Verify "Estimated Duration (minutes)" input on parent form | Number input above the quiz sub-form, defaulting to 15, accepts values 1-999 | ☐ |
 
 **Notes/Learnings**:
 - `quizzes.time_limit` is stored in SECONDS in the database, but displayed in MINUTES in the UI
@@ -468,7 +469,7 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 11 | Set up a complete quiz: Title "E2E Quiz Test", Time limit 15 min, Passing score 80%, Max attempts 3, 2 questions (1 single_choice + 1 fill_blank) | All fields populated | ☐ |
+| 11 | Set up a complete quiz: Title "E2E Quiz Test", Time limit 15 min, Passing score 80%, Max attempts 3, Estimated Duration 20 min, 2 questions (1 single_choice + 1 fill_blank) | All fields populated, including estimated duration on parent form | ☐ |
 | 12 | Click "Create Module" | Module created via two-step process: INSERT module → INSERT quiz (with settings) → INSERT quiz_questions → INSERT quiz_question_options | ☐ |
 | 13 | Verify redirect to course detail | Navigated to `/courses/:courseId` | ☐ |
 | 14 | Verify module appears in lecture | HelpCircle icon + "E2E Quiz Test" title shown in the lecture accordion | ☐ |
@@ -515,33 +516,34 @@ All test users use password: `TestUser123!`
 | 6 | Verify Passing score pre-populated | "80" | ☐ |
 | 7 | Verify Max attempts pre-populated | "3" | ☐ |
 | 8 | Verify checkboxes pre-populated | show_correct_answers checked, randomize_questions unchecked, randomize_answers unchecked | ☐ |
-| 9 | Verify questions pre-populated | All questions from creation visible with correct text, types, options, and correct answers | ☐ |
-| 10 | Verify single_choice question: options and correct answer | Option texts match, correct option highlighted | ☐ |
-| 11 | Verify fill_blank question: correct answer | Correct answer text input pre-populated | ☐ |
-| 12 | Verify "Save Changes" button (not "Create Module") | Edit mode shows "Save Changes" | ☐ |
+| 9 | Verify "Estimated Duration (minutes)" pre-populated | Shows the saved value (e.g., "20" from creation) | ☐ |
+| 10 | Verify questions pre-populated | All questions from creation visible with correct text, types, options, and correct answers | ☐ |
+| 11 | Verify single_choice question: options and correct answer | Option texts match, correct option highlighted | ☐ |
+| 12 | Verify fill_blank question: correct answer | Correct answer text input pre-populated | ☐ |
+| 13 | Verify "Save Changes" button (not "Create Module") | Edit mode shows "Save Changes" | ☐ |
 
 **Steps (Modify and Save)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 13 | Change Title to "E2E Quiz Test (Updated)" | Title updated | ☐ |
-| 14 | Change Time limit to "20" | Accepted | ☐ |
-| 15 | Add a new question (Q3): True/False, text "Water boils at 100°C", correct=True | New question added | ☐ |
-| 16 | Toggle "Randomize question order" checkbox ON | Checkbox now checked | ☐ |
-| 17 | Click "Save Changes" | Module updated (UPSERT quiz settings, DELETE old questions, re-INSERT all questions + options) | ☐ |
-| 18 | Verify redirect to course detail | Navigated to `/courses/:courseId` | ☐ |
-| 19 | Verify updated title | "E2E Quiz Test (Updated)" shown in lecture accordion | ☐ |
+| 14 | Change Title to "E2E Quiz Test (Updated)" | Title updated | ☐ |
+| 15 | Change Time limit to "20" | Accepted | ☐ |
+| 16 | Add a new question (Q3): True/False, text "Water boils at 100°C", correct=True | New question added | ☐ |
+| 17 | Toggle "Randomize question order" checkbox ON | Checkbox now checked | ☐ |
+| 18 | Click "Save Changes" | Module updated (UPSERT quiz settings, DELETE old questions, re-INSERT all questions + options) | ☐ |
+| 19 | Verify redirect to course detail | Navigated to `/courses/:courseId` | ☐ |
+| 20 | Verify updated title | "E2E Quiz Test (Updated)" shown in lecture accordion | ☐ |
 
 **Steps (Verify Second Edit)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 20 | Edit the quiz module again | Form loads with updated data | ☐ |
-| 21 | Verify Title: "E2E Quiz Test (Updated)" | Correct | ☐ |
-| 22 | Verify Time limit: "20" | 1200 seconds / 60 = 20 minutes | ☐ |
-| 23 | Verify 3 questions now (original 2 + added True/False) | All questions present with correct data | ☐ |
-| 24 | Verify "Randomize question order" is checked | Persisted from previous save | ☐ |
-| 25 | Verify True/False question: correct answer is "True" | "True" option highlighted | ☐ |
+| 21 | Edit the quiz module again | Form loads with updated data | ☐ |
+| 22 | Verify Title: "E2E Quiz Test (Updated)" | Correct | ☐ |
+| 23 | Verify Time limit: "20" | 1200 seconds / 60 = 20 minutes | ☐ |
+| 24 | Verify 3 questions now (original 2 + added True/False) | All questions present with correct data | ☐ |
+| 25 | Verify "Randomize question order" is checked | Persisted from previous save | ☐ |
+| 26 | Verify True/False question: correct answer is "True" | "True" option highlighted | ☐ |
 
 **Notes/Learnings**:
 - Edit mode uses `#upsertModuleContent` which: (1) UPSERTs quiz settings (onConflict: module_id), (2) DELETEs all existing questions (CASCADE deletes options), (3) re-INSERTs all questions + options
@@ -704,9 +706,10 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 21 | Verify "Create Module" button is enabled | All 6 imported questions are valid | ☐ |
-| 22 | Click "Create Module" | Quiz created with all 6 question types saved to DB | ☐ |
-| 23 | Verify redirect to course detail | Module appears in lecture with title "Sample Quiz" | ☐ |
+| 21 | Set "Estimated Duration (minutes)": "15" | Number input accepts value (on parent form) | ☐ |
+| 22 | Verify "Create Module" button is enabled | All 6 imported questions are valid | ☐ |
+| 23 | Click "Create Module" | Quiz created with all 6 question types saved to DB | ☐ |
+| 24 | Verify redirect to course detail | Module appears in lecture with title "Sample Quiz" | ☐ |
 
 **Notes/Learnings**:
 - Import uses `FileReader.readAsText()` → `JSON.parse()` → `validateQuizJson()` → `#applyImport()`
@@ -889,23 +892,25 @@ All test users use password: `TestUser123!`
 | 9 | Enter Quiz URL: "https://quiz-platform.example.com/quiz/COMP-2026-Q1" | Accepted | ☐ |
 | 10 | Verify "Create Module" button is now enabled | All 3 required fields filled | ☐ |
 | 11 | Enter Passing Score: "80" | Accepted | ☐ |
-| 12 | Click "Create Module" | Module created, navigated to course detail | ☐ |
-| 13 | Verify module in lecture | ExternalLink icon + "Compliance Assessment" title, clickable (not "Coming soon") | ☐ |
+| 12 | Set "Estimated Duration (minutes)": "15" | Number input accepts value (on parent form) | ☐ |
+| 13 | Click "Create Module" | Module created, navigated to course detail | ☐ |
+| 14 | Verify module in lecture | ExternalLink icon + "Compliance Assessment" title, clickable (not "Coming soon") | ☐ |
 
 **Steps (View)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 14 | Click "Compliance Assessment" module | Navigated to `/courses/:courseId/modules/:moduleId` | ☐ |
-| 15 | Verify module title | "Compliance Assessment" shown as heading | ☐ |
-| 16 | Verify "External Quiz" heading in content area | Card with ExternalLink icon and "External Quiz" text | ☐ |
-| 17 | Verify Quiz ID displayed | "COMP-2026-Q1" shown | ☐ |
-| 18 | Verify Passing score displayed | "80%" shown | ☐ |
-| 19 | Verify "Take External Quiz" button | Primary teal button with ExternalLink icon | ☐ |
-| 20 | Verify button opens in new tab | `target="_blank"` and `rel="noopener noreferrer"` attributes present | ☐ |
-| 21 | Verify "Mark as complete" button | Button visible (manual completion until Phase 5B webhook) | ☐ |
-| 22 | Click "Mark as complete" | Status changes to "Completed" with check icon | ☐ |
-| 23 | Verify navigation | Previous/Next buttons work, "Back to course" link works | ☐ |
+| 15 | Click "Compliance Assessment" module | Navigated to `/courses/:courseId/modules/:moduleId` | ☐ |
+| 16 | Verify module title | "Compliance Assessment" shown as heading | ☐ |
+| 17 | Verify estimated duration in viewer header | Clock icon with "15 min" near navigation counter | ☐ |
+| 18 | Verify "External Quiz" heading in content area | Card with ExternalLink icon and "External Quiz" text | ☐ |
+| 19 | Verify Quiz ID displayed | "COMP-2026-Q1" shown | ☐ |
+| 20 | Verify Passing score displayed | "80%" shown | ☐ |
+| 21 | Verify "Take External Quiz" button | Primary teal button with ExternalLink icon | ☐ |
+| 22 | Verify button opens in new tab | `target="_blank"` and `rel="noopener noreferrer"` attributes present | ☐ |
+| 23 | Verify "Mark as complete" button | Button visible (manual completion until Phase 5B webhook) | ☐ |
+| 24 | Click "Mark as complete" | Status changes to "Completed" with check icon | ☐ |
+| 25 | Verify navigation | Previous/Next buttons work, "Back to course" link works | ☐ |
 
 **Notes/Learnings**:
 - External quiz is the simplest module type — no file upload, no signed URLs, no encoding status
@@ -942,35 +947,36 @@ All test users use password: `TestUser123!`
 | 5 | Verify Quiz ID pre-populated | "COMP-2026-Q1" | ☐ |
 | 6 | Verify Quiz URL pre-populated | "https://quiz-platform.example.com/quiz/COMP-2026-Q1" | ☐ |
 | 7 | Verify Passing Score pre-populated | "80" | ☐ |
-| 8 | Verify "Save Changes" button (not "Create Module") | Edit mode label | ☐ |
-| 9 | Verify "Attached Files" section visible | Module files editor shown below form in edit mode | ☐ |
+| 8 | Verify "Estimated Duration (minutes)" pre-populated | Shows the saved value (e.g., "15") | ☐ |
+| 9 | Verify "Save Changes" button (not "Create Module") | Edit mode label | ☐ |
+| 10 | Verify "Attached Files" section visible | Module files editor shown below form in edit mode | ☐ |
 
 **Steps (Modify and Save)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 10 | Change Title to "Compliance Assessment (Updated)" | Title updated | ☐ |
-| 11 | Change Quiz URL to "https://quiz-platform.example.com/quiz/COMP-2026-Q1-v2" | URL updated | ☐ |
-| 12 | Change Passing Score to "90" | Score updated | ☐ |
-| 13 | Click "Save Changes" | Module updated (UPSERT to `external_quiz_references`), navigated to course detail | ☐ |
-| 14 | Verify updated title in lecture | "Compliance Assessment (Updated)" shown | ☐ |
+| 11 | Change Title to "Compliance Assessment (Updated)" | Title updated | ☐ |
+| 12 | Change Quiz URL to "https://quiz-platform.example.com/quiz/COMP-2026-Q1-v2" | URL updated | ☐ |
+| 13 | Change Passing Score to "90" | Score updated | ☐ |
+| 14 | Click "Save Changes" | Module updated (UPSERT to `external_quiz_references`), navigated to course detail | ☐ |
+| 15 | Verify updated title in lecture | "Compliance Assessment (Updated)" shown | ☐ |
 
 **Steps (Verify Second Edit)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 15 | Click pencil icon on the updated module | Edit form loads | ☐ |
-| 16 | Verify Title: "Compliance Assessment (Updated)" | Persisted | ☐ |
-| 17 | Verify Quiz URL: "https://quiz-platform.example.com/quiz/COMP-2026-Q1-v2" | Persisted | ☐ |
-| 18 | Verify Passing Score: "90" | Persisted | ☐ |
-| 19 | Verify Quiz ID unchanged: "COMP-2026-Q1" | Not modified | ☐ |
+| 16 | Click pencil icon on the updated module | Edit form loads | ☐ |
+| 17 | Verify Title: "Compliance Assessment (Updated)" | Persisted | ☐ |
+| 18 | Verify Quiz URL: "https://quiz-platform.example.com/quiz/COMP-2026-Q1-v2" | Persisted | ☐ |
+| 19 | Verify Passing Score: "90" | Persisted | ☐ |
+| 20 | Verify Quiz ID unchanged: "COMP-2026-Q1" | Not modified | ☐ |
 
 **Steps (Cancel)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 20 | Modify Title, then click "Cancel" | Returns to course detail, no changes saved | ☐ |
-| 21 | Re-open edit mode | Title still "Compliance Assessment (Updated)" (cancel didn't save) | ☐ |
+| 21 | Modify Title, then click "Cancel" | Returns to course detail, no changes saved | ☐ |
+| 22 | Re-open edit mode | Title still "Compliance Assessment (Updated)" (cancel didn't save) | ☐ |
 
 **Notes/Learnings**:
 - Edit mode uses `#upsertModuleContent` with `{ onConflict: 'module_id' }` — same pattern as exam/pdf/markdown
