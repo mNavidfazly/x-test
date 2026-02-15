@@ -19,7 +19,7 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
           type="text"
           [(ngModel)]="form.title"
           placeholder="Exam title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -30,7 +30,7 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
           [(ngModel)]="form.description"
           placeholder="Exam description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 
@@ -46,7 +46,7 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
               type="number"
               [(ngModel)]="examForm.duration_minutes"
               min="1"
-              class="input-field focus:outline-none"
+              class="input-field"
             />
           </div>
 
@@ -58,7 +58,7 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
               [(ngModel)]="examForm.passing_score"
               min="0"
               max="100"
-              class="input-field focus:outline-none"
+              class="input-field"
             />
           </div>
         </div>
@@ -75,7 +75,7 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
             type="number"
             [(ngModel)]="maxFileSizeMB"
             min="1"
-            class="input-field focus:outline-none"
+            class="input-field"
           />
         </div>
 

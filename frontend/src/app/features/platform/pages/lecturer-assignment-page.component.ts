@@ -38,7 +38,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
   selector: 'app-lecturer-assignment-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -180,14 +180,14 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                   class="hover:bg-slate-50/50 cursor-pointer transition-colors"
                   (click)="onExpandAssignment(a)"
                 >
-                  <td class="px-6 py-3">
+                  <td class="table-cell">
                     <div class="text-sm font-medium text-slate-900">{{ a.full_name || a.email }}</div>
                     @if (a.full_name) {
                       <div class="text-xs text-slate-500">{{ a.email }}</div>
                     }
                   </td>
-                  <td class="px-6 py-3 text-slate-700">{{ a.course_title }}</td>
-                  <td class="px-6 py-3">
+                  <td class="table-cell text-slate-700">{{ a.course_title }}</td>
+                  <td class="table-cell">
                     <div class="flex items-center gap-1.5">
                       @if (a.can_edit) {
                         <app-status-badge variant="success">Edit</app-status-badge>
@@ -200,14 +200,14 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                       }
                     </div>
                   </td>
-                  <td class="px-6 py-3 text-xs text-slate-500">{{ formatDate(a.assigned_at) }}</td>
-                  <td class="px-3 py-3 text-slate-400">
+                  <td class="table-cell text-xs text-slate-500">{{ formatDate(a.assigned_at) }}</td>
+                  <td class="table-cell text-slate-400">
                     <lucide-icon [img]="expandedAssignmentId() === a.id ? icons.ChevronUp : icons.ChevronDown" [size]="16"></lucide-icon>
                   </td>
                 </tr>
                 @if (expandedAssignmentId() === a.id) {
                   <tr>
-                    <td colspan="5" class="px-6 py-4 bg-slate-50/50 border-t border-slate-100">
+                    <td colspan="5" class="expand-panel px-6 py-4">
                       <div class="max-w-lg space-y-4">
                         <!-- Permission Toggles -->
                         <div>

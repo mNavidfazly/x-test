@@ -23,10 +23,10 @@ import { ReportIssueComponent } from '../components/report-issue.component';
   imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, AudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
   // Note: CommentSectionComponent, AskExpertComponent, ReportIssueComponent are kept in imports
   // for type checking but automatically deferred by @defer blocks in the template.
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div class="max-w-5xl mx-auto">
-      <a [routerLink]="['/courses', courseId()]" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
+      <a [routerLink]="['/courses', courseId()]" class="back-link mb-4">
         <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
         Back to course
       </a>

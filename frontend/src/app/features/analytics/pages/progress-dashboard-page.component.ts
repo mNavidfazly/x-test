@@ -20,7 +20,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
   selector: 'app-progress-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -168,7 +168,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
             <tbody>
               @for (user of paginatedUsers(); track user.user_id) {
                 <tr class="table-row">
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     <input
                       type="checkbox"
                       [checked]="selectedUserIds().has(user.user_id)"
@@ -176,19 +176,19 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
                       class="checkbox-field"
                     />
                   </td>
-                  <td class="px-3 py-3 text-slate-700 truncate max-w-[200px]">{{ user.email }}</td>
-                  <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ user.full_name ?? '—' }}</td>
+                  <td class="table-cell text-slate-700 truncate max-w-[200px]">{{ user.email }}</td>
+                  <td class="table-cell truncate max-w-[150px]">{{ user.full_name ?? '—' }}</td>
                   @if (showTenantColumn()) {
-                    <td class="px-3 py-3 text-slate-500 truncate max-w-[120px]">{{ user.tenant_name ?? '—' }}</td>
+                    <td class="table-cell text-slate-500 truncate max-w-[120px]">{{ user.tenant_name ?? '—' }}</td>
                   }
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     <div class="flex flex-col gap-1">
                       @for (course of user.courses; track course.course_id) {
                         <div class="flex items-center gap-2">
                           <span class="text-xs text-slate-500 truncate max-w-[120px]" [title]="course.course_title">{{ course.course_title }}</span>
-                          <div class="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden shrink-0">
+                          <div class="progress-track w-16 h-1.5 shrink-0">
                             <div
-                              class="h-full bg-teal-500 rounded-full"
+                              class="progress-fill"
                               [style.width.%]="course.percent"
                             ></div>
                           </div>
@@ -197,7 +197,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
                       }
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-right">
+                  <td class="table-cell text-right">
                     <span
                       class="text-sm font-semibold tabular-nums"
                       [class]="user.overallPercent === 100 ? 'text-emerald-600' : user.overallPercent < 25 ? 'text-rose-600' : 'text-teal-600'"
@@ -205,7 +205,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
                       {{ user.overallPercent }}%
                     </span>
                   </td>
-                  <td class="px-3 py-3 text-right text-xs text-slate-500">
+                  <td class="table-cell text-right text-xs text-slate-500">
                     {{ formatLastActive(user.lastActive) }}
                   </td>
                 </tr>
@@ -222,7 +222,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
                   type="button"
                   (click)="currentPage.set(currentPage() - 1)"
                   [disabled]="currentPage() === 1"
-                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <lucide-icon [img]="icons.ChevronLeft" [size]="14"></lucide-icon>
                   Previous
@@ -232,7 +232,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
                   type="button"
                   (click)="currentPage.set(currentPage() + 1)"
                   [disabled]="currentPage() === totalPages()"
-                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   Next
                   <lucide-icon [img]="icons.ChevronRight" [size]="14"></lucide-icon>

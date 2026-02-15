@@ -19,7 +19,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
   selector: 'app-exam-grading-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -105,7 +105,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                   class="table-row cursor-pointer"
                   (click)="onExpandSubmission(sub)"
                 >
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     <div class="flex items-center gap-2 max-w-[200px]">
                       <app-user-avatar
                         [avatarUrl]="sub.learner_avatar_url"
@@ -121,10 +121,10 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                       </div>
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ sub.course_title }}</td>
-                  <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ sub.exam_title }}</td>
-                  <td class="px-3 py-3 text-slate-500 text-xs">{{ formatDate(sub.submitted_at) }}</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell truncate max-w-[150px]">{{ sub.course_title }}</td>
+                  <td class="table-cell truncate max-w-[150px]">{{ sub.exam_title }}</td>
+                  <td class="table-cell text-slate-500 text-xs">{{ formatDate(sub.submitted_at) }}</td>
+                  <td class="table-cell">
                     @if (sub.score === null) {
                       <app-status-badge variant="warning">
                         <lucide-icon [img]="icons.Clock" [size]="12" class="mr-1"></lucide-icon>
@@ -142,10 +142,10 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                       </app-status-badge>
                     }
                   </td>
-                  <td class="px-3 py-3 text-right font-semibold tabular-nums">
+                  <td class="table-cell text-right font-semibold tabular-nums">
                     {{ sub.score !== null ? sub.score + '%' : '\u2014' }}
                   </td>
-                  <td class="px-3 py-3 text-right">
+                  <td class="table-cell text-right">
                     <div class="flex items-center justify-end gap-1" (click)="$event.stopPropagation()">
                       <a
                         [href]="sub.file_url"
@@ -171,7 +171,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                 <!-- Expanded grading form -->
                 @if (expandedSubmissionId() === sub.id) {
                   <tr>
-                    <td colspan="7" class="px-6 py-4 bg-slate-50/50 border-b border-slate-200">
+                    <td colspan="7" class="expand-panel px-6 py-4">
                       <div class="max-w-xl">
                         <div class="flex items-center gap-4 mb-3">
                           <div class="flex-1">

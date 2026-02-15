@@ -19,7 +19,7 @@ import { ModuleFormData, PdfFormData, ModuleSavePayload } from '../../../core/mo
           type="text"
           [(ngModel)]="form.title"
           placeholder="Module title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -31,7 +31,7 @@ import { ModuleFormData, PdfFormData, ModuleSavePayload } from '../../../core/mo
           [(ngModel)]="form.description"
           placeholder="Module description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 
@@ -59,7 +59,7 @@ import { ModuleFormData, PdfFormData, ModuleSavePayload } from '../../../core/mo
           [(ngModel)]="pdfForm.page_count"
           placeholder="Optional"
           min="1"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 

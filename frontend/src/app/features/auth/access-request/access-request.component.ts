@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, GraduationCap, Loader2 } from 'lucide-angular';
+import { LucideAngularModule, Loader2 } from 'lucide-angular';
 import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Component({
@@ -10,76 +10,78 @@ import { SupabaseService } from '../../../core/services/supabase.service';
   imports: [FormsModule, LucideAngularModule, RouterLink],
   host: { class: 'block' },
   template: `
-    <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div class="w-full max-w-md">
-        <div class="card p-8">
-          <div class="flex items-center justify-center gap-3 mb-6">
-            <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="32"></lucide-icon>
-            <h1 class="page-title">Request Access</h1>
+    <div class="auth-background">
+      <div class="text-center mb-8">
+        <h1 class="text-5xl font-bold">
+          <span class="italic text-teal-400">X</span><span class="text-white">-Courses</span>
+        </h1>
+        <p class="text-sm text-slate-400 mt-2">by Calypso Commodities</p>
+      </div>
+
+      <div class="auth-card w-full max-w-md">
+        <h2 class="text-xl font-semibold text-slate-800 text-center mb-6">Request Access</h2>
+
+        @if (success()) {
+          <div class="mb-4 alert-success rounded-lg">
+            Your request has been submitted. You will be notified once it's reviewed.
           </div>
+        } @else {
+          <p class="text-sm text-slate-500 text-center mb-8">
+            Enter your details and we'll notify your organization's admin.
+          </p>
 
-          @if (success()) {
-            <div class="mb-4 alert-success rounded-lg">
-              Your request has been submitted. You will be notified once it's reviewed.
+          @if (errorMessage()) {
+            <div class="mb-4 alert-error rounded-lg">
+              {{ errorMessage() }}
             </div>
-          } @else {
-            <p class="text-sm text-slate-500 text-center mb-8">
-              Enter your details and we'll notify your organization's admin.
-            </p>
-
-            @if (errorMessage()) {
-              <div class="mb-4 alert-error rounded-lg">
-                {{ errorMessage() }}
-              </div>
-            }
-
-            <div class="mb-4">
-              <label for="fullName" class="form-label">Full Name</label>
-              <input
-                id="fullName"
-                type="text"
-                [(ngModel)]="fullName"
-                placeholder="John Doe"
-                class="input-field focus:outline-none"
-                [disabled]="loading()"
-              />
-            </div>
-
-            <div class="mb-6">
-              <label for="email" class="form-label">Email</label>
-              <input
-                id="email"
-                type="email"
-                [(ngModel)]="email"
-                placeholder="you&#64;company.com"
-                class="input-field focus:outline-none"
-                [disabled]="loading()"
-                (keydown.enter)="onSubmit()"
-              />
-            </div>
-
-            <button
-              (click)="onSubmit()"
-              [disabled]="loading()"
-              class="btn-primary-full"
-            >
-              @if (loading()) {
-                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
-              }
-              Submit Request
-            </button>
           }
 
-          <p class="mt-6 text-center text-sm text-slate-500">
-            <a routerLink="/login" class="text-teal-600 font-medium hover:text-teal-700">Back to sign in</a>
-          </p>
-        </div>
+          <div class="mb-4">
+            <label for="fullName" class="auth-label">Full Name</label>
+            <input
+              id="fullName"
+              type="text"
+              [(ngModel)]="fullName"
+              placeholder="John Doe"
+              class="auth-input"
+              [disabled]="loading()"
+            />
+          </div>
+
+          <div class="mb-6">
+            <label for="email" class="auth-label">Email</label>
+            <input
+              id="email"
+              type="email"
+              [(ngModel)]="email"
+              placeholder="you&#64;company.com"
+              class="auth-input"
+              [disabled]="loading()"
+              (keydown.enter)="onSubmit()"
+            />
+          </div>
+
+          <button
+            (click)="onSubmit()"
+            [disabled]="loading()"
+            class="auth-btn-primary"
+          >
+            @if (loading()) {
+              <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+            }
+            Submit Request
+          </button>
+        }
+
+        <p class="mt-6 text-center text-sm text-slate-500">
+          <a routerLink="/login" class="text-teal-600 font-medium hover:text-teal-700">Back to sign in</a>
+        </p>
       </div>
     </div>
   `,
 })
 export class AccessRequestComponent {
-  readonly icons = { GraduationCap, Loader2 };
+  readonly icons = { Loader2 };
 
   #supabase = inject(SupabaseService);
 

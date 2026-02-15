@@ -28,10 +28,10 @@ interface TypeOption {
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, FormsModule, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div class="max-w-2xl">
-      <a [routerLink]="['/courses', courseId()]" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
+      <a [routerLink]="['/courses', courseId()]" class="back-link mb-4">
         <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
         Back to course
       </a>
@@ -59,7 +59,7 @@ interface TypeOption {
                 <button
                   type="button"
                   (click)="selectType(opt.value)"
-                  class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/30 transition-all duration-200 text-left"
+                  class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/30 transition-[background-color,border-color] duration-200 text-left"
                 >
                   <lucide-icon [img]="opt.icon" [size]="20" class="text-slate-500 shrink-0"></lucide-icon>
                   <div>

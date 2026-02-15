@@ -19,7 +19,7 @@ import { AudioFormData, ModuleFormData, ModuleSavePayload } from '../../../core/
           type="text"
           [(ngModel)]="form.title"
           placeholder="Module title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -31,7 +31,7 @@ import { AudioFormData, ModuleFormData, ModuleSavePayload } from '../../../core/
           [(ngModel)]="form.description"
           placeholder="Module description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 
@@ -60,7 +60,7 @@ import { AudioFormData, ModuleFormData, ModuleSavePayload } from '../../../core/
           placeholder="Optional"
           min="0"
           step="0.5"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 

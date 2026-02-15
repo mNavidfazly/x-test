@@ -25,7 +25,7 @@ import { ExternalQuizContent } from '../../../core/models/course.model';
         [href]="content().external_quiz_url"
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center gap-2 bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200"
+        class="btn-primary"
       >
         <lucide-icon [img]="icons.ExternalLink" [size]="16"></lucide-icon>
         Take External Quiz

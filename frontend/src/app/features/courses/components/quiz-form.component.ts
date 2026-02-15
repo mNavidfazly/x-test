@@ -7,6 +7,7 @@ import {
 } from '../../../core/models/course.model';
 import { QUIZ_JSON_TEMPLATE } from '../utils/quiz-json-template';
 import { validateQuizJson } from '../utils/quiz-json.utils';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 
 interface MatchingPair {
   left: string;
@@ -28,7 +29,7 @@ interface MatchingPair {
           type="text"
           [(ngModel)]="form.title"
           placeholder="Quiz title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -39,7 +40,7 @@ interface MatchingPair {
           [(ngModel)]="form.description"
           placeholder="Quiz description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 
@@ -56,7 +57,7 @@ interface MatchingPair {
               [(ngModel)]="timeLimitMinutes"
               min="1"
               placeholder="No limit"
-              class="input-field focus:outline-none"
+              class="input-field"
             />
           </div>
 
@@ -68,7 +69,7 @@ interface MatchingPair {
               [(ngModel)]="quizSettings.passing_score"
               min="0"
               max="100"
-              class="input-field focus:outline-none"
+              class="input-field"
             />
           </div>
         </div>
@@ -81,7 +82,7 @@ interface MatchingPair {
             [(ngModel)]="maxAttemptsValue"
             min="1"
             placeholder="Unlimited"
-            class="input-field max-w-[200px] focus:outline-none"
+            class="input-field max-w-[200px]"
           />
         </div>
 
@@ -119,12 +120,12 @@ interface MatchingPair {
           <h3 class="text-sm font-semibold text-slate-900">Questions</h3>
           <div class="flex items-center gap-2">
             <button type="button" (click)="onDownloadTemplate()"
-              class="inline-flex items-center gap-1.5 bg-transparent text-slate-500 rounded-lg px-3 py-1.5 text-xs hover:bg-slate-100 transition-all duration-200"
+              class="inline-flex items-center gap-1.5 bg-transparent text-slate-500 rounded-lg px-3 py-1.5 text-xs hover:bg-slate-100 transition-colors duration-200"
               title="Download quiz JSON template">
               <lucide-icon [img]="icons.Download" [size]="14"></lucide-icon>
               Template
             </button>
-            <label class="inline-flex items-center gap-1.5 bg-transparent text-slate-500 rounded-lg px-3 py-1.5 text-xs hover:bg-slate-100 transition-all duration-200 cursor-pointer"
+            <label class="inline-flex items-center gap-1.5 bg-transparent text-slate-500 rounded-lg px-3 py-1.5 text-xs hover:bg-slate-100 transition-colors duration-200 cursor-pointer"
               title="Import quiz from JSON file">
               <lucide-icon [img]="icons.Upload" [size]="14"></lucide-icon>
               Import
@@ -132,7 +133,7 @@ interface MatchingPair {
             </label>
             @if (questions.length > 0) {
               <button type="button" (click)="onExportJson()"
-                class="inline-flex items-center gap-1.5 bg-transparent text-slate-500 rounded-lg px-3 py-1.5 text-xs hover:bg-slate-100 transition-all duration-200"
+                class="inline-flex items-center gap-1.5 bg-transparent text-slate-500 rounded-lg px-3 py-1.5 text-xs hover:bg-slate-100 transition-colors duration-200"
                 title="Export quiz to JSON file">
                 <lucide-icon [img]="icons.Download" [size]="14"></lucide-icon>
                 Export
@@ -141,7 +142,7 @@ interface MatchingPair {
             <button
               type="button"
               (click)="addQuestion()"
-              class="inline-flex items-center gap-1.5 bg-transparent text-slate-600 rounded-lg px-3 py-1.5 text-sm hover:bg-slate-100 transition-all duration-200"
+              class="inline-flex items-center gap-1.5 bg-transparent text-slate-600 rounded-lg px-3 py-1.5 text-sm hover:bg-slate-100 transition-colors duration-200"
             >
               <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon>
               Add Question
@@ -192,7 +193,7 @@ interface MatchingPair {
                   type="button"
                   (click)="moveQuestion(i, -1)"
                   [disabled]="i === 0"
-                  class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   title="Move up"
                 >
                   <lucide-icon [img]="icons.ChevronUp" [size]="14"></lucide-icon>
@@ -201,7 +202,7 @@ interface MatchingPair {
                   type="button"
                   (click)="moveQuestion(i, 1)"
                   [disabled]="i === questions.length - 1"
-                  class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  class="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   title="Move down"
                 >
                   <lucide-icon [img]="icons.ChevronDown" [size]="14"></lucide-icon>
@@ -209,7 +210,7 @@ interface MatchingPair {
                 <button
                   type="button"
                   (click)="removeQuestion(i)"
-                  class="p-1 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
+                  class="p-1 rounded text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
                   title="Delete question"
                 >
                   <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
@@ -222,7 +223,7 @@ interface MatchingPair {
               [(ngModel)]="question.question_text"
               placeholder="Enter question text"
               rows="2"
-              class="input-field focus:outline-none resize-none mb-3"
+              class="input-field resize-none mb-3"
             ></textarea>
 
             <!-- Type-specific content -->
@@ -235,7 +236,7 @@ interface MatchingPair {
                       <button
                         type="button"
                         (click)="setCorrectOption(i, j)"
-                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
+                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
                         [class]="option.is_correct ? 'border-teal-600 bg-teal-600' : 'border-slate-300 hover:border-teal-400'"
                         title="Mark as correct"
                       >
@@ -247,11 +248,11 @@ interface MatchingPair {
                         type="text"
                         [(ngModel)]="option.option_text"
                         placeholder="Option text"
-                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-[border-color,box-shadow] duration-200"
                       />
                       @if (question.options.length > 2) {
                         <button type="button" (click)="removeOption(i, j)"
-                          class="p-1 text-rose-400 hover:text-rose-600 transition-all" title="Remove option">
+                          class="p-1 text-rose-400 hover:text-rose-600 transition-colors" title="Remove option">
                           <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
                         </button>
                       }
@@ -278,11 +279,11 @@ interface MatchingPair {
                         type="text"
                         [(ngModel)]="option.option_text"
                         placeholder="Option text"
-                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-[border-color,box-shadow] duration-200"
                       />
                       @if (question.options.length > 2) {
                         <button type="button" (click)="removeOption(i, j)"
-                          class="p-1 text-rose-400 hover:text-rose-600 transition-all" title="Remove option">
+                          class="p-1 text-rose-400 hover:text-rose-600 transition-colors" title="Remove option">
                           <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
                         </button>
                       }
@@ -302,7 +303,7 @@ interface MatchingPair {
                       <button
                         type="button"
                         (click)="setCorrectOption(i, j)"
-                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
+                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
                         [class]="option.is_correct ? 'border-teal-600 bg-teal-600' : 'border-slate-300 hover:border-teal-400'"
                       >
                         @if (option.is_correct) {
@@ -321,7 +322,7 @@ interface MatchingPair {
                     type="text"
                     [(ngModel)]="question.correct_answer"
                     placeholder="Expected answer (case-insensitive)"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-[border-color,box-shadow] duration-200"
                   />
                 </div>
               }
@@ -332,7 +333,7 @@ interface MatchingPair {
                     type="text"
                     [(ngModel)]="question.correct_answer"
                     placeholder="Expected answer (case-insensitive)"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-[border-color,box-shadow] duration-200"
                   />
                 </div>
               }
@@ -346,7 +347,7 @@ interface MatchingPair {
                         [(ngModel)]="pair.left"
                         (ngModelChange)="syncMatchingPairs(i)"
                         placeholder="Term"
-                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-[border-color,box-shadow] duration-200"
                       />
                       <span class="text-slate-400 text-xs shrink-0">→</span>
                       <input
@@ -354,11 +355,11 @@ interface MatchingPair {
                         [(ngModel)]="pair.right"
                         (ngModelChange)="syncMatchingPairs(i)"
                         placeholder="Definition"
-                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                        class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-[border-color,box-shadow] duration-200"
                       />
                       @if ((matchingPairs[i] ?? []).length > 1) {
                         <button type="button" (click)="removeMatchingPair(i, j)"
-                          class="p-1 text-rose-400 hover:text-rose-600 transition-all" title="Remove pair">
+                          class="p-1 text-rose-400 hover:text-rose-600 transition-colors" title="Remove pair">
                           <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
                         </button>
                       }
@@ -398,6 +399,7 @@ interface MatchingPair {
 })
 export class QuizFormComponent implements OnInit {
   readonly #cdr = inject(ChangeDetectorRef);
+  readonly #confirm = inject(ConfirmDialogService);
   readonly initialModuleData = input.required<ModuleFormData>();
   readonly initialQuizData = input.required<QuizFormData>();
   readonly isEditMode = input(false);
@@ -607,7 +609,7 @@ export class QuizFormComponent implements OnInit {
     input.value = '';
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       this.importError = '';
       try {
         const parsed = JSON.parse(reader.result as string);
@@ -617,9 +619,14 @@ export class QuizFormComponent implements OnInit {
           this.#cdr.markForCheck();
           return;
         }
-        if (this.questions.length > 0 &&
-            !confirm(`This will replace ${this.questions.length} existing question(s). Continue?`)) {
-          return;
+        if (this.questions.length > 0) {
+          const confirmed = await this.#confirm.confirm({
+            title: 'Replace Questions',
+            message: `This will replace ${this.questions.length} existing question(s). Continue?`,
+            confirmLabel: 'Yes, Replace',
+            variant: 'danger',
+          });
+          if (!confirmed) return;
         }
         this.#applyImport(result.data);
       } catch {

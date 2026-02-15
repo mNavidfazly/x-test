@@ -27,7 +27,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
       <div class="flex items-center">
         @if (isLinkable()) {
           <a [routerLink]="['/courses', courseId(), 'modules', module().id]"
-             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-all duration-200 cursor-pointer flex-1 min-w-0">
+             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer flex-1 min-w-0">
             <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
             <span class="text-sm text-slate-700 flex-1 truncate">{{ module().title }}</span>
             <span class="text-xs text-slate-400 shrink-0 tabular-nums">{{ formattedDuration() }}</span>
@@ -53,7 +53,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             }
           </a>
         } @else {
-          <div class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 cursor-default flex-1 min-w-0" title="Coming soon">
+          <div class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 cursor-default flex-1 min-w-0" title="Coming soon">
             <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
             <span class="text-sm text-slate-400 flex-1 truncate">{{ module().title }}</span>
             <span class="text-xs text-slate-400">Coming soon</span>
@@ -65,7 +65,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
           <div class="flex items-center gap-0.5 pr-2 shrink-0" (click)="$event.stopPropagation()">
             <button
               (click)="edit.emit()"
-              class="p-1 rounded text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-all duration-200"
+              class="p-1 rounded text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors duration-200"
               title="Edit module"
             >
               <lucide-icon [img]="icons.Pencil" [size]="12"></lucide-icon>
@@ -73,7 +73,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             @if (!isFirst()) {
               <button
                 (click)="moveUp.emit()"
-                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
+                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors duration-200"
                 title="Move up"
               >
                 <lucide-icon [img]="icons.ChevronUp" [size]="12"></lucide-icon>
@@ -82,7 +82,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             @if (!isLast()) {
               <button
                 (click)="moveDown.emit()"
-                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all duration-200"
+                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors duration-200"
                 title="Move down"
               >
                 <lucide-icon [img]="icons.ChevronDown" [size]="12"></lucide-icon>
@@ -91,7 +91,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             @if (!confirmingDelete()) {
               <button
                 (click)="confirmingDelete.set(true)"
-                class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200"
+                class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200"
                 title="Delete module"
               >
                 <lucide-icon [img]="icons.Trash2" [size]="12"></lucide-icon>
@@ -108,13 +108,13 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
           <div class="flex items-center gap-2">
             <button
               (click)="deleteConfirmed.emit(); confirmingDelete.set(false)"
-              class="bg-rose-600 text-white rounded-md px-2.5 py-1 text-xs font-semibold hover:bg-rose-700 active:scale-95 transition-all duration-200"
+              class="btn-danger-solid btn-sm"
             >
               Yes, Delete
             </button>
             <button
               (click)="confirmingDelete.set(false)"
-              class="bg-white border border-slate-300 text-slate-700 rounded-md px-2.5 py-1 text-xs font-semibold hover:bg-slate-50 transition-all duration-200"
+              class="btn-secondary btn-sm"
             >
               Cancel
             </button>

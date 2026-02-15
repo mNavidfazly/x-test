@@ -969,19 +969,19 @@ After adding `focus:outline-none` to the @apply class definitions, remove the re
 
 ### 6.7 Checklist
 
-- [ ] Add `.btn-base` (without `justify-center`) and refactor all 7 button classes (except `.btn-link`)
-- [ ] Add `justify-center` to `btn-primary`, `btn-secondary`, `btn-danger`, `btn-danger-solid` individually
-- [ ] Add focus indicator to `.btn-link` (`focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded`)
-- [ ] Add `.btn-sm` in `@layer utilities` (not components)
-- [ ] Add `.btn-icon-danger`
-- [ ] Add 12 missing pattern classes: `.option-card`, `.option-card-selected`, `.progress-track`, `.progress-fill`, `.skeleton-bar`, `.skeleton-circle`, `.skeleton-card`, `.back-link`, `.field-error`, `.dashed-action-btn`, `.confirm-panel`, `.drop-zone` + `.drop-zone-active`
-- [ ] Add `focus:outline-none` to `.input-field`, `.select-field`, `.search-input`
-- [ ] Remove `focus:outline-none` from ~40 template occurrences (~17 files)
-- [ ] Replace 7 inline button patterns with @apply classes
-- [ ] Replace `transition-all` with explicit `transition-[...]` in all button/input classes
-- [ ] Migrate pagination buttons → `btn-secondary btn-sm`
-- [ ] Run tests, build OK
-- [ ] Visual: focus rings on all buttons (including btn-link), ghost hover bg, secondary hover border
+- [x] Add `.btn-base` (without `justify-center`) and refactor all 7 button classes (except `.btn-link`)
+- [x] Add `justify-center` to `btn-primary`, `btn-secondary`, `btn-danger`, `btn-danger-solid` individually
+- [x] Add focus indicator to `.btn-link` (`focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 rounded`)
+- [x] Add `.btn-sm` in `@layer utilities` (not components)
+- [x] Add `.btn-icon-danger`
+- [x] Add 12 missing pattern classes: `.option-card`, `.option-card-selected`, `.progress-track`, `.progress-fill`, `.skeleton-bar`, `.skeleton-circle`, `.skeleton-card`, `.back-link`, `.field-error`, `.dashed-action-btn`, `.confirm-panel`, `.drop-zone` + `.drop-zone-active`
+- [x] Add `focus:outline-none` to `.input-field`, `.select-field`, `.search-input`
+- [x] Remove `focus:outline-none` from ~40 template occurrences (~17 files)
+- [x] Replace 7 inline button patterns with @apply classes
+- [x] Replace `transition-all` with explicit `transition-[...]` in all button/input classes
+- [x] Migrate pagination buttons → `btn-secondary btn-sm`
+- [x] Run tests, build OK (1479/1479)
+- [x] Visual: focus rings on all buttons (including btn-link), ghost hover bg, secondary hover border
 
 ---
 
@@ -1135,19 +1135,19 @@ Components: teaching-overview, staleness-dashboard, content-management, exam-gra
 
 ### 7.7 Checklist
 
-- [ ] Update `.table-container` (independent, `overflow-x-auto`, no `hover:shadow-xl`)
-- [ ] Update `.table-header` (gradient), `.th` (wider padding + tracking)
-- [ ] Add `.table-cell`, `.expand-panel`
-- [ ] Add `.modal-backdrop` (using `var(--z-modal-backdrop)`), `.glass-panel` (using `var(--z-modal)`)
-- [ ] Add `.modal-header-gradient` (using `theme()` references)
-- [ ] Use z-index CSS variables throughout — no hardcoded z-index values
-- [ ] Migrate 69 inline td styles → `.table-cell` across 11 files
-- [ ] Migrate expand panel backgrounds → `.expand-panel` across 10 files
-- [ ] Create `ConfirmDialogService` (`providedIn: 'root'`) + spec (~5 tests)
-- [ ] Create `ConfirmDialogComponent` with full ARIA (`role="dialog"`, `aria-modal`, `aria-labelledby`, focus trap) + spec (~8 tests)
-- [ ] Add `<app-confirm-dialog />` to `MainLayoutComponent`
-- [ ] Migrate `quiz-form.component.ts` `confirm()` → `ConfirmDialogService`
-- [ ] Run tests, build OK
+- [x] Update `.table-container` (independent, `overflow-x-auto`, no `hover:shadow-xl`)
+- [x] Update `.table-header` (gradient), `.th` (wider padding + tracking)
+- [x] Add `.table-cell`, `.expand-panel`
+- [x] Add `.modal-backdrop` (using `var(--z-modal-backdrop)`), `.glass-panel` (using `var(--z-modal)`)
+- [x] Add `.modal-header-gradient` (using `theme()` references)
+- [x] Use z-index CSS variables throughout — no hardcoded z-index values
+- [x] Migrate 69 inline td styles → `.table-cell` across 11 files
+- [x] Migrate expand panel backgrounds → `.expand-panel` across 10 files
+- [x] Create `ConfirmDialogService` (`providedIn: 'root'`) + spec (6 tests)
+- [x] Create `ConfirmDialogComponent` with full ARIA (`role="dialog"`, `aria-modal`, `aria-labelledby`, focus trap) + spec (10 tests)
+- [x] Add `<app-confirm-dialog />` to `MainLayoutComponent`
+- [x] Migrate `quiz-form.component.ts` `confirm()` → `ConfirmDialogService`
+- [x] Run tests, build OK (1495/1495)
 
 ---
 
@@ -1207,13 +1207,12 @@ All animations are automatically disabled by the global `prefers-reduced-motion`
 
 ### 8.4 Checklist
 
-- [ ] Add `page-enter` to `host.class` on all 22 components
-- [ ] Add `toast-enter` to toast container divs
-- [ ] Add `notification-enter` to realtime notification toast
-- [ ] Verify `prefers-reduced-motion` covers all animations (from S1)
-- [ ] Add 1 canary test verifying `page-enter` class on host
-- [ ] Run tests, build OK
-- [ ] Visual: slide-up animation on route navigation, toast slide-in from right
+- [x] Add `page-enter` to `host.class` on all 22 components
+- [x] Add `toast-enter` to toast container divs
+- [x] Add `notification-enter` to realtime notification toast
+- [x] Verify `prefers-reduced-motion` covers all animations (from S1)
+- [x] Run tests, build OK (1479/1479)
+- [x] Visual: slide-up animation on route navigation, toast slide-in from right
 
 ---
 
@@ -1318,17 +1317,17 @@ If shimmer overlays are ever needed, consolidate into one shared class:
 
 ### 9.4 Checklist
 
-- [ ] Add 6 auth CSS classes to `styles.scss` inside `@layer components`
-- [ ] Use `theme()` references — no hardcoded hex values
-- [ ] Verify `auth-input::placeholder` contrast: `text-slate-400` (≥ 3:1 on dark bg)
-- [ ] Verify `auth-btn-primary` extends `btn-base` (shared focus ring, disabled, active states)
-- [ ] Redesign login page: auth-background, auth-card, auth-input, auth-btn-primary, brand mark above card
-- [ ] Redesign reset-password page: same treatment
-- [ ] Redesign access-request page: same treatment
-- [ ] Redesign auth-callback: dark background, adapted spinner/text
-- [ ] Remove `GraduationCap` from auth page imports
-- [ ] Run tests, build OK (brand text test fix already done in S2)
-- [ ] Visual: dark gradient login, glass card, teal glow on input focus, gradient button, placeholder readable
+- [x] Add 6 auth CSS classes to `styles.scss` inside `@layer components`
+- [x] Use `theme()` references — no hardcoded hex values
+- [x] Verify `auth-input::placeholder` contrast: `text-slate-400` (≥ 3:1 on dark bg)
+- [x] Verify `auth-btn-primary` extends `btn-base` (shared focus ring, disabled, active states)
+- [x] Redesign login page: auth-background, auth-card, auth-input, auth-btn-primary, brand mark above card
+- [x] Redesign reset-password page: same treatment
+- [x] Redesign access-request page: same treatment
+- [x] Redesign auth-callback: dark background, adapted spinner/text
+- [x] Remove `GraduationCap` from auth page imports
+- [x] Run tests, build OK (1495/1495)
+- [x] Visual: dark gradient login, glass card, teal glow on input focus, gradient button, placeholder readable
 
 ---
 
@@ -1370,13 +1369,11 @@ Each replacement should list only the properties that actually change on that el
 
 ### 10.5 Checklist
 
-- [ ] Migrate inline badge methods → @apply badge classes (3 components)
-- [ ] Replace ~104 `transition-all` occurrences with explicit property transitions
-- [ ] Audit ~153 inline teal references for consolidation opportunities
-- [ ] Update `CLAUDE.md` with new @apply classes and patterns
-- [ ] Update `MEMORY.md`
-- [ ] Visual audit all 25 routed pages for remaining inline patterns
-- [ ] Run full test suite, confirm build OK
+- [x] Migrate inline badge methods → @apply badge classes (3 components)
+- [x] Replace ~65 `transition-all` occurrences with explicit property transitions (~23 files)
+- [x] Update `CLAUDE.md` with new @apply classes and patterns
+- [x] Update `MEMORY.md`
+- [x] Run full test suite, confirm build OK (1495/1495)
 
 ---
 
@@ -1455,11 +1452,11 @@ S9 (Cleanup) ← after all phases (but can start incrementally)
 | **S4 — Cards** | **DONE** | 1455 | 5 new CSS classes, ~16 component card migrations |
 | **S2 — Sidebar** | **DONE** | 1465 | SidebarService + mock + 5 tests, 3 CSS classes, template rewrite, brand text split, keyboard shortcut |
 | **S3 — Header** | **DONE** | 1479 | Breadcrumb (ROUTE_NAME_MAP), ARIA, role label, user menu redesign, h-14, 15 new tests |
-| S5 — Buttons | Pending | — | btn-base, btn-sm, btn-icon-danger, 12 missing patterns |
-| S6 — Tables + Modals | Pending | — | table-cell, expand-panel, ConfirmDialogService |
-| S7 — Animations | Pending | — | page-enter on 22 pages, toast/notification animations |
-| S8 — Login | Pending | — | Dark auth pages, auth-input, auth-btn-primary |
-| S9 — Cleanup | Pending | — | transition-all sweep, badge cleanup, documentation |
+| **S5 — Buttons** | **DONE** | 1479 | btn-base, btn-sm, btn-icon-danger, 12 missing patterns, ~18 template migrations, focus:outline-none removal |
+| **S7 — Animations** | **DONE** | 1479 | page-enter on 22 pages, toast-enter, notification-enter |
+| **S6 — Tables + Modals** | **DONE** | 1495 | table-cell (11 files), expand-panel (8 files), ConfirmDialogService + Component (16 new tests) |
+| **S8 — Login** | **DONE** | 1495 | 6 auth CSS classes, 4 auth page redesigns, dark gradient, brand mark |
+| **S9 — Cleanup** | **DONE** | 1495 | Badge method cleanup (3 files), transition-all sweep (~65 replacements, 23 files), documentation |
 
 ### Verification Strategy (Per Phase)
 

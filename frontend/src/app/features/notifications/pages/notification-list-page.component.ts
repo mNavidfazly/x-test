@@ -16,7 +16,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
   selector: 'app-notification-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, ErrorAlertComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
@@ -75,7 +75,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
             <button
               type="button"
               (click)="onNotificationClick(notification)"
-              class="w-full text-left bg-white border rounded-xl p-4 flex items-start gap-3 hover:bg-slate-50 transition-all duration-200"
+              class="w-full text-left bg-white border rounded-xl p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors duration-200"
               [class.border-l-4]="true"
               [class.border-l-teal-500]="!notification.read_at"
               [class.border-l-transparent]="!!notification.read_at"
@@ -112,7 +112,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
             <button
               type="button"
               (click)="onLoadMore()"
-              class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all duration-200"
+              class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors duration-200"
             >
               <lucide-icon [img]="icons.ChevronDown" [size]="16"></lucide-icon>
               Load more ({{ notificationService.notifications().length - visibleCount() }} remaining)

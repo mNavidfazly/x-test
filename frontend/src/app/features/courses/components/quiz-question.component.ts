@@ -23,7 +23,7 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
         @case ('single_choice') {
           <div class="space-y-2 ml-10">
             @for (opt of question().options; track opt.id) {
-              <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-all duration-200"
+              <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-[background-color,border-color] duration-200"
                      [class.border-teal-500]="answer() === opt.id"
                      [class.bg-teal-50]="answer() === opt.id">
                 <input type="radio"
@@ -41,7 +41,7 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
         @case ('true_false') {
           <div class="space-y-2 ml-10">
             @for (opt of question().options; track opt.id) {
-              <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-all duration-200"
+              <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-[background-color,border-color] duration-200"
                      [class.border-teal-500]="answer() === opt.id"
                      [class.bg-teal-50]="answer() === opt.id">
                 <input type="radio"
@@ -59,7 +59,7 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
         @case ('multiple_choice') {
           <div class="space-y-2 ml-10">
             @for (opt of question().options; track opt.id) {
-              <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-all duration-200"
+              <label class="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2.5 cursor-pointer hover:bg-slate-50 transition-[background-color,border-color] duration-200"
                      [class.border-teal-500]="isOptionSelected(opt.id)"
                      [class.bg-teal-50]="isOptionSelected(opt.id)">
                 <input type="checkbox"
@@ -79,7 +79,7 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
                    [disabled]="disabled()"
                    (input)="answerChange.emit($any($event.target).value)"
                    placeholder="Type your answer..."
-                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 transition-all duration-200" />
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 transition-[border-color,box-shadow] duration-200" />
           </div>
         }
         @case ('short_answer') {
@@ -90,7 +90,7 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
               (input)="answerChange.emit($any($event.target).value)"
               placeholder="Type your answer..."
               rows="3"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 transition-all duration-200 resize-y"></textarea>
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 transition-[border-color,box-shadow] duration-200 resize-y"></textarea>
           </div>
         }
         @case ('matching') {
@@ -103,7 +103,7 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
                   [disabled]="disabled()"
                   [value]="getMatchingValue(i)"
                   (change)="onMatchingChange(i, $any($event.target).value)"
-                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 transition-all duration-200">
+                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 transition-[border-color,box-shadow] duration-200">
                   <option value="">Select a match...</option>
                   @for (right of question().matchingRight ?? []; track right) {
                     <option [value]="right">{{ right }}</option>

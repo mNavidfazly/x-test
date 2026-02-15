@@ -75,13 +75,19 @@ Full design guide in `docs/STYLING_GUIDE.md`. Architecture and class reference i
 **Use @apply classes from `styles.scss` — NEVER copy raw Tailwind for these patterns:**
 
 ```
-Buttons:    .btn-primary  .btn-primary-full  .btn-secondary  .btn-danger  .btn-danger-solid  .btn-ghost  .btn-link  .btn-icon
-Inputs:     .input-field  .select-field  .search-input  .checkbox-field  .form-label
+Buttons:    .btn-base  .btn-primary  .btn-primary-full  .btn-secondary  .btn-danger  .btn-danger-solid  .btn-ghost  .btn-link  .btn-icon  .btn-icon-danger  .btn-sm
+Inputs:     .input-field  .select-field  .search-input  .checkbox-field  .form-label  .field-error
 Badges:     .badge-success  .badge-warning  .badge-error  .badge-info  .badge-neutral  .badge-primary  .badge-purple
-Cards:      .card  .stat-card
-Tables:     .table-container  .table-header  .th  .table-row
+Cards:      .card  .form-card  .card-solid  .card-glass  .stat-card
+Headers:    .form-section-header  .form-section-icon-header
+Tables:     .table-container  .table-header  .th  .table-row  .table-cell  .expand-panel
+Modals:     .modal-backdrop  .glass-panel  .modal-header-gradient
+Auth:       .auth-background  .auth-card  .auth-input  .auth-btn-primary  .auth-label
 Text:       .section-label  .page-title
 Alerts:     .alert-error  .alert-success  .alert-warning
+Sidebar:    .sidebar-logo-gradient  .sidebar-nav-active  .sidebar-desktop-collapsed
+Patterns:   .option-card  .option-card-selected  .progress-track  .progress-fill  .skeleton-bar  .skeleton-circle  .skeleton-card  .back-link  .dashed-action-btn  .confirm-panel  .drop-zone  .drop-zone-active
+Animations: .page-enter  .toast-enter  .notification-enter
 ```
 
 **Color palette (baked into @apply classes — for reference only, don't use inline):**
@@ -101,7 +107,7 @@ Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-l
 - **Icons:** Lucide (`lucide-angular`) — `w-4 h-4` (inline), `w-5 h-5` (buttons), `w-6 h-6` (titles). **Never use emojis** in UI — always use Lucide icons instead. For status indicators, use icons like `Check`, `X`, `AlertTriangle`, `Clock`, `Info` etc. rather than emoji characters.
 - **Layout:** `flex h-screen`, sidebar `w-64 bg-white border-r`, main `flex-1 bg-slate-50`.
 - **Corners:** `rounded-lg` (buttons/inputs), `rounded-xl`/`rounded-2xl` (cards), `rounded-full` (badges/avatars).
-- **Transitions:** `transition-all duration-200` on all interactive elements.
+- **Transitions:** Use explicit `transition-[props] duration-200` (e.g., `transition-[background-color,border-color,box-shadow]`). **Never use `transition-all`** — it causes unnecessary repaints and interferes with `will-change` optimization.
 - **No global dark mode** — dark surfaces are selective accent panels only. Mobile-first, responsive.
 
 ## Multi-Tenancy

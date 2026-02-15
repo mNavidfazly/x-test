@@ -29,7 +29,7 @@ import { ModuleFile } from '../../../core/models/course.model';
             <button
               type="button"
               (click)="onDeleteFile(file)"
-              class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-all"
+              class="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-[color,opacity]"
               aria-label="Delete file"
             >
               <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>

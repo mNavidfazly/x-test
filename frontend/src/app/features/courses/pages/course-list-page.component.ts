@@ -10,7 +10,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
   selector: 'app-course-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, LucideAngularModule, CourseCardComponent, ErrorAlertComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <div class="flex items-center justify-between mb-6">

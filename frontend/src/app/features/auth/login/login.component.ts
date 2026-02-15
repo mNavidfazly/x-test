@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck, KeyRound } from 'lucide-angular';
+import { LucideAngularModule, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck, KeyRound } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { TenantService } from '../../../core/services/tenant.service';
@@ -13,15 +13,17 @@ import { TenantResolution } from '../../../core/models/tenant.model';
   imports: [FormsModule, LucideAngularModule, RouterLink],
   host: { class: 'block' },
   template: `
-    <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+    <div class="auth-background">
       <div class="w-full max-w-md">
-        <div class="card p-8">
-          <!-- Header -->
-          <div class="flex items-center justify-center gap-3 mb-6">
-            <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="32"></lucide-icon>
-            <h1 class="page-title">X-Courses</h1>
-          </div>
+        <!-- Brand mark -->
+        <div class="text-center mb-8">
+          <h1 class="text-5xl font-bold">
+            <span class="italic text-teal-400">X</span><span class="text-white">-Courses</span>
+          </h1>
+          <p class="text-sm text-slate-400 mt-2">by Calypso Commodities</p>
+        </div>
 
+        <div class="auth-card w-full max-w-md">
           @if (step() === 'email') {
             <p class="text-sm text-slate-500 text-center mb-8">Enter your email to sign in</p>
 
@@ -34,13 +36,13 @@ import { TenantResolution } from '../../../core/models/tenant.model';
 
             <!-- Email input -->
             <div class="mb-6">
-              <label for="email" class="form-label">Email</label>
+              <label for="email" class="auth-label">Email</label>
               <input
                 id="email"
                 type="email"
                 [(ngModel)]="email"
                 placeholder="you&#64;company.com"
-                class="input-field focus:outline-none"
+                class="auth-input"
                 [disabled]="resolving()"
                 (keydown.enter)="onContinue()"
               />
@@ -50,7 +52,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
             <button
               (click)="onContinue()"
               [disabled]="resolving()"
-              class="btn-primary-full"
+              class="auth-btn-primary"
             >
               @if (resolving()) {
                 <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
@@ -69,7 +71,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
             <div class="flex items-center gap-2 mb-6">
               <button
                 (click)="onBack()"
-                class="bg-transparent text-slate-600 rounded-lg p-2 hover:bg-slate-100 transition-all duration-200"
+                class="bg-transparent text-slate-600 rounded-lg p-2 hover:bg-slate-100 transition-colors duration-200"
                 aria-label="Back"
               >
                 <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
@@ -128,13 +130,13 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               }
 
               <div class="mb-4">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="auth-label">Password</label>
                 <input
                   id="password"
                   type="password"
                   [(ngModel)]="password"
                   placeholder="Enter your password"
-                  class="input-field focus:outline-none"
+                  class="auth-input"
                   [disabled]="loading()"
                   (keydown.enter)="onSignIn()"
                 />
@@ -143,7 +145,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               <button
                 (click)="onSignIn()"
                 [disabled]="loading()"
-                class="btn-primary-full mb-2"
+                class="auth-btn-primary mb-2"
               >
                 @if (loading() && !magicLinkLoading()) {
                   <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
@@ -191,7 +193,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
             <div class="flex items-center gap-2 mb-6">
               <button
                 (click)="onBackFromOtp()"
-                class="bg-transparent text-slate-600 rounded-lg p-2 hover:bg-slate-100 transition-all duration-200"
+                class="bg-transparent text-slate-600 rounded-lg p-2 hover:bg-slate-100 transition-colors duration-200"
                 aria-label="Back"
               >
                 <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
@@ -218,7 +220,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
 
             <!-- OTP input -->
             <div class="mb-4">
-              <label for="otp-code" class="form-label">Verification code</label>
+              <label for="otp-code" class="auth-label">Verification code</label>
               <input
                 id="otp-code"
                 type="text"
@@ -227,7 +229,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
                 [(ngModel)]="otpCode"
                 maxlength="6"
                 placeholder="000000"
-                class="input-field px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] tabular-nums focus:outline-none"
+                class="auth-input px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] tabular-nums"
                 [disabled]="otpLoading()"
                 (keydown.enter)="onVerifyOtp()"
               />
@@ -237,7 +239,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
             <button
               (click)="onVerifyOtp()"
               [disabled]="otpLoading() || otpCode.trim().length !== 6"
-              class="btn-primary-full mb-4"
+              class="auth-btn-primary mb-4"
             >
               @if (otpLoading()) {
                 <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
@@ -255,7 +257,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
                 <button
                   (click)="onResendCode()"
                   [disabled]="otpLoading()"
-                  class="bg-transparent text-teal-600 rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-100 transition-all duration-200 disabled:opacity-50 inline-flex items-center gap-1.5"
+                  class="bg-transparent text-teal-600 rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-100 transition-colors duration-200 disabled:opacity-50 inline-flex items-center gap-1.5"
                 >
                   <lucide-icon [img]="icons.RefreshCw" [size]="14"></lucide-icon>
                   Resend code
@@ -269,7 +271,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
   `,
 })
 export class LoginComponent {
-  readonly icons = { GraduationCap, Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck, KeyRound };
+  readonly icons = { Loader2, Mail, ArrowLeft, RefreshCw, ShieldCheck, KeyRound };
 
   #auth = inject(AuthService);
   #tenant = inject(TenantService);

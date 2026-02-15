@@ -27,9 +27,9 @@ const POLL_INTERVAL_MS = 10_000;
                   <span class="text-xs font-medium text-slate-600">Encoding</span>
                   <span class="text-xs font-semibold text-slate-700 tabular-nums">{{ encodeProgress() }}%</span>
                 </div>
-                <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div class="progress-track">
                   <div
-                    class="h-full bg-teal-600 rounded-full transition-all duration-500"
+                    class="progress-fill"
                     [style.width.%]="encodeProgress()"
                   ></div>
                 </div>

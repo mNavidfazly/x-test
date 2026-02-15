@@ -26,7 +26,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
   selector: 'app-user-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -170,7 +170,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                   class="table-row cursor-pointer"
                   (click)="onExpandUser(user)"
                 >
-                  <td class="px-3 py-3 text-slate-700 font-medium">
+                  <td class="table-cell text-slate-700 font-medium">
                     <div class="flex items-center gap-2">
                       <app-user-avatar
                         [avatarUrl]="user.avatar_url"
@@ -181,8 +181,8 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                       {{ user.full_name ?? '\u2014' }}
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-slate-600">{{ user.email }}</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell">{{ user.email }}</td>
+                  <td class="table-cell">
                     <div class="flex flex-wrap gap-1">
                       @if (user.is_platform_admin) {
                         <app-status-badge variant="primary">Platform Admin</app-status-badge>
@@ -196,10 +196,10 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                     </div>
                   </td>
                   @if (isPlatformAdmin()) {
-                    <td class="px-3 py-3 text-slate-600">{{ user.tenant_name }}</td>
+                    <td class="table-cell">{{ user.tenant_name }}</td>
                   }
-                  <td class="px-3 py-3 text-slate-500 text-xs">{{ formatDate(user.created_at) }}</td>
-                  <td class="px-3 py-3 text-right">
+                  <td class="table-cell text-slate-500 text-xs">{{ formatDate(user.created_at) }}</td>
+                  <td class="table-cell text-right">
                     @if (expandedUserId() === user.id) {
                       <lucide-icon [img]="icons.ChevronUp" [size]="16" class="text-slate-400"></lucide-icon>
                     } @else {
@@ -310,7 +310,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                   type="button"
                   (click)="currentPage.set(currentPage() - 1)"
                   [disabled]="currentPage() === 1"
-                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   <lucide-icon [img]="icons.ChevronLeft" [size]="14"></lucide-icon>
                   Previous
@@ -320,7 +320,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                   type="button"
                   (click)="currentPage.set(currentPage() + 1)"
                   [disabled]="currentPage() === totalPages()"
-                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                 >
                   Next
                   <lucide-icon [img]="icons.ChevronRight" [size]="14"></lucide-icon>

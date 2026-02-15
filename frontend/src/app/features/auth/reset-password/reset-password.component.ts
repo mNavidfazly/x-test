@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { LucideAngularModule, GraduationCap, Loader2, ArrowLeft, CheckCircle } from 'lucide-angular';
+import { LucideAngularModule, Loader2, ArrowLeft, CheckCircle } from 'lucide-angular';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -14,130 +14,132 @@ type Step = 'email' | 'code' | 'done';
   imports: [FormsModule, LucideAngularModule, RouterLink],
   host: { class: 'block' },
   template: `
-    <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
-      <div class="w-full max-w-md">
-        <div class="card p-8">
-          <div class="flex items-center justify-center gap-3 mb-6">
-            <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="32"></lucide-icon>
-            <h1 class="page-title">Reset Password</h1>
-          </div>
+    <div class="auth-background">
+      <div class="text-center mb-8">
+        <h1 class="text-5xl font-bold">
+          <span class="italic text-teal-400">X</span><span class="text-white">-Courses</span>
+        </h1>
+        <p class="text-sm text-slate-400 mt-2">by Calypso Commodities</p>
+      </div>
 
-          @if (errorMessage()) {
-            <div class="mb-4 alert-error rounded-lg">
-              {{ errorMessage() }}
+      <div class="auth-card w-full max-w-md">
+        <h2 class="text-xl font-semibold text-slate-800 text-center mb-6">Reset Password</h2>
+
+        @if (errorMessage()) {
+          <div class="mb-4 alert-error rounded-lg">
+            {{ errorMessage() }}
+          </div>
+        }
+
+        @switch (step()) {
+          @case ('email') {
+            <p class="text-sm text-slate-500 text-center mb-8">
+              Enter your email and we'll send you a reset code.
+            </p>
+
+            <div class="mb-6">
+              <label for="email" class="auth-label">Email</label>
+              <input
+                id="email"
+                type="email"
+                [(ngModel)]="email"
+                placeholder="you&#64;company.com"
+                class="auth-input"
+                [disabled]="loading()"
+                (keydown.enter)="onSendCode()"
+              />
+            </div>
+
+            <button
+              (click)="onSendCode()"
+              [disabled]="loading()"
+              class="auth-btn-primary"
+            >
+              @if (loading()) {
+                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              }
+              Send reset code
+            </button>
+          }
+
+          @case ('code') {
+            <div class="flex items-center gap-2 mb-2">
+              <button (click)="onBackToEmail()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
+              </button>
+              <p class="text-sm text-slate-500">Enter the code sent to {{ email }}</p>
+            </div>
+
+            <div class="mb-4">
+              <label for="code" class="auth-label">Reset code</label>
+              <input
+                id="code"
+                type="text"
+                [(ngModel)]="code"
+                placeholder="Enter 6-digit code"
+                maxlength="6"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                class="auth-input text-center font-mono text-lg tracking-widest"
+                [disabled]="loading()"
+              />
+            </div>
+
+            <div class="mb-4">
+              <label for="password" class="auth-label">New password</label>
+              <input
+                id="password"
+                type="password"
+                [(ngModel)]="newPassword"
+                placeholder="At least 6 characters"
+                class="auth-input"
+                [disabled]="loading()"
+              />
+            </div>
+
+            <div class="mb-6">
+              <label for="confirmPassword" class="auth-label">Confirm password</label>
+              <input
+                id="confirmPassword"
+                type="password"
+                [(ngModel)]="confirmPassword"
+                placeholder="Repeat password"
+                class="auth-input"
+                [disabled]="loading()"
+                (keydown.enter)="onResetPassword()"
+              />
+            </div>
+
+            <button
+              (click)="onResetPassword()"
+              [disabled]="loading()"
+              class="auth-btn-primary"
+            >
+              @if (loading()) {
+                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+              }
+              Set new password
+            </button>
+          }
+
+          @case ('done') {
+            <div class="text-center">
+              <lucide-icon [img]="icons.CheckCircle" class="text-emerald-500 mx-auto mb-3" [size]="48"></lucide-icon>
+              <p class="text-sm text-slate-700 mb-2">Your password has been reset successfully.</p>
+              <p class="text-sm text-slate-500">You can now sign in with your new password.</p>
             </div>
           }
+        }
 
-          @switch (step()) {
-            @case ('email') {
-              <p class="text-sm text-slate-500 text-center mb-8">
-                Enter your email and we'll send you a reset code.
-              </p>
-
-              <div class="mb-6">
-                <label for="email" class="form-label">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  [(ngModel)]="email"
-                  placeholder="you&#64;company.com"
-                  class="input-field focus:outline-none"
-                  [disabled]="loading()"
-                  (keydown.enter)="onSendCode()"
-                />
-              </div>
-
-              <button
-                (click)="onSendCode()"
-                [disabled]="loading()"
-                class="btn-primary-full"
-              >
-                @if (loading()) {
-                  <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
-                }
-                Send reset code
-              </button>
-            }
-
-            @case ('code') {
-              <div class="flex items-center gap-2 mb-2">
-                <button (click)="onBackToEmail()" class="text-slate-400 hover:text-slate-600 transition-colors">
-                  <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
-                </button>
-                <p class="text-sm text-slate-500">Enter the code sent to {{ email }}</p>
-              </div>
-
-              <div class="mb-4">
-                <label for="code" class="form-label">Reset code</label>
-                <input
-                  id="code"
-                  type="text"
-                  [(ngModel)]="code"
-                  placeholder="Enter 6-digit code"
-                  maxlength="6"
-                  inputmode="numeric"
-                  autocomplete="one-time-code"
-                  class="input-field text-center font-mono text-lg tracking-widest focus:outline-none"
-                  [disabled]="loading()"
-                />
-              </div>
-
-              <div class="mb-4">
-                <label for="password" class="form-label">New password</label>
-                <input
-                  id="password"
-                  type="password"
-                  [(ngModel)]="newPassword"
-                  placeholder="At least 6 characters"
-                  class="input-field focus:outline-none"
-                  [disabled]="loading()"
-                />
-              </div>
-
-              <div class="mb-6">
-                <label for="confirmPassword" class="form-label">Confirm password</label>
-                <input
-                  id="confirmPassword"
-                  type="password"
-                  [(ngModel)]="confirmPassword"
-                  placeholder="Repeat password"
-                  class="input-field focus:outline-none"
-                  [disabled]="loading()"
-                  (keydown.enter)="onResetPassword()"
-                />
-              </div>
-
-              <button
-                (click)="onResetPassword()"
-                [disabled]="loading()"
-                class="btn-primary-full"
-              >
-                @if (loading()) {
-                  <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
-                }
-                Set new password
-              </button>
-            }
-
-            @case ('done') {
-              <div class="text-center">
-                <lucide-icon [img]="icons.CheckCircle" class="text-emerald-500 mx-auto mb-3" [size]="48"></lucide-icon>
-                <p class="text-sm text-slate-700 mb-2">Your password has been reset successfully.</p>
-                <p class="text-sm text-slate-500">You can now sign in with your new password.</p>
-              </div>
-            }
-          }
-
-          <p class="mt-6 text-center text-sm text-slate-500">
-            <a routerLink="/login" class="text-teal-600 font-medium hover:text-teal-700">Back to sign in</a>
-          </p>
-        </div>
+        <p class="mt-6 text-center text-sm text-slate-500">
+          <a routerLink="/login" class="text-teal-600 font-medium hover:text-teal-700">Back to sign in</a>
+        </p>
       </div>
     </div>
   `,
 })
 export class ResetPasswordComponent {
-  readonly icons = { GraduationCap, Loader2, ArrowLeft, CheckCircle };
+  readonly icons = { Loader2, ArrowLeft, CheckCircle };
 
   #api = inject(ApiService);
   #auth = inject(AuthService);

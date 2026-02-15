@@ -39,7 +39,7 @@ import { IssueType } from '../../../core/models/issue.model';
         <select
           [value]="issueType() ?? ''"
           (change)="onTypeChange($event)"
-          class="select-field w-full focus:outline-none mb-3"
+          class="select-field w-full mb-3"
         >
           <option value="" disabled>Select issue type...</option>
           <option value="content_error">Content Error</option>
@@ -53,7 +53,7 @@ import { IssueType } from '../../../core/models/issue.model';
           (input)="onInput($event)"
           placeholder="Describe the issue..."
           rows="3"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
 
         <div class="flex justify-end mt-3">
@@ -76,7 +76,7 @@ import { IssueType } from '../../../core/models/issue.model';
       <button
         type="button"
         (click)="onToggle()"
-        class="inline-flex items-center gap-1.5 bg-white border border-rose-300 text-rose-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-rose-50 active:scale-95 transition-all duration-200"
+        class="inline-flex items-center gap-1.5 bg-white border border-rose-300 text-rose-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-rose-50 active:scale-95 transition-[background-color,transform] duration-200"
       >
         <lucide-icon [img]="icons.Flag" [size]="16"></lucide-icon>
         Report Issue

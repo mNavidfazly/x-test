@@ -33,7 +33,7 @@ const CLASS_MAP: Record<Toast['type'], string> = {
     <div class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm">
       @for (toast of toastService.toasts(); track toast.id) {
         <div
-          class="flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border transition-all duration-200"
+          class="toast-enter flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border transition-[transform,opacity] duration-200"
           [class]="classFor(toast.type)"
           role="alert"
         >
@@ -44,7 +44,7 @@ const CLASS_MAP: Record<Toast['type'], string> = {
           ></lucide-icon>
           <p class="text-sm flex-1">{{ toast.message }}</p>
           <button
-            class="shrink-0 p-0.5 rounded hover:bg-black/5 transition-all duration-200"
+            class="shrink-0 p-0.5 rounded hover:bg-black/5 transition-colors duration-200"
             (click)="toastService.dismiss(toast.id)"
             aria-label="Dismiss"
           >

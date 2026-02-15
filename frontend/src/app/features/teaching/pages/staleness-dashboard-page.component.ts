@@ -20,7 +20,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
   selector: 'app-staleness-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -103,16 +103,16 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                   [class.bg-slate-50]="expandedCourseId() === course.id"
                   (click)="toggleCourse(course.id)"
                 >
-                  <td class="px-3 py-3 text-slate-400">
+                  <td class="table-cell text-slate-400">
                     @if (expandedCourseId() === course.id) {
                       <lucide-icon [img]="icons.ChevronDown" [size]="16"></lucide-icon>
                     } @else {
                       <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
                     }
                   </td>
-                  <td class="px-3 py-3 text-slate-700 font-medium truncate max-w-[200px]">{{ course.title }}</td>
-                  <td class="px-3 py-3 text-slate-600 tabular-nums">{{ course.totalModuleCount }}</td>
-                  <td class="px-3 py-3 tabular-nums">
+                  <td class="table-cell text-slate-700 font-medium truncate max-w-[200px]">{{ course.title }}</td>
+                  <td class="table-cell tabular-nums">{{ course.totalModuleCount }}</td>
+                  <td class="table-cell tabular-nums">
                     @if (course.totalModuleCount > 0) {
                       <span class="text-rose-600 font-semibold">{{ course.staleModuleCount }}</span>
                       <span class="text-slate-400 mx-1">/</span>
@@ -121,8 +121,8 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                       <span class="text-slate-400">\u2014</span>
                     }
                   </td>
-                  <td class="px-3 py-3 text-slate-600 tabular-nums">{{ course.thresholdDays }} days</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell tabular-nums">{{ course.thresholdDays }} days</td>
+                  <td class="table-cell">
                     @if (course.hasStaleModules) {
                       <app-status-badge variant="error">
                         <lucide-icon [img]="icons.AlertTriangle" [size]="12" class="mr-1"></lucide-icon>
@@ -145,7 +145,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                       </app-status-badge>
                     }
                   </td>
-                  <td class="px-3 py-3" (click)="$event.stopPropagation()">
+                  <td class="table-cell" (click)="$event.stopPropagation()">
                     <div class="flex items-center gap-2">
                       <a
                         [routerLink]="['/courses', course.id]"
@@ -175,7 +175,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                 <!-- Expanded module detail row -->
                 @if (expandedCourseId() === course.id && course.totalModuleCount > 0) {
                   <tr class="border-b border-slate-100">
-                    <td colspan="7" class="px-6 py-4 bg-slate-50">
+                    <td colspan="7" class="expand-panel px-6 py-4">
                       <table class="w-full text-sm">
                         <thead>
                           <tr class="text-xs text-slate-500 uppercase tracking-wide">
@@ -237,7 +237,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                 }
                 @if (expandedCourseId() === course.id && course.totalModuleCount === 0) {
                   <tr class="border-b border-slate-100">
-                    <td colspan="7" class="px-6 py-4 text-sm text-slate-500 text-center bg-slate-50">
+                    <td colspan="7" class="expand-panel px-6 py-4 text-sm text-slate-500 text-center">
                       This course has no modules yet.
                     </td>
                   </tr>

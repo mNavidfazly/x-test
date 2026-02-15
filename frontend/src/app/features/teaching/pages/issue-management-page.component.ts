@@ -19,7 +19,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
   selector: 'app-issue-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -121,7 +121,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                   class="table-row cursor-pointer"
                   (click)="onExpandIssue(issue)"
                 >
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     <div class="flex items-center gap-2 max-w-[200px]">
                       <app-user-avatar
                         [avatarUrl]="issue.reporter?.avatar_url ?? null"
@@ -137,11 +137,11 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                       </div>
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-slate-600 truncate max-w-[150px]">{{ issue.course?.title ?? '\u2014' }}</td>
-                  <td class="px-3 py-3 text-slate-600">{{ formatIssueType(issue.issue_type) }}</td>
-                  <td class="px-3 py-3 text-slate-600 truncate max-w-[200px]">{{ truncateText(issue.description, 60) }}</td>
-                  <td class="px-3 py-3 text-slate-500 text-xs">{{ formatRelativeTime(issue.created_at) }}</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell truncate max-w-[150px]">{{ issue.course?.title ?? '\u2014' }}</td>
+                  <td class="table-cell">{{ formatIssueType(issue.issue_type) }}</td>
+                  <td class="table-cell truncate max-w-[200px]">{{ truncateText(issue.description, 60) }}</td>
+                  <td class="table-cell text-slate-500 text-xs">{{ formatRelativeTime(issue.created_at) }}</td>
+                  <td class="table-cell">
                     @switch (issue.status) {
                       @case ('open') {
                         <app-status-badge variant="warning">
@@ -174,7 +174,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                 <!-- Expanded detail row -->
                 @if (expandedIssueId() === issue.id) {
                   <tr>
-                    <td colspan="6" class="px-6 py-4 bg-slate-50/50 border-b border-slate-200">
+                    <td colspan="6" class="expand-panel px-6 py-4">
                       <div class="max-w-2xl">
                         <!-- Full description -->
                         <div class="mb-4">

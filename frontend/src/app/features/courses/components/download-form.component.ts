@@ -19,7 +19,7 @@ import { DownloadFormData, ModuleFormData, ModuleSavePayload } from '../../../co
           type="text"
           [(ngModel)]="form.title"
           placeholder="Module title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -31,7 +31,7 @@ import { DownloadFormData, ModuleFormData, ModuleSavePayload } from '../../../co
           [(ngModel)]="form.description"
           placeholder="Module description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 

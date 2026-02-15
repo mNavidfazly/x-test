@@ -28,7 +28,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
   selector: 'app-tenant-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -167,7 +167,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                   class="table-row cursor-pointer"
                   (click)="onExpandTenant(tenant)"
                 >
-                  <td class="px-3 py-3 text-slate-700 font-medium">
+                  <td class="table-cell text-slate-700 font-medium">
                     {{ tenant.name }}
                     @if (tenant.is_master) {
                       <app-status-badge class="ml-2" variant="primary">
@@ -176,8 +176,8 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                       </app-status-badge>
                     }
                   </td>
-                  <td class="px-3 py-3 text-slate-600">{{ tenant.domain ?? '\u2014' }}</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell">{{ tenant.domain ?? '\u2014' }}</td>
+                  <td class="table-cell">
                     <div class="flex flex-wrap gap-1">
                       @for (method of tenant.settings.auth_methods ?? []; track method) {
                         <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-600">
@@ -186,9 +186,9 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                       }
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-slate-600 tabular-nums">{{ tenant.courseCount }}</td>
-                  <td class="px-3 py-3 text-slate-600 tabular-nums">{{ tenant.csmCount }}</td>
-                  <td class="px-3 py-3 text-right">
+                  <td class="table-cell tabular-nums">{{ tenant.courseCount }}</td>
+                  <td class="table-cell tabular-nums">{{ tenant.csmCount }}</td>
+                  <td class="table-cell text-right">
                     @if (expandedTenantId() === tenant.id) {
                       <lucide-icon [img]="icons.ChevronUp" [size]="16" class="text-slate-400"></lucide-icon>
                     } @else {
@@ -200,7 +200,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                 <!-- Expanded row -->
                 @if (expandedTenantId() === tenant.id) {
                   <tr>
-                    <td colspan="6" class="px-6 py-4 bg-slate-50/50 border-b border-slate-200">
+                    <td colspan="6" class="expand-panel px-6 py-4">
                       <!-- Tabs -->
                       <div class="flex gap-1 mb-4 border-b border-slate-200">
                         <button

@@ -21,7 +21,7 @@ import { LectureFormData } from '../../../core/models/course.model';
           type="text"
           [(ngModel)]="form.title"
           placeholder="Lecture title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -33,7 +33,7 @@ import { LectureFormData } from '../../../core/models/course.model';
           [(ngModel)]="form.description"
           placeholder="Lecture description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 

@@ -31,10 +31,10 @@ const BADGE_LABELS: Record<string, string> = {
   selector: 'app-course-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, LucideAngularModule, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent, ErrorAlertComponent, StatusBadgeComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
-      <a routerLink="/courses" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
+      <a routerLink="/courses" class="back-link mb-4">
         <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
         Back to courses
       </a>
@@ -108,8 +108,8 @@ const BADGE_LABELS: Record<string, string> = {
           @if (totalModules() > 0) {
             <div class="flex items-center gap-3">
               <div class="flex-1">
-                <div class="bg-slate-200 rounded-full h-2">
-                  <div class="bg-teal-600 rounded-full h-2 transition-all duration-300"
+                <div class="progress-track">
+                  <div class="progress-fill"
                        [style.width.%]="progressPercent()"></div>
                 </div>
               </div>
@@ -138,7 +138,7 @@ const BADGE_LABELS: Record<string, string> = {
           <button
             type="button"
             (click)="startAddLecture()"
-            class="w-full mb-4 rounded-xl border-2 border-dashed border-slate-300 py-3 text-sm font-semibold text-slate-500 hover:border-teal-400 hover:text-teal-600 hover:bg-teal-50/30 transition-all duration-200 inline-flex items-center justify-center gap-2"
+            class="dashed-action-btn mb-4 inline-flex items-center justify-center gap-2 font-semibold"
           >
             <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon>
             Add Lecture

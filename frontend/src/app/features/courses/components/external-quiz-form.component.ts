@@ -17,7 +17,7 @@ import { ModuleFormData, ExternalQuizFormData, ModuleSavePayload } from '../../.
           type="text"
           [(ngModel)]="form.title"
           placeholder="Module title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -28,7 +28,7 @@ import { ModuleFormData, ExternalQuizFormData, ModuleSavePayload } from '../../.
           [(ngModel)]="form.description"
           placeholder="Module description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 
@@ -44,7 +44,7 @@ import { ModuleFormData, ExternalQuizFormData, ModuleSavePayload } from '../../.
               type="text"
               [(ngModel)]="quizForm.external_quiz_id"
               placeholder="External quiz identifier"
-              class="input-field focus:outline-none"
+              class="input-field"
             />
           </div>
 
@@ -55,7 +55,7 @@ import { ModuleFormData, ExternalQuizFormData, ModuleSavePayload } from '../../.
               type="url"
               [(ngModel)]="quizForm.external_quiz_url"
               placeholder="https://..."
-              class="input-field focus:outline-none"
+              class="input-field"
             />
           </div>
 
@@ -68,7 +68,7 @@ import { ModuleFormData, ExternalQuizFormData, ModuleSavePayload } from '../../.
               min="0"
               max="100"
               placeholder="Optional"
-              class="input-field focus:outline-none"
+              class="input-field"
             />
             <p class="text-xs text-slate-500 mt-1">Leave blank for no minimum passing score</p>
           </div>

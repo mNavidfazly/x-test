@@ -71,7 +71,7 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
   selector: 'app-content-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -163,14 +163,14 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
                   class="table-row cursor-pointer"
                   (click)="toggleCourse(course)"
                 >
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     <div class="font-medium text-slate-700">{{ course.title }}</div>
                     <app-status-badge [variant]="getEnrollmentBadgeVariant(course.enrollment_type)" class="mt-1">
                       {{ getEnrollmentLabel(course.enrollment_type) }}
                     </app-status-badge>
                   </td>
-                  <td class="px-3 py-3 text-slate-600 tabular-nums">{{ course.lectureCount }}</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell tabular-nums">{{ course.lectureCount }}</td>
+                  <td class="table-cell">
                     <div class="flex flex-wrap gap-1">
                       @for (entry of getModuleTypePills(course); track entry.type) {
                         <span class="badge-neutral text-xs">
@@ -182,8 +182,8 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
                       }
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-slate-600 tabular-nums">{{ course.tenantCount }}</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell tabular-nums">{{ course.tenantCount }}</td>
+                  <td class="table-cell">
                     @if (course.totalModules === 0) {
                       <span class="text-slate-400 text-xs">\u2014</span>
                     } @else if (course.hasStaleModules) {
@@ -194,10 +194,10 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
                       <app-status-badge variant="success">Fresh</app-status-badge>
                     }
                   </td>
-                  <td class="px-3 py-3 text-slate-500 text-xs">
+                  <td class="table-cell text-slate-500 text-xs">
                     {{ course.lastModuleUpdate ? formatDate(course.lastModuleUpdate) : '\u2014' }}
                   </td>
-                  <td class="px-3 py-3 text-right">
+                  <td class="table-cell text-right">
                     @if (expandedCourseId() === course.id) {
                       <lucide-icon [img]="icons.ChevronUp" [size]="16" class="text-slate-400"></lucide-icon>
                     } @else {
@@ -209,7 +209,7 @@ const MODULE_TYPE_OPTIONS: { value: ModuleTypeFilter; label: string }[] = [
                 <!-- Expanded row -->
                 @if (expandedCourseId() === course.id) {
                   <tr>
-                    <td colspan="7" class="px-6 py-4 bg-slate-50/50 border-b border-slate-200">
+                    <td colspan="7" class="expand-panel px-6 py-4">
                       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Left: Lecture/Module tree -->
                         <div class="lg:col-span-2">

@@ -5,7 +5,7 @@ import { LucideAngularModule, Construction } from 'lucide-angular';
   selector: 'app-stub-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div class="flex flex-col items-center justify-center py-24 text-center">
       <lucide-icon [img]="icons.Construction" [size]="48" class="text-slate-300 mb-4"></lucide-icon>

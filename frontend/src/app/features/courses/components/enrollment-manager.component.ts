@@ -26,7 +26,7 @@ import { formatDate } from '../../../core/utils/date.utils';
           (input)="onEmailInput($event)"
           (keydown.enter)="onAddUser()"
           placeholder="Enter user email to enroll"
-          class="input-field flex-1 focus:outline-none"
+          class="input-field flex-1"
         />
         <button
           type="button"
@@ -80,7 +80,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                     <button
                       type="button"
                       (click)="onUnenroll(user.id)"
-                      class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded p-1 transition-all duration-200"
+                      class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded p-1 transition-colors duration-200"
                       title="Unenroll user"
                     >
                       <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>

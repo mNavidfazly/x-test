@@ -44,7 +44,7 @@ import { EnrollmentType } from '../../../core/models/course.model';
                   (input)="onPasswordInput($event)"
                   (keydown.enter)="onPasswordSubmit()"
                   placeholder="Enter course password"
-                  class="input-field flex-1 focus:outline-none"
+                  class="input-field flex-1"
                 />
                 <button
                   type="button"

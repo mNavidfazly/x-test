@@ -24,7 +24,7 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
   selector: 'app-access-request-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -104,13 +104,13 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                   class="table-row cursor-pointer"
                   (click)="onExpandRequest(req)"
                 >
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     <div class="text-slate-700 font-medium">{{ req.full_name ?? '\u2014' }}</div>
                     <div class="text-xs text-slate-500">{{ req.email }}</div>
                   </td>
-                  <td class="px-3 py-3 text-slate-600">{{ req.domain ?? '\u2014' }}</td>
+                  <td class="table-cell">{{ req.domain ?? '\u2014' }}</td>
                   @if (isPlatformAdmin()) {
-                    <td class="px-3 py-3 text-slate-600">
+                    <td class="table-cell">
                       @if (req.tenant_name) {
                         {{ req.tenant_name }}
                       } @else {
@@ -118,7 +118,7 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                       }
                     </td>
                   }
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     @switch (req.status) {
                       @case ('pending') {
                         <app-status-badge variant="warning">Pending</app-status-badge>
@@ -131,8 +131,8 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                       }
                     }
                   </td>
-                  <td class="px-3 py-3 text-slate-500 text-xs">{{ formatDate(req.created_at) }}</td>
-                  <td class="px-3 py-3 text-right">
+                  <td class="table-cell text-slate-500 text-xs">{{ formatDate(req.created_at) }}</td>
+                  <td class="table-cell text-right">
                     @if (expandedRequestId() === req.id) {
                       <lucide-icon [img]="icons.ChevronUp" [size]="16" class="text-slate-400"></lucide-icon>
                     } @else {

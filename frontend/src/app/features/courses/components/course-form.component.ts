@@ -26,7 +26,7 @@ export interface CourseFormSaveEvent {
           type="text"
           [(ngModel)]="form.title"
           placeholder="Course title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -38,7 +38,7 @@ export interface CourseFormSaveEvent {
           [(ngModel)]="form.description"
           placeholder="Course description (optional)"
           rows="3"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 
@@ -70,7 +70,7 @@ export interface CourseFormSaveEvent {
           <button
             type="button"
             (click)="thumbnailMode.set('upload')"
-            [class]="'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ' +
+            [class]="'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-200 ' +
               (thumbnailMode() === 'upload' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'text-slate-500 hover:bg-slate-100 border border-transparent')"
           >
             <lucide-icon [img]="icons.Upload" [size]="14"></lucide-icon>
@@ -79,7 +79,7 @@ export interface CourseFormSaveEvent {
           <button
             type="button"
             (click)="thumbnailMode.set('url')"
-            [class]="'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200 ' +
+            [class]="'flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors duration-200 ' +
               (thumbnailMode() === 'url' ? 'bg-teal-50 text-teal-700 border border-teal-200' : 'text-slate-500 hover:bg-slate-100 border border-transparent')"
           >
             <lucide-icon [img]="icons.Link" [size]="14"></lucide-icon>
@@ -103,7 +103,7 @@ export interface CourseFormSaveEvent {
             type="url"
             [(ngModel)]="form.thumbnail_url"
             placeholder="https://example.com/image.jpg (optional)"
-            class="input-field focus:outline-none"
+            class="input-field"
           />
         }
       </div>
@@ -114,7 +114,7 @@ export interface CourseFormSaveEvent {
         <select
           id="enrollmentType"
           [(ngModel)]="form.enrollment_type"
-          class="select-field w-full focus:outline-none bg-white"
+          class="select-field w-full bg-white"
         >
           <option value="open">Open</option>
           <option value="invite_only">Invite only</option>
@@ -131,7 +131,7 @@ export interface CourseFormSaveEvent {
             type="text"
             [(ngModel)]="form.password_hash"
             placeholder="Password for enrollment"
-            class="input-field focus:outline-none"
+            class="input-field"
           />
           @if (isEditMode()) {
             <p class="mt-1 text-xs text-slate-500">Leave blank to keep the current password.</p>
@@ -148,7 +148,7 @@ export interface CourseFormSaveEvent {
           [(ngModel)]="form.staleness_threshold_days"
           placeholder="180 (default)"
           min="1"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 

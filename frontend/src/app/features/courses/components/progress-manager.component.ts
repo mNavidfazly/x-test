@@ -48,9 +48,9 @@ import { LectureWithModules, UserProgressSummary } from '../../../core/models/co
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
                   <div class="flex items-center gap-2">
-                    <div class="w-24 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div class="progress-track w-24 h-1.5">
                       <div
-                        class="h-full bg-teal-500 rounded-full transition-all duration-300"
+                        class="progress-fill"
                         [style.width.%]="user.total > 0 ? (user.completed / user.total) * 100 : 0"
                       ></div>
                     </div>
@@ -99,7 +99,7 @@ import { LectureWithModules, UserProgressSummary } from '../../../core/models/co
                                 type="button"
                                 (click)="onReset(user, mod.id); $event.stopPropagation()"
                                 [disabled]="actionInProgress()"
-                                class="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded px-2 py-1 font-medium transition-all duration-200 inline-flex items-center gap-1"
+                                class="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded px-2 py-1 font-medium transition-colors duration-200 inline-flex items-center gap-1"
                               >
                                 <lucide-icon [img]="icons.RotateCcw" [size]="10"></lucide-icon>
                                 Reset
@@ -109,7 +109,7 @@ import { LectureWithModules, UserProgressSummary } from '../../../core/models/co
                                 type="button"
                                 (click)="onMarkComplete(user, lecture.id, mod.id); $event.stopPropagation()"
                                 [disabled]="actionInProgress()"
-                                class="text-xs text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded px-2 py-1 font-medium transition-all duration-200 inline-flex items-center gap-1"
+                                class="text-xs text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded px-2 py-1 font-medium transition-colors duration-200 inline-flex items-center gap-1"
                               >
                                 <lucide-icon [img]="icons.Check" [size]="10"></lucide-icon>
                                 Mark Complete

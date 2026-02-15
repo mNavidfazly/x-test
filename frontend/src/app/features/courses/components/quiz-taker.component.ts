@@ -106,7 +106,7 @@ import { formatDate } from '../../../core/utils/date.utils';
             <div class="flex justify-center">
               @if (hasUnsubmittedAttempt()) {
                 <button (click)="onStartQuiz()"
-                        class="bg-amber-500 text-white rounded-lg px-6 py-3 text-sm font-semibold shadow-sm hover:bg-amber-600 active:scale-95 transition-all duration-200 inline-flex items-center gap-2">
+                        class="btn-primary !bg-amber-500 !hover:bg-amber-600 px-6 py-3">
                   <lucide-icon [img]="icons.Play" [size]="18"></lucide-icon>
                   Continue Quiz
                 </button>

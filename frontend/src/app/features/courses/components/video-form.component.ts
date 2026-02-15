@@ -22,7 +22,7 @@ const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
           type="text"
           [(ngModel)]="form.title"
           placeholder="Module title"
-          class="input-field focus:outline-none"
+          class="input-field"
         />
       </div>
 
@@ -34,7 +34,7 @@ const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
           [(ngModel)]="form.description"
           placeholder="Module description (optional)"
           rows="2"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
       </div>
 
@@ -68,9 +68,9 @@ const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
               <span class="text-sm font-medium text-teal-800">Uploading...</span>
               <span class="text-xs font-semibold text-teal-700 tabular-nums">{{ bunnyUpload.progress() }}%</span>
             </div>
-            <div class="w-full h-2 bg-teal-100 rounded-full overflow-hidden">
+            <div class="progress-track bg-teal-100">
               <div
-                class="h-full bg-teal-600 rounded-full transition-all duration-300"
+                class="progress-fill"
                 [style.width.%]="bunnyUpload.progress()"
               ></div>
             </div>
@@ -96,7 +96,7 @@ const MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
         <!-- File picker (shown when no video and not uploading) -->
         @if (showFilePicker()) {
           <div
-            class="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 hover:border-teal-400 hover:bg-teal-50/30 transition-all duration-200 cursor-pointer"
+            class="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-8 hover:border-teal-400 hover:bg-teal-50/30 transition-[background-color,border-color] duration-200 cursor-pointer"
             (click)="fileInput.click()"
           >
             <lucide-icon [img]="Film" class="w-8 h-8 text-slate-400"></lucide-icon>

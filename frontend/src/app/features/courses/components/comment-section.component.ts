@@ -26,14 +26,14 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
           (input)="onNewCommentInput($event)"
           placeholder="Write a comment..."
           rows="3"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
         <div class="flex justify-end mt-2">
           <button
             type="button"
             (click)="onAddComment()"
             [disabled]="!newCommentBody().trim() || submitting()"
-            class="inline-flex items-center gap-1.5 bg-teal-600 text-white rounded-lg px-3 py-1.5 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn-primary btn-sm"
           >
             @if (submitting()) {
               <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -91,11 +91,11 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                   [value]="editBody()"
                   (input)="onEditInput($event)"
                   rows="3"
-                  class="input-field focus:outline-none resize-none mb-2"
+                  class="input-field resize-none mb-2"
                 ></textarea>
                 <div class="flex gap-2">
-                  <button type="button" (click)="onSaveEditComment(comment.id)" [disabled]="submitting()" class="bg-teal-600 text-white rounded-lg px-3 py-1 text-xs font-semibold hover:bg-teal-700 transition-all duration-200 disabled:opacity-50">Save</button>
-                  <button type="button" (click)="onCancelEdit()" class="bg-white border border-slate-300 text-slate-700 rounded-lg px-3 py-1 text-xs font-semibold hover:bg-slate-50 transition-all duration-200">Cancel</button>
+                  <button type="button" (click)="onSaveEditComment(comment.id)" [disabled]="submitting()" class="btn-primary btn-sm">Save</button>
+                  <button type="button" (click)="onCancelEdit()" class="btn-secondary btn-sm">Cancel</button>
                 </div>
               } @else {
                 <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ comment.body }}</p>
@@ -104,18 +104,18 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
               <!-- Comment actions -->
               @if (editingCommentId() !== comment.id) {
                 <div class="flex items-center gap-3 mt-2">
-                  <button type="button" (click)="onStartReply(comment.id)" class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-all duration-200">
+                  <button type="button" (click)="onStartReply(comment.id)" class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors duration-200">
                     <lucide-icon [img]="icons.Reply" [size]="12"></lucide-icon>
                     Reply
                   </button>
                   @if (canEdit(comment)) {
-                    <button type="button" (click)="onStartEditComment(comment)" class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-all duration-200">
+                    <button type="button" (click)="onStartEditComment(comment)" class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors duration-200">
                       <lucide-icon [img]="icons.Pencil" [size]="12"></lucide-icon>
                       Edit
                     </button>
                   }
                   @if (canDelete(comment)) {
-                    <button type="button" (click)="onDeleteComment(comment.id)" class="inline-flex items-center gap-1 text-xs text-rose-500 hover:text-rose-700 transition-all duration-200">
+                    <button type="button" (click)="onDeleteComment(comment.id)" class="inline-flex items-center gap-1 text-xs text-rose-500 hover:text-rose-700 transition-colors duration-200">
                       <lucide-icon [img]="icons.Trash2" [size]="12"></lucide-icon>
                       Delete
                     </button>
@@ -155,23 +155,23 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                       [value]="editBody()"
                       (input)="onEditInput($event)"
                       rows="2"
-                      class="input-field focus:outline-none resize-none mb-2"
+                      class="input-field resize-none mb-2"
                     ></textarea>
                     <div class="flex gap-2">
-                      <button type="button" (click)="onSaveEditReply(reply.id)" [disabled]="submitting()" class="bg-teal-600 text-white rounded-lg px-3 py-1 text-xs font-semibold hover:bg-teal-700 transition-all duration-200 disabled:opacity-50">Save</button>
-                      <button type="button" (click)="onCancelEdit()" class="bg-white border border-slate-300 text-slate-700 rounded-lg px-3 py-1 text-xs font-semibold hover:bg-slate-50 transition-all duration-200">Cancel</button>
+                      <button type="button" (click)="onSaveEditReply(reply.id)" [disabled]="submitting()" class="btn-primary btn-sm">Save</button>
+                      <button type="button" (click)="onCancelEdit()" class="btn-secondary btn-sm">Cancel</button>
                     </div>
                   } @else {
                     <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ reply.body }}</p>
                     <div class="flex items-center gap-3 mt-1">
                       @if (canEdit(reply)) {
-                        <button type="button" (click)="onStartEditReply(reply)" class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-all duration-200">
+                        <button type="button" (click)="onStartEditReply(reply)" class="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 transition-colors duration-200">
                           <lucide-icon [img]="icons.Pencil" [size]="12"></lucide-icon>
                           Edit
                         </button>
                       }
                       @if (canDelete(reply)) {
-                        <button type="button" (click)="onDeleteReply(reply.id)" class="inline-flex items-center gap-1 text-xs text-rose-500 hover:text-rose-700 transition-all duration-200">
+                        <button type="button" (click)="onDeleteReply(reply.id)" class="inline-flex items-center gap-1 text-xs text-rose-500 hover:text-rose-700 transition-colors duration-200">
                           <lucide-icon [img]="icons.Trash2" [size]="12"></lucide-icon>
                           Delete
                         </button>
@@ -189,16 +189,16 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                     (input)="onReplyInput($event)"
                     placeholder="Write a reply..."
                     rows="2"
-                    class="input-field focus:outline-none resize-none"
+                    class="input-field resize-none"
                   ></textarea>
                   <div class="flex gap-2 mt-2">
                     <button
                       type="button"
                       (click)="onSubmitReply(comment.id)"
                       [disabled]="!replyBody().trim() || submitting()"
-                      class="bg-teal-600 text-white rounded-lg px-3 py-1 text-xs font-semibold hover:bg-teal-700 transition-all duration-200 disabled:opacity-50"
+                      class="btn-primary btn-sm"
                     >Post Reply</button>
-                    <button type="button" (click)="onCancelReply()" class="bg-white border border-slate-300 text-slate-700 rounded-lg px-3 py-1 text-xs font-semibold hover:bg-slate-50 transition-all duration-200">Cancel</button>
+                    <button type="button" (click)="onCancelReply()" class="btn-secondary btn-sm">Cancel</button>
                   </div>
                 </div>
               }

@@ -20,7 +20,7 @@ import { formatFileSize } from '../../../core/utils/file.utils';
               <a
                 [href]="file.file_url"
                 download
-                class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-all duration-200"
+                class="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors duration-200"
               >
                 <lucide-icon [img]="fileDownIcon" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
                 <span class="text-sm text-slate-700 flex-1 truncate">{{ file.file_name }}</span>

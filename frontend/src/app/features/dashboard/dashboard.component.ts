@@ -45,7 +45,7 @@ const ROLE_BADGE_MAP: Record<string, { label: string; variant: BadgeVariant }> =
     LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent,
     UserAvatarComponent,
   ],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <!-- Section 1: Welcome Header -->
     <div class="mb-8">

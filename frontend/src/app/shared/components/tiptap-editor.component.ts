@@ -15,7 +15,7 @@ const lowlight = createLowlight(common);
   imports: [TiptapEditorDirective],
   host: { class: 'block' },
   template: `
-    <div class="border border-slate-300 rounded-lg overflow-hidden transition-all duration-200" [class.border-teal-500]="focused()" [class.ring-2]="focused()" [class.ring-teal-500]="focused()">
+    <div class="border border-slate-300 rounded-lg overflow-hidden transition-[border-color,box-shadow] duration-200" [class.border-teal-500]="focused()" [class.ring-2]="focused()" [class.ring-teal-500]="focused()">
       @if (editor) {
         <!-- Toolbar -->
         <div class="flex items-center gap-0.5 px-2 py-1.5 border-b border-slate-200 bg-slate-50 flex-wrap">

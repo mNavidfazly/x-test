@@ -76,8 +76,8 @@ const BADGE_LABELS: Record<string, string> = {
               <span class="text-xs text-slate-500">{{ course().completedModules }}/{{ course().moduleCount }} modules</span>
               <span class="text-xs font-semibold text-slate-700 tabular-nums">{{ course().progressPercent }}%</span>
             </div>
-            <div class="bg-slate-200 rounded-full h-2">
-              <div class="bg-teal-600 rounded-full h-2 transition-all duration-300"
+            <div class="progress-track">
+              <div class="progress-fill"
                    [style.width.%]="course().progressPercent"></div>
             </div>
           </div>

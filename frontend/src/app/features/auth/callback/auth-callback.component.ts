@@ -9,10 +9,13 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [LucideAngularModule],
   host: { class: 'block' },
   template: `
-    <div class="min-h-screen bg-slate-50 flex items-center justify-center">
+    <div class="auth-background">
       <div class="text-center">
-        <lucide-icon [img]="icons.Loader2" [size]="32" class="animate-spin text-teal-600 mx-auto mb-4"></lucide-icon>
-        <p class="text-sm text-slate-500">Completing sign in...</p>
+        <h1 class="text-5xl font-bold mb-8">
+          <span class="italic text-teal-400">X</span><span class="text-white">-Courses</span>
+        </h1>
+        <lucide-icon [img]="icons.Loader2" [size]="32" class="animate-spin text-teal-400 mx-auto mb-4"></lucide-icon>
+        <p class="text-sm text-slate-400">Completing sign in...</p>
       </div>
     </div>
   `,

@@ -18,7 +18,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
   selector: 'app-teaching-overview-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div>
       <!-- Header -->
@@ -100,15 +100,15 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                   [class.bg-slate-50]="expandedCourseId() === course.id"
                   (click)="toggleCourse(course.id)"
                 >
-                  <td class="px-3 py-3 text-slate-400">
+                  <td class="table-cell text-slate-400">
                     @if (expandedCourseId() === course.id) {
                       <lucide-icon [img]="icons.ChevronDown" [size]="16"></lucide-icon>
                     } @else {
                       <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
                     }
                   </td>
-                  <td class="px-3 py-3 text-slate-700 font-medium truncate max-w-[200px]">{{ course.title }}</td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell text-slate-700 font-medium truncate max-w-[200px]">{{ course.title }}</td>
+                  <td class="table-cell">
                     <div class="flex items-center gap-1">
                       @if (course.canEdit) {
                         <span class="badge-primary">Edit</span>
@@ -121,8 +121,8 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                       }
                     </div>
                   </td>
-                  <td class="px-3 py-3 text-slate-600 tabular-nums">{{ course.enrolledCount }}</td>
-                  <td class="px-3 py-3 tabular-nums">
+                  <td class="table-cell tabular-nums">{{ course.enrolledCount }}</td>
+                  <td class="table-cell tabular-nums">
                     @if (course.canGrade) {
                       <span [class]="course.pendingExams > 0 ? 'text-amber-600 font-semibold' : 'text-slate-600'">
                         {{ course.pendingExams }}
@@ -131,17 +131,17 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                       <span class="text-slate-400">\u2014</span>
                     }
                   </td>
-                  <td class="px-3 py-3 tabular-nums">
+                  <td class="table-cell tabular-nums">
                     <span [class]="course.pendingQuestions > 0 ? 'text-amber-600 font-semibold' : 'text-slate-600'">
                       {{ course.pendingQuestions }}
                     </span>
                   </td>
-                  <td class="px-3 py-3 tabular-nums">
+                  <td class="table-cell tabular-nums">
                     <span [class]="course.openIssues > 0 ? 'text-amber-600 font-semibold' : 'text-slate-600'">
                       {{ course.openIssues }}
                     </span>
                   </td>
-                  <td class="px-3 py-3">
+                  <td class="table-cell">
                     @if (course.totalModules === 0) {
                       <app-status-badge variant="neutral">No modules</app-status-badge>
                     } @else if (course.staleModules > 0) {
@@ -160,7 +160,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
                 <!-- Expanded detail row -->
                 @if (expandedCourseId() === course.id) {
                   <tr class="border-b border-slate-100">
-                    <td colspan="8" class="px-6 py-4 bg-slate-50/50 border-b border-slate-200">
+                    <td colspan="8" class="expand-panel px-6 py-4">
                       <div class="flex gap-8">
                         <!-- Left: Course info -->
                         <div class="flex-1">

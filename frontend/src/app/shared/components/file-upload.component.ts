@@ -28,8 +28,8 @@ import { LucideAngularModule, Upload, File, X, AlertCircle } from 'lucide-angula
         (dragover)="onDragOver($event)"
         (dragleave)="dragging.set(false)"
         (drop)="onDrop($event)"
-        class="w-full rounded-lg border-2 border-dashed px-6 py-8 text-center transition-colors duration-200"
-        [class]="dragging() ? 'border-teal-400 bg-teal-50/30' : 'border-slate-300 hover:border-slate-400 bg-white'"
+        class="w-full drop-zone"
+        [class.drop-zone-active]="dragging()"
       >
         <lucide-icon [img]="icons.Upload" [size]="24" class="mx-auto text-slate-400 mb-2"></lucide-icon>
         <p class="text-sm text-slate-600">Drop file here or click to browse</p>
@@ -65,9 +65,9 @@ import { LucideAngularModule, Upload, File, X, AlertCircle } from 'lucide-angula
 
     @if (uploading()) {
       <div class="mt-2">
-        <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
+        <div class="progress-track">
           <div
-            class="h-full bg-teal-500 rounded-full transition-all duration-300"
+            class="progress-fill"
             [style.width.%]="progress()"
             role="progressbar"
             [attr.aria-valuenow]="progress()"

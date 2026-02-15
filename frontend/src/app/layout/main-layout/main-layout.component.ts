@@ -4,6 +4,7 @@ import { LucideAngularModule, X } from 'lucide-angular';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { ToastContainerComponent } from '../../shared/components/toast-container.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.component';
 import { NotificationService } from '../../core/services/notification.service';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { AppNotification } from '../../core/models/notification.model';
@@ -12,7 +13,7 @@ import { getNotificationRoute } from '../../core/models/notification.model';
 @Component({
   selector: 'app-main-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent, LucideAngularModule],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent, ConfirmDialogComponent, LucideAngularModule],
   host: {
     class: 'block',
     '(document:keydown)': 'onKeydown($event)',
@@ -32,10 +33,11 @@ import { getNotificationRoute } from '../../core/models/notification.model';
     </div>
 
     <app-toast-container />
+    <app-confirm-dialog />
 
     @if (notificationService.latestToast(); as toast) {
       <div
-        class="fixed top-4 right-4 z-50 max-w-sm bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-start gap-3 cursor-pointer"
+        class="notification-enter fixed top-4 right-4 z-50 max-w-sm bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-start gap-3 cursor-pointer"
         (click)="onToastClick(toast)"
       >
         <div class="flex-1 min-w-0">

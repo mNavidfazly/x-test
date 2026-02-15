@@ -59,7 +59,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
           <button
             type="button"
             (click)="togglePlay()"
-            class="btn-icon w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-all duration-200"
+            class="btn-icon w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-colors duration-200"
             [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
           >
             <lucide-icon [img]="isPlaying() ? icons.Pause : icons.Play" [size]="18"></lucide-icon>

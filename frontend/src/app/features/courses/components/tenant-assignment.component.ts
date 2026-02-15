@@ -15,7 +15,7 @@ import { TenantSummary } from '../../../core/models/course.model';
         <div class="space-y-2">
           @for (tenant of tenants(); track tenant.id) {
             <label
-              class="flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-all duration-200"
+              class="flex items-center gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-[background-color,border-color] duration-200"
               [class.border-teal-300]="isAssigned(tenant.id)"
               [class.bg-teal-50]="isAssigned(tenant.id)"
               [class.border-slate-200]="!isAssigned(tenant.id)"

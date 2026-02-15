@@ -65,7 +65,7 @@ import { CourseLecturer } from '../../../core/models/course.model';
           (input)="onInput($event)"
           placeholder="Type your question..."
           rows="3"
-          class="input-field focus:outline-none resize-none"
+          class="input-field resize-none"
         ></textarea>
 
         <div class="flex justify-end mt-3">
@@ -89,7 +89,7 @@ import { CourseLecturer } from '../../../core/models/course.model';
         <button
           type="button"
           (click)="onToggle()"
-          class="inline-flex items-center gap-1.5 bg-white border border-teal-300 text-teal-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-teal-50 active:scale-95 transition-all duration-200"
+          class="inline-flex items-center gap-1.5 bg-white border border-teal-300 text-teal-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-teal-50 active:scale-95 transition-[background-color,transform] duration-200"
         >
           <lucide-icon [img]="icons.HelpCircle" [size]="16"></lucide-icon>
           Ask an Expert

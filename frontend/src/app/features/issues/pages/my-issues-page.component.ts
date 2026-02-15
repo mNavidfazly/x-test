@@ -2,8 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@ang
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, Flag, Clock, CheckCircle2, XCircle, Search, ChevronDown, ChevronUp, BookOpen } from 'lucide-angular';
 import { IssueService } from '../../../core/services/issue.service';
-import { IssueStatus, IssueType } from '../../../core/models/issue.model';
-import { LucideIconData } from 'lucide-angular';
+import { IssueType } from '../../../core/models/issue.model';
 import { formatRelativeTime } from '../../../core/utils/date.utils';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
@@ -11,7 +10,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
   selector: 'app-my-issues-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideAngularModule, RouterLink, ErrorAlertComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div class="max-w-4xl mx-auto">
       <!-- Header -->
@@ -61,10 +60,32 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
                 class="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
               >
                 <!-- Status badge -->
-                <span [class]="statusBadgeClass(issue.status)">
-                  <lucide-icon [img]="statusIcon(issue.status)" [size]="12"></lucide-icon>
-                  {{ statusLabel(issue.status) }}
-                </span>
+                @switch (issue.status) {
+                  @case ('open') {
+                    <span class="badge-warning gap-1 shrink-0">
+                      <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
+                      Open
+                    </span>
+                  }
+                  @case ('investigating') {
+                    <span class="badge-info gap-1 shrink-0">
+                      <lucide-icon [img]="icons.Search" [size]="12"></lucide-icon>
+                      Investigating
+                    </span>
+                  }
+                  @case ('resolved') {
+                    <span class="badge-success gap-1 shrink-0">
+                      <lucide-icon [img]="icons.CheckCircle2" [size]="12"></lucide-icon>
+                      Resolved
+                    </span>
+                  }
+                  @case ('closed') {
+                    <span class="badge-neutral gap-1 shrink-0">
+                      <lucide-icon [img]="icons.XCircle" [size]="12"></lucide-icon>
+                      Closed
+                    </span>
+                  }
+                }
 
                 <!-- Issue type -->
                 <span class="badge-neutral shrink-0">
@@ -145,34 +166,6 @@ export class MyIssuesPageComponent implements OnInit {
 
   toggleExpand(id: string) {
     this.expandedId.update(current => current === id ? null : id);
-  }
-
-  statusBadgeClass(status: IssueStatus): string {
-    const base = 'inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold shrink-0';
-    switch (status) {
-      case 'open': return `${base} bg-amber-100 text-amber-700`;
-      case 'investigating': return `${base} bg-blue-100 text-blue-700`;
-      case 'resolved': return `${base} bg-emerald-100 text-emerald-700`;
-      case 'closed': return `${base} bg-slate-100 text-slate-600`;
-    }
-  }
-
-  statusLabel(status: IssueStatus): string {
-    switch (status) {
-      case 'open': return 'Open';
-      case 'investigating': return 'Investigating';
-      case 'resolved': return 'Resolved';
-      case 'closed': return 'Closed';
-    }
-  }
-
-  statusIcon(status: IssueStatus): LucideIconData {
-    switch (status) {
-      case 'open': return this.icons.Clock;
-      case 'investigating': return this.icons.Search;
-      case 'resolved': return this.icons.CheckCircle2;
-      case 'closed': return this.icons.XCircle;
-    }
   }
 
   issueTypeLabel(type: IssueType): string {

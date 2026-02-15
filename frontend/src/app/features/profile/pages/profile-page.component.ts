@@ -18,7 +18,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, LucideAngularModule, ErrorAlertComponent],
-  host: { class: 'block' },
+  host: { class: 'block page-enter' },
   template: `
     <div class="max-w-2xl">
       <h1 class="page-title mb-6">Profile</h1>
@@ -92,7 +92,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
                 <input
                   type="text"
                   [(ngModel)]="nameInput"
-                  class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                  class="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-[border-color,box-shadow] duration-200"
                   (keydown.enter)="onSaveName()"
                   (keydown.escape)="editingName.set(false)"
                 />
@@ -111,7 +111,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
                   type="button"
                   (click)="onSaveName()"
                   [disabled]="savingName()"
-                  class="p-1.5 rounded-lg text-teal-600 hover:bg-teal-50 transition-all duration-200 disabled:opacity-50"
+                  class="p-1.5 rounded-lg text-teal-600 hover:bg-teal-50 transition-colors duration-200 disabled:opacity-50"
                   aria-label="Save name"
                 >
                   @if (savingName()) {
@@ -123,7 +123,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
                 <button
                   type="button"
                   (click)="editingName.set(false)"
-                  class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-all duration-200"
+                  class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors duration-200"
                   aria-label="Cancel editing"
                 >
                   <lucide-icon [img]="icons.X" [size]="16"></lucide-icon>
@@ -132,7 +132,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
                 <button
                   type="button"
                   (click)="onStartEditName()"
-                  class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-all duration-200"
+                  class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors duration-200"
                   aria-label="Edit name"
                 >
                   <lucide-icon [img]="icons.Pencil" [size]="16"></lucide-icon>
@@ -166,9 +166,23 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
               <p class="text-xs text-slate-500">Roles</p>
               <div class="flex flex-wrap gap-1.5 mt-1">
                 @for (role of roles(); track role) {
-                  <span [class]="'badge ' + roleStyle(role)">
-                    {{ role }}
-                  </span>
+                  @switch (role) {
+                    @case ('Platform Admin') {
+                      <span class="badge-primary">Platform Admin</span>
+                    }
+                    @case ('Tenant Admin') {
+                      <span class="badge-info">Tenant Admin</span>
+                    }
+                    @case ('Lecturer') {
+                      <span class="badge-purple">Lecturer</span>
+                    }
+                    @case ('CSM') {
+                      <span class="badge-warning">CSM</span>
+                    }
+                    @default {
+                      <span class="badge-neutral">{{ role }}</span>
+                    }
+                  }
                 }
               </div>
             </div>
@@ -290,16 +304,6 @@ export class ProfilePageComponent implements OnInit {
       this.#toast.error(extractErrorMessage(err, 'Failed to remove avatar'));
     } finally {
       this.avatarUploading.set(false);
-    }
-  }
-
-  roleStyle(role: string): string {
-    switch (role) {
-      case 'Platform Admin': return 'bg-purple-100 text-purple-700';
-      case 'Tenant Admin': return 'bg-amber-100 text-amber-700';
-      case 'CSM': return 'bg-blue-100 text-blue-700';
-      case 'Lecturer': return 'bg-teal-100 text-teal-700';
-      default: return 'bg-slate-100 text-slate-600';
     }
   }
 
