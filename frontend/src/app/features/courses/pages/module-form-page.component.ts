@@ -33,7 +33,7 @@ interface TypeOption {
         Back to course
       </a>
 
-      <h1 class="text-xl font-bold text-slate-900 mb-6">
+      <h1 class="page-title mb-6">
         {{ isEditMode() ? 'Edit Module' : 'New Module' }}
       </h1>
 
@@ -43,7 +43,7 @@ interface TypeOption {
           Loading...
         </div>
       } @else if (errorMessage()) {
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
+        <div class="alert-error rounded-lg mb-4">
           {{ errorMessage() }}
         </div>
       } @else {

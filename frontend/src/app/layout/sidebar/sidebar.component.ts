@@ -38,7 +38,7 @@ import { filterNavSections } from './sidebar-nav.config';
       <nav class="flex-1 overflow-y-auto py-4 px-3">
         @for (section of sections(); track section.label) {
           @if (section.label) {
-            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 px-2 mt-4 mb-2">
+            <div class="section-label px-2 mt-4 mb-2">
               {{ section.label }}
             </div>
           }

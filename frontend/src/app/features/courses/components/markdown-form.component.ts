@@ -12,31 +12,31 @@ import { ModuleFormData, MarkdownFormData, ModuleSavePayload } from '../../../co
     <div class="space-y-5">
       <!-- Title -->
       <div>
-        <label for="moduleTitle" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
+        <label for="moduleTitle" class="form-label">Title</label>
         <input
           id="moduleTitle"
           type="text"
           [(ngModel)]="form.title"
           placeholder="Module title"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+          class="input-field focus:outline-none"
         />
       </div>
 
       <!-- Description -->
       <div>
-        <label for="moduleDescription" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <label for="moduleDescription" class="form-label">Description</label>
         <textarea
           id="moduleDescription"
           [(ngModel)]="form.description"
           placeholder="Module description (optional)"
           rows="2"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200 resize-none"
+          class="input-field focus:outline-none resize-none"
         ></textarea>
       </div>
 
       <!-- Markdown Editor -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-1">Content</label>
+        <label class="form-label">Content</label>
         <app-tiptap-editor
           [content]="markdownContent"
           (contentChange)="markdownContent = $event"
@@ -49,14 +49,14 @@ import { ModuleFormData, MarkdownFormData, ModuleSavePayload } from '../../../co
           type="button"
           (click)="onSave()"
           [disabled]="!isValid()"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-primary"
         >
           {{ isEditMode() ? 'Save Changes' : 'Create Module' }}
         </button>
         <button
           type="button"
           (click)="cancel.emit()"
-          class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-all duration-200"
+          class="btn-secondary"
         >
           Cancel
         </button>

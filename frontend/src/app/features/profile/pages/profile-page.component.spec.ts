@@ -10,6 +10,7 @@ import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { FullProfileData } from '../../../core/models/profile.model';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 const FULL_PROFILE: FullProfileData = {
   id: 'user-1',
@@ -44,7 +45,7 @@ async function setup(options?: {
   const toast = createMockToastService();
 
   const { fixture } = await render(ProfilePageComponent, {
-    componentImports: [MockLucideIconComponent, FormsModule],
+    componentImports: [MockLucideIconComponent, FormsModule, ErrorAlertComponent],
     providers: [
       { provide: ProfileService, useValue: profileService },
       { provide: AuthService, useValue: authService },
@@ -65,7 +66,7 @@ describe('ProfilePageComponent', () => {
     profileService.loadFullProfile.mockReturnValue(new Promise(() => {}));
 
     await render(ProfilePageComponent, {
-      componentImports: [MockLucideIconComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FormsModule, ErrorAlertComponent],
       providers: [
         { provide: ProfileService, useValue: profileService },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },

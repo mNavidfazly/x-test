@@ -1,21 +1,23 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, BookOpen, Pencil, Trash2, Plus } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { LectureFormData } from '../../../core/models/course.model';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { StatusBadgeComponent, BadgeVariant } from '../../../shared/components/status-badge.component';
 import { LectureAccordionComponent } from '../components/lecture-accordion.component';
 import { LectureFormComponent } from '../components/lecture-form.component';
 import { EnrollmentCtaComponent } from '../components/enrollment-cta.component';
 import { EnrollmentManagerComponent } from '../components/enrollment-manager.component';
 import { ProgressManagerComponent } from '../components/progress-manager.component';
 
-const BADGE_STYLES: Record<string, string> = {
-  open: 'bg-emerald-100 text-emerald-700',
-  invite_only: 'bg-amber-100 text-amber-700',
-  password_protected: 'bg-slate-100 text-slate-600',
+const BADGE_VARIANTS: Record<string, BadgeVariant> = {
+  open: 'success',
+  invite_only: 'warning',
+  password_protected: 'neutral',
 };
 
 const BADGE_LABELS: Record<string, string> = {
@@ -27,7 +29,7 @@ const BADGE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-course-detail-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent],
+  imports: [RouterLink, LucideAngularModule, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent, ErrorAlertComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -48,20 +50,16 @@ const BADGE_LABELS: Record<string, string> = {
           </div>
         </div>
       } @else if (courseService.error()) {
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
-          {{ courseService.error() }}
-        </div>
+        <app-error-alert [message]="courseService.error()!" />
       } @else if (courseService.courseDetail()) {
         <!-- Header -->
         <div class="mb-6">
           <div class="flex items-start gap-3 mb-2">
-            <h1 class="text-xl font-bold text-slate-900 flex-1">{{ courseService.courseDetail()!.title }}</h1>
-            <span [class]="'shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ' + badgeStyle()">
-              {{ badgeLabel() }}
-            </span>
+            <h1 class="page-title flex-1">{{ courseService.courseDetail()!.title }}</h1>
+            <app-status-badge [variant]="badgeVariant()" class="shrink-0">{{ badgeLabel() }}</app-status-badge>
             @if (canEdit()) {
               <a [routerLink]="['/courses', courseService.courseDetail()!.id, 'edit']"
-                 class="shrink-0 bg-white border border-slate-300 text-slate-700 rounded-lg px-3 py-1.5 font-semibold hover:bg-slate-50 transition-all duration-200 inline-flex items-center gap-1.5 text-sm">
+                 class="shrink-0 btn-secondary px-3 py-1.5 inline-flex items-center gap-1.5">
                 <lucide-icon [img]="icons.Pencil" [size]="14"></lucide-icon>
                 Edit
               </a>
@@ -189,7 +187,7 @@ const BADGE_LABELS: Record<string, string> = {
               <button
                 type="button"
                 (click)="confirmingDelete.set(true)"
-                class="bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-4 py-2 font-semibold hover:bg-rose-100 transition-all duration-200 inline-flex items-center gap-2 text-sm"
+                class="btn-danger"
               >
                 <lucide-icon [img]="icons.Trash2" [size]="16"></lucide-icon>
                 Delete Course
@@ -202,14 +200,14 @@ const BADGE_LABELS: Record<string, string> = {
                     type="button"
                     (click)="onDelete()"
                     [disabled]="deleting()"
-                    class="bg-rose-600 text-white rounded-lg px-4 py-2 font-semibold hover:bg-rose-700 active:scale-95 transition-all duration-200 text-sm"
+                    class="btn-danger-solid"
                   >
                     Yes, Delete
                   </button>
                   <button
                     type="button"
                     (click)="confirmingDelete.set(false)"
-                    class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50 transition-all duration-200 text-sm"
+                    class="btn-secondary"
                   >
                     Cancel
                   </button>
@@ -228,7 +226,7 @@ export class CourseDetailPageComponent implements OnInit {
   #toast = inject(ToastService);
   #route = inject(ActivatedRoute);
   #router = inject(Router);
-  readonly icons = { ArrowLeft, Loader2, BookOpen, Pencil, Trash2, Plus };
+  readonly icons = { ArrowLeft, BookOpen, Pencil, Trash2, Plus };
 
   private readonly enrollmentCta = viewChild(EnrollmentCtaComponent);
 
@@ -264,9 +262,9 @@ export class CourseDetailPageComponent implements OnInit {
     return lecture ? { title: lecture.title, description: lecture.description } : { title: '', description: null };
   });
 
-  readonly badgeStyle = computed(() => {
+  readonly badgeVariant = computed((): BadgeVariant => {
     const detail = this.courseService.courseDetail();
-    return BADGE_STYLES[detail?.enrollment_type ?? 'open'] ?? BADGE_STYLES['open'];
+    return BADGE_VARIANTS[detail?.enrollment_type ?? 'open'] ?? BADGE_VARIANTS['open'];
   });
 
   readonly badgeLabel = computed(() => {

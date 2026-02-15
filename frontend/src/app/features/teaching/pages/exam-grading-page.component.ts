@@ -7,17 +7,22 @@ import { ExamGradingService } from '../../../core/services/exam-grading.service'
 import { ToastService } from '../../../core/services/toast.service';
 import { GradingSubmission } from '../../../core/models/course.model';
 import { formatDate } from '../../../core/utils/date.utils';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 @Component({
   selector: 'app-exam-grading-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.ClipboardCheck" [size]="24"></lucide-icon>
           Exam Grading
         </h1>
@@ -32,11 +37,11 @@ import { formatDate } from '../../../core/utils/date.utils';
             placeholder="Search by learner or exam..."
             [value]="searchTerm()"
             (input)="searchTerm.set($any($event.target).value)"
-            class="w-64 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+            class="search-input"
           />
         </div>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="selectedCourseId() ?? ''"
           (change)="selectedCourseId.set($any($event.target).value || null)"
         >
@@ -46,7 +51,7 @@ import { formatDate } from '../../../core/utils/date.utils';
           }
         </select>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="statusFilter()"
           (change)="statusFilter.set($any($event.target).value)"
         >
@@ -58,65 +63,45 @@ import { formatDate } from '../../../core/utils/date.utils';
           <button
             type="button"
             (click)="clearFilters()"
-            class="text-xs text-slate-500 hover:text-slate-700 underline"
+            class="btn-link"
           >Clear filters</button>
         }
       </div>
 
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Total</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ totalSubmissions() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Pending</div>
-          <div class="text-2xl font-bold text-amber-600 tabular-nums">{{ pendingCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Graded</div>
-          <div class="text-2xl font-bold text-emerald-600 tabular-nums">{{ gradedCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Avg Score</div>
-          <div class="text-2xl font-bold text-teal-600 tabular-nums">{{ avgScore() }}%</div>
-        </div>
+        <app-stat-card label="Total" [value]="totalSubmissions()" />
+        <app-stat-card label="Pending" [value]="pendingCount()" color="text-amber-600" />
+        <app-stat-card label="Graded" [value]="gradedCount()" color="text-emerald-600" />
+        <app-stat-card label="Avg Score" [value]="avgScore() + '%'" color="text-teal-600" />
       </div>
 
       <!-- Loading / Error / Empty -->
       @if (gradingService.loading()) {
-        <div class="flex items-center justify-center py-12">
-          <lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400 animate-spin mr-2"></lucide-icon>
-          <span class="text-sm text-slate-500">Loading submissions...</span>
-        </div>
+        <app-loading-spinner message="Loading submissions..." />
       } @else if (gradingService.error()) {
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
-          {{ gradingService.error() }}
-        </div>
+        <app-error-alert [message]="gradingService.error()!" />
       } @else if (filteredSubmissions().length === 0) {
-        <div class="text-center py-12">
-          <lucide-icon [img]="icons.FileText" [size]="40" class="text-slate-300 mx-auto mb-3"></lucide-icon>
-          <p class="text-sm text-slate-500">No submissions found.</p>
-        </div>
+        <app-empty-state [icon]="icons.FileText" message="No submissions found." />
       } @else {
         <!-- Submissions table -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Learner</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Course</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Exam</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Submitted</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 w-20">Score</th>
-                <th class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500 w-24">Actions</th>
+              <tr class="table-header">
+                <th class="th">Learner</th>
+                <th class="th">Course</th>
+                <th class="th">Exam</th>
+                <th class="th">Submitted</th>
+                <th class="th">Status</th>
+                <th class="th text-right w-20">Score</th>
+                <th class="th text-right w-24">Actions</th>
               </tr>
             </thead>
             <tbody>
               @for (sub of filteredSubmissions(); track sub.id) {
                 <tr
-                  class="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  class="table-row cursor-pointer"
                   (click)="onExpandSubmission(sub)"
                 >
                   <td class="px-3 py-3 text-slate-700 truncate max-w-[200px]">
@@ -130,20 +115,20 @@ import { formatDate } from '../../../core/utils/date.utils';
                   <td class="px-3 py-3 text-slate-500 text-xs">{{ formatDate(sub.submitted_at) }}</td>
                   <td class="px-3 py-3">
                     @if (sub.score === null) {
-                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">
+                      <app-status-badge variant="warning">
                         <lucide-icon [img]="icons.Clock" [size]="12" class="mr-1"></lucide-icon>
                         Pending
-                      </span>
+                      </app-status-badge>
                     } @else if (sub.score >= sub.passing_score) {
-                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700">
+                      <app-status-badge variant="success">
                         <lucide-icon [img]="icons.Check" [size]="12" class="mr-1"></lucide-icon>
                         Passed
-                      </span>
+                      </app-status-badge>
                     } @else {
-                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-rose-100 text-rose-700">
+                      <app-status-badge variant="error">
                         <lucide-icon [img]="icons.X" [size]="12" class="mr-1"></lucide-icon>
                         Failed
-                      </span>
+                      </app-status-badge>
                     }
                   </td>
                   <td class="px-3 py-3 text-right font-semibold tabular-nums">
@@ -179,14 +164,14 @@ import { formatDate } from '../../../core/utils/date.utils';
                       <div class="max-w-xl">
                         <div class="flex items-center gap-4 mb-3">
                           <div class="flex-1">
-                            <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Score (0–100)</label>
+                            <label class="section-label block mb-1">Score (0–100)</label>
                             <input
                               type="number"
                               min="0"
                               max="100"
                               [value]="gradeScore() ?? ''"
                               (input)="onScoreInput($any($event.target).value)"
-                              class="w-24 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 tabular-nums"
+                              class="input-field w-24 tabular-nums"
                               placeholder="0–100"
                             />
                           </div>
@@ -197,12 +182,12 @@ import { formatDate } from '../../../core/utils/date.utils';
                           }
                         </div>
                         <div class="mb-3">
-                          <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Feedback</label>
+                          <label class="section-label block mb-1">Feedback</label>
                           <textarea
                             rows="3"
                             [value]="gradeFeedback()"
                             (input)="gradeFeedback.set($any($event.target).value)"
-                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                            class="input-field"
                             placeholder="Feedback for the learner..."
                           ></textarea>
                         </div>
@@ -211,7 +196,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                             type="button"
                             (click)="onGradeSubmission(sub.id)"
                             [disabled]="grading() || gradeScore() === null || gradeScore()! < 0 || gradeScore()! > 100"
-                            class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                            class="btn-primary"
                           >
                             @if (grading()) {
                               <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -221,14 +206,14 @@ import { formatDate } from '../../../core/utils/date.utils';
                           <button
                             type="button"
                             (click)="expandedSubmissionId.set(null)"
-                            class="text-sm text-slate-600 hover:text-slate-800"
+                            class="btn-ghost"
                           >Cancel</button>
                         </div>
                       </div>
 
                       <!-- Reset confirmation -->
                       @if (resetConfirmId() === sub.id) {
-                        <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+                        <div class="alert-warning mt-4">
                           <div class="flex items-start gap-2 mb-2">
                             <lucide-icon [img]="icons.AlertTriangle" [size]="16" class="text-amber-600 mt-0.5"></lucide-icon>
                             <p class="text-sm text-amber-800">This will delete the submission and allow the learner to resubmit.</p>
@@ -238,7 +223,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                               type="button"
                               (click)="onConfirmReset(sub.id)"
                               [disabled]="resetting()"
-                              class="bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-3 py-1.5 font-semibold hover:bg-rose-100 disabled:opacity-50 text-sm inline-flex items-center gap-1"
+                              class="btn-danger"
                             >
                               @if (resetting()) {
                                 <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -248,7 +233,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                             <button
                               type="button"
                               (click)="resetConfirmId.set(null)"
-                              class="text-sm text-slate-600 hover:text-slate-800"
+                              class="btn-ghost"
                             >Cancel</button>
                           </div>
                         </div>

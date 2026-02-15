@@ -19,7 +19,7 @@ import { formatDate } from '../../../core/utils/date.utils';
         <div class="h-48 bg-slate-200 rounded-lg"></div>
       </div>
     } @else if (error()) {
-      <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+      <div class="alert-error rounded-lg">
         {{ error() }}
       </div>
     } @else if (quizData()) {
@@ -57,7 +57,7 @@ import { formatDate } from '../../../core/utils/date.utils';
             @if (pastAttempts().length > 0) {
               <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
                 <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Previous Attempts</p>
+                  <p class="section-label">Previous Attempts</p>
                 </div>
                 <table class="w-full text-sm">
                   <thead>
@@ -79,9 +79,9 @@ import { formatDate } from '../../../core/utils/date.utils';
                           </td>
                           <td class="px-4 py-2.5">
                             @if (attempt.passed) {
-                              <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">Passed</span>
+                              <span class="badge-success">Passed</span>
                             } @else {
-                              <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">Failed</span>
+                              <span class="badge-error">Failed</span>
                             }
                           </td>
                           <td class="px-4 py-2.5 text-slate-500 text-xs">{{ formatDate(attempt.submitted_at!) }}</td>
@@ -112,7 +112,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                 </button>
               } @else if (canStartNewAttempt()) {
                 <button (click)="onStartQuiz()"
-                        class="bg-teal-600 text-white rounded-lg px-6 py-3 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 inline-flex items-center gap-2">
+                        class="btn-primary px-6 py-3">
                   <lucide-icon [img]="icons.Play" [size]="18"></lucide-icon>
                   Start Quiz
                 </button>
@@ -169,19 +169,19 @@ import { formatDate } from '../../../core/utils/date.utils';
                   <span class="text-sm text-slate-600">Submit quiz?</span>
                   <button (click)="onConfirmSubmit()"
                           [disabled]="submitting()"
-                          class="bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50">
+                          class="btn-primary">
                     {{ submitting() ? 'Submitting...' : 'Yes, Submit' }}
                   </button>
                   <button (click)="confirmingSubmit.set(false)"
                           [disabled]="submitting()"
-                          class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-all duration-200">
+                          class="btn-secondary">
                     Cancel
                   </button>
                 </div>
               } @else {
                 <button (click)="confirmingSubmit.set(true)"
                         [disabled]="submitting()"
-                        class="bg-teal-600 text-white rounded-lg px-5 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50">
+                        class="btn-primary px-5">
                   Submit Quiz
                 </button>
               }
@@ -223,7 +223,7 @@ import { formatDate } from '../../../core/utils/date.utils';
               <!-- Question results -->
               @if (results()!.questions.length > 0) {
                 <div>
-                  <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Question Results</p>
+                  <p class="section-label mb-3">Question Results</p>
                   <div class="space-y-3">
                     @for (qr of results()!.questions; track qr.question_id; let i = $index) {
                       <app-quiz-result-item [result]="qr" [questionNumber]="i + 1" />
@@ -236,7 +236,7 @@ import { formatDate } from '../../../core/utils/date.utils';
               <div class="flex items-center justify-center gap-4 border-t border-slate-200 pt-4">
                 @if (canRetake()) {
                   <button (click)="onRetake()"
-                          class="bg-teal-600 text-white rounded-lg px-5 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 inline-flex items-center gap-2">
+                          class="btn-primary px-5">
                     <lucide-icon [img]="icons.RotateCcw" [size]="16"></lucide-icon>
                     Retake Quiz
                   </button>

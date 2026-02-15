@@ -10,20 +10,25 @@ import { StalenessService } from '../../../core/services/staleness.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { formatDate } from '../../../core/utils/date.utils';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 @Component({
   selector: 'app-staleness-dashboard-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, RouterLink],
+  imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.Clock" [size]="24"></lucide-icon>
           Content Staleness
-          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
+          <span class="badge-primary">
             {{ service.courses().length }}
           </span>
         </h1>
@@ -38,11 +43,11 @@ import { extractErrorMessage } from '../../../core/utils/error.utils';
             placeholder="Search by course title..."
             [value]="searchTerm()"
             (input)="searchTerm.set($any($event.target).value)"
-            class="w-64 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+            class="search-input"
           />
         </div>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="statusFilter()"
           (change)="statusFilter.set($any($event.target).value)"
         >
@@ -56,65 +61,45 @@ import { extractErrorMessage } from '../../../core/utils/error.utils';
           <button
             type="button"
             (click)="clearFilters()"
-            class="text-xs text-slate-500 hover:text-slate-700 underline"
+            class="btn-link"
           >Clear filters</button>
         }
       </div>
 
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Total Modules</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ totalModules() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Stale Modules</div>
-          <div class="text-2xl font-bold text-rose-600 tabular-nums">{{ staleModules() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Fresh Modules</div>
-          <div class="text-2xl font-bold text-emerald-600 tabular-nums">{{ freshModules() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Courses</div>
-          <div class="text-2xl font-bold text-slate-600 tabular-nums">{{ filteredCourses().length }}</div>
-        </div>
+        <app-stat-card label="Total Modules" [value]="totalModules()" />
+        <app-stat-card label="Stale Modules" [value]="staleModules()" color="text-rose-600" />
+        <app-stat-card label="Fresh Modules" [value]="freshModules()" color="text-emerald-600" />
+        <app-stat-card label="Courses" [value]="filteredCourses().length" color="text-slate-600" />
       </div>
 
       <!-- Loading / Error / Empty -->
       @if (service.loading()) {
-        <div class="flex items-center justify-center py-12">
-          <lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400 animate-spin mr-2"></lucide-icon>
-          <span class="text-sm text-slate-500">Loading staleness data...</span>
-        </div>
+        <app-loading-spinner message="Loading staleness data..." />
       } @else if (service.error()) {
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
-          {{ service.error() }}
-        </div>
+        <app-error-alert [message]="service.error()!" />
       } @else if (filteredCourses().length === 0) {
-        <div class="text-center py-12">
-          <lucide-icon [img]="icons.CheckCircle2" [size]="40" class="text-slate-300 mx-auto mb-3"></lucide-icon>
-          <p class="text-sm text-slate-500">No courses found.</p>
-        </div>
+        <app-empty-state [icon]="icons.CheckCircle2" message="No courses found." />
       } @else {
         <!-- Courses table -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
+              <tr class="table-header">
                 <th class="px-3 py-3 w-8"></th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Course</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Modules</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Stale / Fresh</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Threshold</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Action</th>
+                <th class="th">Course</th>
+                <th class="th">Modules</th>
+                <th class="th">Stale / Fresh</th>
+                <th class="th">Threshold</th>
+                <th class="th">Status</th>
+                <th class="th">Action</th>
               </tr>
             </thead>
             <tbody>
               @for (course of filteredCourses(); track course.id) {
                 <tr
-                  class="border-b border-slate-100 last:border-b-0 cursor-pointer transition-colors hover:bg-slate-50"
+                  class="table-row cursor-pointer"
                   [class.bg-slate-50]="expandedCourseId() === course.id"
                   (click)="toggleCourse(course.id)"
                 >
@@ -139,25 +124,25 @@ import { extractErrorMessage } from '../../../core/utils/error.utils';
                   <td class="px-3 py-3 text-slate-600 tabular-nums">{{ course.thresholdDays }} days</td>
                   <td class="px-3 py-3">
                     @if (course.hasStaleModules) {
-                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-rose-100 text-rose-700">
+                      <app-status-badge variant="error">
                         <lucide-icon [img]="icons.AlertTriangle" [size]="12" class="mr-1"></lucide-icon>
                         Has Stale
-                      </span>
+                      </app-status-badge>
                     } @else if (course.postponedModuleCount > 0) {
-                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700">
+                      <app-status-badge variant="info">
                         <lucide-icon [img]="icons.CalendarClock" [size]="12" class="mr-1"></lucide-icon>
                         {{ course.postponedModuleCount }} Postponed
-                      </span>
+                      </app-status-badge>
                     } @else if (course.totalModuleCount === 0) {
-                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-600">
+                      <app-status-badge variant="neutral">
                         <lucide-icon [img]="icons.Package" [size]="12" class="mr-1"></lucide-icon>
                         No Modules
-                      </span>
+                      </app-status-badge>
                     } @else {
-                      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700">
+                      <app-status-badge variant="success">
                         <lucide-icon [img]="icons.CheckCircle2" [size]="12" class="mr-1"></lucide-icon>
                         All Fresh
-                      </span>
+                      </app-status-badge>
                     }
                   </td>
                   <td class="px-3 py-3" (click)="$event.stopPropagation()">

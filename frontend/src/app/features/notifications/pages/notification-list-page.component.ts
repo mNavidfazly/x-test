@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import {
-  LucideAngularModule, Bell, CheckCheck, Loader2, ChevronDown,
+  LucideAngularModule, Bell, CheckCheck, ChevronDown,
 } from 'lucide-angular';
 import { NotificationService } from '../../../core/services/notification.service';
 import {
@@ -10,11 +10,12 @@ import {
 } from '../../../core/models/notification.model';
 import type { LucideIconData } from 'lucide-angular';
 import { formatRelativeTime } from '../../../core/utils/date.utils';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 @Component({
   selector: 'app-notification-list-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, ErrorAlertComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-4xl mx-auto">
@@ -24,11 +25,11 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           <lucide-icon [img]="icons.Bell" [size]="20"></lucide-icon>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-slate-900">Notifications</h1>
+          <h1 class="page-title">Notifications</h1>
           <p class="text-sm text-slate-500">Stay up to date with your courses</p>
         </div>
         @if (notificationService.unreadCount() > 0) {
-          <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
+          <span class="badge-error">
             {{ notificationService.unreadCount() }} unread
           </span>
         }
@@ -59,10 +60,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           }
         </div>
       } @else if (notificationService.error()) {
-        <!-- Error -->
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
-          {{ notificationService.error() }}
-        </div>
+        <app-error-alert [message]="notificationService.error()!" />
       } @else if (notificationService.notifications().length === 0) {
         <!-- Empty state -->
         <div class="text-center py-16">
@@ -129,7 +127,7 @@ export class NotificationListPageComponent implements OnInit {
   readonly notificationService = inject(NotificationService);
   #router = inject(Router);
 
-  readonly icons = { Bell, CheckCheck, Loader2, ChevronDown };
+  readonly icons = { Bell, CheckCheck, ChevronDown };
   readonly formatRelativeTime = formatRelativeTime;
 
   // Load-more pagination

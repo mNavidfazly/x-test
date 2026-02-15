@@ -22,7 +22,7 @@ import { isStoragePath } from '../../../core/utils/storage.utils';
         Back to courses
       </a>
 
-      <h1 class="text-xl font-bold text-slate-900 mb-6">
+      <h1 class="page-title mb-6">
         {{ isEditMode() ? 'Edit Course' : 'New Course' }}
       </h1>
 
@@ -32,7 +32,7 @@ import { isStoragePath } from '../../../core/utils/storage.utils';
           Loading...
         </div>
       } @else if (errorMessage()) {
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+        <div class="alert-error rounded-lg">
           {{ errorMessage() }}
         </div>
       } @else {
@@ -63,7 +63,7 @@ import { isStoragePath } from '../../../core/utils/storage.utils';
               <button
                 type="button"
                 (click)="confirmingDelete.set(true)"
-                class="bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-4 py-2 font-semibold hover:bg-rose-100 transition-all duration-200 inline-flex items-center gap-2"
+                class="btn-danger"
               >
                 <lucide-icon [img]="icons.Trash2" [size]="16"></lucide-icon>
                 Delete Course
@@ -76,14 +76,14 @@ import { isStoragePath } from '../../../core/utils/storage.utils';
                     type="button"
                     (click)="onDelete()"
                     [disabled]="saving()"
-                    class="bg-rose-600 text-white rounded-lg px-4 py-2 font-semibold hover:bg-rose-700 active:scale-95 transition-all duration-200"
+                    class="btn-danger-solid"
                   >
                     Yes, Delete
                   </button>
                   <button
                     type="button"
                     (click)="confirmingDelete.set(false)"
-                    class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50 transition-all duration-200"
+                    class="btn-secondary"
                   >
                     Cancel
                   </button>

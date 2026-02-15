@@ -12,14 +12,14 @@ import { SupabaseService } from '../../../core/services/supabase.service';
   template: `
     <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div class="w-full max-w-md">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+        <div class="card p-8">
           <div class="flex items-center justify-center gap-3 mb-6">
             <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="32"></lucide-icon>
-            <h1 class="text-xl font-bold text-slate-900">Request Access</h1>
+            <h1 class="page-title">Request Access</h1>
           </div>
 
           @if (success()) {
-            <div class="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
+            <div class="mb-4 alert-success rounded-lg">
               Your request has been submitted. You will be notified once it's reviewed.
             </div>
           } @else {
@@ -28,31 +28,31 @@ import { SupabaseService } from '../../../core/services/supabase.service';
             </p>
 
             @if (errorMessage()) {
-              <div class="mb-4 rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+              <div class="mb-4 alert-error rounded-lg">
                 {{ errorMessage() }}
               </div>
             }
 
             <div class="mb-4">
-              <label for="fullName" class="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+              <label for="fullName" class="form-label">Full Name</label>
               <input
                 id="fullName"
                 type="text"
                 [(ngModel)]="fullName"
                 placeholder="John Doe"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                class="input-field focus:outline-none"
                 [disabled]="loading()"
               />
             </div>
 
             <div class="mb-6">
-              <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <label for="email" class="form-label">Email</label>
               <input
                 id="email"
                 type="email"
                 [(ngModel)]="email"
                 placeholder="you&#64;company.com"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                class="input-field focus:outline-none"
                 [disabled]="loading()"
                 (keydown.enter)="onSubmit()"
               />
@@ -61,7 +61,7 @@ import { SupabaseService } from '../../../core/services/supabase.service';
             <button
               (click)="onSubmit()"
               [disabled]="loading()"
-              class="w-full bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              class="btn-primary-full"
             >
               @if (loading()) {
                 <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>

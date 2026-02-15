@@ -14,6 +14,8 @@ import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { ToastService } from '../../../core/services/toast.service';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 function mockActivatedRoute(courseId: string) {
   return {
@@ -25,7 +27,7 @@ function mockActivatedRoute(courseId: string) {
   };
 }
 
-const defaultImports = [MockLucideIconComponent, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent];
+const defaultImports = [MockLucideIconComponent, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent, ErrorAlertComponent, StatusBadgeComponent];
 
 describe('CourseDetailPageComponent', () => {
   it('should call loadCourseDetail with route param', async () => {

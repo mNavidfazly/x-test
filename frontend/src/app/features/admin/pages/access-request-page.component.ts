@@ -12,24 +12,27 @@ import { AccessRequestForBoard } from '../../../core/models/access-request.model
 import { formatDate } from '../../../core/utils/date.utils';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
 import { isToastedByInterceptor } from '../../../core/interceptors/http-error.interceptor';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
 @Component({
   selector: 'app-access-request-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.UserPlus" [size]="24"></lucide-icon>
           Access Requests
-          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-            {{ service.requests().length }}
-          </span>
+          <app-status-badge variant="primary">{{ service.requests().length }}</app-status-badge>
         </h1>
       </div>
 
@@ -42,11 +45,11 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
             placeholder="Search by name, email, or domain..."
             [value]="searchTerm()"
             (input)="searchTerm.set($any($event.target).value)"
-            class="w-72 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+            class="search-input w-72"
           />
         </div>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="statusFilter()"
           (change)="statusFilter.set($any($event.target).value)"
         >
@@ -59,66 +62,46 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
           <button
             type="button"
             (click)="clearFilters()"
-            class="text-xs text-slate-500 hover:text-slate-700 underline"
+            class="btn-link"
           >Clear filters</button>
         }
       </div>
 
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Total Requests</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ totalCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Pending</div>
-          <div class="text-2xl font-bold text-amber-600 tabular-nums">{{ pendingCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Approved</div>
-          <div class="text-2xl font-bold text-emerald-600 tabular-nums">{{ approvedCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Rejected</div>
-          <div class="text-2xl font-bold text-rose-600 tabular-nums">{{ rejectedCount() }}</div>
-        </div>
+        <app-stat-card label="Total Requests" [value]="totalCount()" />
+        <app-stat-card label="Pending" [value]="pendingCount()" color="text-amber-600" />
+        <app-stat-card label="Approved" [value]="approvedCount()" color="text-emerald-600" />
+        <app-stat-card label="Rejected" [value]="rejectedCount()" color="text-rose-600" />
       </div>
 
       <!-- Loading / Error / Empty -->
       @if (service.loading()) {
-        <div class="flex items-center justify-center py-12">
-          <lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400 animate-spin mr-2"></lucide-icon>
-          <span class="text-sm text-slate-500">Loading access requests...</span>
-        </div>
+        <app-loading-spinner message="Loading access requests..." />
       } @else if (service.error()) {
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
-          {{ service.error() }}
-        </div>
+        <div class="mb-4"><app-error-alert [message]="service.error()!" /></div>
       } @else if (filteredRequests().length === 0) {
-        <div class="text-center py-12">
-          <lucide-icon [img]="icons.UserPlus" [size]="40" class="text-slate-300 mx-auto mb-3"></lucide-icon>
-          <p class="text-sm text-slate-500">No access requests found.</p>
-        </div>
+        <app-empty-state [icon]="icons.UserPlus" message="No access requests found." />
       } @else {
         <!-- Requests table -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Name / Email</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Domain</th>
+              <tr class="table-header">
+                <th class="th">Name / Email</th>
+                <th class="th">Domain</th>
                 @if (isPlatformAdmin()) {
-                  <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Tenant</th>
+                  <th class="th">Tenant</th>
                 }
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Requested</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"></th>
+                <th class="th">Status</th>
+                <th class="th">Requested</th>
+                <th class="th"></th>
               </tr>
             </thead>
             <tbody>
               @for (req of filteredRequests(); track req.id) {
                 <tr
-                  class="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  class="table-row cursor-pointer"
                   (click)="onExpandRequest(req)"
                 >
                   <td class="px-3 py-3">
@@ -131,28 +114,20 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                       @if (req.tenant_name) {
                         {{ req.tenant_name }}
                       } @else {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">
-                          Unknown domain
-                        </span>
+                        <app-status-badge variant="warning">Unknown domain</app-status-badge>
                       }
                     </td>
                   }
                   <td class="px-3 py-3">
                     @switch (req.status) {
                       @case ('pending') {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">
-                          Pending
-                        </span>
+                        <app-status-badge variant="warning">Pending</app-status-badge>
                       }
                       @case ('approved') {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700">
-                          Approved
-                        </span>
+                        <app-status-badge variant="success">Approved</app-status-badge>
                       }
                       @case ('rejected') {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-rose-100 text-rose-700">
-                          Rejected
-                        </span>
+                        <app-status-badge variant="error">Rejected</app-status-badge>
                       }
                     }
                   </td>
@@ -192,12 +167,12 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                         @if (req.status === 'pending') {
                           <!-- Review notes (editable) -->
                           <div class="mb-4">
-                            <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Review Notes</label>
+                            <label class="section-label block mb-1">Review Notes</label>
                             <textarea
                               [value]="reviewNotes()"
                               (input)="reviewNotes.set($any($event.target).value)"
                               rows="2"
-                              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                              class="input-field"
                               placeholder="Optional notes about this decision..."
                             ></textarea>
                           </div>
@@ -205,12 +180,12 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                           <!-- Tenant picker for PA + unknown domain -->
                           @if (isPlatformAdmin() && !req.tenant_id) {
                             <div class="mb-4">
-                              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">
+                              <label class="section-label block mb-1">
                                 <lucide-icon [img]="icons.AlertTriangle" [size]="12" class="inline text-amber-500"></lucide-icon>
                                 Assign Tenant (required for approval)
                               </label>
                               <select
-                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                                class="select-field w-full"
                                 [value]="selectedTenantId()"
                                 (change)="selectedTenantId.set($any($event.target).value)"
                               >
@@ -228,7 +203,7 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                               type="button"
                               (click)="onApprove(req)"
                               [disabled]="reviewing() || (isPlatformAdmin() && !req.tenant_id && !selectedTenantId())"
-                              class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                              class="btn-primary"
                             >
                               @if (reviewing()) {
                                 <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -241,7 +216,7 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                               type="button"
                               (click)="onReject(req)"
                               [disabled]="reviewing()"
-                              class="bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-4 py-2 font-semibold hover:bg-rose-100 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                              class="btn-danger"
                             >
                               <lucide-icon [img]="icons.X" [size]="14"></lucide-icon>
                               Reject

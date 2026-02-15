@@ -15,11 +15,11 @@ import { TenantResolution } from '../../../core/models/tenant.model';
   template: `
     <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div class="w-full max-w-md">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+        <div class="card p-8">
           <!-- Header -->
           <div class="flex items-center justify-center gap-3 mb-6">
             <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="32"></lucide-icon>
-            <h1 class="text-xl font-bold text-slate-900">X-Courses</h1>
+            <h1 class="page-title">X-Courses</h1>
           </div>
 
           @if (step() === 'email') {
@@ -27,20 +27,20 @@ import { TenantResolution } from '../../../core/models/tenant.model';
 
             <!-- Error message -->
             @if (errorMessage()) {
-              <div class="mb-4 rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+              <div class="mb-4 alert-error rounded-lg">
                 {{ errorMessage() }}
               </div>
             }
 
             <!-- Email input -->
             <div class="mb-6">
-              <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+              <label for="email" class="form-label">Email</label>
               <input
                 id="email"
                 type="email"
                 [(ngModel)]="email"
                 placeholder="you&#64;company.com"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                class="input-field focus:outline-none"
                 [disabled]="resolving()"
                 (keydown.enter)="onContinue()"
               />
@@ -50,7 +50,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
             <button
               (click)="onContinue()"
               [disabled]="resolving()"
-              class="w-full bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              class="btn-primary-full"
             >
               @if (resolving()) {
                 <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
@@ -87,14 +87,14 @@ import { TenantResolution } from '../../../core/models/tenant.model';
 
             <!-- Error message -->
             @if (errorMessage()) {
-              <div class="mb-4 rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+              <div class="mb-4 alert-error rounded-lg">
                 {{ errorMessage() }}
               </div>
             }
 
             <!-- No tenant found -->
             @if (noTenant()) {
-              <div class="mb-4 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
+              <div class="mb-4 alert-warning rounded-lg">
                 No account found for this domain.
               </div>
               <p class="text-sm text-center text-slate-500">
@@ -107,7 +107,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               <button
                 (click)="onKeycloakSso()"
                 [disabled]="loading()"
-                class="w-full bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-3"
+                class="btn-secondary w-full flex items-center justify-center gap-2 mb-3"
               >
                 <lucide-icon [img]="icons.KeyRound" [size]="16"></lucide-icon>
                 Sign in with SSO
@@ -128,13 +128,13 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               }
 
               <div class="mb-4">
-                <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                <label for="password" class="form-label">Password</label>
                 <input
                   id="password"
                   type="password"
                   [(ngModel)]="password"
                   placeholder="Enter your password"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                  class="input-field focus:outline-none"
                   [disabled]="loading()"
                   (keydown.enter)="onSignIn()"
                 />
@@ -143,7 +143,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               <button
                 (click)="onSignIn()"
                 [disabled]="loading()"
-                class="w-full bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-2"
+                class="btn-primary-full mb-2"
               >
                 @if (loading() && !magicLinkLoading()) {
                   <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
@@ -174,7 +174,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               <button
                 (click)="onSendCode()"
                 [disabled]="loading()"
-                class="w-full bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                class="btn-secondary w-full flex items-center justify-center gap-2"
               >
                 @if (magicLinkLoading()) {
                   <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
@@ -211,14 +211,14 @@ import { TenantResolution } from '../../../core/models/tenant.model';
 
             <!-- Error message -->
             @if (otpError()) {
-              <div class="mb-4 rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+              <div class="mb-4 alert-error rounded-lg">
                 {{ otpError() }}
               </div>
             }
 
             <!-- OTP input -->
             <div class="mb-4">
-              <label for="otp-code" class="block text-sm font-medium text-slate-700 mb-1">Verification code</label>
+              <label for="otp-code" class="form-label">Verification code</label>
               <input
                 id="otp-code"
                 type="text"
@@ -227,7 +227,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
                 [(ngModel)]="otpCode"
                 maxlength="6"
                 placeholder="000000"
-                class="w-full rounded-lg border border-slate-300 px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] tabular-nums focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                class="input-field px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] tabular-nums focus:outline-none"
                 [disabled]="otpLoading()"
                 (keydown.enter)="onVerifyOtp()"
               />
@@ -237,7 +237,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
             <button
               (click)="onVerifyOtp()"
               [disabled]="otpLoading() || otpCode.trim().length !== 6"
-              class="w-full bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-4"
+              class="btn-primary-full mb-4"
             >
               @if (otpLoading()) {
                 <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>

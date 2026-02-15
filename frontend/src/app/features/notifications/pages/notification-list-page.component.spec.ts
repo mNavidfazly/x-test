@@ -5,6 +5,7 @@ import { NotificationListPageComponent } from './notification-list-page.componen
 import { NotificationService } from '../../../core/services/notification.service';
 import { createMockNotificationService, createMockNotification } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 describe('NotificationListPageComponent', () => {
   const renderPage = async (options?: {
@@ -25,7 +26,7 @@ describe('NotificationListPageComponent', () => {
         provideRouter([]),
         { provide: NotificationService, useValue: mockService },
       ],
-      componentImports: [MockLucideIconComponent],
+      componentImports: [MockLucideIconComponent, ErrorAlertComponent],
     });
 
     await new Promise(r => setTimeout(r));

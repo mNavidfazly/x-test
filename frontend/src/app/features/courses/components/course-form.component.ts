@@ -20,31 +20,31 @@ export interface CourseFormSaveEvent {
     <div class="space-y-5">
       <!-- Title -->
       <div>
-        <label for="title" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
+        <label for="title" class="form-label">Title</label>
         <input
           id="title"
           type="text"
           [(ngModel)]="form.title"
           placeholder="Course title"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+          class="input-field focus:outline-none"
         />
       </div>
 
       <!-- Description -->
       <div>
-        <label for="description" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <label for="description" class="form-label">Description</label>
         <textarea
           id="description"
           [(ngModel)]="form.description"
           placeholder="Course description (optional)"
           rows="3"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200 resize-none"
+          class="input-field focus:outline-none resize-none"
         ></textarea>
       </div>
 
       <!-- Thumbnail -->
       <div>
-        <label class="block text-sm font-medium text-slate-700 mb-2">Thumbnail</label>
+        <label class="form-label mb-2">Thumbnail</label>
 
         <!-- Preview -->
         @if (thumbnailPreviewUrl()) {
@@ -103,18 +103,18 @@ export interface CourseFormSaveEvent {
             type="url"
             [(ngModel)]="form.thumbnail_url"
             placeholder="https://example.com/image.jpg (optional)"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+            class="input-field focus:outline-none"
           />
         }
       </div>
 
       <!-- Enrollment Type -->
       <div>
-        <label for="enrollmentType" class="block text-sm font-medium text-slate-700 mb-1">Enrollment Type</label>
+        <label for="enrollmentType" class="form-label">Enrollment Type</label>
         <select
           id="enrollmentType"
           [(ngModel)]="form.enrollment_type"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200 bg-white"
+          class="select-field w-full focus:outline-none bg-white"
         >
           <option value="open">Open</option>
           <option value="invite_only">Invite only</option>
@@ -125,13 +125,13 @@ export interface CourseFormSaveEvent {
       <!-- Password (conditional) -->
       @if (form.enrollment_type === 'password_protected') {
         <div>
-          <label for="password" class="block text-sm font-medium text-slate-700 mb-1">Enrollment Password</label>
+          <label for="password" class="form-label">Enrollment Password</label>
           <input
             id="password"
             type="text"
             [(ngModel)]="form.password_hash"
             placeholder="Password for enrollment"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+            class="input-field focus:outline-none"
           />
           @if (isEditMode()) {
             <p class="mt-1 text-xs text-slate-500">Leave blank to keep the current password.</p>
@@ -141,14 +141,14 @@ export interface CourseFormSaveEvent {
 
       <!-- Staleness Threshold -->
       <div>
-        <label for="staleness" class="block text-sm font-medium text-slate-700 mb-1">Staleness Threshold (days)</label>
+        <label for="staleness" class="form-label">Staleness Threshold (days)</label>
         <input
           id="staleness"
           type="number"
           [(ngModel)]="form.staleness_threshold_days"
           placeholder="180 (default)"
           min="1"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+          class="input-field focus:outline-none"
         />
       </div>
 
@@ -158,14 +158,14 @@ export interface CourseFormSaveEvent {
           type="button"
           (click)="onSave()"
           [disabled]="!form.title.trim()"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-primary"
         >
           {{ isEditMode() ? 'Save Changes' : 'Create Course' }}
         </button>
         <button
           type="button"
           (click)="cancel.emit()"
-          class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50 transition-all duration-200"
+          class="btn-secondary"
         >
           Cancel
         </button>

@@ -39,7 +39,7 @@ import { IssueType } from '../../../core/models/issue.model';
         <select
           [value]="issueType() ?? ''"
           (change)="onTypeChange($event)"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none mb-3"
+          class="select-field w-full focus:outline-none mb-3"
         >
           <option value="" disabled>Select issue type...</option>
           <option value="content_error">Content Error</option>
@@ -53,7 +53,7 @@ import { IssueType } from '../../../core/models/issue.model';
           (input)="onInput($event)"
           placeholder="Describe the issue..."
           rows="3"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none"
+          class="input-field focus:outline-none resize-none"
         ></textarea>
 
         <div class="flex justify-end mt-3">
@@ -61,7 +61,7 @@ import { IssueType } from '../../../core/models/issue.model';
             type="button"
             (click)="onSubmit()"
             [disabled]="!description().trim() || !issueType() || submitting()"
-            class="inline-flex items-center gap-1.5 bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn-primary"
           >
             @if (submitting()) {
               <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>

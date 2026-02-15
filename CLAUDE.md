@@ -25,7 +25,8 @@ All frontend code must follow modern Angular 19 patterns:
 
 - **Inline templates by default** — use `template:` in `@Component`, not `templateUrl`. Angular 2024 RFC removed the old "extract after 3 lines" recommendation. Inline encourages decomposition and makes PRs easier to review. Extract to external `.html` only when a template exceeds ~50 lines.
 - **No component style files** — Tailwind handles styling in templates. Use `host: { class: 'block' }` for host element styling. Add inline `styles:` only when you genuinely need SCSS (animations, `:host` pseudo-selectors, 3rd-party overrides). Never generate empty `.scss` files.
-- **Tailwind-first** — utility classes in templates. SCSS only for what Tailwind can't do.
+- **@apply classes first** — 28 centralized CSS classes in `frontend/src/styles.scss` cover buttons, inputs, badges, cards, tables, alerts, and text tokens. **Always use these instead of raw Tailwind** for common patterns (e.g., `class="btn-primary"` not `class="bg-teal-600 text-white rounded-lg px-4 py-2..."`). Use raw Tailwind only for one-off or layout-specific styling not covered by @apply classes.
+- **5 shared components** — `LoadingSpinnerComponent`, `ErrorAlertComponent`, `EmptyStateComponent`, `StatCardComponent`, `StatusBadgeComponent` in `shared/components/` eliminate structural HTML duplication. Use these instead of copy-pasting loading/error/empty/stat patterns. See `docs/x_courses_development_approach.md` § Section 9 for usage details.
 
 ## Project Structure
 
@@ -67,29 +68,33 @@ All frontend code must follow modern Angular 19 patterns:
 - **No snapshot tests** — brittle with Tailwind. Use explicit assertions.
 - **Mock factories** — `createMockAuthState(role)` returns typed session/claims objects. Shared in `__mocks__/`.
 
-## Styling — Calypso Design Tokens
+## Styling — Calypso Design System
 
-Full guide in `docs/STYLING_GUIDE.md`. Key tokens for quick reference:
+Full design guide in `docs/STYLING_GUIDE.md`. Architecture and class reference in `docs/x_courses_development_approach.md` § Section 9.
+
+**Use @apply classes from `styles.scss` — NEVER copy raw Tailwind for these patterns:**
 
 ```
-Primary:            bg-teal-600 text-white hover:bg-teal-700
-Glassmorphism card: bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg
-Solid card:         bg-white border border-slate-200 rounded-xl shadow-sm
-Success badge:      bg-emerald-100 text-emerald-700
-Error badge:        bg-rose-100 text-rose-700
-Warning badge:      bg-amber-100 text-amber-700
-Neutral badge:      bg-slate-100 text-slate-600
+Buttons:    .btn-primary  .btn-primary-full  .btn-secondary  .btn-danger  .btn-danger-solid  .btn-ghost  .btn-link  .btn-icon
+Inputs:     .input-field  .select-field  .search-input  .checkbox-field  .form-label
+Badges:     .badge-success  .badge-warning  .badge-error  .badge-info  .badge-neutral  .badge-primary  .badge-purple
+Cards:      .card  .stat-card
+Tables:     .table-container  .table-header  .th  .table-row
+Text:       .section-label  .page-title
+Alerts:     .alert-error  .alert-success  .alert-warning
+```
 
-Primary button:     bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200
-Secondary button:   bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 font-semibold hover:bg-slate-50
-Ghost button:       bg-transparent text-slate-600 rounded-lg px-3 py-2 hover:bg-slate-100
-Danger button:      bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-4 py-2 font-semibold hover:bg-rose-100
+**Color palette (baked into @apply classes — for reference only, don't use inline):**
 
-Input:              w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500
-Section header:     text-xs font-semibold uppercase tracking-wide text-slate-500
-Page title:         text-xl font-bold text-slate-900
-Body text:          text-sm text-slate-700
-Badge base:         inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold
+```
+Primary:    teal-600 / teal-700 (hover) / teal-500 (focus ring) / teal-100 (badge bg)
+Success:    emerald-100 bg / emerald-700 text
+Error:      rose-100 bg / rose-700 text / rose-600 (solid buttons)
+Warning:    amber-100 bg / amber-700 text
+Info:       blue-100 bg / blue-700 text
+Neutral:    slate-100 bg / slate-600 text
+Cards:      white bg / slate-200 border / rounded-xl / shadow-sm
+Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-lg (login page only)
 ```
 
 - **Font:** Inter (`font-sans`). Numbers: always `tabular-nums`.

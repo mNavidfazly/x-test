@@ -7,23 +7,26 @@ import { IssueService } from '../../../core/services/issue.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { IssueForBoard, IssueStatus, IssueType } from '../../../core/models/issue.model';
 import { formatRelativeTime } from '../../../core/utils/date.utils';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 @Component({
   selector: 'app-issue-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.Flag" [size]="24"></lucide-icon>
           Issue Management
           @if (openCount() > 0) {
-            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">
-              {{ openCount() }} open
-            </span>
+            <app-status-badge variant="warning">{{ openCount() }} open</app-status-badge>
           }
         </h1>
       </div>
@@ -37,11 +40,11 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
             placeholder="Search by reporter or description..."
             [value]="searchTerm()"
             (input)="searchTerm.set($any($event.target).value)"
-            class="w-64 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+            class="search-input"
           />
         </div>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="selectedCourseId() ?? ''"
           (change)="selectedCourseId.set($any($event.target).value || null)"
         >
@@ -51,7 +54,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           }
         </select>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="statusFilter()"
           (change)="statusFilter.set($any($event.target).value)"
         >
@@ -62,7 +65,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           <option value="closed">Closed</option>
         </select>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="typeFilter()"
           (change)="typeFilter.set($any($event.target).value)"
         >
@@ -76,68 +79,45 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           <button
             type="button"
             (click)="clearFilters()"
-            class="text-xs text-slate-500 hover:text-slate-700 underline"
+            class="btn-link"
           >Clear filters</button>
         }
       </div>
 
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Total</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ totalIssues() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Open</div>
-          <div class="text-2xl font-bold text-amber-600 tabular-nums">{{ openCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Investigating</div>
-          <div class="text-2xl font-bold text-blue-600 tabular-nums">{{ investigatingCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Resolved</div>
-          <div class="text-2xl font-bold text-emerald-600 tabular-nums">{{ resolvedCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Closed</div>
-          <div class="text-2xl font-bold text-slate-600 tabular-nums">{{ closedCount() }}</div>
-        </div>
+        <app-stat-card label="Total" [value]="totalIssues()" />
+        <app-stat-card label="Open" [value]="openCount()" color="text-amber-600" />
+        <app-stat-card label="Investigating" [value]="investigatingCount()" color="text-blue-600" />
+        <app-stat-card label="Resolved" [value]="resolvedCount()" color="text-emerald-600" />
+        <app-stat-card label="Closed" [value]="closedCount()" color="text-slate-600" />
       </div>
 
       <!-- Loading / Error / Empty -->
       @if (issueService.boardLoading()) {
-        <div class="flex items-center justify-center py-12">
-          <lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400 animate-spin mr-2"></lucide-icon>
-          <span class="text-sm text-slate-500">Loading issues...</span>
-        </div>
+        <app-loading-spinner message="Loading issues..." />
       } @else if (issueService.boardError()) {
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
-          {{ issueService.boardError() }}
-        </div>
+        <div class="mb-4"><app-error-alert [message]="issueService.boardError()!" /></div>
       } @else if (filteredIssues().length === 0) {
-        <div class="text-center py-12">
-          <lucide-icon [img]="icons.Flag" [size]="40" class="text-slate-300 mx-auto mb-3"></lucide-icon>
-          <p class="text-sm text-slate-500">No issues found.</p>
-        </div>
+        <app-empty-state [icon]="icons.Flag" message="No issues found." />
       } @else {
         <!-- Issues table -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Reporter</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Course</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Type</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Description</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Reported</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Status</th>
+              <tr class="table-header">
+                <th class="th">Reporter</th>
+                <th class="th">Course</th>
+                <th class="th">Type</th>
+                <th class="th">Description</th>
+                <th class="th">Reported</th>
+                <th class="th">Status</th>
               </tr>
             </thead>
             <tbody>
               @for (issue of filteredIssues(); track issue.id) {
                 <tr
-                  class="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  class="table-row cursor-pointer"
                   (click)="onExpandIssue(issue)"
                 >
                   <td class="px-3 py-3 text-slate-700 truncate max-w-[200px]">
@@ -153,28 +133,28 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                   <td class="px-3 py-3">
                     @switch (issue.status) {
                       @case ('open') {
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">
+                        <app-status-badge variant="warning">
                           <lucide-icon [img]="icons.Clock" [size]="12" class="mr-1"></lucide-icon>
                           Open
-                        </span>
+                        </app-status-badge>
                       }
                       @case ('investigating') {
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700">
+                        <app-status-badge variant="info">
                           <lucide-icon [img]="icons.Eye" [size]="12" class="mr-1"></lucide-icon>
                           Investigating
-                        </span>
+                        </app-status-badge>
                       }
                       @case ('resolved') {
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700">
+                        <app-status-badge variant="success">
                           <lucide-icon [img]="icons.CheckCircle2" [size]="12" class="mr-1"></lucide-icon>
                           Resolved
-                        </span>
+                        </app-status-badge>
                       }
                       @case ('closed') {
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-slate-100 text-slate-600">
+                        <app-status-badge variant="neutral">
                           <lucide-icon [img]="icons.XCircle" [size]="12" class="mr-1"></lucide-icon>
                           Closed
-                        </span>
+                        </app-status-badge>
                       }
                     }
                   </td>
@@ -187,32 +167,32 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                       <div class="max-w-2xl">
                         <!-- Full description -->
                         <div class="mb-4">
-                          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Description</div>
+                          <div class="section-label mb-1">Description</div>
                           <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ issue.description }}</p>
                         </div>
 
                         <!-- Reporter info -->
                         <div class="mb-4 flex gap-6">
                           <div>
-                            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Reporter</div>
+                            <div class="section-label mb-1">Reporter</div>
                             <p class="text-sm text-slate-700">{{ issue.reporter?.full_name ?? '[Unknown]' }}</p>
                             <p class="text-xs text-slate-500">{{ issue.reporter?.email ?? '' }}</p>
                           </div>
                           <div>
-                            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Module</div>
+                            <div class="section-label mb-1">Module</div>
                             <p class="text-sm text-slate-700">{{ issue.module?.title ?? '\u2014' }}</p>
                           </div>
                           <div>
-                            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Type</div>
+                            <div class="section-label mb-1">Type</div>
                             <p class="text-sm text-slate-700">{{ formatIssueType(issue.issue_type) }}</p>
                           </div>
                         </div>
 
                         <!-- Status dropdown -->
                         <div class="mb-3">
-                          <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Status</label>
+                          <label class="block section-label mb-1">Status</label>
                           <select
-                            class="w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                            class="select-field w-48"
                             [value]="editStatus()"
                             (change)="editStatus.set($any($event.target).value)"
                           >
@@ -225,12 +205,12 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
 
                         <!-- Internal notes -->
                         <div class="mb-3">
-                          <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Internal Notes</label>
+                          <label class="block section-label mb-1">Internal Notes</label>
                           <textarea
                             rows="3"
                             [value]="editInternalNotes()"
                             (input)="editInternalNotes.set($any($event.target).value)"
-                            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                            class="input-field"
                             placeholder="Add internal notes (not visible to reporter)..."
                           ></textarea>
                         </div>
@@ -241,7 +221,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                             type="button"
                             (click)="onSaveIssue(issue.id)"
                             [disabled]="saving()"
-                            class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                            class="btn-primary"
                           >
                             @if (saving()) {
                               <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -253,7 +233,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                           <button
                             type="button"
                             (click)="expandedIssueId.set(null)"
-                            class="text-sm text-slate-600 hover:text-slate-800"
+                            class="btn-ghost"
                           >Cancel</button>
                         </div>
 

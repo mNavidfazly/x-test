@@ -8,13 +8,14 @@ import { CourseCardComponent } from '../components/course-card.component';
 import { createMockCourseService, createMockCourseWithProgress } from '../../../__mocks__/course.mock';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 describe('CourseListPageComponent', () => {
   it('should render page title', async () => {
     const courseService = createMockCourseService();
 
     await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
@@ -29,7 +30,7 @@ describe('CourseListPageComponent', () => {
     const courseService = createMockCourseService();
 
     await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
@@ -44,7 +45,7 @@ describe('CourseListPageComponent', () => {
     const courseService = createMockCourseService({ loading: true });
 
     const { container } = await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
@@ -60,7 +61,7 @@ describe('CourseListPageComponent', () => {
     const courseService = createMockCourseService({ courses: [] });
 
     await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
@@ -80,7 +81,7 @@ describe('CourseListPageComponent', () => {
     });
 
     await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
@@ -96,7 +97,7 @@ describe('CourseListPageComponent', () => {
     const courseService = createMockCourseService({ error: 'Failed to load' });
 
     await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
@@ -111,7 +112,7 @@ describe('CourseListPageComponent', () => {
     const courseService = createMockCourseService();
 
     await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },
@@ -126,7 +127,7 @@ describe('CourseListPageComponent', () => {
     const courseService = createMockCourseService();
 
     await render(CourseListPageComponent, {
-      componentImports: [MockLucideIconComponent, CourseCardComponent],
+      componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: courseService },

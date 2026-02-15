@@ -7,6 +7,11 @@ import { ToastService } from '../../../core/services/toast.service';
 import { createMockStalenessService, createMockStaleCourse, createMockStaleModule } from '../../../__mocks__/course.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockStalenessService>;
@@ -15,7 +20,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(StalenessDashboardPageComponent, {
-    componentImports: [MockLucideIconComponent, RouterLink],
+    componentImports: [MockLucideIconComponent, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
     providers: [
       { provide: StalenessService, useValue: service },
       { provide: ToastService, useValue: toast },

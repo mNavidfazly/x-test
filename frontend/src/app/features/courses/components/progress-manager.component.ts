@@ -11,7 +11,7 @@ import { LectureWithModules, UserProgressSummary } from '../../../core/models/co
   host: { class: 'block' },
   template: `
     <div>
-      <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4 flex items-center gap-2">
+      <h3 class="section-label mb-4 flex items-center gap-2">
         <lucide-icon [img]="icons.BarChart3" [size]="14"></lucide-icon>
         User Progress ({{ users().length }} users)
       </h3>
@@ -22,7 +22,7 @@ import { LectureWithModules, UserProgressSummary } from '../../../core/models/co
           <span class="text-sm text-slate-500">Loading progress data...</span>
         </div>
       } @else if (error()) {
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-3 py-2 text-xs text-rose-700 mb-4">
+        <div class="alert-error rounded-lg px-3 py-2 text-xs mb-4">
           {{ error() }}
         </div>
       } @else if (users().length === 0) {
@@ -71,23 +71,23 @@ import { LectureWithModules, UserProgressSummary } from '../../../core/models/co
                 <div class="bg-slate-50/50 border-t border-slate-100 px-4 py-3">
                   @for (lecture of lectures(); track lecture.id) {
                     <div class="mb-3 last:mb-0">
-                      <div class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-1.5">
+                      <div class="section-label text-slate-400 mb-1.5">
                         {{ lecture.title }}
                       </div>
                       @for (mod of lecture.modules; track mod.id) {
                         <div class="flex items-center justify-between py-1.5 px-2 rounded hover:bg-white/60 transition-colors">
                           <div class="flex items-center gap-2 min-w-0">
                             @if (user.modules[mod.id]?.status === 'completed') {
-                              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700">
+                              <span class="badge-success">
                                 <lucide-icon [img]="icons.Check" [size]="10" class="mr-0.5"></lucide-icon>
                                 Done
                               </span>
                             } @else if (user.modules[mod.id]?.status === 'in_progress') {
-                              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">
+                              <span class="badge-warning">
                                 In Progress
                               </span>
                             } @else {
-                              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-100 text-slate-500">
+                              <span class="badge-neutral">
                                 Not Started
                               </span>
                             }

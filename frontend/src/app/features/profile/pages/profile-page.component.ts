@@ -12,15 +12,16 @@ import { ToastService } from '../../../core/services/toast.service';
 import { FullProfileData } from '../../../core/models/profile.model';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
 import { formatDate } from '../../../core/utils/date.utils';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 @Component({
   selector: 'app-profile-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, LucideAngularModule, ErrorAlertComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-2xl">
-      <h1 class="text-xl font-bold text-slate-900 mb-6">Profile</h1>
+      <h1 class="page-title mb-6">Profile</h1>
 
       @if (loading()) {
         <div class="flex items-center gap-2 text-sm text-slate-500">
@@ -28,9 +29,7 @@ import { formatDate } from '../../../core/utils/date.utils';
           Loading profile...
         </div>
       } @else if (errorMessage()) {
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
-          {{ errorMessage() }}
-        </div>
+        <app-error-alert [message]="errorMessage()!" />
       } @else if (profileData()) {
         <!-- Avatar Section -->
         <div class="flex flex-col items-center mb-8">
@@ -84,7 +83,7 @@ import { formatDate } from '../../../core/utils/date.utils';
         </div>
 
         <!-- Info Card -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm divide-y divide-slate-100">
+        <div class="card divide-y divide-slate-100">
           <!-- Full Name (editable) -->
           <div class="px-5 py-4 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">
@@ -167,7 +166,7 @@ import { formatDate } from '../../../core/utils/date.utils';
               <p class="text-xs text-slate-500">Roles</p>
               <div class="flex flex-wrap gap-1.5 mt-1">
                 @for (role of roles(); track role) {
-                  <span [class]="'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ' + roleStyle(role)">
+                  <span [class]="'badge ' + roleStyle(role)">
                     {{ role }}
                   </span>
                 }

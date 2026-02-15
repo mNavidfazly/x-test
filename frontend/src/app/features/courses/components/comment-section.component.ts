@@ -13,7 +13,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
   host: { class: 'block' },
   template: `
     <div>
-      <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4 flex items-center gap-2">
+      <h3 class="section-label mb-4 flex items-center gap-2">
         <lucide-icon [img]="icons.MessageSquare" [size]="14"></lucide-icon>
         Discussion ({{ commentService.comments().length }})
       </h3>
@@ -25,7 +25,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           (input)="onNewCommentInput($event)"
           placeholder="Write a comment..."
           rows="3"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none"
+          class="input-field focus:outline-none resize-none"
         ></textarea>
         <div class="flex justify-end mt-2">
           <button
@@ -87,7 +87,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                   [value]="editBody()"
                   (input)="onEditInput($event)"
                   rows="3"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none mb-2"
+                  class="input-field focus:outline-none resize-none mb-2"
                 ></textarea>
                 <div class="flex gap-2">
                   <button type="button" (click)="onSaveEditComment(comment.id)" [disabled]="submitting()" class="bg-teal-600 text-white rounded-lg px-3 py-1 text-xs font-semibold hover:bg-teal-700 transition-all duration-200 disabled:opacity-50">Save</button>
@@ -147,7 +147,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                       [value]="editBody()"
                       (input)="onEditInput($event)"
                       rows="2"
-                      class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none mb-2"
+                      class="input-field focus:outline-none resize-none mb-2"
                     ></textarea>
                     <div class="flex gap-2">
                       <button type="button" (click)="onSaveEditReply(reply.id)" [disabled]="submitting()" class="bg-teal-600 text-white rounded-lg px-3 py-1 text-xs font-semibold hover:bg-teal-700 transition-all duration-200 disabled:opacity-50">Save</button>
@@ -181,7 +181,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                     (input)="onReplyInput($event)"
                     placeholder="Write a reply..."
                     rows="2"
-                    class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none"
+                    class="input-field focus:outline-none resize-none"
                   ></textarea>
                   <div class="flex gap-2 mt-2">
                     <button

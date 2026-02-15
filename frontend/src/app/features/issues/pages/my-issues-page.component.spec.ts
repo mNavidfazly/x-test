@@ -6,6 +6,7 @@ import { IssueService } from '../../../core/services/issue.service';
 import { createMockIssueService, createMockIssue } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 describe('MyIssuesPageComponent', () => {
   const renderPage = async (options?: {
@@ -24,7 +25,7 @@ describe('MyIssuesPageComponent', () => {
         provideRouter([]),
         { provide: IssueService, useValue: mockService },
       ],
-      componentImports: [MockLucideIconComponent, RouterLink],
+      componentImports: [MockLucideIconComponent, RouterLink, ErrorAlertComponent],
     });
 
     await new Promise(r => setTimeout(r));

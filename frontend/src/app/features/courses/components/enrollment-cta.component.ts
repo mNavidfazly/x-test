@@ -21,7 +21,7 @@ import { EnrollmentType } from '../../../core/models/course.model';
               type="button"
               (click)="onEnroll()"
               [disabled]="enrolling()"
-              class="bg-teal-600 text-white rounded-lg px-5 py-2.5 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 inline-flex items-center gap-2 text-sm"
+              class="btn-primary px-5 py-2.5"
             >
               <lucide-icon [img]="icons.UserPlus" [size]="16"></lucide-icon>
               @if (enrolling()) {
@@ -44,13 +44,13 @@ import { EnrollmentType } from '../../../core/models/course.model';
                   (input)="onPasswordInput($event)"
                   (keydown.enter)="onPasswordSubmit()"
                   placeholder="Enter course password"
-                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                  class="input-field flex-1 focus:outline-none"
                 />
                 <button
                   type="button"
                   (click)="onPasswordSubmit()"
                   [disabled]="enrolling()"
-                  class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 text-sm shrink-0"
+                  class="btn-primary shrink-0"
                 >
                   @if (enrolling()) {
                     ...

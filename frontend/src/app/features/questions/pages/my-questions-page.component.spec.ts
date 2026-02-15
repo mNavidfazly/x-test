@@ -6,6 +6,7 @@ import { ExpertQuestionService } from '../../../core/services/expert-question.se
 import { createMockExpertQuestionService, createMockExpertQuestion } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 describe('MyQuestionsPageComponent', () => {
   const renderPage = async (options?: {
@@ -24,7 +25,7 @@ describe('MyQuestionsPageComponent', () => {
         provideRouter([]),
         { provide: ExpertQuestionService, useValue: mockService },
       ],
-      componentImports: [MockLucideIconComponent, RouterLink],
+      componentImports: [MockLucideIconComponent, RouterLink, ErrorAlertComponent],
     });
 
     await new Promise(r => setTimeout(r));

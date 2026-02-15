@@ -18,7 +18,7 @@ import { formatDate } from '../../../core/utils/date.utils';
         <div class="h-48 bg-slate-200 rounded-lg"></div>
       </div>
     } @else if (error()) {
-      <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+      <div class="alert-error rounded-lg">
         {{ error() }}
       </div>
     } @else if (examData()) {
@@ -53,7 +53,7 @@ import { formatDate } from '../../../core/utils/date.utils';
 
             <div class="flex justify-center">
               <button (click)="onStartExam()"
-                      class="bg-teal-600 text-white rounded-lg px-6 py-3 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 inline-flex items-center gap-2">
+                      class="btn-primary px-6 py-3">
                 <lucide-icon [img]="icons.Play" [size]="18"></lucide-icon>
                 Start Exam
               </button>
@@ -91,9 +91,9 @@ import { formatDate } from '../../../core/utils/date.utils';
             <!-- Download exam file -->
             @if (examData()!.exam_file_url) {
               <div class="rounded-xl border border-slate-200 bg-white p-4">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Exam Instructions</p>
+                <p class="section-label mb-3">Exam Instructions</p>
                 <a [href]="examData()!.exam_file_url" target="_blank" rel="noopener"
-                   class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-all duration-200 inline-flex items-center gap-2">
+                   class="btn-secondary inline-flex items-center gap-2">
                   <lucide-icon [img]="icons.Download" [size]="16"></lucide-icon>
                   Download Exam File
                 </a>
@@ -102,7 +102,7 @@ import { formatDate } from '../../../core/utils/date.utils';
 
             <!-- File upload -->
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-3">Your Submission</p>
+              <p class="section-label mb-3">Your Submission</p>
               <app-file-upload
                 [accept]="examData()!.allowed_file_types.join(',')"
                 [maxSizeMB]="maxFileSizeMB()"
@@ -117,19 +117,19 @@ import { formatDate } from '../../../core/utils/date.utils';
                   <span class="text-sm text-slate-600">Submit your exam?</span>
                   <button (click)="onConfirmSubmit()"
                           [disabled]="submitting()"
-                          class="bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50">
+                          class="btn-primary">
                     {{ submitting() ? 'Submitting...' : 'Yes, Submit' }}
                   </button>
                   <button (click)="confirmingSubmit.set(false)"
                           [disabled]="submitting()"
-                          class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-all duration-200">
+                          class="btn-secondary">
                     Cancel
                   </button>
                 </div>
               } @else {
                 <button (click)="confirmingSubmit.set(true)"
                         [disabled]="!selectedFile() || submitting()"
-                        class="bg-teal-600 text-white rounded-lg px-5 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 inline-flex items-center gap-2">
+                        class="btn-primary px-5">
                   <lucide-icon [img]="icons.Upload" [size]="16"></lucide-icon>
                   Submit Exam
                 </button>
@@ -143,7 +143,7 @@ import { formatDate } from '../../../core/utils/date.utils';
             <div class="space-y-6">
               <!-- Submission info card -->
               <div class="rounded-xl border border-slate-200 bg-white p-6">
-                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4">Submission Details</p>
+                <p class="section-label mb-4">Submission Details</p>
                 <div class="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p class="text-slate-500 text-xs mb-0.5">Submitted</p>
@@ -156,9 +156,9 @@ import { formatDate } from '../../../core/utils/date.utils';
                   <div>
                     <p class="text-slate-500 text-xs mb-0.5">Status</p>
                     @if (wasOnTime()) {
-                      <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">On time</span>
+                      <span class="badge-success">On time</span>
                     } @else {
-                      <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">Late</span>
+                      <span class="badge-error">Late</span>
                     }
                   </div>
                   <div>
@@ -198,7 +198,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                   </p>
                   @if (submission()!.feedback) {
                     <div class="mt-4 text-left rounded-lg bg-white/60 p-4">
-                      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Feedback</p>
+                      <p class="section-label mb-1">Feedback</p>
                       <p class="text-sm text-slate-700">{{ submission()!.feedback }}</p>
                     </div>
                   }

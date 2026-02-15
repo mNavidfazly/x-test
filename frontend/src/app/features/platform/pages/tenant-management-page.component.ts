@@ -10,6 +10,11 @@ import {
   AvailableCourse, AvailableCsm,
 } from '../../../core/models/tenant-management.model';
 import { AuthMethod } from '../../../core/models/tenant.model';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 const AUTH_METHOD_LABELS: Record<AuthMethod, string> = {
   email_password: 'Email',
@@ -22,7 +27,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
 @Component({
   selector: 'app-tenant-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -31,14 +36,12 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
         <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
           <lucide-icon [img]="icons.Building2" [size]="24"></lucide-icon>
           Tenant Management
-          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-            {{ service.tenants().length }}
-          </span>
+          <app-status-badge variant="primary">{{ service.tenants().length }}</app-status-badge>
         </h1>
         <button
           type="button"
           (click)="showCreateForm.set(!showCreateForm())"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+          class="btn-primary"
         >
           <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon>
           Add Tenant
@@ -47,32 +50,32 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
 
       <!-- Create form -->
       @if (showCreateForm()) {
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-5 mb-6">
+        <div class="card px-6 py-5 mb-6">
           <h2 class="text-sm font-semibold text-slate-900 mb-4">Create New Tenant</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Name</label>
+              <label class="section-label mb-1">Name</label>
               <input
                 type="text"
                 [value]="createName()"
                 (input)="createName.set($any($event.target).value)"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                class="input-field"
                 placeholder="Tenant name"
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Domain</label>
+              <label class="section-label mb-1">Domain</label>
               <input
                 type="text"
                 [value]="createDomain()"
                 (input)="createDomain.set($any($event.target).value)"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                class="input-field"
                 placeholder="example.com"
               />
             </div>
           </div>
           <div class="mb-4">
-            <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Auth Methods</label>
+            <label class="section-label mb-2">Auth Methods</label>
             <div class="flex flex-wrap gap-3">
               @for (method of allAuthMethods; track method) {
                 <label class="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
@@ -80,7 +83,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                     type="checkbox"
                     [checked]="createAuthMethods().includes(method)"
                     (change)="toggleCreateAuthMethod(method)"
-                    class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                    class="checkbox-field"
                   />
                   {{ getAuthMethodLabel(method) }}
                 </label>
@@ -92,7 +95,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
               type="button"
               (click)="onCreateTenant()"
               [disabled]="creating() || !createName().trim()"
-              class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+              class="btn-primary"
             >
               @if (creating()) {
                 <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -102,7 +105,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
             <button
               type="button"
               (click)="cancelCreate()"
-              class="text-sm text-slate-600 hover:text-slate-800"
+              class="btn-ghost"
             >Cancel</button>
           </div>
         </div>
@@ -117,80 +120,60 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
             placeholder="Search by name or domain..."
             [value]="searchTerm()"
             (input)="searchTerm.set($any($event.target).value)"
-            class="w-64 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+            class="search-input"
           />
         </div>
         @if (searchTerm()) {
           <button
             type="button"
             (click)="searchTerm.set('')"
-            class="text-xs text-slate-500 hover:text-slate-700 underline"
+            class="btn-link"
           >Clear filters</button>
         }
       </div>
 
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Total Tenants</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ totalTenants() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Master</div>
-          <div class="text-2xl font-bold text-teal-600 tabular-nums">{{ masterCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Course Assignments</div>
-          <div class="text-2xl font-bold text-blue-600 tabular-nums">{{ totalCourseAssignments() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">CSM Assignments</div>
-          <div class="text-2xl font-bold text-purple-600 tabular-nums">{{ totalCsmAssignments() }}</div>
-        </div>
+        <app-stat-card label="Total Tenants" [value]="totalTenants()" />
+        <app-stat-card label="Master" [value]="masterCount()" color="text-teal-600" />
+        <app-stat-card label="Course Assignments" [value]="totalCourseAssignments()" color="text-blue-600" />
+        <app-stat-card label="CSM Assignments" [value]="totalCsmAssignments()" color="text-purple-600" />
       </div>
 
       <!-- Loading / Error / Empty -->
       @if (service.loading()) {
-        <div class="flex items-center justify-center py-12">
-          <lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400 animate-spin mr-2"></lucide-icon>
-          <span class="text-sm text-slate-500">Loading tenants...</span>
-        </div>
+        <app-loading-spinner message="Loading tenants..." />
       } @else if (service.error()) {
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
-          {{ service.error() }}
-        </div>
+        <div class="mb-4"><app-error-alert [message]="service.error()!" /></div>
       } @else if (filteredTenants().length === 0) {
-        <div class="text-center py-12">
-          <lucide-icon [img]="icons.Building2" [size]="40" class="text-slate-300 mx-auto mb-3"></lucide-icon>
-          <p class="text-sm text-slate-500">No tenants found.</p>
-        </div>
+        <app-empty-state [icon]="icons.Building2" message="No tenants found." />
       } @else {
         <!-- Tenants table -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Name</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Domain</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Auth Methods</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Courses</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">CSMs</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"></th>
+              <tr class="table-header">
+                <th class="th text-left">Name</th>
+                <th class="th text-left">Domain</th>
+                <th class="th text-left">Auth Methods</th>
+                <th class="th text-left">Courses</th>
+                <th class="th text-left">CSMs</th>
+                <th class="th text-left"></th>
               </tr>
             </thead>
             <tbody>
               @for (tenant of filteredTenants(); track tenant.id) {
                 <tr
-                  class="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  class="table-row cursor-pointer"
                   (click)="onExpandTenant(tenant)"
                 >
                   <td class="px-3 py-3 text-slate-700 font-medium">
                     {{ tenant.name }}
                     @if (tenant.is_master) {
-                      <span class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
+                      <app-status-badge class="ml-2" variant="primary">
                         <lucide-icon [img]="icons.Shield" [size]="10" class="mr-1"></lucide-icon>
                         Master
-                      </span>
+                      </app-status-badge>
                     }
                   </td>
                   <td class="px-3 py-3 text-slate-600">{{ tenant.domain ?? '\u2014' }}</td>
@@ -254,26 +237,26 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                         <div class="max-w-xl">
                           <div class="grid grid-cols-2 gap-4 mb-4">
                             <div>
-                              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Name</label>
+                              <label class="section-label mb-1">Name</label>
                               <input
                                 type="text"
                                 [value]="editName()"
                                 (input)="editName.set($any($event.target).value)"
-                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                                class="input-field"
                               />
                             </div>
                             <div>
-                              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Domain</label>
+                              <label class="section-label mb-1">Domain</label>
                               <input
                                 type="text"
                                 [value]="editDomain()"
                                 (input)="editDomain.set($any($event.target).value)"
-                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                                class="input-field"
                               />
                             </div>
                           </div>
                           <div class="mb-4">
-                            <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Auth Methods</label>
+                            <label class="section-label mb-2">Auth Methods</label>
                             <div class="flex flex-wrap gap-3">
                               @for (method of allAuthMethods; track method) {
                                 <label class="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
@@ -281,7 +264,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                                     type="checkbox"
                                     [checked]="editAuthMethods().includes(method)"
                                     (change)="toggleEditAuthMethod(method)"
-                                    class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                    class="checkbox-field"
                                   />
                                   {{ getAuthMethodLabel(method) }}
                                 </label>
@@ -293,7 +276,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                               type="button"
                               (click)="onSaveTenantDetails(tenant.id)"
                               [disabled]="saving()"
-                              class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                              class="btn-primary"
                             >
                               @if (saving()) {
                                 <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -308,7 +291,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                                   type="button"
                                   (click)="onDeleteTenant(tenant.id)"
                                   [disabled]="deleting()"
-                                  class="bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-4 py-2 font-semibold hover:bg-rose-100 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                                  class="btn-danger"
                                 >
                                   @if (deleting()) {
                                     <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -320,13 +303,13 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                                 <button
                                   type="button"
                                   (click)="confirmingDelete.set(false)"
-                                  class="text-sm text-slate-600 hover:text-slate-800"
+                                  class="btn-ghost"
                                 >Cancel</button>
                               } @else {
                                 <button
                                   type="button"
                                   (click)="confirmingDelete.set(true)"
-                                  class="bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-4 py-2 font-semibold hover:bg-rose-100 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                                  class="btn-danger"
                                 >
                                   <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
                                   Delete
@@ -373,7 +356,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                             @if (availableCourses().length > 0) {
                               <div class="flex items-center gap-2">
                                 <select
-                                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                                  class="select-field flex-1"
                                   [value]="selectedCourseId()"
                                   (change)="selectedCourseId.set($any($event.target).value)"
                                 >
@@ -386,7 +369,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                                   type="button"
                                   (click)="onAssignCourse(tenant.id)"
                                   [disabled]="!selectedCourseId()"
-                                  class="bg-teal-600 text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 inline-flex items-center gap-1"
+                                  class="btn-primary"
                                 >
                                   <lucide-icon [img]="icons.Plus" [size]="14"></lucide-icon>
                                   Add
@@ -441,7 +424,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                             @if (availableCsms().length > 0) {
                               <div class="flex items-center gap-2">
                                 <select
-                                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                                  class="select-field flex-1"
                                   [value]="selectedCsmId()"
                                   (change)="selectedCsmId.set($any($event.target).value)"
                                 >
@@ -454,7 +437,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                                   type="button"
                                   (click)="onAssignCsm(tenant.id)"
                                   [disabled]="!selectedCsmId()"
-                                  class="bg-teal-600 text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 inline-flex items-center gap-1"
+                                  class="btn-primary"
                                 >
                                   <lucide-icon [img]="icons.Plus" [size]="14"></lucide-icon>
                                   Add

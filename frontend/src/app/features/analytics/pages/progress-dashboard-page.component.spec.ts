@@ -9,6 +9,10 @@ import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { of, Subject } from 'rxjs';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
 
 function renderDashboard(options?: {
   progressService?: ReturnType<typeof createMockProgressService>;
@@ -22,7 +26,7 @@ function renderDashboard(options?: {
   const toast = createMockToastService();
 
   return render(ProgressDashboardPageComponent, {
-    componentImports: [MockLucideIconComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent],
     providers: [
       { provide: ProgressService, useValue: progressService },
       { provide: AuthService, useValue: authService },

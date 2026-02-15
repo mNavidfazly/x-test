@@ -6,6 +6,11 @@ import { ToastService } from '../../../core/services/toast.service';
 import { createMockIssueService, createMockIssueForBoard } from '../../../__mocks__/course.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 function renderBoard(options?: {
   issueService?: ReturnType<typeof createMockIssueService>;
@@ -14,7 +19,7 @@ function renderBoard(options?: {
   const toast = createMockToastService();
 
   return render(IssueManagementPageComponent, {
-    componentImports: [MockLucideIconComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
     providers: [
       { provide: IssueService, useValue: issueService },
       { provide: ToastService, useValue: toast },

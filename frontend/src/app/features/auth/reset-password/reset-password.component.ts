@@ -16,14 +16,14 @@ type Step = 'email' | 'code' | 'done';
   template: `
     <div class="min-h-screen bg-slate-50 flex items-center justify-center px-4">
       <div class="w-full max-w-md">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-8">
+        <div class="card p-8">
           <div class="flex items-center justify-center gap-3 mb-6">
             <lucide-icon [img]="icons.GraduationCap" class="text-teal-600" [size]="32"></lucide-icon>
-            <h1 class="text-xl font-bold text-slate-900">Reset Password</h1>
+            <h1 class="page-title">Reset Password</h1>
           </div>
 
           @if (errorMessage()) {
-            <div class="mb-4 rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+            <div class="mb-4 alert-error rounded-lg">
               {{ errorMessage() }}
             </div>
           }
@@ -35,13 +35,13 @@ type Step = 'email' | 'code' | 'done';
               </p>
 
               <div class="mb-6">
-                <label for="email" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <label for="email" class="form-label">Email</label>
                 <input
                   id="email"
                   type="email"
                   [(ngModel)]="email"
                   placeholder="you&#64;company.com"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                  class="input-field focus:outline-none"
                   [disabled]="loading()"
                   (keydown.enter)="onSendCode()"
                 />
@@ -50,7 +50,7 @@ type Step = 'email' | 'code' | 'done';
               <button
                 (click)="onSendCode()"
                 [disabled]="loading()"
-                class="w-full bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                class="btn-primary-full"
               >
                 @if (loading()) {
                   <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
@@ -68,7 +68,7 @@ type Step = 'email' | 'code' | 'done';
               </div>
 
               <div class="mb-4">
-                <label for="code" class="block text-sm font-medium text-slate-700 mb-1">Reset code</label>
+                <label for="code" class="form-label">Reset code</label>
                 <input
                   id="code"
                   type="text"
@@ -77,31 +77,31 @@ type Step = 'email' | 'code' | 'done';
                   maxlength="6"
                   inputmode="numeric"
                   autocomplete="one-time-code"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-center font-mono text-lg tracking-widest focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                  class="input-field text-center font-mono text-lg tracking-widest focus:outline-none"
                   [disabled]="loading()"
                 />
               </div>
 
               <div class="mb-4">
-                <label for="password" class="block text-sm font-medium text-slate-700 mb-1">New password</label>
+                <label for="password" class="form-label">New password</label>
                 <input
                   id="password"
                   type="password"
                   [(ngModel)]="newPassword"
                   placeholder="At least 6 characters"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                  class="input-field focus:outline-none"
                   [disabled]="loading()"
                 />
               </div>
 
               <div class="mb-6">
-                <label for="confirmPassword" class="block text-sm font-medium text-slate-700 mb-1">Confirm password</label>
+                <label for="confirmPassword" class="form-label">Confirm password</label>
                 <input
                   id="confirmPassword"
                   type="password"
                   [(ngModel)]="confirmPassword"
                   placeholder="Repeat password"
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+                  class="input-field focus:outline-none"
                   [disabled]="loading()"
                   (keydown.enter)="onResetPassword()"
                 />
@@ -110,7 +110,7 @@ type Step = 'email' | 'code' | 'done';
               <button
                 (click)="onResetPassword()"
                 [disabled]="loading()"
-                class="w-full bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                class="btn-primary-full"
               >
                 @if (loading()) {
                   <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>

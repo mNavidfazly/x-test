@@ -35,14 +35,14 @@ import { ReportIssueComponent } from '../components/report-issue.component';
           <div class="h-64 bg-slate-200 rounded-lg"></div>
         </div>
       } @else if (courseService.error()) {
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
+        <div class="alert-error rounded-lg">
           {{ courseService.error() }}
         </div>
       } @else if (courseService.moduleViewer()) {
         <!-- Header -->
         <div class="mb-6">
           <p class="text-xs text-slate-400 mb-1">{{ courseService.moduleViewer()!.navigation.current }} of {{ courseService.moduleViewer()!.navigation.total }} modules</p>
-          <h1 class="text-xl font-bold text-slate-900">{{ courseService.moduleViewer()!.module.title }}</h1>
+          <h1 class="page-title">{{ courseService.moduleViewer()!.module.title }}</h1>
           @if (courseService.moduleViewer()!.module.description) {
             <p class="text-sm text-slate-500 mt-1">{{ courseService.moduleViewer()!.module.description }}</p>
           }
@@ -148,7 +148,7 @@ import { ReportIssueComponent } from '../components/report-issue.component';
               } @else {
                 <button
                   (click)="onMarkComplete()"
-                  class="bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200"
+                  class="btn-primary"
                 >
                   Mark as complete
                 </button>

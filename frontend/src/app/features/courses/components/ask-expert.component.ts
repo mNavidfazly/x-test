@@ -39,7 +39,7 @@ import { ToastService } from '../../../core/services/toast.service';
           (input)="onInput($event)"
           placeholder="Type your question..."
           rows="3"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none resize-none"
+          class="input-field focus:outline-none resize-none"
         ></textarea>
 
         <div class="flex justify-end mt-3">
@@ -47,7 +47,7 @@ import { ToastService } from '../../../core/services/toast.service';
             type="button"
             (click)="onSubmit()"
             [disabled]="!questionText().trim() || submitting()"
-            class="inline-flex items-center gap-1.5 bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn-primary"
           >
             @if (submitting()) {
               <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>

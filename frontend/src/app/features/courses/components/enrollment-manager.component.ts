@@ -13,7 +13,7 @@ import { formatDate } from '../../../core/utils/date.utils';
   host: { class: 'block' },
   template: `
     <div>
-      <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-4 flex items-center gap-2">
+      <h3 class="section-label mb-4 flex items-center gap-2">
         <lucide-icon [img]="icons.Users" [size]="14"></lucide-icon>
         Enrolled Users ({{ enrolledUsers().length }})
       </h3>
@@ -26,13 +26,13 @@ import { formatDate } from '../../../core/utils/date.utils';
           (input)="onEmailInput($event)"
           (keydown.enter)="onAddUser()"
           placeholder="Enter user email to enroll"
-          class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+          class="input-field flex-1 focus:outline-none"
         />
         <button
           type="button"
           (click)="onAddUser()"
           [disabled]="adding()"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 text-sm shrink-0 inline-flex items-center gap-1.5"
+          class="btn-primary shrink-0"
         >
           <lucide-icon [img]="icons.UserPlus" [size]="14"></lucide-icon>
           @if (adding()) {

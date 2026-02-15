@@ -13,24 +13,24 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
     <div class="space-y-5">
       <!-- Module basics -->
       <div>
-        <label for="moduleTitle" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
+        <label for="moduleTitle" class="form-label">Title</label>
         <input
           id="moduleTitle"
           type="text"
           [(ngModel)]="form.title"
           placeholder="Exam title"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+          class="input-field focus:outline-none"
         />
       </div>
 
       <div>
-        <label for="moduleDescription" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <label for="moduleDescription" class="form-label">Description</label>
         <textarea
           id="moduleDescription"
           [(ngModel)]="form.description"
           placeholder="Exam description (optional)"
           rows="2"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200 resize-none"
+          class="input-field focus:outline-none resize-none"
         ></textarea>
       </div>
 
@@ -40,25 +40,25 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
 
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label for="durationMinutes" class="block text-sm font-medium text-slate-700 mb-1">Duration (minutes)</label>
+            <label for="durationMinutes" class="form-label">Duration (minutes)</label>
             <input
               id="durationMinutes"
               type="number"
               [(ngModel)]="examForm.duration_minutes"
               min="1"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+              class="input-field focus:outline-none"
             />
           </div>
 
           <div>
-            <label for="passingScore" class="block text-sm font-medium text-slate-700 mb-1">Passing score (%)</label>
+            <label for="passingScore" class="form-label">Passing score (%)</label>
             <input
               id="passingScore"
               type="number"
               [(ngModel)]="examForm.passing_score"
               min="0"
               max="100"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+              class="input-field focus:outline-none"
             />
           </div>
         </div>
@@ -69,25 +69,25 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
         <h3 class="text-sm font-semibold text-slate-900 mb-4">Submission Requirements</h3>
 
         <div class="mb-4">
-          <label for="maxFileSizeMB" class="block text-sm font-medium text-slate-700 mb-1">Max file size (MB)</label>
+          <label for="maxFileSizeMB" class="form-label">Max file size (MB)</label>
           <input
             id="maxFileSizeMB"
             type="number"
             [(ngModel)]="maxFileSizeMB"
             min="1"
-            class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+            class="input-field focus:outline-none"
           />
         </div>
 
         <div>
-          <span class="block text-sm font-medium text-slate-700 mb-2">Allowed file types</span>
+          <span class="form-label mb-2">Allowed file types</span>
           <div class="flex items-center gap-4">
             <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
               <input
                 type="checkbox"
                 [checked]="examForm.allowed_file_types.includes('application/pdf')"
                 (change)="toggleFileType('application/pdf')"
-                class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                class="checkbox-field"
               />
               PDF
             </label>
@@ -96,7 +96,7 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
                 type="checkbox"
                 [checked]="examForm.allowed_file_types.includes('application/zip')"
                 (change)="toggleFileType('application/zip')"
-                class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                class="checkbox-field"
               />
               ZIP
             </label>
@@ -127,14 +127,14 @@ import { ModuleFormData, ExamFormData, ModuleSavePayload } from '../../../core/m
           type="button"
           (click)="onSave()"
           [disabled]="!isValid() || uploading()"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-primary"
         >
           {{ isEditMode() ? 'Save Changes' : 'Create Module' }}
         </button>
         <button
           type="button"
           (click)="cancel.emit()"
-          class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-all duration-200"
+          class="btn-secondary"
         >
           Cancel
         </button>

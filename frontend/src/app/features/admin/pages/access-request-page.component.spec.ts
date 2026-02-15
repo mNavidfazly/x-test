@@ -9,6 +9,11 @@ import { createMockAccessRequestService, createMockAccessRequestForBoard, create
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockAccessRequestService>;
@@ -25,7 +30,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(AccessRequestPageComponent, {
-    componentImports: [MockLucideIconComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
     providers: [
       { provide: AccessRequestService, useValue: service },
       { provide: AuthService, useValue: auth },
@@ -49,7 +54,7 @@ function renderPageAsPA(options?: {
   const toast = createMockToastService();
 
   return render(AccessRequestPageComponent, {
-    componentImports: [MockLucideIconComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
     providers: [
       { provide: AccessRequestService, useValue: service },
       { provide: AuthService, useValue: auth },

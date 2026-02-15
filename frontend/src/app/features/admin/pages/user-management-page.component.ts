@@ -13,13 +13,18 @@ import { formatDate } from '../../../core/utils/date.utils';
 import { extractErrorMessage } from '../../../core/utils/error.utils';
 import { isToastedByInterceptor } from '../../../core/interceptors/http-error.interceptor';
 import { debouncedSignal } from '../../../core/utils/debounce.utils';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
 @Component({
   selector: 'app-user-management-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -28,14 +33,12 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
         <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
           <lucide-icon [img]="icons.Users" [size]="24"></lucide-icon>
           User Management
-          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-            {{ service.users().length }}
-          </span>
+          <app-status-badge variant="primary">{{ service.users().length }}</app-status-badge>
         </h1>
         <button
           type="button"
           (click)="onToggleInviteForm()"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+          class="btn-primary"
         >
           <lucide-icon [img]="icons.UserPlus" [size]="16"></lucide-icon>
           Invite User
@@ -44,24 +47,24 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
       <!-- Invite form -->
       @if (showInviteForm()) {
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-5 mb-6">
+        <div class="card px-6 py-5 mb-6">
           <h2 class="text-sm font-semibold text-slate-900 mb-4">Invite New User</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Email</label>
+              <label class="section-label mb-1">Email</label>
               <input
                 type="email"
                 [value]="inviteEmail()"
                 (input)="inviteEmail.set($any($event.target).value)"
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                class="input-field"
                 placeholder="user@example.com"
               />
             </div>
             @if (isPlatformAdmin()) {
               <div>
-                <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Tenant</label>
+                <label class="section-label mb-1">Tenant</label>
                 <select
-                  class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                  class="select-field w-full"
                   [value]="inviteTenantId()"
                   (change)="inviteTenantId.set($any($event.target).value)"
                 >
@@ -78,7 +81,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
               type="button"
               (click)="onInviteUser()"
               [disabled]="inviting() || !inviteEmail().trim() || (isPlatformAdmin() && !inviteTenantId())"
-              class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+              class="btn-primary"
             >
               @if (inviting()) {
                 <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -90,7 +93,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
             <button
               type="button"
               (click)="cancelInvite()"
-              class="text-sm text-slate-600 hover:text-slate-800"
+              class="btn-ghost"
             >Cancel</button>
           </div>
         </div>
@@ -105,11 +108,11 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
             placeholder="Search by name or email..."
             [value]="searchTerm()"
             (input)="searchTerm.set($any($event.target).value)"
-            class="w-64 rounded-lg border border-slate-300 pl-9 pr-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+            class="search-input"
           />
         </div>
         <select
-          class="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+          class="select-field"
           [value]="roleFilter()"
           (change)="roleFilter.set($any($event.target).value)"
         >
@@ -122,68 +125,48 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
           <button
             type="button"
             (click)="clearFilters()"
-            class="text-xs text-slate-500 hover:text-slate-700 underline"
+            class="btn-link"
           >Clear filters</button>
         }
       </div>
 
       <!-- Summary cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Total Users</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ totalUsers() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Tenant Admins</div>
-          <div class="text-2xl font-bold text-amber-600 tabular-nums">{{ tenantAdminCount() }}</div>
-        </div>
+        <app-stat-card label="Total Users" [value]="totalUsers()" />
+        <app-stat-card label="Tenant Admins" [value]="tenantAdminCount()" color="text-amber-600" />
         @if (isPlatformAdmin()) {
-          <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-            <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Platform Admins</div>
-            <div class="text-2xl font-bold text-teal-600 tabular-nums">{{ platformAdminCount() }}</div>
-          </div>
+          <app-stat-card label="Platform Admins" [value]="platformAdminCount()" color="text-teal-600" />
         }
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Regular Users</div>
-          <div class="text-2xl font-bold text-slate-500 tabular-nums">{{ regularUserCount() }}</div>
-        </div>
+        <app-stat-card label="Regular Users" [value]="regularUserCount()" color="text-slate-500" />
       </div>
 
       <!-- Loading / Error / Empty -->
       @if (service.loading()) {
-        <div class="flex items-center justify-center py-12">
-          <lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400 animate-spin mr-2"></lucide-icon>
-          <span class="text-sm text-slate-500">Loading users...</span>
-        </div>
+        <app-loading-spinner message="Loading users..." />
       } @else if (service.error()) {
-        <div class="rounded-xl bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700 mb-4">
-          {{ service.error() }}
-        </div>
+        <div class="mb-4"><app-error-alert [message]="service.error()!" /></div>
       } @else if (filteredUsers().length === 0) {
-        <div class="text-center py-12">
-          <lucide-icon [img]="icons.Users" [size]="40" class="text-slate-300 mx-auto mb-3"></lucide-icon>
-          <p class="text-sm text-slate-500">No users found.</p>
-        </div>
+        <app-empty-state [icon]="icons.Users" message="No users found." />
       } @else {
         <!-- Users table -->
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Name</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Email</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Roles</th>
+              <tr class="table-header">
+                <th class="th text-left">Name</th>
+                <th class="th text-left">Email</th>
+                <th class="th text-left">Roles</th>
                 @if (isPlatformAdmin()) {
-                  <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Tenant</th>
+                  <th class="th text-left">Tenant</th>
                 }
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">Joined</th>
-                <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"></th>
+                <th class="th text-left">Joined</th>
+                <th class="th text-left"></th>
               </tr>
             </thead>
             <tbody>
               @for (user of paginatedUsers(); track user.id) {
                 <tr
-                  class="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  class="table-row cursor-pointer"
                   (click)="onExpandUser(user)"
                 >
                   <td class="px-3 py-3 text-slate-700 font-medium">
@@ -198,19 +181,13 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                   <td class="px-3 py-3">
                     <div class="flex flex-wrap gap-1">
                       @if (user.is_platform_admin) {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
-                          Platform Admin
-                        </span>
+                        <app-status-badge variant="primary">Platform Admin</app-status-badge>
                       }
                       @if (user.is_tenant_admin) {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-amber-100 text-amber-700">
-                          Tenant Admin
-                        </span>
+                        <app-status-badge variant="warning">Tenant Admin</app-status-badge>
                       }
                       @if (!user.is_platform_admin && !user.is_tenant_admin) {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-100 text-slate-600">
-                          User
-                        </span>
+                        <app-status-badge variant="neutral">User</app-status-badge>
                       }
                     </div>
                   </td>
@@ -239,20 +216,20 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
                         <!-- Name edit -->
                         <div class="mb-4">
-                          <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Full Name</label>
+                          <label class="section-label mb-1">Full Name</label>
                           <div class="flex items-center gap-2">
                             <input
                               type="text"
                               [value]="editName()"
                               (input)="editName.set($any($event.target).value)"
-                              class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                              class="input-field flex-1"
                               placeholder="Full name"
                             />
                             <button
                               type="button"
                               (click)="onSaveProfile(user.id)"
                               [disabled]="saving()"
-                              class="bg-teal-600 text-white rounded-lg px-3 py-2 text-sm font-semibold hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 inline-flex items-center gap-1"
+                              class="btn-primary"
                             >
                               @if (saving()) {
                                 <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -266,7 +243,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
                         <!-- Role toggles -->
                         <div class="mb-4">
-                          <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Roles</label>
+                          <label class="section-label mb-2">Roles</label>
                           <div class="space-y-2">
                             <label class="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
                               <input
@@ -274,7 +251,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                                 [checked]="user.is_tenant_admin"
                                 [disabled]="togglingRole() || isSelf(user.id)"
                                 (change)="onToggleTenantAdmin(user)"
-                                class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                class="checkbox-field"
                               />
                               <lucide-icon [img]="icons.Shield" [size]="14" class="text-amber-600"></lucide-icon>
                               Tenant Admin
@@ -291,7 +268,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                                     [checked]="user.is_platform_admin"
                                     [disabled]="togglingRole() || isSelf(user.id)"
                                     (change)="onTogglePlatformAdmin(user)"
-                                    class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                    class="checkbox-field"
                                   />
                                   <lucide-icon [img]="icons.ShieldCheck" [size]="14" class="text-teal-600"></lucide-icon>
                                   Platform Admin

@@ -11,6 +11,10 @@ import {
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockLecturerAssignmentService>;
@@ -26,7 +30,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(LecturerAssignmentPageComponent, {
-    componentImports: [MockLucideIconComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent],
     providers: [
       { provide: LecturerAssignmentService, useValue: service },
       { provide: AuthService, useValue: auth },

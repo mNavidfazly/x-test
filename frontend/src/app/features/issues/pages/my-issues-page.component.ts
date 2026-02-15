@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, Flag, Clock, CheckCircle2, XCircle, Search, ChevronDown, ChevronUp, BookOpen, Loader2 } from 'lucide-angular';
+import { LucideAngularModule, Flag, Clock, CheckCircle2, XCircle, Search, ChevronDown, ChevronUp, BookOpen } from 'lucide-angular';
 import { IssueService } from '../../../core/services/issue.service';
 import { IssueStatus, IssueType } from '../../../core/models/issue.model';
 import { LucideIconData } from 'lucide-angular';
 import { formatRelativeTime } from '../../../core/utils/date.utils';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 @Component({
   selector: 'app-my-issues-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, RouterLink],
+  imports: [LucideAngularModule, RouterLink, ErrorAlertComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6 max-w-4xl mx-auto">
@@ -19,11 +20,11 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           <lucide-icon [img]="icons.Flag" [size]="20"></lucide-icon>
         </div>
         <div>
-          <h1 class="text-xl font-bold text-slate-900">My Issues</h1>
+          <h1 class="page-title">My Issues</h1>
           <p class="text-sm text-slate-500">Issues you've reported on courses</p>
         </div>
         @if (issueService.issues().length > 0) {
-          <span class="ml-auto inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+          <span class="ml-auto badge-neutral">
             {{ issueService.issues().length }}
           </span>
         }
@@ -40,10 +41,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
           }
         </div>
       } @else if (issueService.error()) {
-        <!-- Error -->
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
-          {{ issueService.error() }}
-        </div>
+        <app-error-alert [message]="issueService.error()!" />
       } @else if (issueService.issues().length === 0) {
         <!-- Empty state -->
         <div class="text-center py-16">
@@ -55,7 +53,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
         <!-- Issue list -->
         <div class="space-y-3">
           @for (issue of issueService.issues(); track issue.id) {
-            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+            <div class="card overflow-hidden">
               <!-- Collapsed row -->
               <button
                 type="button"
@@ -69,7 +67,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                 </span>
 
                 <!-- Issue type -->
-                <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 shrink-0">
+                <span class="badge-neutral shrink-0">
                   {{ issueTypeLabel(issue.issue_type) }}
                 </span>
 
@@ -92,7 +90,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                 <div class="px-4 pb-4 border-t border-slate-100">
                   <!-- Full description -->
                   <div class="mt-3">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Description</p>
+                    <p class="section-label mb-1">Description</p>
                     <p class="text-sm text-slate-700 whitespace-pre-wrap">{{ issue.description }}</p>
                   </div>
 
@@ -110,7 +108,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
                   <!-- Resolution info -->
                   @if (issue.resolved_at) {
                     <div class="mt-4">
-                      <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Resolution</p>
+                      <p class="section-label mb-2">Resolution</p>
                       <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                         <p class="text-sm text-slate-700">This issue has been resolved.</p>
                         <div class="mt-2 text-xs text-slate-500">
@@ -136,7 +134,7 @@ import { formatRelativeTime } from '../../../core/utils/date.utils';
 export class MyIssuesPageComponent implements OnInit {
   readonly issueService = inject(IssueService);
 
-  readonly icons = { Flag, Clock, CheckCircle2, XCircle, Search, ChevronDown, ChevronUp, BookOpen, Loader2 };
+  readonly icons = { Flag, Clock, CheckCircle2, XCircle, Search, ChevronDown, ChevronUp, BookOpen };
   readonly formatRelativeTime = formatRelativeTime;
 
   readonly expandedId = signal<string | null>(null);

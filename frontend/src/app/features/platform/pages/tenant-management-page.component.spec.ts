@@ -6,6 +6,11 @@ import { ToastService } from '../../../core/services/toast.service';
 import { createMockTenantManagementService, createMockTenantForBoard } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { EmptyStateComponent } from '../../../shared/components/empty-state.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 function renderPage(options?: {
   service?: ReturnType<typeof createMockTenantManagementService>;
@@ -14,7 +19,7 @@ function renderPage(options?: {
   const toast = createMockToastService();
 
   return render(TenantManagementPageComponent, {
-    componentImports: [MockLucideIconComponent],
+    componentImports: [MockLucideIconComponent, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
     providers: [
       { provide: TenantManagementService, useValue: service },
       { provide: ToastService, useValue: toast },

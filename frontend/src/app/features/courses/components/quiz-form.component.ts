@@ -22,24 +22,24 @@ interface MatchingPair {
     <div class="space-y-5">
       <!-- Module basics -->
       <div>
-        <label for="moduleTitle" class="block text-sm font-medium text-slate-700 mb-1">Title</label>
+        <label for="moduleTitle" class="form-label">Title</label>
         <input
           id="moduleTitle"
           type="text"
           [(ngModel)]="form.title"
           placeholder="Quiz title"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+          class="input-field focus:outline-none"
         />
       </div>
 
       <div>
-        <label for="moduleDescription" class="block text-sm font-medium text-slate-700 mb-1">Description</label>
+        <label for="moduleDescription" class="form-label">Description</label>
         <textarea
           id="moduleDescription"
           [(ngModel)]="form.description"
           placeholder="Quiz description (optional)"
           rows="2"
-          class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200 resize-none"
+          class="input-field focus:outline-none resize-none"
         ></textarea>
       </div>
 
@@ -49,39 +49,39 @@ interface MatchingPair {
 
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label for="timeLimit" class="block text-sm font-medium text-slate-700 mb-1">Time limit (minutes)</label>
+            <label for="timeLimit" class="form-label">Time limit (minutes)</label>
             <input
               id="timeLimit"
               type="number"
               [(ngModel)]="timeLimitMinutes"
               min="1"
               placeholder="No limit"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+              class="input-field focus:outline-none"
             />
           </div>
 
           <div>
-            <label for="passingScore" class="block text-sm font-medium text-slate-700 mb-1">Passing score (%)</label>
+            <label for="passingScore" class="form-label">Passing score (%)</label>
             <input
               id="passingScore"
               type="number"
               [(ngModel)]="quizSettings.passing_score"
               min="0"
               max="100"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+              class="input-field focus:outline-none"
             />
           </div>
         </div>
 
         <div class="mb-4">
-          <label for="maxAttempts" class="block text-sm font-medium text-slate-700 mb-1">Max attempts</label>
+          <label for="maxAttempts" class="form-label">Max attempts</label>
           <input
             id="maxAttempts"
             type="number"
             [(ngModel)]="maxAttemptsValue"
             min="1"
             placeholder="Unlimited"
-            class="w-full max-w-[200px] rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200"
+            class="input-field max-w-[200px] focus:outline-none"
           />
         </div>
 
@@ -90,7 +90,7 @@ interface MatchingPair {
             <input
               type="checkbox"
               [(ngModel)]="quizSettings.show_correct_answers"
-              class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+              class="checkbox-field"
             />
             Show correct answers after submission
           </label>
@@ -98,7 +98,7 @@ interface MatchingPair {
             <input
               type="checkbox"
               [(ngModel)]="quizSettings.randomize_questions"
-              class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+              class="checkbox-field"
             />
             Randomize question order
           </label>
@@ -106,7 +106,7 @@ interface MatchingPair {
             <input
               type="checkbox"
               [(ngModel)]="quizSettings.randomize_answers"
-              class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+              class="checkbox-field"
             />
             Randomize answer order
           </label>
@@ -165,7 +165,7 @@ interface MatchingPair {
           <div class="border border-slate-200 rounded-xl bg-white p-4 shadow-sm mb-4">
             <!-- Question header -->
             <div class="flex items-center gap-3 mb-3">
-              <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Q{{ i + 1 }}</span>
+              <span class="section-label">Q{{ i + 1 }}</span>
 
               <select
                 [(ngModel)]="question.question_type"
@@ -222,7 +222,7 @@ interface MatchingPair {
               [(ngModel)]="question.question_text"
               placeholder="Enter question text"
               rows="2"
-              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all duration-200 resize-none mb-3"
+              class="input-field focus:outline-none resize-none mb-3"
             ></textarea>
 
             <!-- Type-specific content -->
@@ -272,7 +272,7 @@ interface MatchingPair {
                         type="checkbox"
                         [checked]="option.is_correct"
                         (change)="toggleCorrect(i, j)"
-                        class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                        class="checkbox-field"
                       />
                       <input
                         type="text"
@@ -381,14 +381,14 @@ interface MatchingPair {
           type="button"
           (click)="onSave()"
           [disabled]="!isValid()"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 text-sm font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="btn-primary"
         >
           {{ isEditMode() ? 'Save Changes' : 'Create Module' }}
         </button>
         <button
           type="button"
           (click)="cancel.emit()"
-          class="bg-white border border-slate-300 text-slate-700 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-slate-50 transition-all duration-200"
+          class="btn-secondary"
         >
           Cancel
         </button>

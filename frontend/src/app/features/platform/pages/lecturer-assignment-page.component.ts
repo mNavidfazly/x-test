@@ -29,11 +29,15 @@ import {
   AvailableCourse,
 } from '../../../core/models/lecturer-assignment.model';
 import { formatDate } from '../../../core/utils/date.utils';
+import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
+import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { StatCardComponent } from '../../../shared/components/stat-card.component';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 
 @Component({
   selector: 'app-lecturer-assignment-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
     <div class="p-6">
@@ -42,14 +46,14 @@ import { formatDate } from '../../../core/utils/date.utils';
         <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
           <lucide-icon [img]="icons.UserCog" [size]="24"></lucide-icon>
           Lecturer Assignments
-          <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold bg-teal-100 text-teal-700">
+          <span class="badge-primary">
             {{ service.assignments().length }}
           </span>
         </h1>
         <button
           type="button"
           (click)="onToggleNewForm()"
-          class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+          class="btn-primary"
         >
           <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon>
           New Assignment
@@ -66,13 +70,13 @@ import { formatDate } from '../../../core/utils/date.utils';
 
       <!-- New Assignment Form -->
       @if (showNewForm()) {
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-6 py-5 mb-6">
+        <div class="card px-6 py-5 mb-6">
           <h2 class="text-sm font-semibold text-slate-900 mb-4">New Assignment</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Lecturer</label>
+              <label class="section-label mb-1">Lecturer</label>
               <select
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500"
+                class="select-field w-full"
                 [value]="selectedLecturerId()"
                 (change)="onLecturerChange($any($event.target).value)"
               >
@@ -83,9 +87,9 @@ import { formatDate } from '../../../core/utils/date.utils';
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Course</label>
+              <label class="section-label mb-1">Course</label>
               <select
-                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="select-field w-full disabled:opacity-50 disabled:cursor-not-allowed"
                 [value]="selectedCourseId()"
                 (change)="selectedCourseId.set($any($event.target).value)"
                 [disabled]="!selectedLecturerId() || coursesLoading()"
@@ -102,7 +106,7 @@ import { formatDate } from '../../../core/utils/date.utils';
               type="button"
               (click)="onAddAssignment()"
               [disabled]="adding() || !selectedLecturerId() || !selectedCourseId()"
-              class="bg-teal-600 text-white rounded-lg px-4 py-2 font-semibold shadow-sm hover:bg-teal-700 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+              class="btn-primary"
             >
               @if (adding()) {
                 <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
@@ -114,7 +118,7 @@ import { formatDate } from '../../../core/utils/date.utils';
             <button
               type="button"
               (click)="cancelNewForm()"
-              class="text-sm text-slate-600 hover:text-slate-800"
+              class="btn-ghost"
             >Cancel</button>
           </div>
         </div>
@@ -136,54 +140,37 @@ import { formatDate } from '../../../core/utils/date.utils';
           <button
             type="button"
             (click)="searchTerm.set('')"
-            class="text-xs text-slate-500 hover:text-slate-700 underline"
+            class="btn-link"
           >Clear filters</button>
         }
       </div>
 
       <!-- Summary Cards -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Total Assignments</div>
-          <div class="text-2xl font-bold text-slate-900 tabular-nums">{{ totalCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">Lecturers</div>
-          <div class="text-2xl font-bold text-teal-600 tabular-nums">{{ lecturerCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">With Edit Access</div>
-          <div class="text-2xl font-bold text-emerald-600 tabular-nums">{{ editCount() }}</div>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm px-4 py-3">
-          <div class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1">With Grade Access</div>
-          <div class="text-2xl font-bold text-blue-600 tabular-nums">{{ gradeCount() }}</div>
-        </div>
+        <app-stat-card label="Total Assignments" [value]="totalCount()" />
+        <app-stat-card label="Lecturers" [value]="lecturerCount()" color="text-teal-600" />
+        <app-stat-card label="With Edit Access" [value]="editCount()" color="text-emerald-600" />
+        <app-stat-card label="With Grade Access" [value]="gradeCount()" color="text-blue-600" />
       </div>
 
       <!-- Loading / Error / Empty / Table -->
       @if (service.loading()) {
-        <div class="flex items-center justify-center py-12 text-slate-500">
-          <lucide-icon [img]="icons.Loader2" [size]="20" class="animate-spin mr-2"></lucide-icon>
-          Loading assignments...
-        </div>
+        <app-loading-spinner message="Loading assignments..." />
       } @else if (service.error()) {
-        <div class="rounded-lg bg-rose-50 border border-rose-200 px-4 py-3 text-sm text-rose-700">
-          {{ service.error() }}
-        </div>
+        <app-error-alert [message]="service.error()!" />
       } @else if (filteredAssignments().length === 0) {
         <div class="text-center py-12 text-slate-500 text-sm">
           {{ searchTerm() ? 'No assignments match your search.' : 'No lecturer assignments yet. Click "New Assignment" to add one.' }}
         </div>
       } @else {
-        <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
             <thead>
-              <tr class="bg-slate-50 border-b border-slate-200">
-                <th class="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Lecturer</th>
-                <th class="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Course</th>
-                <th class="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Permissions</th>
-                <th class="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">Assigned</th>
+              <tr class="table-header">
+                <th class="th text-left">Lecturer</th>
+                <th class="th text-left">Course</th>
+                <th class="th text-left">Permissions</th>
+                <th class="th text-left">Assigned</th>
                 <th class="w-10"></th>
               </tr>
             </thead>
@@ -203,13 +190,13 @@ import { formatDate } from '../../../core/utils/date.utils';
                   <td class="px-6 py-3">
                     <div class="flex items-center gap-1.5">
                       @if (a.can_edit) {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-700">Edit</span>
+                        <app-status-badge variant="success">Edit</app-status-badge>
                       }
                       @if (a.can_grade) {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-blue-100 text-blue-700">Grade</span>
+                        <app-status-badge variant="info">Grade</app-status-badge>
                       }
                       @if (!a.can_edit && !a.can_grade) {
-                        <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold bg-slate-100 text-slate-600">View Only</span>
+                        <app-status-badge variant="neutral">View Only</app-status-badge>
                       }
                     </div>
                   </td>
@@ -224,7 +211,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                       <div class="max-w-lg space-y-4">
                         <!-- Permission Toggles -->
                         <div>
-                          <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Permissions</h3>
+                          <h3 class="section-label mb-2">Permissions</h3>
                           <div class="space-y-2">
                             <label class="flex items-center gap-3 cursor-pointer">
                               <input
@@ -232,7 +219,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                                 [checked]="a.can_edit"
                                 (change)="onTogglePermission(a, 'can_edit', $any($event.target).checked)"
                                 [disabled]="togglingPermission()"
-                                class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                class="checkbox-field"
                               />
                               <span class="text-sm text-slate-700 flex items-center gap-1.5">
                                 <lucide-icon [img]="icons.Pencil" [size]="14" class="text-slate-400"></lucide-icon>
@@ -245,7 +232,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                                 [checked]="a.can_grade"
                                 (change)="onTogglePermission(a, 'can_grade', $any($event.target).checked)"
                                 [disabled]="togglingPermission()"
-                                class="rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                                class="checkbox-field"
                               />
                               <span class="text-sm text-slate-700 flex items-center gap-1.5">
                                 <lucide-icon [img]="icons.ClipboardCheck" [size]="14" class="text-slate-400"></lucide-icon>
@@ -257,7 +244,7 @@ import { formatDate } from '../../../core/utils/date.utils';
 
                         <!-- Assignment Info -->
                         <div>
-                          <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Details</h3>
+                          <h3 class="section-label mb-2">Details</h3>
                           <div class="text-sm text-slate-600 space-y-1">
                             @if (a.assigned_by_name) {
                               <div>Assigned by: <span class="font-medium text-slate-700">{{ a.assigned_by_name }}</span></div>
@@ -272,7 +259,7 @@ import { formatDate } from '../../../core/utils/date.utils';
                             type="button"
                             (click)="onRemoveAssignment(a.id, $event)"
                             [disabled]="removing()"
-                            class="bg-rose-50 text-rose-600 border border-rose-200 rounded-lg px-4 py-2 font-semibold hover:bg-rose-100 disabled:opacity-50 active:scale-95 transition-all duration-200 text-sm inline-flex items-center gap-2"
+                            class="btn-danger"
                           >
                             @if (removing()) {
                               <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
