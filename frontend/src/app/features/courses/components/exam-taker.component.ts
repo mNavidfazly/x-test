@@ -26,7 +26,7 @@ import { formatDate } from '../../../core/utils/date.utils';
 
         @case ('info') {
           <div class="space-y-6">
-            <div class="rounded-xl border border-slate-200 bg-white p-6">
+            <div class="card p-6">
               @if (examData()!.description) {
                 <p class="text-sm text-slate-600 mb-4">{{ examData()!.description }}</p>
               }
@@ -90,7 +90,7 @@ import { formatDate } from '../../../core/utils/date.utils';
 
             <!-- Download exam file -->
             @if (examData()!.exam_file_url) {
-              <div class="rounded-xl border border-slate-200 bg-white p-4">
+              <div class="card p-4">
                 <p class="section-label mb-3">Exam Instructions</p>
                 <a [href]="examData()!.exam_file_url" target="_blank" rel="noopener"
                    class="btn-secondary inline-flex items-center gap-2">
@@ -101,7 +101,7 @@ import { formatDate } from '../../../core/utils/date.utils';
             }
 
             <!-- File upload -->
-            <div class="rounded-xl border border-slate-200 bg-white p-4">
+            <div class="card p-4">
               <p class="section-label mb-3">Your Submission</p>
               <app-file-upload
                 [accept]="examData()!.allowed_file_types.join(',')"
@@ -142,7 +142,7 @@ import { formatDate } from '../../../core/utils/date.utils';
           @if (submission()) {
             <div class="space-y-6">
               <!-- Submission info card -->
-              <div class="rounded-xl border border-slate-200 bg-white p-6">
+              <div class="card p-6">
                 <p class="section-label mb-4">Submission Details</p>
                 <div class="grid grid-cols-2 gap-4 text-sm">
                   <div>

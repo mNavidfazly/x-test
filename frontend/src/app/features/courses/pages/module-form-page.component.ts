@@ -30,7 +30,7 @@ interface TypeOption {
   imports: [RouterLink, FormsModule, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6 max-w-2xl">
+    <div class="max-w-2xl">
       <a [routerLink]="['/courses', courseId()]" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
         <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
         Back to course

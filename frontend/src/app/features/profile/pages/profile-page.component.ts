@@ -20,7 +20,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
   imports: [FormsModule, LucideAngularModule, ErrorAlertComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6 max-w-2xl">
+    <div class="max-w-2xl">
       <h1 class="page-title mb-6">Profile</h1>
 
       @if (loading()) {
@@ -83,7 +83,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
         </div>
 
         <!-- Info Card -->
-        <div class="card divide-y divide-slate-100">
+        <div class="form-card divide-y divide-slate-100">
           <!-- Full Name (editable) -->
           <div class="px-5 py-4 flex items-center justify-between gap-4">
             <div class="flex items-center gap-3 min-w-0">

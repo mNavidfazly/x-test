@@ -33,7 +33,7 @@ const BADGE_LABELS: Record<string, string> = {
   imports: [RouterLink, LucideAngularModule, LectureAccordionComponent, LectureFormComponent, EnrollmentCtaComponent, EnrollmentManagerComponent, ProgressManagerComponent, ErrorAlertComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <a routerLink="/courses" class="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 mb-4 transition-colors">
         <lucide-icon [img]="icons.ArrowLeft" [size]="16"></lucide-icon>
         Back to courses

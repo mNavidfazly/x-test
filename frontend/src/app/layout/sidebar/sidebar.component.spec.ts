@@ -4,17 +4,24 @@ import userEvent from '@testing-library/user-event';
 import { provideRouter, RouterLink, RouterLinkActive } from '@angular/router';
 import { SidebarComponent } from './sidebar.component';
 import { AuthService } from '../../core/services/auth.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
+import { createMockSidebarService } from '../../__mocks__/sidebar.mock';
 import { MockLucideIconComponent } from '../../__mocks__/lucide.mock';
 import { UserRole } from '../../core/models/auth.model';
 
 async function renderSidebar(options?: {
   roles?: UserRole[];
   open?: boolean;
+  collapsed?: boolean;
 }) {
   const auth = createMockAuthService({
     isAuthenticated: true,
     roles: options?.roles ?? ['learner'],
+  });
+
+  const sidebar = createMockSidebarService({
+    collapsed: options?.collapsed ?? false,
   });
 
   const openChangeSpy = vi.fn();
@@ -26,10 +33,11 @@ async function renderSidebar(options?: {
     providers: [
       provideRouter([]),
       { provide: AuthService, useValue: auth },
+      { provide: SidebarService, useValue: sidebar },
     ],
   });
 
-  return { auth, openChangeSpy, fixture };
+  return { auth, sidebar, openChangeSpy, fixture };
 }
 
 describe('SidebarComponent', () => {
@@ -102,8 +110,30 @@ describe('SidebarComponent', () => {
     expect(openChangeSpy).toHaveBeenCalledWith(false);
   });
 
-  it('should show X-Courses brand', async () => {
+  it('should show X-Courses brand via aria-label', async () => {
     await renderSidebar();
-    expect(screen.getByText('X-Courses')).toBeTruthy();
+    expect(screen.getByLabelText('X-Courses')).toBeTruthy();
+  });
+
+  it('should show collapse button', async () => {
+    await renderSidebar();
+    expect(screen.getByLabelText('Collapse sidebar')).toBeTruthy();
+  });
+
+  it('should show expand button when collapsed', async () => {
+    await renderSidebar({ collapsed: true });
+    expect(screen.getByLabelText('Expand sidebar')).toBeTruthy();
+  });
+
+  it('should hide nav labels when collapsed', async () => {
+    await renderSidebar({ collapsed: true });
+    expect(screen.queryByText('Dashboard')).toBeNull();
+    expect(screen.queryByText('My Courses')).toBeNull();
+  });
+
+  it('should show nav labels when expanded', async () => {
+    await renderSidebar({ collapsed: false });
+    expect(screen.getByText('Dashboard')).toBeTruthy();
+    expect(screen.getByText('My Courses')).toBeTruthy();
   });
 });

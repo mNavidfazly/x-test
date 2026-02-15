@@ -28,7 +28,7 @@ import { formatDate } from '../../../core/utils/date.utils';
         @case ('start') {
           <div class="space-y-6">
             <!-- Quiz info card -->
-            <div class="rounded-xl border border-slate-200 bg-white p-6">
+            <div class="card p-6">
               @if (quizData()!.description) {
                 <p class="text-sm text-slate-600 mb-4">{{ quizData()!.description }}</p>
               }
@@ -55,7 +55,7 @@ import { formatDate } from '../../../core/utils/date.utils';
 
             <!-- Past attempts -->
             @if (pastAttempts().length > 0) {
-              <div class="rounded-xl border border-slate-200 bg-white overflow-hidden">
+              <div class="card overflow-hidden">
                 <div class="px-4 py-3 border-b border-slate-200 bg-slate-50">
                   <p class="section-label">Previous Attempts</p>
                 </div>

@@ -8,7 +8,7 @@ import { ExternalQuizContent } from '../../../core/models/course.model';
   imports: [LucideAngularModule],
   host: { class: 'block' },
   template: `
-    <div class="rounded-xl border border-slate-200 bg-white p-6 space-y-4">
+    <div class="card p-6 space-y-4">
       <div class="flex items-center gap-3">
         <lucide-icon [img]="icons.ExternalLink" [size]="24" class="text-teal-600"></lucide-icon>
         <h3 class="text-lg font-semibold text-slate-900">External Quiz</h3>

@@ -30,10 +30,10 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.Building2" [size]="24"></lucide-icon>
           Tenant Management
           <app-status-badge variant="primary">{{ service.tenants().length }}</app-status-badge>
@@ -50,7 +50,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
 
       <!-- Create form -->
       @if (showCreateForm()) {
-        <div class="card px-6 py-5 mb-6">
+        <div class="form-card px-6 py-5 mb-6">
           <h2 class="text-sm font-semibold text-slate-900 mb-4">Create New Tenant</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>

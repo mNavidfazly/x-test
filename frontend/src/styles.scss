@@ -2,6 +2,49 @@
 @tailwind components;
 @tailwind utilities;
 
+/* === Design Tokens === */
+:root {
+  /* Brand colors (reference only — use Tailwind classes, not var() in templates) */
+  --color-primary: theme('colors.teal.600');
+  --color-primary-hover: theme('colors.teal.700');
+  --color-primary-ring: theme('colors.teal.500');
+  --color-primary-light: theme('colors.teal.100');
+  --color-danger: theme('colors.rose.600');
+  --color-danger-light: theme('colors.rose.100');
+
+  /* Shadows */
+  --shadow-soft: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.08);
+  --shadow-lift: 0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+
+  /* Z-index scale — documented hierarchy, prevents collisions */
+  --z-sidebar: 10;
+  --z-header: 20;
+  --z-overlay: 30;
+  --z-modal-backdrop: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* Skip navigation link (accessibility) */
+.skip-nav {
+  @apply sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100]
+         focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg
+         focus:text-teal-700 focus:font-medium focus:text-sm;
+}
+
+@layer base {
+  body {
+    @apply tabular-nums;
+  }
+}
+
 @layer components {
   /* === Buttons === */
   .btn-primary {
@@ -86,8 +129,35 @@
   .card {
     @apply bg-white border border-slate-200 rounded-xl shadow-sm;
   }
+  .form-card {
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden
+           transition-[border-color,box-shadow] duration-200 hover:shadow-md;
+
+    &:focus-within {
+      border-color: theme('colors.teal.300');
+      box-shadow: theme('boxShadow.soft'), 0 0 0 4px rgba(20, 184, 166, 0.08);
+    }
+  }
+  .card-solid {
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm
+           transition-[border-color,box-shadow] duration-200 hover:shadow-md hover:border-slate-300;
+  }
+  .card-glass {
+    @apply rounded-xl shadow-lg;
+    background: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(12px);
+  }
   .stat-card {
     @apply card px-4 py-3;
+  }
+
+  /* === Section Headers === */
+  .form-section-header {
+    @apply px-6 py-4 bg-gradient-to-r from-slate-50 to-white border-b border-slate-200/60;
+  }
+  .form-section-icon-header {
+    @apply flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-slate-50 to-white border-b border-slate-200/60;
   }
 
   /* === Table === */
@@ -109,7 +179,7 @@
     @apply text-xs font-semibold uppercase tracking-wide text-slate-500;
   }
   .page-title {
-    @apply text-xl font-bold text-slate-900;
+    @apply text-2xl font-bold text-slate-900;
   }
 
   /* === Alerts/Feedback === */
@@ -121,5 +191,43 @@
   }
   .alert-warning {
     @apply rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700;
+  }
+
+  /* === Sidebar === */
+  .sidebar-logo-gradient {
+    background: linear-gradient(135deg, theme('colors.teal.500') 0%, theme('colors.teal.700') 100%);
+  }
+  .sidebar-nav-active {
+    background: linear-gradient(135deg, rgba(20,184,166,0.15), rgba(15,118,110,0.1));
+    box-shadow: 0 2px 8px rgba(20,184,166,0.15), inset 0 1px 0 rgba(255,255,255,0.5);
+    border: 1px solid rgba(20,184,166,0.2);
+    color: theme('colors.teal.800');
+    position: relative;
+    overflow: hidden;
+  }
+  .sidebar-desktop-collapsed {
+    @media (min-width: 1024px) {
+      width: 64px;
+    }
+  }
+
+  /* === Animations === */
+  .page-enter {
+    @apply animate-page-enter;
+  }
+  .toast-enter {
+    @apply animate-toast-slide-in;
+  }
+  .notification-enter {
+    @apply animate-notification-slide-in;
+  }
+}
+
+/* === Reduced Motion === */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

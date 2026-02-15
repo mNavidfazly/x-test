@@ -13,7 +13,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
   imports: [LucideAngularModule, RouterLink, ErrorAlertComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6 max-w-4xl mx-auto">
+    <div class="max-w-4xl mx-auto">
       <!-- Header -->
       <div class="flex items-center gap-3 mb-6">
         <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center">
@@ -34,7 +34,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
         <!-- Loading skeleton -->
         <div class="space-y-4">
           @for (_ of [1, 2, 3]; track $index) {
-            <div class="animate-pulse bg-white border border-slate-200 rounded-xl p-4">
+            <div class="animate-pulse card p-4">
               <div class="h-4 bg-slate-200 rounded w-1/4 mb-2"></div>
               <div class="h-3 bg-slate-200 rounded w-3/4"></div>
             </div>

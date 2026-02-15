@@ -5,6 +5,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
 import { ToastContainerComponent } from '../../shared/components/toast-container.component';
 import { NotificationService } from '../../core/services/notification.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 import { AppNotification } from '../../core/models/notification.model';
 import { getNotificationRoute } from '../../core/models/notification.model';
 
@@ -12,7 +13,10 @@ import { getNotificationRoute } from '../../core/models/notification.model';
   selector: 'app-main-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent, LucideAngularModule],
-  host: { class: 'block' },
+  host: {
+    class: 'block',
+    '(document:keydown)': 'onKeydown($event)',
+  },
   template: `
     <div class="flex h-screen bg-slate-50">
       <app-sidebar
@@ -21,7 +25,7 @@ import { getNotificationRoute } from '../../core/models/notification.model';
       />
       <div class="flex-1 flex flex-col min-w-0">
         <app-header (menuToggle)="sidebarOpen.set(!sidebarOpen())" />
-        <main class="flex-1 overflow-y-auto p-6">
+        <main id="main-content" class="flex-1 overflow-y-auto p-3 lg:p-4">
           <router-outlet />
         </main>
       </div>
@@ -55,8 +59,16 @@ export class MainLayoutComponent {
   readonly icons = { X };
   readonly notificationService = inject(NotificationService);
   #router = inject(Router);
+  #sidebar = inject(SidebarService);
 
   sidebarOpen = signal(false);
+
+  onKeydown(e: KeyboardEvent): void {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+      e.preventDefault();
+      if (window.innerWidth >= 1024) this.#sidebar.toggle();
+    }
+  }
 
   async onToastClick(notification: AppNotification): Promise<void> {
     this.notificationService.dismissToast();

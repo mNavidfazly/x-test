@@ -22,7 +22,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
   imports: [LucideAngularModule, RouterLink, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="page-title flex items-center gap-2">

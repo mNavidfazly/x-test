@@ -7,9 +7,11 @@ import { MainLayoutComponent } from './main-layout.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
+import { SidebarService } from '../../core/services/sidebar.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
 import { createMockNotificationService } from '../../__mocks__/course.mock';
+import { createMockSidebarService } from '../../__mocks__/sidebar.mock';
 import { ToastService } from '../../core/services/toast.service';
 import { createMockToastService } from '../../__mocks__/toast.mock';
 
@@ -19,8 +21,8 @@ class TestChildComponent {}
 async function renderLayout() {
   const auth = createMockAuthService({ isAuthenticated: true, roles: ['learner'] });
   const profile = createMockProfileService({ profile: { full_name: 'Test', avatar_url: null } });
-
   const notifications = createMockNotificationService();
+  const sidebar = createMockSidebarService();
 
   const { fixture } = await render(MainLayoutComponent, {
     providers: [
@@ -28,17 +30,18 @@ async function renderLayout() {
       { provide: AuthService, useValue: auth },
       { provide: ProfileService, useValue: profile },
       { provide: NotificationService, useValue: notifications },
+      { provide: SidebarService, useValue: sidebar },
       { provide: ToastService, useValue: createMockToastService() },
     ],
   });
 
-  return { fixture, auth, profile };
+  return { fixture, auth, profile, sidebar };
 }
 
 describe('MainLayoutComponent', () => {
   it('should render sidebar', async () => {
     await renderLayout();
-    expect(screen.getByText('X-Courses')).toBeTruthy();
+    expect(screen.getByLabelText('X-Courses')).toBeTruthy();
   });
 
   it('should render header', async () => {
@@ -74,5 +77,16 @@ describe('MainLayoutComponent', () => {
     // Click backdrop to close
     await user.click(fixture.nativeElement.querySelector('.bg-black\\/50'));
     expect(fixture.nativeElement.querySelector('.bg-black\\/50')).toBeNull();
+  });
+
+  it('should handle Cmd+B keyboard shortcut for sidebar toggle', async () => {
+    const { sidebar } = await renderLayout();
+
+    // Simulate Cmd+B (width >= 1024 in test environment)
+    Object.defineProperty(window, 'innerWidth', { value: 1280, writable: true });
+    const event = new KeyboardEvent('keydown', { key: 'b', metaKey: true, bubbles: true });
+    document.dispatchEvent(event);
+
+    expect(sidebar.toggle).toHaveBeenCalled();
   });
 });

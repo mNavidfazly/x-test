@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/angular';
+import { render, screen } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
-import { provideRouter } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router, provideRouter } from '@angular/router';
+import { TestBed } from '@angular/core/testing';
 import { HeaderComponent } from './header.component';
 import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
@@ -11,16 +13,23 @@ import { createMockProfileService } from '../../__mocks__/profile.mock';
 import { createMockNotificationService } from '../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../__mocks__/lucide.mock';
 import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
+import { UserRole } from '../../core/models/auth.model';
+
+@Component({ standalone: true, template: '' })
+class DummyComponent {}
 
 async function renderHeader(options?: {
   email?: string;
   fullName?: string | null;
   avatarUrl?: string | null;
   unreadCount?: number;
+  roles?: UserRole[];
+  url?: string;
 }) {
   const auth = createMockAuthService({
     isAuthenticated: true,
     email: options?.email ?? 'test@example.com',
+    roles: options?.roles ?? ['learner'],
   });
   const profile = createMockProfileService({
     profile: options?.fullName !== undefined || options?.avatarUrl !== undefined
@@ -33,18 +42,24 @@ async function renderHeader(options?: {
 
   const menuToggleSpy = vi.fn();
 
-  await render(HeaderComponent, {
+  const { fixture } = await render(HeaderComponent, {
     componentImports: [MockLucideIconComponent, UserAvatarComponent],
     componentOutputs: { menuToggle: { emit: menuToggleSpy } as any },
     providers: [
-      provideRouter([]),
+      provideRouter([{ path: '**', component: DummyComponent }]),
       { provide: AuthService, useValue: auth },
       { provide: ProfileService, useValue: profile },
       { provide: NotificationService, useValue: notifications },
     ],
   });
 
-  return { auth, profile, notifications, menuToggleSpy };
+  if (options?.url) {
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl(options.url);
+    fixture.detectChanges();
+  }
+
+  return { fixture, auth, profile, notifications, menuToggleSpy };
 }
 
 describe('HeaderComponent', () => {
@@ -104,5 +119,111 @@ describe('HeaderComponent', () => {
   it('should show 99+ when count > 99', async () => {
     await renderHeader({ fullName: 'Test', unreadCount: 150 });
     expect(screen.getByText('99+')).toBeTruthy();
+  });
+
+  // Breadcrumb tests
+  it('should show breadcrumb for /dashboard', async () => {
+    await renderHeader({ fullName: 'Test', url: '/dashboard' });
+    expect(screen.getByText('Dashboard')).toBeTruthy();
+    expect(screen.getByLabelText('Breadcrumb')).toBeTruthy();
+  });
+
+  it('should show breadcrumb "Courses" for /courses/some-id', async () => {
+    await renderHeader({ fullName: 'Test', url: '/courses/abc-123' });
+    expect(screen.getByText('Courses')).toBeTruthy();
+  });
+
+  it('should show breadcrumb "Exam Grading" for /teaching/grading', async () => {
+    await renderHeader({ fullName: 'Test', url: '/teaching/grading' });
+    expect(screen.getByText('Exam Grading')).toBeTruthy();
+  });
+
+  it('should not show breadcrumb for unknown route /', async () => {
+    await renderHeader({ fullName: 'Test' });
+    expect(screen.queryByLabelText('Breadcrumb')).toBeNull();
+  });
+
+  // Role label tests
+  it('should show "Platform Admin" role label for PA', async () => {
+    await renderHeader({ fullName: 'Admin', roles: ['platform_admin', 'learner'] });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    expect(screen.getAllByText('Platform Admin').length).toBeGreaterThan(0);
+  });
+
+  it('should show "Tenant Admin" role label for TA', async () => {
+    await renderHeader({ fullName: 'Admin', roles: ['tenant_admin', 'learner'] });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    expect(screen.getAllByText('Tenant Admin').length).toBeGreaterThan(0);
+  });
+
+  it('should show "Lecturer" role label for lecturer', async () => {
+    await renderHeader({ fullName: 'Prof', roles: ['lecturer', 'learner'] });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    expect(screen.getAllByText('Lecturer').length).toBeGreaterThan(0);
+  });
+
+  it('should show "Learner" role label by default', async () => {
+    await renderHeader({ fullName: 'Student', roles: ['learner'] });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    expect(screen.getAllByText('Learner').length).toBeGreaterThan(0);
+  });
+
+  // ARIA tests
+  it('should have aria-haspopup on user menu button', async () => {
+    await renderHeader({ fullName: 'Test' });
+    const button = screen.getByLabelText('User menu');
+    expect(button.getAttribute('aria-haspopup')).toBe('true');
+  });
+
+  it('should toggle aria-expanded on user menu', async () => {
+    await renderHeader({ fullName: 'Test' });
+    const user = userEvent.setup();
+    const button = screen.getByLabelText('User menu');
+
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    await user.click(button);
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('should have role="menu" on dropdown', async () => {
+    await renderHeader({ fullName: 'Test' });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    expect(screen.getByRole('menu')).toBeTruthy();
+  });
+
+  it('should have role="menuitem" on dropdown items', async () => {
+    await renderHeader({ fullName: 'Test' });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    const items = screen.getAllByRole('menuitem');
+    expect(items.length).toBe(2); // Profile + Sign out
+  });
+
+  // Dropdown info tests
+  it('should show email in dropdown', async () => {
+    await renderHeader({ fullName: 'Test User', email: 'test@calypso.com' });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    expect(screen.getByText('test@calypso.com')).toBeTruthy();
+  });
+
+  it('should show role badge in dropdown', async () => {
+    await renderHeader({ fullName: 'Test', roles: ['csm', 'learner'] });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByLabelText('User menu'));
+    expect(screen.getAllByText('CSM').length).toBeGreaterThan(0);
   });
 });

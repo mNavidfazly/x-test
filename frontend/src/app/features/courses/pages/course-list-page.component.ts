@@ -12,7 +12,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
   imports: [RouterLink, LucideAngularModule, CourseCardComponent, ErrorAlertComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <div class="flex items-center justify-between mb-6">
         <h1 class="page-title">My Courses</h1>
         @if (isPlatformAdmin()) {

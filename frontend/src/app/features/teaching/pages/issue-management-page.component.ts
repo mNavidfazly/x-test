@@ -21,7 +21,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="page-title flex items-center gap-2">

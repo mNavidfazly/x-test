@@ -60,7 +60,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
       } @else {
         <div class="space-y-4">
           @for (comment of commentService.comments(); track comment.id) {
-            <div class="bg-white border border-slate-200 rounded-xl p-4">
+            <div class="card p-4">
               <!-- Comment header -->
               <div class="flex items-center gap-2 mb-2">
                 <app-user-avatar

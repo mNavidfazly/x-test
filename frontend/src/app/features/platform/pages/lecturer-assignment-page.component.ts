@@ -40,10 +40,10 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, StatCardComponent, StatusBadgeComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.UserCog" [size]="24"></lucide-icon>
           Lecturer Assignments
           <span class="badge-primary">
@@ -70,7 +70,7 @@ import { StatusBadgeComponent } from '../../../shared/components/status-badge.co
 
       <!-- New Assignment Form -->
       @if (showNewForm()) {
-        <div class="card px-6 py-5 mb-6">
+        <div class="form-card px-6 py-5 mb-6">
           <h2 class="text-sm font-semibold text-slate-900 mb-4">New Assignment</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>

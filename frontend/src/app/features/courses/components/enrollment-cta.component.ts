@@ -32,7 +32,7 @@ import { EnrollmentType } from '../../../core/models/course.model';
             </button>
           }
           @case ('password_protected') {
-            <div class="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-lg p-4 max-w-md">
+            <div class="card-glass p-4 max-w-md">
               <div class="flex items-center gap-2 mb-3">
                 <lucide-icon [img]="icons.Lock" [size]="16" class="text-slate-500"></lucide-icon>
                 <span class="text-sm font-semibold text-slate-700">Password required to enroll</span>

@@ -28,10 +28,10 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent, StatusBadgeComponent, UserAvatarComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.Users" [size]="24"></lucide-icon>
           User Management
           <app-status-badge variant="primary">{{ service.users().length }}</app-status-badge>
@@ -48,7 +48,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
 
       <!-- Invite form -->
       @if (showInviteForm()) {
-        <div class="card px-6 py-5 mb-6">
+        <div class="form-card px-6 py-5 mb-6">
           <h2 class="text-sm font-semibold text-slate-900 mb-4">Invite New User</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>

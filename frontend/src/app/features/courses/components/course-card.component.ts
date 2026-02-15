@@ -24,7 +24,7 @@ const BADGE_LABELS: Record<string, string> = {
   host: { class: 'block' },
   template: `
     <a [routerLink]="['/courses', course().id]"
-       class="block card hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden group">
+       class="block card-solid overflow-hidden group">
 
       <!-- Thumbnail -->
       @if (course().thumbnail_url) {

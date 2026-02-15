@@ -8,7 +8,7 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
   imports: [FormsModule],
   host: { class: 'block' },
   template: `
-    <div class="rounded-xl border border-slate-200 bg-white p-5">
+    <div class="card p-5">
       <div class="flex items-start gap-3 mb-4">
         <span class="flex-shrink-0 w-7 h-7 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center">
           {{ questionNumber() }}

@@ -22,7 +22,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card.componen
   imports: [LucideAngularModule, LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent, StatCardComponent],
   host: { class: 'block' },
   template: `
-    <div class="p-6">
+    <div>
       <!-- Header -->
       <div class="flex items-center justify-between mb-6">
         <h1 class="page-title flex items-center gap-2">

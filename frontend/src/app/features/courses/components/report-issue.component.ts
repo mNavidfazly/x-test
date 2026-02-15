@@ -24,7 +24,7 @@ import { IssueType } from '../../../core/models/issue.model';
         </div>
       </div>
     } @else if (isOpen()) {
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
+      <div class="card p-4">
         <div class="flex items-center justify-between mb-3">
           <h4 class="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
             <lucide-icon [img]="icons.Flag" [size]="16" class="text-rose-600"></lucide-icon>

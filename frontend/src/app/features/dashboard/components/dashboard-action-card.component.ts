@@ -10,7 +10,7 @@ import type { LucideIconData } from 'lucide-angular';
   host: { class: 'block' },
   template: `
     <a [routerLink]="route()"
-       class="card p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 flex items-center gap-4 group">
+       class="card-solid p-4 flex items-center gap-4 group">
       <div [class]="'p-2.5 rounded-lg ' + iconBg()">
         <lucide-icon [img]="icon()" [size]="20" [class]="iconColor()"></lucide-icon>
       </div>
