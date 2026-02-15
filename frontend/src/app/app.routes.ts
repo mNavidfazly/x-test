@@ -156,6 +156,14 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'teaching/staleness',
+        canActivate: [roleGuard('lecturer', 'platform_admin')],
+        loadComponent: () =>
+          import('./features/teaching/pages/staleness-dashboard-page.component').then(
+            (m) => m.StalenessDashboardPageComponent,
+          ),
+      },
+      {
         path: 'teaching/:path',
         canActivate: [roleGuard('lecturer', 'platform_admin')],
         loadComponent: () =>

@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Lecturer Assignment E2E User Stories (Phase 9E)
 
 ## Overview
@@ -88,13 +90,13 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| LA-01 | Navigation + Page Load + JWT Warning | Platform Admin | ✅ | 2026-02-14 |
-| LA-02 | Summary Cards + Permission Badges | Platform Admin | ✅ | 2026-02-14 |
-| LA-03 | Search Filter | Platform Admin | ✅ | 2026-02-14 |
-| LA-04 | Expand Row Details | Platform Admin | ✅ | 2026-02-14 |
-| LA-05 | Toggle Permission | Platform Admin | ✅ | 2026-02-14 |
-| LA-06 | Add + Remove Assignment | Platform Admin | ✅ | 2026-02-14 |
-| LA-07 | Role Access Control | Multiple | ✅ | 2026-02-14 |
+| LA-01 | Navigation + Page Load + JWT Warning | Platform Admin | ✅ | 2026-02-15 |
+| LA-02 | Summary Cards + Permission Badges | Platform Admin | ✅ | 2026-02-15 |
+| LA-03 | Search Filter | Platform Admin | ✅ | 2026-02-15 |
+| LA-04 | Expand Row Details | Platform Admin | ✅ | 2026-02-15 |
+| LA-05 | Toggle Permission | Platform Admin | ✅ | 2026-02-15 |
+| LA-06 | Add + Remove Assignment | Platform Admin | ✅ | 2026-02-15 |
+| LA-07 | Role Access Control | Multiple | ✅ | 2026-02-15 |
 
 ---
 
@@ -546,6 +548,7 @@ WHERE p.email = 'learner@calypso-commodities.com';
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-14 | Claude Code | LA-01 to LA-07 | 7/7 | 0 | Tested on localhost:4200. DB has 4 assignments (2 lecturers x 2 courses). LA-05 self-cleaned (toggle back). LA-06 self-cleaned (remove after add). LA-07: tested unauthenticated + Learner + Lecturer roles blocked. TA login failed (password issue) but guard verified in code. CSM not tested (same guard). |
+| 2026-02-15 | Claude (Playwright MCP) | LA-01 to LA-07 | 7 | 0 | Full regression run. PA board: 4 assignments (Total:4, Lecturers:2, Edit:2, Grade:2), JWT warning banner, Edit+Grade badges for lecturer-edit, View Only for lecturer-view, New Assignment button. No regressions. |
 
 ---
 

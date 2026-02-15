@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Content Write Playwright User Stories
 
 ## Overview
@@ -80,24 +82,24 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CW-01 | Create a New Course | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-02 | Edit Course & Manage Tenants | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-03 | Edit Course as Lecturer | Lecturer (can_edit) | ✅ Passed | 2026-02-14 |
-| CW-04 | Inline Lecture CRUD | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-05 | Create Video Module | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-06 | Create PDF Module with File Upload | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-07 | Create Rich Text (Markdown) Module | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-08 | Create Exam Module | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-09 | Edit Module & Manage File Attachments | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-10 | Permission Denial for Unauthorized Users | Learner / TA / CSM / Lecturer | ✅ Passed | 2026-02-14 |
-| CW-11 | Markdown Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-12 | Video Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-13 | PDF Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-14 | Exam Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-15 | Full Course Structure Round-Trip | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-16 | File Attachments Visible in Viewer | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-17 | Edit Module Content, Verify Updated Viewer | Platform Admin | ✅ Passed | 2026-02-14 |
-| CW-18 | Signed URL Security for Private Storage | Platform Admin | ✅ Passed | 2026-02-14 |
+| CW-01 | Create a New Course | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-02 | Edit Course & Manage Tenants | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-03 | Edit Course as Lecturer | Lecturer (can_edit) | ✅ Passed | 2026-02-15 |
+| CW-04 | Inline Lecture CRUD | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-05 | Create Video Module | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-06 | Create PDF Module with File Upload | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-07 | Create Rich Text (Markdown) Module | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-08 | Create Exam Module | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-09 | Edit Module & Manage File Attachments | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-10 | Permission Denial for Unauthorized Users | Learner / TA / CSM / Lecturer | ✅ Passed | 2026-02-15 |
+| CW-11 | Markdown Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-12 | Video Create-to-View Round-Trip | Platform Admin | ⚠️ Partial | 2026-02-15 |
+| CW-13 | PDF Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-14 | Exam Create-to-View Round-Trip | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-15 | Full Course Structure Round-Trip | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-16 | File Attachments Visible in Viewer | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-17 | Edit Module Content, Verify Updated Viewer | Platform Admin | ✅ Passed | 2026-02-15 |
+| CW-18 | Signed URL Security for Private Storage | Platform Admin | ✅ Passed | 2026-02-15 |
 
 ---
 
@@ -1053,6 +1055,7 @@ All test users use password: `TestUser123!`
 | 2026-02-11 | Claude (Playwright MCP) | CW-16, CW-17, CW-18 | 3 pass | 0 | CW-16: File upload → viewer display → delete → verify gone. CW-17: Edit markdown content → viewer shows updated text. CW-18: Signed URL JWT decoded (path not URL, 1hr expiry), public URL 404 confirmed. **All 18 CW stories complete (17 pass, 1 partial CW-10).** |
 | 2026-02-11 | Claude (Playwright MCP) | CW-01 through CW-18 (full re-run) | 16 pass, 2 partial | 0 | **Full re-run of all 18 CW stories.** CW-01 through CW-09: all CRUD flows re-verified (course, lecture, module create/edit/delete/reorder, all 5 types). CW-10: **upgraded to PASSED** — all 4 roles tested (Learner, Tenant Admin, CSM, Lecturer read-only), all 23 steps verified, route guards and UI hiding both confirmed. CW-11 (markdown), CW-12 (video), CW-13 (PDF), CW-15 (sequential nav), CW-17 (edit freshness), CW-18 (signed URL security): all passed. **CW-14 (exam) partial:** CW01 course blocked by stale module_files bug (Bug 7), exam module deleted from new course in CW-09. **CW-16 (file attachments) partial:** same stale data bug on CW01 course; functionality confirmed during CW-09 but viewer-side re-verification blocked. **1 new bug found (Bug 7):** `#getSignedUrl` crashes entire module viewer when `module_files` references deleted storage files. |
 | 2026-02-14 | Claude (Playwright MCP) | CW-01 through CW-18 (regression) | 18 | 0 | **Full regression — all 18 PASS, 0 regressions.** CW-01: course create form verified (title, description, enrollment type, staleness threshold, disabled button). CW-02: edit form pre-populated, tenant assignment checkboxes (3 tenants), delete with confirmation. CW-03: lecturer-edit sees full edit UI (Edit link, Add Lecture/Module, Edit/Move/Delete buttons), NO tenant assignment or Delete Course. CW-04: lecture create/delete inline. CW-05/06/07/08: all 6 module type forms verified (Video file picker, PDF file drop, Rich Text Tiptap toolbar, Quiz type, Exam settings+file types, External Quiz). CW-09: edit module pre-populated with Tiptap content, significant update checkbox, attached files section. CW-10: **confirmed PASS** — read-only lecturer sees NO edit UI (learner-style view). CW-11-18: round-trip stories confirmed via form verification (code unchanged since last pass). |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | CW-01 through CW-18 (regression) | 17 | 0 | 17 ✅, 1 ⚠️ Partial. **CW-12 DOWNGRADED** to Partial — no module_videos data (PGRST116, same as CR-03 data issue). CW-01: create form + conditional password field. CW-02: edit form + 3 tenant checkboxes + Delete Course. CW-03: lecturer-edit full write UI (from CR-13). CW-04: lecture CRUD controls. CW-05-08: all 6 module type forms. CW-09: edit pre-populated Tiptap + significant update + attached files. CW-10: from PM-13 (44 checks). CW-11/17: markdown round-trip + freshness. CW-13: PDF signed URL viewer. CW-14: exam viewer (90min, 60%, PDF/ZIP). CW-18: signed URL JWT token. Zero code regressions. |
 
 ---
 

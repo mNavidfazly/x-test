@@ -78,8 +78,10 @@ export function getNotificationRoute(type: NotificationType, data: Record<string
     case 'exam_reset':
     case 'exam_deadline':
     case 'reminder':
-    case 'content_staleness':
       return data['course_id'] ? `/courses/${data['course_id']}` : null;
+
+    case 'content_staleness':
+      return '/teaching/staleness';
 
     case 'question_answered':
       return '/questions';

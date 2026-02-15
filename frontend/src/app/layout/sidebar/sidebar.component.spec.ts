@@ -65,6 +65,7 @@ describe('SidebarComponent', () => {
     expect(screen.getByText('Teaching')).toBeTruthy();
     expect(screen.getByText('Questions Board')).toBeTruthy();
     expect(screen.getByText('Exam Grading')).toBeTruthy();
+    expect(screen.getByText('Content Staleness')).toBeTruthy();
     expect(screen.getByText('Progress Dashboard')).toBeTruthy();
   });
 
@@ -74,7 +75,7 @@ describe('SidebarComponent', () => {
     expect(screen.getByText('Dashboard')).toBeTruthy();
     expect(screen.getByText('Tenant Management')).toBeTruthy();
     expect(screen.getByText('Content Management')).toBeTruthy();
-    expect(screen.getByText('Staleness Dashboard')).toBeTruthy();
+    expect(screen.getByText('Content Staleness')).toBeTruthy();
   });
 
   it('should show union of sections for multi-role user', async () => {

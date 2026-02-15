@@ -1135,3 +1135,62 @@ export function createMockLecturerAssignmentService(options?: {
 }
 
 export type MockLecturerAssignmentService = ReturnType<typeof createMockLecturerAssignmentService>;
+
+// --- Staleness ---
+
+import { StaleCourse, StaleModule } from '../core/services/staleness.service';
+
+export function createMockStaleModule(overrides?: Partial<StaleModule>): StaleModule {
+  return {
+    id: 'module-1',
+    title: 'Test Module',
+    moduleType: 'video',
+    updatedAt: '2025-06-15T10:00:00Z',
+    daysSinceUpdate: 244,
+    isStale: true,
+    daysOverdue: 64,
+    postponedUntil: null,
+    isPostponed: false,
+    ...overrides,
+  };
+}
+
+export function createMockStaleCourse(overrides?: Partial<StaleCourse>): StaleCourse {
+  const modules = overrides?.modules ?? [createMockStaleModule()];
+  return {
+    id: 'course-1',
+    title: 'Test Course',
+    thresholdDays: 180,
+    modules,
+    staleModuleCount: modules.filter(m => m.isStale).length,
+    freshModuleCount: modules.filter(m => !m.isStale && !m.isPostponed).length,
+    totalModuleCount: modules.length,
+    hasStaleModules: modules.some(m => m.isStale),
+    postponedModuleCount: modules.filter(m => m.isPostponed).length,
+    ...overrides,
+  };
+}
+
+export function createMockStalenessService(options?: {
+  courses?: StaleCourse[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const courses = signal<StaleCourse[]>(options?.courses ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    courses: courses.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadStalenessData: vi.fn().mockResolvedValue(undefined),
+    postponeModule: vi.fn().mockResolvedValue(undefined),
+    postponeAllStaleModules: vi.fn().mockResolvedValue(undefined),
+    _setCourses: courses.set.bind(courses),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockStalenessService = ReturnType<typeof createMockStalenessService>;

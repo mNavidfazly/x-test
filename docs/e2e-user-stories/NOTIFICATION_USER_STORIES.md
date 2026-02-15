@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Notification E2E User Stories (Phase 8A)
 
 ## Overview
@@ -84,18 +86,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| NT-01 | Notification Page Load + List Rendering | Learner | ✅ | 2026-02-14 |
-| NT-02 | Bell Badge Reflects Unread Count | Learner | ✅ | 2026-02-14 |
-| NT-03 | Empty State | Learner | ✅ | 2026-02-14 |
-| NT-04 | Mark Single Notification as Read | Learner | ✅ | 2026-02-14 |
-| NT-05 | Mark All as Read | Learner | ✅ | 2026-02-14 |
-| NT-06 | Click Notification Navigates to Correct Route | Learner | ✅ | 2026-02-14 |
-| NT-07 | Unread vs Read Visual Indicators | Learner | ✅ | 2026-02-14 |
-| NT-08 | Trigger: Question Answered → Learner Notification | Lecturer + Learner | ✅ | 2026-02-14 |
-| NT-09 | Trigger: Issue Resolved → Learner Notification | Lecturer + Learner | ✅ | 2026-02-14 |
-| NT-10 | Trigger: New Expert Question → Lecturer Notification | Learner + Lecturer | ✅ | 2026-02-14 |
+| NT-01 | Notification Page Load + List Rendering | Learner | ✅ | 2026-02-15 |
+| NT-02 | Bell Badge Reflects Unread Count | Learner | ✅ | 2026-02-15 |
+| NT-03 | Empty State | Learner | ✅ | 2026-02-15 |
+| NT-04 | Mark Single Notification as Read | Learner | ✅ | 2026-02-15 |
+| NT-05 | Mark All as Read | Learner | ✅ | 2026-02-15 |
+| NT-06 | Click Notification Navigates to Correct Route | Learner | ✅ | 2026-02-15 |
+| NT-07 | Unread vs Read Visual Indicators | Learner | ✅ | 2026-02-15 |
+| NT-08 | Trigger: Question Answered → Learner Notification | Lecturer + Learner | ✅ | 2026-02-15 |
+| NT-09 | Trigger: Issue Resolved → Learner Notification | Lecturer + Learner | ✅ | 2026-02-15 |
+| NT-10 | Trigger: New Expert Question → Lecturer Notification | Learner + Lecturer | ✅ | 2026-02-15 |
 | NT-11 | Realtime Toast | Learner (two sessions) | ⏳ | — (requires two browser instances — shared localStorage prevents multi-user in one context) |
-| NT-12 | All Roles Can Access /notifications | All 4 roles | ✅ | 2026-02-14 |
+| NT-12 | All Roles Can Access /notifications | All 4 roles | ✅ | 2026-02-15 |
 
 ---
 
@@ -824,6 +826,7 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodit
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-14 | Claude (Playwright MCP) | NT-01 to NT-10, NT-12 | 11 | 0 | NT-11 skipped (Supabase auth uses localStorage — two users can't coexist in one browser context). NT-12 fully verified (all 4 roles: learner, lecturer, PA, CSM). NT-03 verified on sign-out. NT-09 used lecturer instead of PA to resolve issue. 0 bugs found. |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | NT-01 through NT-12 (regression) | 11 | 0 | Full regression run. PA notification page: 50 unread, Mark all as read button, multiple types (access requests, issues, course assigned). Bell badge "50". NT-11 still ⏳ (requires 2 browser instances). No regressions. |
 
 ---
 

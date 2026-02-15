@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — User Management E2E User Stories (Phase 9B)
 
 ## Overview
@@ -104,18 +106,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| UM-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 14 Feb 2026 |
-| UM-03 | Summary Cards | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-04 | Filter by Search | Tenant Admin | ✅ | 14 Feb 2026 |
-| UM-05 | Filter by Role | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-06 | Expand Row + Edit Profile | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-07 | Toggle Tenant Admin Role | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-09 | Self-Role Protection | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-10 | Invite User (TA Flow) | Tenant Admin | ✅ | 14 Feb 2026 |
-| UM-11 | Invite User (PA Flow) | Platform Admin | ✅ | 14 Feb 2026 |
-| UM-12 | Role Access Control | Multiple | ✅ | 14 Feb 2026 |
+| UM-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 15 Feb 2026 |
+| UM-03 | Summary Cards | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-04 | Filter by Search | Tenant Admin | ✅ | 15 Feb 2026 |
+| UM-05 | Filter by Role | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-06 | Expand Row + Edit Profile | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-07 | Toggle Tenant Admin Role | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-09 | Self-Role Protection | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-10 | Invite User (TA Flow) | Tenant Admin | ✅ | 15 Feb 2026 |
+| UM-11 | Invite User (PA Flow) | Platform Admin | ✅ | 15 Feb 2026 |
+| UM-12 | Role Access Control | Multiple | ✅ | 15 Feb 2026 |
 
 ---
 
@@ -778,6 +780,7 @@ ALTER TABLE profiles ENABLE TRIGGER protect_role_fields;
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 14 Feb 2026 | Claude E2E | UM-01 to UM-12 | 12 | 0 | 1 bug found+fixed (UM-BUG-01: maybe_single returns None). All 12 stories pass after fix. 5 roles tested (PA, TA, Learner, Lecturer, CSM). |
+| 15 Feb 2026 | Claude (Playwright MCP) | UM-01 to UM-12 | 12 | 0 | Full regression run. PA board: 9 users (Total:9, TA:1, PA:1, Regular:7), role filter dropdown, Invite User button, cross-tenant view with Tenant column. No regressions. |
 
 ---
 

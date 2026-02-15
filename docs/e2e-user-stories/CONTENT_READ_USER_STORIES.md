@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Content Read E2E User Stories
 
 ## Overview
@@ -88,20 +90,20 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CR-01 | Course List Page — Cards, Progress, and Badges | Learner | ✅ Passed | 2026-02-14 |
-| CR-02 | Course Detail Page — Lecture Accordions and Module List | Learner | ✅ Passed | 2026-02-14 |
-| CR-03 | Video Module Viewer | Learner | ⚠️ Partial | 2026-02-14 |
-| CR-04 | PDF Module Viewer | Learner | ✅ Passed | 2026-02-14 |
-| CR-05 | Markdown Module Viewer | Learner | ✅ Passed | 2026-02-14 |
-| CR-06 | Module Files Download | Learner | ⚠️ Partial | 2026-02-14 |
-| CR-07 | Module Navigation — Previous/Next | Learner | ✅ Passed | 2026-02-14 |
-| CR-08 | Mark as Complete and Progress Tracking | Learner | ✅ Passed | 2026-02-14 |
-| CR-09 | Tenant Isolation — Calypso Client Learner View | Learner (client) | ✅ Passed | 2026-02-14 |
-| CR-10 | Empty and Error States | Learner | ✅ Passed | 2026-02-14 |
-| CR-11 | CSM Content Read Experience | CSM | ✅ Passed | 2026-02-14 |
-| CR-12 | Tenant Admin Content Read Experience | Tenant Admin | ✅ Passed | 2026-02-14 |
-| CR-13 | Lecturer Cross-Tenant Read Access | Lecturer (can_edit) | ✅ Passed | 2026-02-14 |
-| CR-14 | Cross-Tenant Course Isolation — Two Learners, Two Tenants | Learner (Calypso) + Learner (Client) | ✅ Passed | 2026-02-14 |
+| CR-01 | Course List Page — Cards, Progress, and Badges | Learner | ✅ Passed | 2026-02-15 |
+| CR-02 | Course Detail Page — Lecture Accordions and Module List | Learner | ✅ Passed | 2026-02-15 |
+| CR-03 | Video Module Viewer | Learner | ⚠️ Partial | 2026-02-15 |
+| CR-04 | PDF Module Viewer | Learner | ✅ Passed | 2026-02-15 |
+| CR-05 | Markdown Module Viewer | Learner | ✅ Passed | 2026-02-15 |
+| CR-06 | Module Files Download | Learner | ⚠️ Partial | 2026-02-15 |
+| CR-07 | Module Navigation — Previous/Next | Learner | ✅ Passed | 2026-02-15 |
+| CR-08 | Mark as Complete and Progress Tracking | Learner | ✅ Passed | 2026-02-15 |
+| CR-09 | Tenant Isolation — Calypso Client Learner View | Learner (client) | ✅ Passed | 2026-02-15 |
+| CR-10 | Empty and Error States | Learner | ✅ Passed | 2026-02-15 |
+| CR-11 | CSM Content Read Experience | CSM | ✅ Passed | 2026-02-15 |
+| CR-12 | Tenant Admin Content Read Experience | Tenant Admin | ✅ Passed | 2026-02-15 |
+| CR-13 | Lecturer Cross-Tenant Read Access | Lecturer (can_edit) | ✅ Passed | 2026-02-15 |
+| CR-14 | Cross-Tenant Course Isolation — Two Learners, Two Tenants | Learner (Calypso) + Learner (Client) | ✅ Passed | 2026-02-15 |
 
 ---
 
@@ -872,6 +874,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 |------|--------|------------------|------|------|-------|
 | 2026-02-11 | Claude (Playwright MCP) | CR-01 through CR-14 | 12 | 0 | 2 partial: CR-06 (no file attachments exist), CR-14 (no Calypso-exclusive course for isolation test). All roles tested: Learner, Client Learner, CSM, Tenant Admin, Lecturer. Route guards verified for TA. Progress isolation confirmed across tenants. |
 | 2026-02-14 | Claude (Playwright MCP) | CR-01 through CR-14 (all 14) | 12 | 0 | Full regression. CR-14 UPGRADED from Partial to Pass — CW-01 course is now Calypso-exclusive, confirming course-level isolation + direct URL denial. CR-03 DOWNGRADED to Partial — module_videos subtable data deleted during previous E2E cleanup (PGRST116 error, not a code bug). CR-06 remains Partial (no file attachments). All 6 roles tested. Mark-as-complete verified (6/9→7/9). No code regressions. |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | CR-01 through CR-14 (all 14) | 12 | 0 | Full regression run. 12 ✅, 2 ⚠️ Partial (CR-03: no module_videos data — PGRST116, CR-06: no file attachments). CR-08: mark complete persists to detail+list. CR-09: Client 2 courses, Calypso-only absent. CR-13: Lecturer 4 courses, Edit on assigned, no Edit on non-assigned. CR-14: 4 vs 2 courses, cross-tenant URL blocked. Zero code regressions. |
 
 ---
 

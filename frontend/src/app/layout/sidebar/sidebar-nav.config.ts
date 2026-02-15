@@ -38,6 +38,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Questions Board', route: '/teaching/questions', icon: MessageSquare },
       { label: 'Exam Grading', route: '/teaching/grading', icon: ClipboardCheck },
       { label: 'Issue Management', route: '/teaching/issues', icon: Flag },
+      { label: 'Content Staleness', route: '/teaching/staleness', icon: Clock },
     ],
   },
   {
@@ -70,7 +71,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'Tenant Management', route: '/platform/tenants', icon: Building2 },
       { label: 'Lecturer Assignments', route: '/platform/lecturer-assignments', icon: UserCog },
       { label: 'Content Management', route: '/platform/content', icon: FolderOpen },
-      { label: 'Staleness Dashboard', route: '/platform/staleness', icon: Clock },
     ],
   },
 ];

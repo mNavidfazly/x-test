@@ -230,6 +230,11 @@ Badge base:         inline-flex items-center rounded-full px-2.5 py-0.5 text-xs 
 - **Users can only SELECT and UPDATE (mark read) their own notifications.** No direct INSERT allowed.
 - **Two pg_cron jobs:** exam deadline reminders (hourly, 24h before deadline) and content staleness checks (daily, courses not updated beyond `staleness_threshold_days`).
 
+## E2E Testing with Playwright MCP
+
+- When running E2E tests from a user stories `.md` file, **write the result of each test story back into the same `.md` file immediately after completing it** — do not wait until all stories are done.
+- Mark each story with its result (pass/fail) and any bugs found, inline in the `.md` file, as you go.
+
 ## Critical "Never Do This" Rules
 
 These rules are NOT covered in other sections and cause hard-to-debug failures:

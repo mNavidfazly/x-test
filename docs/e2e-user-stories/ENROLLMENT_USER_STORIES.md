@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Enrollment E2E User Stories (Phase 4A)
 
 ## Overview
@@ -70,17 +72,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| EN-01 | Open Course Self-Enrollment | Learner | ✅ PASS | 2026-02-14 |
-| EN-02 | Password Protected Enrollment | Learner + PA | ✅ PASS | 2026-02-14 |
-| EN-03 | Invite-Only Course Info | Learner + PA | ✅ PASS | 2026-02-14 |
-| EN-04 | Enrolled Badge Display | Learner | ✅ PASS | 2026-02-14 |
-| EN-05 | Enrollment CTA Hidden for Editors | PA + Lecturer | ✅ PASS | 2026-02-14 |
-| EN-06 | Enrollment Manager — Platform Admin View | Platform Admin | ✅ PASS | 2026-02-14 |
-| EN-07 | Enrollment Manager — Add User by Email | Platform Admin | ✅ PASS | 2026-02-14 |
-| EN-08 | Enrollment Manager — Unenroll User | Platform Admin | ✅ PASS | 2026-02-14 |
-| EN-09 | Enrollment Manager — Tenant Admin | Tenant Admin | ✅ PASS | 2026-02-14 |
-| EN-10 | Enrollment Manager Hidden for Unauthorized | Learner + Lecturer | ✅ PASS | 2026-02-14 |
-| EN-11 | Module Completion Gated by Enrollment | Learner | ✅ PASS | 2026-02-14 |
+| EN-01 | Open Course Self-Enrollment | Learner | ✅ PASS | 2026-02-15 |
+| EN-02 | Password Protected Enrollment | Learner + PA | ✅ PASS | 2026-02-15 |
+| EN-03 | Invite-Only Course Info | Learner + PA | ✅ PASS | 2026-02-15 |
+| EN-04 | Enrolled Badge Display | Learner | ✅ PASS | 2026-02-15 |
+| EN-05 | Enrollment CTA Hidden for Editors | PA + Lecturer | ✅ PASS | 2026-02-15 |
+| EN-06 | Enrollment Manager — Platform Admin View | Platform Admin | ✅ PASS | 2026-02-15 |
+| EN-07 | Enrollment Manager — Add User by Email | Platform Admin | ✅ PASS | 2026-02-15 |
+| EN-08 | Enrollment Manager — Unenroll User | Platform Admin | ✅ PASS | 2026-02-15 |
+| EN-09 | Enrollment Manager — Tenant Admin | Tenant Admin | ✅ PASS | 2026-02-15 |
+| EN-10 | Enrollment Manager Hidden for Unauthorized | Learner + Lecturer | ✅ PASS | 2026-02-15 |
+| EN-11 | Module Completion Gated by Enrollment | Learner | ✅ PASS | 2026-02-15 |
 
 ---
 
@@ -646,6 +648,7 @@ AND user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commoditie
 |------|--------|-----------------|------|------|-------|
 | 2026-02-12 | Claude Code | EN-01 to EN-11 | 11 | 0 | All tests passed. 1 bug found and fixed (password enrollment button stuck). |
 | 2026-02-14 | Claude (Playwright MCP) | EN-01 through EN-11 (regression) | 11 | 0 | Full regression — all 11 PASS. Verified: enrolled badge, open/password CTA, PA enrollment manager (3 users), TA enrollment manager (1 user, tenant-scoped), CTA hidden for editors. No regressions. |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | EN-01 through EN-11 (regression) | 11 | 0 | Full regression run. Verified: PA enrollment manager (3 enrolled users with Unenroll buttons), email+name+date columns, Add user input. Course detail shows Open badge, enrolled badge on course list. No regressions. |
 
 ---
 

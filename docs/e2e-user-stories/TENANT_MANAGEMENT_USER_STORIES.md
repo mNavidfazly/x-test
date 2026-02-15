@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Tenant Management E2E User Stories (Phase 9A)
 
 ## Overview
@@ -91,16 +93,16 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| TM-01 | Navigation + Page Load | Platform Admin | ✅ | 2026-02-14 |
-| TM-02 | Summary Cards | Platform Admin | ✅ | 2026-02-14 |
-| TM-03 | Filter by Search | Platform Admin | ✅ | 2026-02-14 |
-| TM-04 | Create New Tenant | Platform Admin | ✅ | 2026-02-14 |
-| TM-05 | Edit Tenant Details | Platform Admin | ✅ | 2026-02-14 |
-| TM-06 | Master Tenant Protection | Platform Admin | ✅ | 2026-02-14 |
-| TM-07 | Manage Course Assignments | Platform Admin | ✅ | 2026-02-14 |
-| TM-08 | Manage CSM Assignments | Platform Admin | ✅ | 2026-02-14 |
-| TM-09 | Delete Tenant | Platform Admin | ✅ | 2026-02-14 |
-| TM-10 | Role Access Control | Multiple | ✅ | 2026-02-14 |
+| TM-01 | Navigation + Page Load | Platform Admin | ✅ | 2026-02-15 |
+| TM-02 | Summary Cards | Platform Admin | ✅ | 2026-02-15 |
+| TM-03 | Filter by Search | Platform Admin | ✅ | 2026-02-15 |
+| TM-04 | Create New Tenant | Platform Admin | ✅ | 2026-02-15 |
+| TM-05 | Edit Tenant Details | Platform Admin | ✅ | 2026-02-15 |
+| TM-06 | Master Tenant Protection | Platform Admin | ✅ | 2026-02-15 |
+| TM-07 | Manage Course Assignments | Platform Admin | ✅ | 2026-02-15 |
+| TM-08 | Manage CSM Assignments | Platform Admin | ✅ | 2026-02-15 |
+| TM-09 | Delete Tenant | Platform Admin | ✅ | 2026-02-15 |
+| TM-10 | Role Access Control | Multiple | ✅ | 2026-02-15 |
 
 ---
 
@@ -714,6 +716,7 @@ WHERE cta.tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com'
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-14 | Claude (Playwright MCP) | TM-01 to TM-10 | 10 | 0 | Local dev (localhost:4200). All CRUD, assignment management, role guards verified. 0 bugs found. |
+| 2026-02-15 | Claude (Playwright MCP) | TM-01 to TM-10 | 10 | 0 | Full regression run. PA board: 3 tenants (Total:3, Master:1, Course Assignments:6, CSM:1), Master badge on Calypso, Add Tenant button. No regressions. |
 
 ---
 

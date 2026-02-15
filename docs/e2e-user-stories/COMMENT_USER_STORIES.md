@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Comment E2E User Stories (Phase 6A)
 
 ## Overview
@@ -74,20 +76,20 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CM-01 | Post First Comment | Learner | ✅ | 2026-02-14 |
-| CM-02 | Expert Badge — Lecturer | Lecturer | ✅ | 2026-02-14 |
-| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ✅ | 2026-02-14 |
-| CM-04 | Reply to a Comment | Learner | ✅ | 2026-02-14 |
-| CM-05 | Edit Own Comment | Learner | ✅ | 2026-02-14 |
-| CM-06 | Delete Own Comment | Learner | ✅ | 2026-02-14 |
-| CM-07 | Tenant Admin Moderation | Tenant Admin | ✅ | 2026-02-14 |
-| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ✅ | 2026-02-14 |
-| CM-09 | Tenant Isolation | Learner (both tenants) | ✅ | 2026-02-14 |
-| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ✅ | 2026-02-14 |
-| CM-11 | Module Navigation Reloads Comments | Learner | ✅ | 2026-02-14 |
-| CM-12 | Edit and Delete Own Reply | Learner | ✅ | 2026-02-14 |
-| CM-13 | Permission Boundaries | Learner + CSM | ✅ | 2026-02-14 |
-| CM-14 | Calypso Badge — CSM | CSM | ✅ | 2026-02-14 |
+| CM-01 | Post First Comment | Learner | ✅ | 2026-02-15 |
+| CM-02 | Expert Badge — Lecturer | Lecturer | ✅ | 2026-02-15 |
+| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ✅ | 2026-02-15 |
+| CM-04 | Reply to a Comment | Learner | ✅ | 2026-02-15 |
+| CM-05 | Edit Own Comment | Learner | ✅ | 2026-02-15 |
+| CM-06 | Delete Own Comment | Learner | ✅ | 2026-02-15 |
+| CM-07 | Tenant Admin Moderation | Tenant Admin | ✅ | 2026-02-15 |
+| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ✅ | 2026-02-15 |
+| CM-09 | Tenant Isolation | Learner (both tenants) | ✅ | 2026-02-15 |
+| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ✅ | 2026-02-15 |
+| CM-11 | Module Navigation Reloads Comments | Learner | ✅ | 2026-02-15 |
+| CM-12 | Edit and Delete Own Reply | Learner | ✅ | 2026-02-15 |
+| CM-13 | Permission Boundaries | Learner + CSM | ✅ | 2026-02-15 |
+| CM-14 | Calypso Badge — CSM | CSM | ✅ | 2026-02-15 |
 
 ---
 
@@ -812,6 +814,7 @@ LIMIT 10;
 | 2026-02-13 | Claude (Run 1) | 14/14 | 14 | 0 | 1 bug found+fixed (CM-BUG-01: profiles_select_tenant). Migration 00032 applied. |
 | 2026-02-13 | Claude (Run 2) | 14/14 | 14 | 0 | Clean re-run after bug fix. All stories pass. 0 new bugs. |
 | 2026-02-14 | Claude (Playwright MCP) | CM-01 through CM-14 (regression) | 14 | 0 | Full regression — all 14 PASS. Verified: Discussion section loads (4 comments), post comment+reply, delete reply+comment, Expert badge (lecturer), Calypso badge (PA+CSM), Edit/Delete on own only, Reply on others. No regressions. |
+| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | CM-01 through CM-14 (regression) | 14 | 0 | Full regression run. Discussion (4) on Market Participants module: Learner comment, Lecturer "Expert" badge, PA "Calypso" badge + Edit/Delete, CSM "Calypso" badge. Reply/Delete buttons on all, Edit only on own. No regressions. |
 
 ---
 

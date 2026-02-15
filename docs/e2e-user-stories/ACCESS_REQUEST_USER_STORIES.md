@@ -1,3 +1,5 @@
+> **E2E Testing Rules:** Write the result of each test story back into this file immediately after completing it — do not batch results. Mark each story with its pass/fail result and any bugs found, inline, as you go.
+
 # X-Courses v2 — Access Requests E2E User Stories (Phase 9C)
 
 ## Overview
@@ -101,17 +103,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| AR-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 14 Feb 2026 |
-| AR-03 | Summary Cards | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-04 | Filter by Search | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-05 | Filter by Status | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-06 | Expand Pending Request | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-07 | PA — Unknown Domain + Tenant Picker | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-08 | Approve & Invite | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-09 | Reject Request | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-10 | Already-Reviewed Read-Only | Platform Admin | ✅ | 14 Feb 2026 |
-| AR-11 | Role Access Control | Multiple | ✅ | 14 Feb 2026 |
+| AR-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 15 Feb 2026 |
+| AR-03 | Summary Cards | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-04 | Filter by Search | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-05 | Filter by Status | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-06 | Expand Pending Request | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-07 | PA — Unknown Domain + Tenant Picker | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-08 | Approve & Invite | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-09 | Reject Request | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-10 | Already-Reviewed Read-Only | Platform Admin | ✅ | 15 Feb 2026 |
+| AR-11 | Role Access Control | Multiple | ✅ | 15 Feb 2026 |
 
 ---
 
@@ -766,6 +768,7 @@ DELETE FROM auth.users WHERE email = 'e2e-pending@calypsoclient.com';
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 14 Feb 2026 | Claude (Playwright MCP) | AR-01 to AR-11 | 11/11 | 0 | Local dev (localhost:4200). AR-08 approve step works (status changes, notification fires), invite step 404 because local FastAPI not running — expected for local E2E. 5 roles tested for access control. 0 bugs found. |
+| 15 Feb 2026 | Claude (Playwright MCP) | AR-01 to AR-11 | 11 | 0 | Full regression run. PA board: 4 requests (all Pending), stats cards, search+status filters, "Unknown domain" badge on unknowndomain.com. No regressions. |
 
 ---
 
