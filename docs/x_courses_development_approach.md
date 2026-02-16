@@ -1363,6 +1363,225 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 
 ---
 
+### Phase 12: Feature Enhancements
+
+**Goal:** Six high-impact features that differentiate the platform from generic LMS tools — personalized learning continuity, note-taking, richer quiz feedback, compliance reporting, collaborative knowledge sharing, and inline knowledge checks.
+
+#### 12A - Continue Where You Left Off
+
+Smart resume functionality that identifies each learner's next incomplete module and surfaces it prominently on the dashboard and course cards, enabling one-click continuation.
+
+- [ ] **No migration needed** — uses existing `user_progress` (status column) and `modules` (order_index) data
+- [ ] **Model updates** (`core/models/course.model.ts`):
+  - [ ] Add `nextModuleId?: string` and `nextModuleTitle?: string` to `CourseWithProgress` interface
+  - [ ] Add `nextLectureTitle?: string` for breadcrumb context
+- [ ] **CourseService updates** (`core/services/course.service.ts`):
+  - [ ] In `loadCourses()`: after fetching courses + progress, compute next incomplete module per course
+  - [ ] Query logic: join `modules` → `lectures` → `user_progress`, find first module (by `lectures.order_index` then `modules.order_index`) where progress status ≠ `completed`, populate `nextModuleId`/`nextModuleTitle`/`nextLectureTitle`
+  - [ ] Handle edge cases: no enrollment (no next module), all completed (no next module), no progress rows yet (first module is next)
+- [ ] **Dashboard "Continue Learning" hero** (`features/dashboard/dashboard.component.ts`):
+  - [ ] New section at top of learner dashboard (above existing course list)
+  - [ ] Show up to 3 in-progress courses with course title, next module title, progress percentage, "Continue" button
+  - [ ] Link "Continue" button directly to `/courses/:courseId/modules/:moduleId`
+  - [ ] Hide section when no in-progress courses exist
+  - [ ] Use `card` class with teal accent border-left for visual prominence
+- [ ] **CourseCard enhancement** (`features/courses/components/course-card.component.ts`):
+  - [ ] Add `nextModuleId` / `nextModuleTitle` inputs (from `CourseWithProgress`)
+  - [ ] When next module exists: show "Continue: {moduleTitle}" link below progress bar
+  - [ ] `cardLink` computed: if next module → `/courses/:courseId/modules/:moduleId`, else `/courses/:courseId`
+  - [ ] Truncate module title to ~40 chars with ellipsis
+- [ ] **Tests:** ~12 new frontend tests (service computation + dashboard hero + course card continue link), build OK
+
+#### 12B - Learner Module Notes
+
+Private per-module notes that learners can write while studying. Uses the existing `user_progress.notes` TEXT column (already in schema, currently unused).
+
+- [ ] **No migration needed** — `user_progress.notes` column already exists (TEXT, nullable)
+- [ ] **CourseService updates** (`core/services/course.service.ts`):
+  - [ ] `saveModuleNotes(moduleId: string, notes: string)` — `.update({ notes }).eq('module_id', moduleId).eq('user_id', userId).eq('tenant_id', tenantId)`. Throws on error.
+  - [ ] Ensure `loadModuleViewer()` already returns `notes` field from `user_progress` (verify SELECT includes it)
+- [ ] **Notes panel in ModuleViewerPage** (`features/courses/pages/module-viewer-page.component.ts`):
+  - [ ] Collapsible panel below module content (above comments/questions), toggle via `NotebookPen` icon button
+  - [ ] `<textarea>` with `input-field` class, placeholder "Write your notes for this module..."
+  - [ ] Auto-save: `effect()` watching notes signal, debounced 1500ms via `debouncedSignal()`, calls `saveModuleNotes()`
+  - [ ] Save indicator: "Saving..." / "Saved" / "Error saving" text next to toggle button
+  - [ ] Initialize from `user_progress.notes` on load (may be null → empty string)
+  - [ ] Character count display (optional soft limit indicator)
+- [ ] **My Notes page** (`features/notes/pages/my-notes-page.component.ts`):
+  - [ ] Route: `/notes` with sidebar "My Notes" (NotebookPen icon, roles: `'all'`)
+  - [ ] Query: `user_progress` where `notes IS NOT NULL AND notes != ''`, join `modules(title, module_type)` + `lectures(title)` + `courses(title)` via FK
+  - [ ] Group by course → lecture → module hierarchy
+  - [ ] Each note card: course/lecture/module breadcrumb, note preview (first 200 chars), "Go to module" link
+  - [ ] Search filter: search across note content (client-side filter)
+  - [ ] Empty state: "No notes yet. Start taking notes while studying your modules."
+- [ ] **MyNotesService** (`core/services/my-notes.service.ts`):
+  - [ ] `loadMyNotes()` — query `user_progress` with FK joins, filter non-empty notes, signal-based state
+  - [ ] `deleteNote(moduleId)` — `.update({ notes: null })`, reload
+- [ ] **Tests:** ~18 new frontend tests (save notes + auto-save debounce + My Notes page + service), build OK
+
+#### 12C - Per-Question Explanations
+
+Lecturers can add explanations to quiz questions that are revealed after submission, helping learners understand why an answer is correct or incorrect.
+
+- [ ] **Migration 00042** (`supabase/migrations/00042_quiz_question_explanations.sql`):
+  - [ ] `ALTER TABLE quiz_questions ADD COLUMN explanation TEXT;` — nullable, no default
+  - [ ] Update `quiz_questions_safe` view: include `explanation` column (safe — only shown post-submission via `get_quiz_results`)
+  - [ ] Update `get_quiz_results(p_attempt_id)` RPC: include `explanation` in returned question data (only visible after attempt is completed)
+  - [ ] No new RLS policies needed — existing policies on `quiz_questions` cover the new column
+- [ ] **Regenerate DB types:** `supabase gen types typescript --linked > frontend/src/app/core/models/database.types.ts`
+- [ ] **Model updates** (`core/models/course.model.ts`):
+  - [ ] Add `explanation?: string | null` to `QuizQuestionFormData` interface
+  - [ ] Add `explanation?: string | null` to `QuizQuestionResult` interface (post-submission display)
+- [ ] **Quiz Builder — explanation textarea** (`features/courses/components/quiz-form.component.ts`):
+  - [ ] Add collapsible "Explanation (optional)" textarea below each question's options section
+  - [ ] `form-label` + `input-field` styling, placeholder "Explain why the correct answer is correct..."
+  - [ ] Wire into form data model, include in INSERT/UPDATE queries
+- [ ] **Quiz Results — explanation display** (`features/courses/components/quiz-result-item.component.ts`):
+  - [ ] After submission, show explanation below the correct/incorrect indicator
+  - [ ] Style: `card-solid` background with `Lightbulb` icon, `text-slate-600` body text
+  - [ ] Only show when explanation is non-null and non-empty
+- [ ] **JSON import/export updates:**
+  - [ ] `quiz-json.utils.ts`: Add `explanation` to question export schema
+  - [ ] `quiz-json-template.ts`: Add `explanation` field to downloadable template example
+  - [ ] JSON upload validation: accept `explanation` as optional string field, map to INSERT
+- [ ] **CourseService updates** (`core/services/course.service.ts`):
+  - [ ] Quiz question INSERT: include `explanation` field
+  - [ ] Quiz question UPDATE: include `explanation` field
+  - [ ] Quiz results fetch: map `explanation` from RPC response
+- [ ] **Tests:** ~10 new frontend tests (quiz form explanation + result display + JSON round-trip), migration + RLS pass, build OK
+
+#### 12D - Exportable Compliance Reports
+
+CSV/Excel-downloadable reports for Tenant Admins, CSMs, Lecturers, and Platform Admins — covering enrollment status, module progress, and quiz/exam performance across their scoped data.
+
+- [ ] **No migration needed** — all data available via existing tables + RLS scoping
+- [ ] **CSV utility** (`core/utils/csv.utils.ts`):
+  - [ ] `generateCsv(headers: string[], rows: string[][])` — RFC 4180 compliant (quote fields containing commas/quotes/newlines, escape double quotes)
+  - [ ] `downloadCsv(filename: string, csvContent: string)` — BOM prefix (`\uFEFF`) for Excel UTF-8 detection, Blob + anchor click download
+  - [ ] Timestamp in filename: `report-{type}-{YYYY-MM-DD}.csv`
+- [ ] **ReportService** (`core/services/report.service.ts`):
+  - [ ] 3 report types — each returns `{ headers: string[], rows: string[][] }`:
+  - [ ] `generateEnrollmentReport(filters)` — query `course_enrollments` + `profiles` + `courses` FK joins. Columns: Learner Name, Email, Course, Enrolled Date, Enrollment Type. RLS auto-scopes by role.
+  - [ ] `generateProgressReport(filters)` — query `user_progress` + `profiles` + `modules` + `courses` FK joins. Columns: Learner Name, Email, Course, Module, Status, Completed Date, Time Spent. RLS auto-scopes.
+  - [ ] `generateQuizPerformanceReport(filters)` — query `quiz_attempts` + `profiles` + `quizzes` + `courses` FK joins. Columns: Learner Name, Email, Course, Quiz, Score (%), Passed, Attempt Date, Duration. RLS auto-scopes.
+  - [ ] Signal-based state: `generating`, `error`
+  - [ ] Date range filter: `startDate` / `endDate` applied to relevant timestamp columns
+  - [ ] Course filter: optional `courseId` to narrow results
+  - [ ] Tenant filter: PA/CSM only — optional `tenantId`
+- [ ] **ReportsPageComponent** (`features/reports/pages/reports-page.component.ts`):
+  - [ ] Route: `/reports` with `roleGuard('tenant_admin', 'csm', 'lecturer', 'platform_admin')`
+  - [ ] Sidebar: "Reports" (FileSpreadsheet icon) in appropriate role sections
+  - [ ] Report type selector: 3 `option-card` cards (Enrollment, Progress, Quiz Performance) with icons (UserPlus, TrendingUp, Award)
+  - [ ] Filter bar: date range (two date inputs), course dropdown (optional), tenant dropdown (PA/CSM only)
+  - [ ] "Generate Report" button → preview table (first 20 rows) + row count
+  - [ ] "Download CSV" button → `downloadCsv()` with timestamped filename
+  - [ ] Loading state during generation, error alert on failure
+  - [ ] Empty state when no data matches filters
+- [ ] **Tests:** ~25 new frontend tests (CSV utility + 3 report generators + page component), build OK
+
+#### 12E - Peer Knowledge Notes
+
+Shared module notes that learners can publish for classmates within the same tenant. Supports upvoting to surface the most helpful notes. Separate from private notes (12B) — learners choose to share.
+
+- [ ] **Migration 00043** (`supabase/migrations/00043_peer_knowledge_notes.sql`):
+  - [ ] `CREATE TABLE module_notes` — `id UUID PK DEFAULT gen_random_uuid()`, `module_id UUID REFERENCES modules(id) ON DELETE CASCADE`, `user_id UUID REFERENCES auth.users(id)`, `tenant_id UUID REFERENCES tenants(id)`, `content TEXT NOT NULL`, `is_shared BOOLEAN DEFAULT false`, `upvote_count INTEGER DEFAULT 0` (denormalized), `created_at TIMESTAMPTZ DEFAULT now()`, `updated_at TIMESTAMPTZ DEFAULT now()`
+  - [ ] `CREATE TABLE note_upvotes` — `module_note_id UUID REFERENCES module_notes(id) ON DELETE CASCADE`, `user_id UUID REFERENCES auth.users(id)`, `tenant_id UUID REFERENCES tenants(id)`, `created_at TIMESTAMPTZ DEFAULT now()`, `PRIMARY KEY (module_note_id, user_id)`
+  - [ ] Audit trigger: `set_module_notes_audit_fields()` on `module_notes` (updates `updated_at`)
+  - [ ] Denormalization trigger: `update_note_upvote_count()` — AFTER INSERT/DELETE on `note_upvotes`, updates `module_notes.upvote_count`
+  - [ ] RLS policies for `module_notes`:
+    - [ ] SELECT: same-tenant users can see shared notes + own notes; lecturers see assigned course notes cross-tenant; PA sees all
+    - [ ] INSERT: authenticated users, own `user_id` + `tenant_id`
+    - [ ] UPDATE: own notes only (author)
+    - [ ] DELETE: own notes + PA
+  - [ ] RLS policies for `note_upvotes`:
+    - [ ] SELECT: same-tenant users; PA sees all
+    - [ ] INSERT: authenticated, own `user_id` + `tenant_id`, cannot upvote own note (CHECK or policy)
+    - [ ] DELETE: own upvotes only (un-upvote)
+  - [ ] Index: `module_notes(module_id, tenant_id, is_shared)` for feed queries
+- [ ] **Regenerate DB types**
+- [ ] **Note models** (`core/models/note.model.ts`):
+  - [ ] `ModuleNote` interface: id, moduleId, userId, tenantId, content, isShared, upvoteCount, createdAt, updatedAt, authorName (FK join), hasUpvoted (computed client-side or via RPC)
+  - [ ] `NoteFormData`: content, isShared
+- [ ] **NoteService** (`core/services/note.service.ts`):
+  - [ ] `loadSharedNotes(moduleId)` — query `module_notes` where `is_shared = true` + FK join `profiles(full_name, avatar_url)` + check `note_upvotes` for current user's upvote status, ordered by `upvote_count DESC, created_at DESC`
+  - [ ] `loadMyNotes(moduleId)` — query own notes for this module (shared + private)
+  - [ ] `createNote(moduleId, data)` — INSERT into `module_notes`
+  - [ ] `updateNote(noteId, data)` — UPDATE content/is_shared
+  - [ ] `deleteNote(noteId)` — DELETE
+  - [ ] `upvoteNote(noteId)` — INSERT into `note_upvotes`, optimistic upvote_count increment
+  - [ ] `removeUpvote(noteId)` — DELETE from `note_upvotes`, optimistic decrement
+  - [ ] Signal-based state: `sharedNotes`, `myNotes`, `loading`, `error`
+- [ ] **SharedNotesPanel** (`features/courses/components/shared-notes-panel.component.ts`):
+  - [ ] Collapsible section below module viewer content (between notes panel and comments)
+  - [ ] Toggle via `Users` icon + "Community Notes ({count})" header
+  - [ ] List of shared notes: author avatar+name, content (markdown-rendered), upvote button (ThumbsUp icon + count), timestamp
+  - [ ] Current user's upvote highlighted (teal fill)
+  - [ ] "Share a Note" button → inline form (textarea + "Share publicly" checkbox + Submit)
+  - [ ] Own notes: edit/delete buttons, "Shared"/"Private" badge
+  - [ ] Empty state: "No shared notes yet. Be the first to share your insights!"
+  - [ ] Sort: by upvotes (default) or by newest
+- [ ] **My Notes page update** (`features/notes/pages/my-notes-page.component.ts`):
+  - [ ] Add tab or section for "Shared Notes" alongside private notes from 12B
+  - [ ] Show upvote counts on shared notes
+  - [ ] "Unshare" / "Share" toggle per note
+- [ ] **Tests:** ~30 new frontend tests (NoteService CRUD + upvote + SharedNotesPanel + My Notes integration), ~16 new RLS tests (module_notes + note_upvotes per role), build OK
+
+#### 12F - Module Knowledge Checks
+
+Lightweight inline quizzes attached to individual modules (not the full quiz infrastructure). Lecturers add 1–5 quick questions per module; learners answer them directly in the module viewer as a comprehension check.
+
+- [ ] **Migration 00044** (`supabase/migrations/00044_knowledge_checks.sql`):
+  - [ ] `CREATE TABLE knowledge_check_questions` — `id UUID PK DEFAULT gen_random_uuid()`, `module_id UUID REFERENCES modules(id) ON DELETE CASCADE`, `question_text TEXT NOT NULL`, `question_type TEXT NOT NULL DEFAULT 'single_choice'` (single_choice, true_false), `options JSONB NOT NULL` (array of `{text, isCorrect}`), `explanation TEXT`, `order_index INTEGER NOT NULL DEFAULT 0`, `created_at TIMESTAMPTZ DEFAULT now()`
+  - [ ] `CREATE TABLE knowledge_check_responses` — `id UUID PK DEFAULT gen_random_uuid()`, `question_id UUID REFERENCES knowledge_check_questions(id) ON DELETE CASCADE`, `user_id UUID REFERENCES auth.users(id)`, `tenant_id UUID REFERENCES tenants(id)`, `selected_option_index INTEGER NOT NULL`, `is_correct BOOLEAN NOT NULL`, `answered_at TIMESTAMPTZ DEFAULT now()`, `UNIQUE(question_id, user_id)` (one response per user per question)
+  - [ ] RLS policies for `knowledge_check_questions`:
+    - [ ] SELECT: enrolled users (via `tenant_courses` + `course_enrollments` join through `modules.course_id`), lecturers with assigned courses, PA
+    - [ ] INSERT/UPDATE/DELETE: lecturers with `can_edit` on the module's course, PA
+  - [ ] RLS policies for `knowledge_check_responses`:
+    - [ ] SELECT: own responses only + lecturers on assigned courses (cross-tenant) + PA
+    - [ ] INSERT: own `user_id` + `tenant_id`, enrolled in module's course
+    - [ ] UPDATE: none (responses are immutable)
+    - [ ] DELETE: PA only (for resets)
+  - [ ] SECURITY DEFINER RPC `check_knowledge_answer(p_question_id, p_selected_index)` — validates enrollment, looks up correct answer from `options` JSONB, inserts response with `is_correct`, returns `{ is_correct, correct_index, explanation }`
+  - [ ] Index: `knowledge_check_questions(module_id, order_index)`
+- [ ] **Regenerate DB types**
+- [ ] **Knowledge check models** (`core/models/knowledge-check.model.ts`):
+  - [ ] `KnowledgeCheckQuestion`: id, moduleId, questionText, questionType, options (array of `{text, isCorrect}`), explanation, orderIndex
+  - [ ] `KnowledgeCheckResponse`: questionId, selectedOptionIndex, isCorrect, explanation (from RPC)
+  - [ ] `KnowledgeCheckQuestionFormData`: questionText, questionType, options, explanation
+- [ ] **KnowledgeCheckService** (`core/services/knowledge-check.service.ts`):
+  - [ ] `loadQuestions(moduleId)` — SELECT from `knowledge_check_questions` ordered by `order_index`. For learners: strip `options[].isCorrect` client-side (or use a safe view)
+  - [ ] `submitAnswer(questionId, selectedIndex)` — call `check_knowledge_answer` RPC, return result
+  - [ ] `loadMyResponses(moduleId)` — SELECT from `knowledge_check_responses` for current user, join questions
+  - [ ] `saveQuestions(moduleId, questions[])` — upsert pattern: DELETE removed, INSERT new, UPDATE existing
+  - [ ] Signal-based state per module
+- [ ] **KnowledgeCheckSection** (`features/courses/components/knowledge-check-section.component.ts`):
+  - [ ] Inline section in module viewer, below module content, above notes panel
+  - [ ] Header: `ClipboardCheck` icon + "Check Your Understanding" + question count badge
+  - [ ] Display questions sequentially: question text, radio options (single_choice) or true/false buttons
+  - [ ] Submit per question → immediate feedback: green check / red X + explanation (if provided)
+  - [ ] Already-answered questions show previous response (correct/incorrect) — not re-answerable
+  - [ ] Progress indicator: "2 of 4 answered" with teal progress bar
+  - [ ] Empty state (no questions): section hidden entirely
+  - [ ] All questions answered: congratulatory message with `CheckCircle2` icon
+- [ ] **KnowledgeCheckEditorComponent** (`features/courses/components/knowledge-check-editor.component.ts`):
+  - [ ] Used in ModuleFormPage (below module content form, above Save button)
+  - [ ] Only shown for lecturers with `can_edit` on the course
+  - [ ] "Knowledge Checks" section header with `Plus` button to add question
+  - [ ] Per question: question text input, type selector (single choice / true-false), dynamic options list (add/remove), correct answer toggle, optional explanation textarea, drag handle for reorder (order_index)
+  - [ ] Max 5 questions per module (soft limit with warning)
+  - [ ] Save alongside module content (batch upsert via `saveQuestions`)
+- [ ] **ModuleViewerPage integration** (`features/courses/pages/module-viewer-page.component.ts`):
+  - [ ] Add `<app-knowledge-check-section>` between module content and notes panel
+  - [ ] Pass `moduleId` input, component self-loads questions
+  - [ ] Use `@defer (on viewport)` for lazy loading
+- [ ] **ModuleFormPage integration** (`features/courses/pages/module-form-page.component.ts`):
+  - [ ] Add `<app-knowledge-check-editor>` section when editing any module type
+  - [ ] Load existing questions on edit, pass to editor
+  - [ ] On save: persist module content + knowledge check questions together
+- [ ] **Tests:** ~35 new frontend tests (service + section component + editor component + page integrations), ~20 new RLS tests (questions + responses per role + RPC), build OK
+
+---
+
 ## 4. FastAPI Endpoints Summary
 
 | Endpoint | Method | Purpose | Auth |

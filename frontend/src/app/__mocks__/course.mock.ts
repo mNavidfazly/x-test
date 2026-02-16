@@ -103,6 +103,10 @@ export function createMockCourseWithProgress(overrides?: Partial<CourseWithProgr
     lastActivity: '2026-01-15T10:00:00Z',
     totalDurationMinutes: 150,
     lecturers: [],
+    nextModuleId: null,
+    nextModuleTitle: null,
+    nextModuleType: null,
+    nextLectureTitle: null,
     ...overrides,
   };
 }

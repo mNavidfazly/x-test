@@ -22,6 +22,10 @@ export interface CourseWithProgress {
   lastActivity: string | null;
   totalDurationMinutes: number;
   lecturers: CourseLecturer[];
+  nextModuleId: string | null;
+  nextModuleTitle: string | null;
+  nextModuleType: ModuleType | null;
+  nextLectureTitle: string | null;
 }
 
 export interface LectureWithModules {

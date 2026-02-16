@@ -50,9 +50,9 @@ describe('CourseService', () => {
           case 2: // modules
             return resolve({
               data: [
-                { id: 'm1', course_id: 'c1', estimated_duration_minutes: 30 },
-                { id: 'm2', course_id: 'c1', estimated_duration_minutes: 20 },
-                { id: 'm3', course_id: 'c2', estimated_duration_minutes: 45 },
+                { id: 'm1', course_id: 'c1', lecture_id: 'l1', title: 'Module 1', module_type: 'video', sort_order: 0, estimated_duration_minutes: 30 },
+                { id: 'm2', course_id: 'c1', lecture_id: 'l1', title: 'Module 2', module_type: 'pdf', sort_order: 1, estimated_duration_minutes: 20 },
+                { id: 'm3', course_id: 'c2', lecture_id: 'l2', title: 'Module 3', module_type: 'quiz', sort_order: 0, estimated_duration_minutes: 45 },
               ],
               error: null,
             });
@@ -67,6 +67,16 @@ describe('CourseService', () => {
           case 4: // enrollments
             return resolve({
               data: [{ course_id: 'c1' }],
+              error: null,
+            });
+          case 5: // lecturer_course_assignments
+            return resolve({ data: [], error: null });
+          case 6: // lectures
+            return resolve({
+              data: [
+                { id: 'l1', course_id: 'c1', sort_order: 0, title: 'Lecture 1' },
+                { id: 'l2', course_id: 'c2', sort_order: 0, title: 'Lecture 2' },
+              ],
               error: null,
             });
           default:
@@ -95,6 +105,10 @@ describe('CourseService', () => {
         lastActivity: '2026-01-20T12:00:00Z',
         totalDurationMinutes: 50,
         lecturers: [],
+        nextModuleId: 'm2',
+        nextModuleTitle: 'Module 2',
+        nextModuleType: 'pdf',
+        nextLectureTitle: 'Lecture 1',
       });
 
       expect(courses[1]).toEqual({
@@ -110,6 +124,10 @@ describe('CourseService', () => {
         lastActivity: null,
         totalDurationMinutes: 45,
         lecturers: [],
+        nextModuleId: null,
+        nextModuleTitle: null,
+        nextModuleType: null,
+        nextLectureTitle: null,
       });
     });
 

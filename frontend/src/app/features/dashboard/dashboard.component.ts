@@ -17,6 +17,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { ErrorAlertComponent } from '../../shared/components/error-alert.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
+import { ProgressRingComponent } from '../../shared/components/progress-ring.component';
 
 interface ActionItem {
   icon: LucideIconData;
@@ -43,7 +44,7 @@ const ROLE_BADGE_MAP: Record<string, { label: string; variant: BadgeVariant }> =
     DashboardActionCardComponent, CourseCardComponent,
     StatCardComponent, StatusBadgeComponent,
     LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent,
-    UserAvatarComponent,
+    UserAvatarComponent, ProgressRingComponent,
   ],
   host: { class: 'block page-enter' },
   template: `
@@ -63,6 +64,30 @@ const ROLE_BADGE_MAP: Record<string, { label: string; variant: BadgeVariant }> =
         }
       </div>
     </div>
+
+    <!-- Section 1.5: Continue Learning -->
+    @if (continueLearningCourses().length > 0) {
+      <div class="mb-8">
+        <h2 class="section-label mb-3">Continue Learning</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          @for (course of continueLearningCourses(); track course.id) {
+            <a [routerLink]="['/courses', course.id, 'modules', course.nextModuleId]"
+               class="card-solid p-4 border-l-4 border-l-teal-500 flex items-center gap-4 group">
+              <app-progress-ring [percent]="course.progressPercent" size="md" />
+              <div class="flex-1 min-w-0">
+                <h3 class="text-sm font-semibold text-slate-900 truncate">{{ course.title }}</h3>
+                <p class="text-xs text-teal-600 truncate mt-0.5">{{ course.nextModuleTitle }}</p>
+                <p class="text-[11px] text-slate-400 mt-0.5 tabular-nums">
+                  {{ course.completedModules }}/{{ course.moduleCount }} modules
+                </p>
+              </div>
+              <lucide-icon [img]="icons.ArrowRight" [size]="16"
+                class="text-slate-300 group-hover:text-teal-500 shrink-0 transition-colors duration-200"></lucide-icon>
+            </a>
+          }
+        </div>
+      </div>
+    }
 
     <!-- Section 2: Needs Your Attention (admin/teaching roles) -->
     @if (showActionItems()) {
@@ -247,6 +272,18 @@ export class DashboardComponent implements OnInit {
 
     return stats;
   });
+
+  readonly continueLearningCourses = computed(() =>
+    this.courseService.courses()
+      .filter(c => c.isEnrolled && c.nextModuleId && c.progressPercent > 0 && c.progressPercent < 100)
+      .sort((a, b) => {
+        if (a.lastActivity && b.lastActivity) return b.lastActivity.localeCompare(a.lastActivity);
+        if (a.lastActivity) return -1;
+        if (b.lastActivity) return 1;
+        return 0;
+      })
+      .slice(0, 3),
+  );
 
   readonly enrolledCourses = computed(() =>
     this.courseService.courses()

@@ -64,10 +64,31 @@ describe('CourseCardComponent', () => {
     expect(screen.getByText('Invite only')).toBeTruthy();
   });
 
-  it('should link to course detail page', async () => {
-    await renderCard({ id: 'abc-123' });
+  it('should link to course detail page when no next module', async () => {
+    await renderCard({ id: 'abc-123', nextModuleId: null });
     const link = screen.getByRole('link');
     expect(link.getAttribute('href')).toBe('/courses/abc-123');
+  });
+
+  it('should link to next module when nextModuleId is set', async () => {
+    await renderCard({ id: 'abc-123', nextModuleId: 'mod-5' });
+    const link = screen.getByRole('link');
+    expect(link.getAttribute('href')).toBe('/courses/abc-123/modules/mod-5');
+  });
+
+  it('should show continue subtitle with next module title', async () => {
+    await renderCard({ isEnrolled: true, completedModules: 3, progressPercent: 30, nextModuleId: 'mod-5', nextModuleTitle: 'Advanced Patterns' });
+    expect(screen.getByText('Continue: Advanced Patterns')).toBeTruthy();
+  });
+
+  it('should show "Start" subtitle for enrolled course with no progress', async () => {
+    await renderCard({ isEnrolled: true, completedModules: 0, progressPercent: 0, nextModuleId: 'mod-1', nextModuleTitle: 'Getting Started' });
+    expect(screen.getByText('Start: Getting Started')).toBeTruthy();
+  });
+
+  it('should not show continue subtitle when nextModuleId is null', async () => {
+    await renderCard({ isEnrolled: true, completedModules: 3, progressPercent: 30, nextModuleId: null, nextModuleTitle: null });
+    expect(screen.queryByText(/Continue:|Start:/)).toBeNull();
   });
 
   // --- Lecturer display tests ---

@@ -19,6 +19,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 import { ErrorAlertComponent } from '../../shared/components/error-alert.component';
 import { EmptyStateComponent } from '../../shared/components/empty-state.component';
 import { CourseWithProgress } from '../../core/models/course.model';
+import { ProgressRingComponent } from '../../shared/components/progress-ring.component';
 
 const EMPTY_COUNTS: DashboardCounts = {
   pendingAccessRequests: null,
@@ -51,6 +52,10 @@ function createTestCourse(overrides: Partial<CourseWithProgress> & { id: string;
     lastActivity: '2025-06-01T10:00:00Z',
     totalDurationMinutes: 120,
     lecturers: [],
+    nextModuleId: null,
+    nextModuleTitle: null,
+    nextModuleType: null,
+    nextLectureTitle: null,
     ...overrides,
   };
 }
@@ -86,6 +91,7 @@ describe('DashboardComponent', () => {
         DashboardActionCardComponent, CourseCardComponent,
         StatCardComponent, StatusBadgeComponent,
         LoadingSpinnerComponent, ErrorAlertComponent, EmptyStateComponent,
+        ProgressRingComponent,
       ],
       providers: [
         provideRouter([]),
@@ -325,6 +331,102 @@ describe('DashboardComponent', () => {
 
       expect(screen.getByText('Assigned Tenants')).toBeTruthy();
       expect(screen.getByText('2')).toBeTruthy();
+    });
+  });
+
+  // ─── Section 1.5: Continue Learning ──────────────────
+
+  describe('continue learning', () => {
+    it('should show section for learner with in-progress course', async () => {
+      await setup({
+        courses: [
+          createTestCourse({
+            id: 'c1', title: 'Angular Advanced',
+            isEnrolled: true, progressPercent: 45, completedModules: 4,
+            nextModuleId: 'mod-5', nextModuleTitle: 'Dependency Injection',
+            lastActivity: '2026-02-16T10:00:00Z',
+          }),
+        ],
+      });
+      await new Promise(r => setTimeout(r));
+
+      expect(screen.getByText('Continue Learning')).toBeTruthy();
+      expect(screen.getByText('Dependency Injection')).toBeTruthy();
+    });
+
+    it('should NOT show section when no enrolled courses', async () => {
+      await setup();
+      await new Promise(r => setTimeout(r));
+
+      expect(screen.queryByText('Continue Learning')).toBeNull();
+    });
+
+    it('should NOT show section when all courses are 100% complete', async () => {
+      await setup({
+        courses: [
+          createTestCourse({
+            id: 'c1', title: 'Done Course',
+            isEnrolled: true, progressPercent: 100, completedModules: 10,
+            nextModuleId: null, nextModuleTitle: null,
+          }),
+        ],
+      });
+      await new Promise(r => setTimeout(r));
+
+      expect(screen.queryByText('Continue Learning')).toBeNull();
+    });
+
+    it('should NOT show section when progress is 0%', async () => {
+      await setup({
+        courses: [
+          createTestCourse({
+            id: 'c1', title: 'Not Started',
+            isEnrolled: true, progressPercent: 0, completedModules: 0,
+            nextModuleId: 'mod-1', nextModuleTitle: 'Intro',
+          }),
+        ],
+      });
+      await new Promise(r => setTimeout(r));
+
+      expect(screen.queryByText('Continue Learning')).toBeNull();
+    });
+
+    it('should link to correct module URL', async () => {
+      await setup({
+        courses: [
+          createTestCourse({
+            id: 'c1', title: 'Angular Advanced',
+            isEnrolled: true, progressPercent: 45, completedModules: 4,
+            nextModuleId: 'mod-5', nextModuleTitle: 'DI Deep Dive',
+            lastActivity: '2026-02-16T10:00:00Z',
+          }),
+        ],
+      });
+      await new Promise(r => setTimeout(r));
+
+      const links = screen.getAllByRole('link');
+      const heroLink = links.find(l => l.getAttribute('href')?.includes('/modules/'));
+      expect(heroLink?.getAttribute('href')).toBe('/courses/c1/modules/mod-5');
+    });
+
+    it('should show max 3 continue learning cards', async () => {
+      const courses = Array.from({ length: 5 }, (_, i) =>
+        createTestCourse({
+          id: `c${i}`, title: `Course ${i}`,
+          isEnrolled: true, progressPercent: 50, completedModules: 5,
+          nextModuleId: `mod-${i}`, nextModuleTitle: `Module ${i}`,
+          lastActivity: `2026-02-1${i}T10:00:00Z`,
+        }),
+      );
+      await setup({ courses });
+      await new Promise(r => setTimeout(r));
+
+      // Should show only 3 most recent (Course 4, 3, 2)
+      expect(screen.getByText('Module 4')).toBeTruthy();
+      expect(screen.getByText('Module 3')).toBeTruthy();
+      expect(screen.getByText('Module 2')).toBeTruthy();
+      expect(screen.queryByText('Module 1')).toBeNull();
+      expect(screen.queryByText('Module 0')).toBeNull();
     });
   });
 

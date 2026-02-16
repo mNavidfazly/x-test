@@ -53,21 +53,23 @@ export class CourseService {
         return;
       }
 
-      const [coursesRes, modulesRes, progressRes, enrollmentsRes, lecturerRes] = await Promise.all([
+      const [coursesRes, modulesRes, progressRes, enrollmentsRes, lecturerRes, lecturesRes] = await Promise.all([
         client.from('courses').select('id, title, description, thumbnail_url, enrollment_type').order('title'),
-        client.from('modules').select('id, course_id, estimated_duration_minutes'),
+        client.from('modules').select('id, course_id, lecture_id, title, module_type, sort_order, estimated_duration_minutes'),
         client.from('user_progress').select('module_id, course_id, status, updated_at').eq('user_id', userId),
         client.from('course_enrollments').select('course_id').eq('user_id', userId),
         client.from('lecturer_course_assignments').select('course_id, user:profiles!user_id(id, full_name, email, avatar_url)'),
+        client.from('lectures').select('id, course_id, sort_order, title'),
       ]);
 
-      const firstError = [coursesRes, modulesRes, progressRes, enrollmentsRes, lecturerRes].find(r => r.error);
+      const firstError = [coursesRes, modulesRes, progressRes, enrollmentsRes, lecturerRes, lecturesRes].find(r => r.error);
       if (firstError?.error) throw firstError.error;
 
       const courses = coursesRes.data ?? [];
       const modules = modulesRes.data ?? [];
       const progress = progressRes.data ?? [];
       const enrollments = enrollmentsRes.data ?? [];
+      const lectures = lecturesRes.data ?? [];
 
       const enrolledCourseIds = new Set(enrollments.map((e: { course_id: string }) => e.course_id));
 
@@ -91,11 +93,15 @@ export class CourseService {
       }
 
       const completedByCourse = new Map<string, number>();
+      const completedModuleIds = new Map<string, Set<string>>();
       const lastActivityByCourse = new Map<string, string>();
       for (const p of progress) {
-        const rec = p as { course_id: string; status: string; updated_at: string };
+        const rec = p as { module_id: string; course_id: string; status: string; updated_at: string };
         if (rec.status === 'completed') {
           completedByCourse.set(rec.course_id, (completedByCourse.get(rec.course_id) ?? 0) + 1);
+          const set = completedModuleIds.get(rec.course_id) ?? new Set<string>();
+          set.add(rec.module_id);
+          completedModuleIds.set(rec.course_id, set);
         }
         const prev = lastActivityByCourse.get(rec.course_id);
         if (!prev || rec.updated_at > prev) {
@@ -103,9 +109,51 @@ export class CourseService {
         }
       }
 
+      // Build lecture sort_order + title lookup
+      const lectureInfo = new Map<string, { sort_order: number; title: string }>();
+      for (const l of lectures) {
+        const rec = l as { id: string; sort_order: number; title: string };
+        lectureInfo.set(rec.id, { sort_order: rec.sort_order, title: rec.title });
+      }
+
+      // Group modules by course, sorted by lecture.sort_order then module.sort_order
+      const sortedModulesByCourse = new Map<string, Array<{ id: string; title: string; module_type: string; lecture_id: string; sort_order: number }>>();
+      for (const m of modules) {
+        const rec = m as { id: string; course_id: string; lecture_id: string; title: string; module_type: string; sort_order: number };
+        const list = sortedModulesByCourse.get(rec.course_id) ?? [];
+        list.push({ id: rec.id, title: rec.title, module_type: rec.module_type, lecture_id: rec.lecture_id, sort_order: rec.sort_order });
+        sortedModulesByCourse.set(rec.course_id, list);
+      }
+      for (const [, list] of sortedModulesByCourse) {
+        list.sort((a, b) => {
+          const la = lectureInfo.get(a.lecture_id)?.sort_order ?? 0;
+          const lb = lectureInfo.get(b.lecture_id)?.sort_order ?? 0;
+          if (la !== lb) return la - lb;
+          return a.sort_order - b.sort_order;
+        });
+      }
+
       const result: CourseWithProgress[] = courses.map((c: { id: string; title: string; description: string | null; thumbnail_url: string | null; enrollment_type: string }) => {
         const moduleCount = moduleCountByCourse.get(c.id) ?? 0;
         const completedModules = completedByCourse.get(c.id) ?? 0;
+
+        let nextModuleId: string | null = null;
+        let nextModuleTitle: string | null = null;
+        let nextModuleType: ModuleType | null = null;
+        let nextLectureTitle: string | null = null;
+
+        if (enrolledCourseIds.has(c.id) && completedModules < moduleCount) {
+          const sorted = sortedModulesByCourse.get(c.id) ?? [];
+          const completed = completedModuleIds.get(c.id) ?? new Set<string>();
+          const next = sorted.find(m => !completed.has(m.id));
+          if (next) {
+            nextModuleId = next.id;
+            nextModuleTitle = next.title;
+            nextModuleType = next.module_type as ModuleType;
+            nextLectureTitle = lectureInfo.get(next.lecture_id)?.title ?? null;
+          }
+        }
+
         return {
           id: c.id,
           title: c.title,
@@ -119,6 +167,10 @@ export class CourseService {
           lastActivity: lastActivityByCourse.get(c.id) ?? null,
           totalDurationMinutes: durationByCourse.get(c.id) ?? 0,
           lecturers: lecturersByCourse.get(c.id) ?? [],
+          nextModuleId,
+          nextModuleTitle,
+          nextModuleType,
+          nextLectureTitle,
         };
       });
 

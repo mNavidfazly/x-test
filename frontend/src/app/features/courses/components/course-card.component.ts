@@ -24,7 +24,7 @@ const BADGE_LABELS: Record<string, string> = {
   imports: [RouterLink, LucideAngularModule, UserAvatarComponent, ProgressRingComponent],
   host: { class: 'block' },
   template: `
-    <a [routerLink]="['/courses', course().id]"
+    <a [routerLink]="cardLink()"
        class="block card-solid overflow-hidden group">
 
       <!-- Thumbnail -->
@@ -85,6 +85,13 @@ const BADGE_LABELS: Record<string, string> = {
           </div>
         }
 
+        <!-- Continue subtitle -->
+        @if (course().nextModuleId && course().nextModuleTitle) {
+          <p class="text-xs text-teal-600 truncate mb-3">
+            {{ actionLabel() === 'Start' ? 'Start' : 'Continue' }}: {{ course().nextModuleTitle }}
+          </p>
+        }
+
         <!-- Footer -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3 text-xs text-slate-400">
@@ -117,6 +124,14 @@ const BADGE_LABELS: Record<string, string> = {
 export class CourseCardComponent {
   readonly course = input.required<CourseWithProgress>();
   readonly icons = { BookOpen, Clock, ArrowRight };
+
+  readonly cardLink = computed(() => {
+    const c = this.course();
+    if (c.nextModuleId) {
+      return ['/courses', c.id, 'modules', c.nextModuleId];
+    }
+    return ['/courses', c.id];
+  });
 
   readonly badgeStyle = computed(() => BADGE_STYLES[this.course().enrollment_type] ?? BADGE_STYLES['open']);
   readonly badgeLabel = computed(() => BADGE_LABELS[this.course().enrollment_type] ?? this.course().enrollment_type);
