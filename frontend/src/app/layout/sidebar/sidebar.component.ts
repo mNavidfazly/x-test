@@ -24,7 +24,7 @@ import { filterNavSections } from './sidebar-nav.config';
 
     <!-- Sidebar panel -->
     <aside
-      class="fixed top-0 left-0 h-full w-64 bg-white border-r border-slate-200 flex flex-col
+      class="fixed top-0 left-0 h-full w-64 bg-white lg:border-r border-slate-200 flex flex-col
              transition-[transform,width] duration-300
              lg:static lg:translate-x-0"
       [class.-translate-x-full]="!open()"
