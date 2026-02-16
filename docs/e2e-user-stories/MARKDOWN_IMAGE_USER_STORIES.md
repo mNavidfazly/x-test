@@ -152,7 +152,7 @@ All test users use password: `TestUser123!`
 
 | Bug ID | Story | Description | Severity | Status |
 |--------|-------|-------------|----------|--------|
-| MI-BUG-01 | MI-01, MI-02 | Images invisible in editor (height: 0) — `supabase-storage://` URIs are not renderable by the browser. Images exist in DOM but display as nothing. Viewer works correctly with signed URLs. | Medium | Open |
+| MI-BUG-01 | MI-01, MI-02 | Images invisible in editor (height: 0) — `supabase-storage://` URIs are not renderable by the browser. Images exist in DOM but display as nothing. Viewer works correctly with signed URLs. | Medium | Fixed (resolve on load, reverse on save) |
 
 ## References
 
