@@ -345,8 +345,8 @@ AND module_id IN (
 | 5 | Verify incorrect answer card (if any) | Red card: `bg-rose-50 border-rose-200` with XCircle icon in rose | ✅ |
 | 6 | Verify correct answer revealed for wrong answers | "Correct answer: ..." text in `text-emerald-700` below the user's incorrect answer | ✅ |
 | 7 | Verify unanswered question (if any) | Shows "No answer provided" in `text-slate-400 italic` | ✅ |
-| 8 | Verify explanation shown for questions that have one | Amber card: `bg-amber-50 border-amber-200` with Lightbulb icon (`text-amber-500`) and explanation text in `text-slate-700` | ⏳ |
-| 9 | Verify explanation NOT shown for questions without one | No amber card visible for questions where `explanation` is null | ⏳ |
+| 8 | Verify explanation shown for questions that have one | Amber card: `bg-amber-50 border-amber-200` with Lightbulb icon (`text-amber-500`) and explanation text in `text-slate-700` | ✅ |
+| 9 | Verify explanation NOT shown for questions without one | No amber card visible for questions where `explanation` is null | ✅ |
 
 **Notes/Learnings**:
 - If `show_correct_answers=false`, steps 6-7 about correct answer display should show "—" instead

@@ -206,8 +206,8 @@ All test users use password: `TestUser123!`
 | 13 | Click remove (trash) button on Option C | Option C removed, 2 options remain (A and B) | ✅ |
 | 14 | Verify minimum 2 options enforced | With 2 options, trash buttons are still visible (but cannot go below 2 if validation blocks save) | ✅ |
 | 15 | Set Points: "2" | Points value updated to 2 | ✅ |
-| 16 | Verify "Explanation (optional)" textarea below options | Textarea with Lightbulb icon label, placeholder "Explain why the correct answer is correct..." | ⏳ |
-| 17 | Enter explanation: "Paris has been the capital of France since the 10th century." | Text accepted — explanation is optional (nullable) | ⏳ |
+| 16 | Verify "Explanation (optional)" textarea below options | Textarea with Lightbulb icon label, placeholder "Explain why the correct answer is correct..." | ✅ |
+| 17 | Enter explanation: "Paris has been the capital of France since the 10th century." | Text accepted — explanation is optional (nullable) | ✅ |
 
 **Notes/Learnings**:
 - Single choice uses `setCorrectOption(qIdx, oIdx)` — sets one option's `is_correct=true` and all others to `false`
@@ -524,7 +524,7 @@ All test users use password: `TestUser123!`
 | 9 | Verify "Estimated Duration (minutes)" pre-populated | Shows the saved value (e.g., "20" from creation) | ✅ |
 | 10 | Verify questions pre-populated | All questions from creation visible with correct text, types, options, and correct answers | ✅ |
 | 11 | Verify single_choice question: options and correct answer | Option texts match, correct option highlighted | ✅ |
-| 11a | Verify explanation pre-populated on Q1 (if set in QB-09) | Explanation textarea shows saved text | ⏳ |
+| 11a | Verify explanation pre-populated on Q1 (if set in QB-09) | Explanation textarea shows saved text | ✅ |
 | 12 | Verify fill_blank question: correct answer | Correct answer text input pre-populated | ✅ |
 | 13 | Verify "Save Changes" button (not "Create Module") | Edit mode shows "Save Changes" | ✅ |
 

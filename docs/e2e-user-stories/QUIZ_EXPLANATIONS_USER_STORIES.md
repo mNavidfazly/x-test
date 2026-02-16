@@ -78,9 +78,9 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| QE-01 | Lecturer Adds Explanation in Quiz Builder | Platform Admin | ⏳ | — |
-| QE-02 | Learner Sees Explanation After Quiz Submission | Learner | ⏳ | — |
-| QE-03 | Explanation Hidden When show_correct_answers=false | Learner | ⏳ | — |
+| QE-01 | Lecturer Adds Explanation in Quiz Builder | Platform Admin | ✅ | 2026-02-17 |
+| QE-02 | Learner Sees Explanation After Quiz Submission | Learner | ✅ | 2026-02-17 |
+| QE-03 | Explanation Hidden When show_correct_answers=false | Learner | ✅ | 2026-02-17 |
 
 ---
 
@@ -122,9 +122,9 @@ ORDER BY ce.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full quiz builder round-trip for explanations: Platform Admin opens a quiz module for editing → finds the "Explanation (optional)" textarea below a question → types an explanation → saves → reopens the quiz for editing → explanation text is persisted. This validates the INSERT pipeline (`#insertQuizQuestions` includes `explanation`), the SELECT pipeline (`#fetchModuleContent` + `#contentToFormData`), and the UI rendering in the builder.
 
@@ -138,16 +138,16 @@ ORDER BY ce.created_at DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ⏳ |
-| 2 | Navigate to a course that has a quiz module (e.g., "Introduction to Commodity Trading") | Course detail page loads with lectures and modules listed | ⏳ |
-| 3 | Click the edit (pencil) icon on a quiz module | Quiz builder form loads with existing questions visible | ⏳ |
-| 4 | Scroll to the first question | Question card visible with Q1 label, type selector, question text, and options/answer | ⏳ |
-| 5 | Below the options section, find "Explanation (optional)" label with Lightbulb icon | Label rendered with amber Lightbulb icon (`text-amber-500`), textarea with placeholder "Explain why the correct answer is correct..." | ⏳ |
-| 6 | Type a distinctive explanation text: "This is the correct answer because it demonstrates the fundamental principle of commodity pricing." | Text appears in the textarea | ⏳ |
-| 7 | Click "Save Changes" | Module saves successfully (redirects or shows success indicator) | ⏳ |
-| 8 | Navigate back to the same quiz module and click edit again | Quiz builder reloads with existing data | ⏳ |
-| 9 | Scroll to the same question | Question card visible with all previous data | ⏳ |
-| 10 | Verify the explanation textarea contains the saved text | Textarea shows: "This is the correct answer because it demonstrates the fundamental principle of commodity pricing." | ⏳ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ✅ |
+| 2 | Navigate to a course that has a quiz module (e.g., "Introduction to Commodity Trading") | Course detail page loads with lectures and modules listed | ✅ |
+| 3 | Click the edit (pencil) icon on a quiz module | Quiz builder form loads with existing questions visible | ✅ |
+| 4 | Scroll to the first question | Question card visible with Q1 label, type selector, question text, and options/answer | ✅ |
+| 5 | Below the options section, find "Explanation (optional)" label with Lightbulb icon | Label rendered with amber Lightbulb icon (`text-amber-500`), textarea with placeholder "Explain why the correct answer is correct..." | ✅ |
+| 6 | Type a distinctive explanation text: "This is the correct answer because it demonstrates the fundamental principle of commodity pricing." | Text appears in the textarea | ✅ |
+| 7 | Click "Save Changes" | Module saves successfully (redirects or shows success indicator) | ✅ |
+| 8 | Navigate back to the same quiz module and click edit again | Quiz builder reloads with existing data | ✅ |
+| 9 | Scroll to the same question | Question card visible with all previous data | ✅ |
+| 10 | Verify the explanation textarea contains the saved text | Textarea shows: "This is the correct answer because it demonstrates the fundamental principle of commodity pricing." | ✅ |
 
 ### SQL Verification
 ```sql
@@ -170,9 +170,9 @@ ORDER BY qq.quiz_id, qq.sort_order;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the core UX payoff of the feature: a learner takes a quiz, submits it, and sees the explanation text displayed in an amber card below each question's result. This tests the full pipeline from DB → `get_quiz_results` RPC (SECURITY DEFINER) → frontend `QuizQuestionResult.explanation` → `QuizResultItemComponent` rendering. This is the story that validates the feature works end-to-end with real RLS and RPC execution.
 
@@ -188,17 +188,17 @@ ORDER BY qq.quiz_id, qq.sort_order;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ⏳ |
-| 2 | Navigate to the course containing the quiz with explanations | Course detail page loads | ⏳ |
-| 3 | Click on the quiz module to open it | Quiz taker component loads with "Start Quiz" or attempt history | ⏳ |
-| 4 | Start a new quiz attempt (click "Start Quiz" or "Retake Quiz") | Quiz enters active phase — questions displayed with answer inputs | ⏳ |
-| 5 | Answer at least the question that has an explanation (select any option) | Answer registered (question count updates) | ⏳ |
-| 6 | Click "Submit Quiz" and confirm | Results phase loads — grade card with score percentage, passed/failed status | ⏳ |
-| 7 | Scroll to the "Question Results" section | Individual question result cards visible (emerald/rose borders based on correctness) | ⏳ |
-| 8 | Find the question that has an explanation | Question card with number badge, user answer, correct answer (if shown), and option list | ⏳ |
-| 9 | Below the option list, verify the explanation card | Amber card (`bg-amber-50 border-amber-200 rounded-lg`) with Lightbulb icon (`text-amber-500`) and explanation text in `text-slate-700` | ⏳ |
-| 10 | Verify the explanation text matches what was set in QE-01 | Text reads: "This is the correct answer because it demonstrates the fundamental principle of commodity pricing." | ⏳ |
-| 11 | Verify questions WITHOUT explanations do NOT show the amber card | Other question results have no `.bg-amber-50` element | ⏳ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ✅ |
+| 2 | Navigate to the course containing the quiz with explanations | Course detail page loads | ✅ |
+| 3 | Click on the quiz module to open it | Quiz taker component loads with "Start Quiz" or attempt history | ✅ |
+| 4 | Start a new quiz attempt (click "Start Quiz" or "Retake Quiz") | Quiz enters active phase — questions displayed with answer inputs | ✅ |
+| 5 | Answer at least the question that has an explanation (select any option) | Answer registered (question count updates) | ✅ |
+| 6 | Click "Submit Quiz" and confirm | Results phase loads — grade card with score percentage, passed/failed status | ✅ |
+| 7 | Scroll to the "Question Results" section | Individual question result cards visible (emerald/rose borders based on correctness) | ✅ |
+| 8 | Find the question that has an explanation | Question card with number badge, user answer, correct answer (if shown), and option list | ✅ |
+| 9 | Below the option list, verify the explanation card | Amber card (`bg-amber-50 border-amber-200 rounded-lg`) with Lightbulb icon (`text-amber-500`) and explanation text in `text-slate-700` | ✅ |
+| 10 | Verify the explanation text matches what was set in QE-01 | Text reads: "This is the correct answer because it demonstrates the fundamental principle of commodity pricing." | ✅ |
+| 11 | Verify questions WITHOUT explanations do NOT show the amber card | Other question results have no `.bg-amber-50` element | ✅ |
 
 ### SQL Verification
 ```sql
@@ -225,9 +225,9 @@ LIMIT 3;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the security boundary: when a quiz has `show_correct_answers = false`, the `get_quiz_results` RPC returns `NULL` for the explanation field (same as `correct_answer` and `is_correct`). This ensures lecturers who disable answer revealing also hide explanations — preventing learners from deducing correct answers from the explanation text. This tests the actual PostgreSQL RPC branch, not just frontend conditional rendering.
 
@@ -242,15 +242,15 @@ LIMIT 3;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | **(Setup — if needed)** Log in as Platform Admin, navigate to the quiz, toggle `show_correct_answers` OFF, save | Quiz saved with `show_correct_answers = false` | ⏳ |
-| 2 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ⏳ |
-| 3 | Navigate to the quiz module with `show_correct_answers = false` | Quiz taker loads | ⏳ |
-| 4 | Start and submit a quiz attempt (answer at least one question) | Results phase loads — grade card shows score | ⏳ |
-| 5 | Scroll to "Question Results" section | Question result cards visible | ⏳ |
-| 6 | Verify NO "Correct answer:" label is shown on any question | Correct answers are hidden (the `correct_answer` field is NULL from the RPC) | ⏳ |
-| 7 | Verify NO amber explanation cards (`.bg-amber-50`) appear anywhere in results | Zero elements with `bg-amber-50` class — explanations are NULL from the RPC | ⏳ |
-| 8 | Verify option list does NOT show green/red correctness indicators | Options have neutral styling (no `bg-emerald-50` or `bg-rose-50` — `is_correct` is NULL) | ⏳ |
-| 9 | **(Cleanup — if setup was done)** Log back in as Platform Admin, toggle `show_correct_answers` back ON, save | Quiz restored to original state | ⏳ |
+| 1 | **(Setup — if needed)** Log in as Platform Admin, navigate to the quiz, toggle `show_correct_answers` OFF, save | Quiz saved with `show_correct_answers = false` | ✅ |
+| 2 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 3 | Navigate to the quiz module with `show_correct_answers = false` | Quiz taker loads | ✅ |
+| 4 | Start and submit a quiz attempt (answer at least one question) | Results phase loads — grade card shows score | ✅ |
+| 5 | Scroll to "Question Results" section | Question result cards visible | ✅ |
+| 6 | Verify NO "Correct answer:" label is shown on any question | Correct answers are hidden (the `correct_answer` field is NULL from the RPC) | ✅ |
+| 7 | Verify NO amber explanation cards (`.bg-amber-50`) appear anywhere in results | Zero elements with `bg-amber-50` class — explanations are NULL from the RPC | ✅ |
+| 8 | Verify option list does NOT show green/red correctness indicators | Options have neutral styling (no `bg-emerald-50` or `bg-rose-50` — `is_correct` is NULL) | ✅ |
+| 9 | **(Cleanup — if setup was done)** Log back in as Platform Admin, toggle `show_correct_answers` back ON, save | Quiz restored to original state | ✅ |
 
 ### SQL Verification
 ```sql
@@ -306,7 +306,7 @@ WHERE quiz_id = (SELECT id FROM quizzes LIMIT 1)
 
 | Date | Tester | Stories Run | Result |
 |------|--------|-------------|--------|
-| — | — | — | — |
+| 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | QE-01, QE-02, QE-03 | All 3 PASS |
 
 ## Bugs Found
 
