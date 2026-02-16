@@ -44,17 +44,60 @@ import { ReportIssueComponent } from '../components/report-issue.component';
       } @else if (courseService.moduleViewer()) {
         <!-- Header -->
         <div class="mb-6">
-          <p class="flex items-center gap-3 text-xs text-slate-400 mb-1">
-            <span>{{ courseService.moduleViewer()!.navigation.current }} of {{ courseService.moduleViewer()!.navigation.total }} modules</span>
-            <span class="flex items-center gap-1 tabular-nums">
-              <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
-              {{ moduleDuration() }}
-            </span>
-          </p>
           <h1 class="page-title">{{ courseService.moduleViewer()!.module.title }}</h1>
           @if (courseService.moduleViewer()!.module.description) {
             <p class="text-sm text-slate-500 mt-1">{{ courseService.moduleViewer()!.module.description }}</p>
           }
+        </div>
+
+        <!-- Sticky action bar -->
+        <div class="sticky top-0 z-10 bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2.5 flex items-center justify-between mb-6">
+          <!-- Previous -->
+          <div class="min-w-[100px]">
+            @if (courseService.moduleViewer()!.navigation.prev; as prev) {
+              <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
+                 class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200">
+                <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
+                Previous
+              </a>
+            }
+          </div>
+
+          <!-- Center: position + completion -->
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 tabular-nums">
+              {{ courseService.moduleViewer()!.navigation.current }} of {{ courseService.moduleViewer()!.navigation.total }} modules
+            </span>
+            <span class="text-slate-200">|</span>
+            <span class="flex items-center gap-1 text-xs text-slate-400 tabular-nums">
+              <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
+              {{ moduleDuration() }}
+            </span>
+            @if (canMarkComplete()) {
+              <span class="text-slate-200">|</span>
+              @if (isCompleted()) {
+                <span class="badge-success inline-flex items-center gap-1">
+                  <lucide-icon [img]="icons.Check" [size]="14"></lucide-icon>
+                  Completed
+                </span>
+              } @else {
+                <button (click)="onMarkComplete()" class="btn-primary btn-sm">
+                  Mark as complete
+                </button>
+              }
+            }
+          </div>
+
+          <!-- Next -->
+          <div class="min-w-[100px] text-right">
+            @if (courseService.moduleViewer()!.navigation.next; as next) {
+              <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
+                 class="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200">
+                Next
+                <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
+              </a>
+            }
+          </div>
         </div>
 
         <!-- Content -->
@@ -145,46 +188,6 @@ import { ReportIssueComponent } from '../components/report-issue.component';
           <div class="mt-8 pt-6 border-t border-slate-200 h-20"></div>
         }
 
-        <!-- Bottom navigation bar -->
-        <div class="flex items-center justify-between border-t border-slate-200 pt-4 mt-6">
-          <div>
-            @if (courseService.moduleViewer()!.navigation.prev; as prev) {
-              <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
-                 class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
-                <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
-                Previous
-              </a>
-            }
-          </div>
-
-          <div class="flex items-center gap-3">
-            @if (canMarkComplete()) {
-              @if (isCompleted()) {
-                <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
-                  <lucide-icon [img]="icons.Check" [size]="16"></lucide-icon>
-                  Completed
-                </span>
-              } @else {
-                <button
-                  (click)="onMarkComplete()"
-                  class="btn-primary"
-                >
-                  Mark as complete
-                </button>
-              }
-            }
-          </div>
-
-          <div>
-            @if (courseService.moduleViewer()!.navigation.next; as next) {
-              <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
-                 class="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
-                Next
-                <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
-              </a>
-            }
-          </div>
-        </div>
       }
     </div>
   `,
