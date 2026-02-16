@@ -105,17 +105,17 @@ AND module_id IN (
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| QT-01 | Quiz Module Navigation | Learner | ✅ PASS | 2026-02-16 |
-| QT-02 | Start Phase — Metadata & Info Card | Learner | ✅ PASS | 2026-02-16 |
-| QT-03 | Start Quiz & Answer Questions (6 Types) | Learner | ✅ PASS | 2026-02-16 |
-| QT-04 | Timer Display & Color Transitions | Learner | ⚠️ PARTIAL | 2026-02-16 |
-| QT-05 | Submit & Pass — Grade Card | Learner | ✅ PASS | 2026-02-16 |
-| QT-06 | Results Review — Per-Question Breakdown | Learner | ✅ PASS | 2026-02-16 |
-| QT-07 | Retake Quiz After Failure | Learner | ✅ PASS | 2026-02-16 |
-| QT-08 | Auto-Mark Progress on Pass (PT-12) | Learner | ✅ PASS | 2026-02-16 |
-| QT-09 | Max Attempts Enforcement | Learner + PA | ✅ PASS | 2026-02-16 |
-| QT-10 | Continue Unsubmitted Attempt | Learner | ✅ PASS | 2026-02-16 |
-| QT-11 | View Past Attempt Results | Learner | ✅ PASS | 2026-02-16 |
+| QT-01 | Quiz Module Navigation | Learner | ✅ PASS | 2026-02-17 |
+| QT-02 | Start Phase — Metadata & Info Card | Learner | ✅ PASS | 2026-02-17 |
+| QT-03 | Start Quiz & Answer Questions (6 Types) | Learner | ✅ PASS | 2026-02-17 |
+| QT-04 | Timer Display & Color Transitions | Learner | ⚠️ PARTIAL | 2026-02-17 |
+| QT-05 | Submit & Pass — Grade Card | Learner | ✅ PASS | 2026-02-17 |
+| QT-06 | Results Review — Per-Question Breakdown | Learner | ✅ PASS | 2026-02-17 |
+| QT-07 | Retake Quiz After Failure | Learner | ✅ PASS | 2026-02-17 |
+| QT-08 | Auto-Mark Progress on Pass (PT-12) | Learner | ✅ PASS | 2026-02-17 |
+| QT-09 | Max Attempts Enforcement | Learner + PA | ✅ PASS | 2026-02-17 |
+| QT-10 | Continue Unsubmitted Attempt | Learner | ✅ PASS | 2026-02-17 |
+| QT-11 | View Past Attempt Results | Learner | ✅ PASS | 2026-02-17 |
 
 ---
 
@@ -123,8 +123,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify quiz modules are clickable in course detail and navigate to the module viewer with QuizTakerComponent rendered (replaces QB-12 "Coming Soon").
@@ -159,8 +159,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the quiz start phase displays all metadata correctly: question count, passing score, time limit (human-readable), attempt count, quiz description, and the Start Quiz button.
@@ -197,8 +197,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify starting a quiz transitions to active phase and all 6 question types render correctly with proper input controls. Each type has distinct UI.
@@ -248,8 +248,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ⚠️ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the countdown timer appears for timed quizzes, displays in MM:SS format, counts down in real-time, and changes color as time decreases (teal → amber → rose).
@@ -283,8 +283,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the submit confirmation flow (two-step: "Submit Quiz" → "Submit quiz?" → "Yes, Submit") and that passing a quiz shows the correct green grade card with score, pass label, and points.
@@ -321,8 +321,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the per-question results section shows correct/incorrect indicators, user's answer, and correct answer (when `show_correct_answers=true`) for each question.
@@ -360,8 +360,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that failing a quiz shows the red failure grade card, the retake flow returns to start phase with updated attempt history, and a second attempt can pass.
@@ -406,8 +406,8 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that passing a quiz automatically creates a `user_progress` row with `status='completed'` and `marked_by='system'` via the `auto_mark_quiz_completed` DB trigger. Also verify that the UI reflects this completion.
@@ -459,8 +459,8 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when a learner reaches the maximum number of attempts, no further attempts can be started. The "Start Quiz" button is replaced with "Maximum attempts reached" text.
@@ -506,8 +506,8 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that if a learner starts a quiz but navigates away before submitting, they see an amber "Continue Quiz" button on return and can resume the attempt with the timer correctly reflecting elapsed time.
@@ -547,8 +547,8 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
-| **Status** | ⏳ |
+| **Last Checked** | 2026-02-17 |
+| **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that learners can view detailed results from past submitted attempts via the "View" link in the Previous Attempts table.
@@ -713,6 +713,7 @@ The `quiz_questions_safe` view works because the view owner (`postgres`) bypasse
 | 2026-02-13 | Claude | QT-03 (matching retest) | 1 | 0 | QT-BUG-04: matching dropdowns broken for learners (RLS blocks base table). Fixed via migration 00029 SECURITY DEFINER RPC. QT-03 precondition hardened to REQUIRE all 6 types. Verified via Playwright MCP. 621 tests, build OK. |
 | 2026-02-14 | Claude (Playwright MCP) | QT-01 through QT-11 (regression) | 10 | 0 | Full regression — 10 PASS, QT-04 still ⚠️ Partial (timer display verified, color transitions untestable). Verified: quiz metadata (5Q, 80% pass, 2min, 6/10 attempts), start quiz active UI, answer all 5 types, submit+confirm→100% Passed grade card, results review, past attempts table (6 entries), failed attempt display, retake flow, expired attempt auto-grade. No regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | QT-01 through QT-11 (regression) | 10 | 0 | Full regression run. 10 ✅, QT-04 still ⚠️ Partial. Verified as learner: quiz metadata (5Q, 80%, 2min, 6/10), past attempts table (6 entries: 3 Passed, 3 Failed), View attempt #6 → 100% grade card + 5-question breakdown (single/multi/TF/fill/TF), Retake Quiz button. No regressions. |
+| 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | QT-01 through QT-11 (regression + Phase 12C) | 10 | 0 | Full regression + Phase 12C. 10 ✅, QT-04 ⚠️ Partial. Verified: quiz metadata (5Q, 80%, 2min, 8/10 attempts), start phase, past attempts table (8 entries), View attempt → grade card + per-question breakdown with explanation amber cards (QT-06 steps 8-9). QE-02/QE-03 quiz takes confirmed quiz taking works end-to-end. No regressions. |
 
 ---
 

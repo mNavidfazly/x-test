@@ -78,24 +78,24 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| QB-01 | Quiz Type Selector | Platform Admin | ✅ | 2026-02-16 |
-| QB-02 | Quiz Form — Settings & Layout | Platform Admin | ✅ | 2026-02-16 |
-| QB-03 | Single Choice Question | Platform Admin | ✅ | 2026-02-16 |
-| QB-04 | Multiple Choice Question | Platform Admin | ✅ | 2026-02-16 |
-| QB-05 | True/False Question | Platform Admin | ✅ | 2026-02-16 |
-| QB-06 | Fill in the Blank & Short Answer | Platform Admin | ✅ | 2026-02-16 |
-| QB-07 | Matching Question | Platform Admin | ✅ | 2026-02-16 |
-| QB-08 | Question Management (Add/Reorder/Delete) | Platform Admin | ✅ | 2026-02-16 |
-| QB-09 | Validation & Save | Platform Admin | ✅ | 2026-02-16 |
-| QB-10 | Create-to-Edit Round-Trip | Platform Admin | ✅ | 2026-02-16 |
-| QB-11 | Lecturer (can_edit) Quiz CRUD | Lecturer (can_edit) | ✅ | 2026-02-16 |
-| QB-12 | Quiz Viewer "Coming Soon" | Platform Admin | ✅ | 2026-02-16 |
-| QB-13 | JSON Template Download | Platform Admin | ✅ | 2026-02-16 |
-| QB-14 | JSON Import — Valid File | Platform Admin | ✅ | 2026-02-16 |
-| QB-15 | JSON Import — Validation Errors | Platform Admin | ✅ | 2026-02-16 |
-| QB-16 | JSON Export & Re-Import Round-Trip | Platform Admin | ✅ | 2026-02-16 |
-| EQ-01 | External Quiz Module — Create & View | Platform Admin | ✅ | 2026-02-16 |
-| EQ-02 | External Quiz Module — Edit Round-Trip | Platform Admin | ✅ | 2026-02-16 |
+| QB-01 | Quiz Type Selector | Platform Admin | ✅ | 2026-02-17 |
+| QB-02 | Quiz Form — Settings & Layout | Platform Admin | ✅ | 2026-02-17 |
+| QB-03 | Single Choice Question | Platform Admin | ✅ | 2026-02-17 |
+| QB-04 | Multiple Choice Question | Platform Admin | ✅ | 2026-02-17 |
+| QB-05 | True/False Question | Platform Admin | ✅ | 2026-02-17 |
+| QB-06 | Fill in the Blank & Short Answer | Platform Admin | ✅ | 2026-02-17 |
+| QB-07 | Matching Question | Platform Admin | ✅ | 2026-02-17 |
+| QB-08 | Question Management (Add/Reorder/Delete) | Platform Admin | ✅ | 2026-02-17 |
+| QB-09 | Validation & Save | Platform Admin | ✅ | 2026-02-17 |
+| QB-10 | Create-to-Edit Round-Trip | Platform Admin | ✅ | 2026-02-17 |
+| QB-11 | Lecturer (can_edit) Quiz CRUD | Lecturer (can_edit) | ✅ | 2026-02-17 |
+| QB-12 | Quiz Viewer "Coming Soon" | Platform Admin | ✅ | 2026-02-17 |
+| QB-13 | JSON Template Download | Platform Admin | ✅ | 2026-02-17 |
+| QB-14 | JSON Import — Valid File | Platform Admin | ✅ | 2026-02-17 |
+| QB-15 | JSON Import — Validation Errors | Platform Admin | ✅ | 2026-02-17 |
+| QB-16 | JSON Export & Re-Import Round-Trip | Platform Admin | ✅ | 2026-02-17 |
+| EQ-01 | External Quiz Module — Create & View | Platform Admin | ✅ | 2026-02-17 |
+| EQ-02 | External Quiz Module — Edit Round-Trip | Platform Admin | ✅ | 2026-02-17 |
 
 ---
 
@@ -103,7 +103,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -131,7 +131,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -175,7 +175,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -221,7 +221,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -260,7 +260,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -297,7 +297,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -347,7 +347,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -388,7 +388,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -442,7 +442,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -497,7 +497,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -566,7 +566,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -603,7 +603,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ (superseded) |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -625,7 +625,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | PASS |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -651,8 +651,8 @@ All test users use password: `TestUser123!`
 | 8 | Verify question types present | `single_choice`, `multiple_choice`, `true_false`, `fill_blank`, `short_answer`, `matching` — in that order | ✅ |
 | 9 | Verify single_choice question | Has `options` array with `option_text`, `is_correct`, `sort_order` fields | ✅ |
 | 10 | Verify matching question | Has `correct_answer` as JSON string of `[{left, right}]` pairs | ✅ |
-| 11 | Verify each question has required fields | `question_text`, `question_type`, `points`, `sort_order`, `correct_answer`, `explanation`, `options` | ⏳ |
-| 12 | Verify `explanation` field present on questions | Q1 (single_choice) and Q4 (fill_blank) have non-null explanation text; other questions have `null` explanation | ⏳ |
+| 11 | Verify each question has required fields | `question_text`, `question_type`, `points`, `sort_order`, `correct_answer`, `explanation`, `options` | ✅ |
+| 12 | Verify `explanation` field present on questions | Q1 (single_choice) and Q4 (fill_blank) have non-null explanation text; other questions have `null` explanation | ✅ |
 
 **Notes/Learnings**:
 - Template JSON matches `QuizFormData` shape exactly — zero transformation between import and internal model
@@ -668,7 +668,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | PASS |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -695,7 +695,7 @@ All test users use password: `TestUser123!`
 | 8 | Verify max attempts | "3" in max attempts input | ✅ |
 | 9 | Verify checkboxes | "Show correct answers" checked, both "Randomize" unchecked | ✅ |
 | 10 | Verify 6 questions rendered | Q1 through Q6 visible with correct question types | ✅ |
-| 11 | Verify Q1 (single_choice) | Type dropdown shows "Single Choice", question text "What is the capital of France?", 3 options, "Paris" marked correct, explanation textarea populated | ⏳ |
+| 11 | Verify Q1 (single_choice) | Type dropdown shows "Single Choice", question text "What is the capital of France?", 3 options, "Paris" marked correct, explanation textarea populated | ✅ |
 | 12 | Verify Q2 (multiple_choice) | Checkboxes for correct answers, "Python" and "JavaScript" checked, explanation empty (null in template) | ✅ |
 | 13 | Verify Q3 (true_false) | "True" and "False" labels, "True" marked correct | ✅ |
 | 14 | Verify Q4 (fill_blank) | Correct answer input with "H2O" | ✅ |
@@ -733,7 +733,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | PASS |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -814,7 +814,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | PASS |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -873,7 +873,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | PASS |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -933,7 +933,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | PASS |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -1016,6 +1016,7 @@ All test users use password: `TestUser123!`
 | 2026-02-12 | Claude (Playwright MCP) | EQ-01, EQ-02 | 2 | 0 | Both External Quiz Reference stories pass. 0 bugs found. EQ-01: type selector shows 6 types incl. External Quiz, form validation works, create succeeds, viewer shows info card + "Take External Quiz" button, mark as complete works, navigation works. EQ-02: edit loads all pre-populated data (title, quiz ID, URL, passing score), modify + save persists, second edit confirms persistence, cancel returns without saving. 480 frontend tests pass, build OK. |
 | 2026-02-14 | Claude (Playwright MCP) | QB-01 through QB-16, EQ-01, EQ-02 (regression) | 18 | 0 | **Full regression — all 18 PASS, 0 regressions.** Quiz edit form verified on "E2E Quiz Test (Updated)": settings (time limit 2min, passing 80%, max attempts 10, show answers, randomize questions), 5 questions loaded (Q1 single choice, Q2 multiple choice, Q3 true/false, Q4 fill-blank, Q5 true/false). All 6 question type options in dropdown. Template/Import/Export/Add Question toolbar present. Move up/down/delete per question. Points per question editable. Lecturer-edit verified: full quiz edit UI on assigned course. EQ-01/EQ-02: External Quiz type card visible in type selector ("Link to an external quiz"). Code unchanged since 2026-02-12 — no regressions. |
 | 2026-02-16 | Claude Opus 4.6 (Playwright MCP) | QB-01 through QB-16, EQ-01, EQ-02 (regression) | 18 | 0 | All 18 ✅. Quiz edit form: "E2E Quiz Test (Updated)" with 5 questions (single, multiple, T/F×2, fill-blank), settings (2min, 80%, 10 attempts, show answers, randomize). All 6 type options in dropdown. Template/Import/Export/Add toolbar. Module type selector: all 6 types incl. External Quiz. QB-11 via CR-13 lecturer evidence. Zero regressions. |
+| 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | QB-01 through QB-16, EQ-01, EQ-02 (regression + Phase 12C) | 18 | 0 | All 18 ✅. Phase 12C verification: Explanation textarea with Lightbulb icon on all questions (QB-03 steps 16-17), explanation pre-populated in edit round-trip (QB-10 step 11a), template JSON includes `explanation` field with Q1+Q4 non-null (QB-13 steps 11-12), import populates explanation (QB-14 step 11). Zero regressions. |
 
 ## References
 
