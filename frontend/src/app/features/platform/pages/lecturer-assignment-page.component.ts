@@ -75,7 +75,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
           <h2 class="text-sm font-semibold text-slate-900 mb-4">New Assignment</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="section-label mb-1">Lecturer</label>
+              <label class="section-label mb-2">Lecturer</label>
               <app-custom-select
                 [options]="lecturerPickerOptions()"
                 [value]="selectedLecturerId()"
@@ -84,7 +84,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
               />
             </div>
             <div>
-              <label class="section-label mb-1">Course</label>
+              <label class="section-label mb-2">Course</label>
               <app-custom-select
                 [options]="coursePickerOptions()"
                 [value]="selectedCourseId()"

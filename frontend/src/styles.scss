@@ -143,7 +143,7 @@
     @apply bg-white border border-slate-200 rounded-xl shadow-sm;
   }
   .form-card {
-    @apply bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden
+    @apply bg-white border border-slate-200 rounded-xl shadow-sm
            transition-[border-color,box-shadow] duration-200 hover:shadow-md;
 
     &:focus-within {
