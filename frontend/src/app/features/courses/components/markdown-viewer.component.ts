@@ -7,8 +7,10 @@ import { MarkdownComponent } from 'ngx-markdown';
   imports: [MarkdownComponent],
   host: { class: 'block' },
   template: `
-    <div class="prose prose-slate max-w-none">
-      <markdown [data]="content()" />
+    <div class="card p-6 overflow-x-auto">
+      <div class="prose prose-slate max-w-none">
+        <markdown [data]="content()" />
+      </div>
     </div>
   `,
 })
