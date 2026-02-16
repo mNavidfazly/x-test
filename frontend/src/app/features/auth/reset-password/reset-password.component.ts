@@ -15,14 +15,15 @@ type Step = 'email' | 'code' | 'done';
   host: { class: 'block' },
   template: `
     <div class="auth-background">
-      <div class="text-center mb-8">
-        <h1 class="text-5xl font-bold">
-          <span class="italic text-teal-400">X</span><span class="text-white">-Courses</span>
-        </h1>
-        <p class="text-sm text-slate-400 mt-2">by Calypso Commodities</p>
-      </div>
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <h1 class="text-5xl font-bold">
+            <span class="italic text-teal-400">X</span><span class="text-white">-Courses</span>
+          </h1>
+          <p class="text-sm text-slate-400 mt-2">by Calypso Commodities</p>
+        </div>
 
-      <div class="auth-card w-full max-w-md">
+        <div class="auth-card w-full max-w-md">
         <h2 class="text-xl font-semibold text-slate-800 text-center mb-6">Reset Password</h2>
 
         @if (errorMessage()) {
@@ -134,6 +135,7 @@ type Step = 'email' | 'code' | 'done';
         <p class="mt-6 text-center text-sm text-slate-500">
           <a routerLink="/login" class="text-teal-600 font-medium hover:text-teal-700">Back to sign in</a>
         </p>
+        </div>
       </div>
     </div>
   `,

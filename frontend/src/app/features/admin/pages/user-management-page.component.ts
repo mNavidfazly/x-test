@@ -31,7 +31,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
   template: `
     <div>
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.Users" [size]="24"></lucide-icon>
           User Management
@@ -40,7 +40,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
         <button
           type="button"
           (click)="onToggleInviteForm()"
-          class="btn-primary"
+          class="btn-primary shrink-0 self-start sm:self-auto"
         >
           <lucide-icon [img]="icons.UserPlus" [size]="16"></lucide-icon>
           Invite User

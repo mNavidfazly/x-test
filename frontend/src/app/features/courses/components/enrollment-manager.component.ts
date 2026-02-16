@@ -60,27 +60,27 @@ import { formatDate } from '../../../core/utils/date.utils';
           <p class="text-sm text-slate-500">No users enrolled yet.</p>
         </div>
       } @else {
-        <div class="border border-slate-200 rounded-xl overflow-hidden">
+        <div class="table-container">
           <table class="w-full text-sm">
-            <thead class="bg-slate-50">
-              <tr>
-                <th class="text-left px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Email</th>
-                <th class="text-left px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Name</th>
-                <th class="text-left px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wide">Enrolled</th>
-                <th class="px-4 py-2 w-10"></th>
+            <thead>
+              <tr class="table-header">
+                <th class="th text-left">Email</th>
+                <th class="th text-left hidden sm:table-cell">Name</th>
+                <th class="th text-left">Enrolled</th>
+                <th class="th w-10"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
               @for (user of enrolledUsers(); track user.id) {
-                <tr class="hover:bg-slate-50/50 transition-colors">
-                  <td class="px-4 py-2.5 text-slate-700">{{ user.email }}</td>
-                  <td class="px-4 py-2.5 text-slate-600">{{ user.full_name ?? '—' }}</td>
-                  <td class="px-4 py-2.5 text-slate-500 tabular-nums">{{ formatDate(user.enrolled_at) }}</td>
-                  <td class="px-4 py-2.5 text-right">
+                <tr class="table-row">
+                  <td class="table-cell text-slate-700">{{ user.email }}</td>
+                  <td class="table-cell text-slate-600 hidden sm:table-cell">{{ user.full_name ?? '—' }}</td>
+                  <td class="table-cell text-slate-500 tabular-nums">{{ formatDate(user.enrolled_at) }}</td>
+                  <td class="table-cell text-right">
                     <button
                       type="button"
                       (click)="onUnenroll(user.id)"
-                      class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded p-1 transition-colors duration-200"
+                      class="btn-icon-danger"
                       title="Unenroll user"
                     >
                       <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>

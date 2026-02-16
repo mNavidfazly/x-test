@@ -30,7 +30,7 @@ const CLASS_MAP: Record<Toast['type'], string> = {
   imports: [LucideAngularModule],
   host: { class: 'block' },
   template: `
-    <div class="fixed top-20 right-4 z-50 flex flex-col gap-2 max-w-sm">
+    <div class="fixed top-20 left-4 right-4 z-50 flex flex-col gap-2 sm:left-auto sm:max-w-sm">
       @for (toast of toastService.toasts(); track toast.id) {
         <div
           class="toast-enter flex items-start gap-3 px-4 py-3 rounded-xl shadow-lg border transition-[transform,opacity] duration-200"

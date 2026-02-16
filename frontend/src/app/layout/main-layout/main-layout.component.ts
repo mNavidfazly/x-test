@@ -37,7 +37,7 @@ import { getNotificationRoute } from '../../core/models/notification.model';
 
     @if (notificationService.latestToast(); as toast) {
       <div
-        class="notification-enter fixed top-4 right-4 z-50 max-w-sm bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-start gap-3 cursor-pointer"
+        class="notification-enter fixed top-4 left-4 right-4 z-50 sm:left-auto sm:max-w-sm bg-white border border-slate-200 rounded-xl shadow-lg p-4 flex items-start gap-3 cursor-pointer"
         (click)="onToastClick(toast)"
       >
         <div class="flex-1 min-w-0">

@@ -159,7 +159,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
                 @if (expandedCourseId() === course.id) {
                   <tr class="border-b border-slate-100">
                     <td colspan="8" class="expand-panel px-6 py-4">
-                      <div class="flex gap-8">
+                      <div class="flex flex-col sm:flex-row gap-6 sm:gap-8">
                         <!-- Left: Course info -->
                         <div class="flex-1">
                           <h3 class="text-lg font-semibold text-slate-800 mb-2">{{ course.title }}</h3>

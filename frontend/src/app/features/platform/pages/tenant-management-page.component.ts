@@ -33,7 +33,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
   template: `
     <div>
       <!-- Header -->
-      <div class="flex items-center justify-between mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <h1 class="page-title flex items-center gap-2">
           <lucide-icon [img]="icons.Building2" [size]="24"></lucide-icon>
           Tenant Management
@@ -42,7 +42,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
         <button
           type="button"
           (click)="showCreateForm.set(!showCreateForm())"
-          class="btn-primary"
+          class="btn-primary shrink-0 self-start sm:self-auto"
         >
           <lucide-icon [img]="icons.Plus" [size]="16"></lucide-icon>
           Add Tenant
@@ -236,7 +236,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                       <!-- Details tab -->
                       @if (activeTab() === 'details') {
                         <div class="max-w-xl">
-                          <div class="grid grid-cols-2 gap-4 mb-4">
+                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                             <div>
                               <label class="section-label mb-1">Name</label>
                               <input

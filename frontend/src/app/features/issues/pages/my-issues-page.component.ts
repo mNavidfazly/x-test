@@ -57,53 +57,50 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
               <button
                 type="button"
                 (click)="toggleExpand(issue.id)"
-                class="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
+                class="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
               >
-                <!-- Status badge -->
-                @switch (issue.status) {
-                  @case ('open') {
-                    <span class="badge-warning gap-1 shrink-0">
-                      <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
-                      Open
-                    </span>
+                <!-- Top row: badges + timestamp + chevron -->
+                <div class="flex items-center gap-2 mb-1.5">
+                  @switch (issue.status) {
+                    @case ('open') {
+                      <span class="badge-warning gap-1 shrink-0">
+                        <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
+                        Open
+                      </span>
+                    }
+                    @case ('investigating') {
+                      <span class="badge-info gap-1 shrink-0">
+                        <lucide-icon [img]="icons.Search" [size]="12"></lucide-icon>
+                        Investigating
+                      </span>
+                    }
+                    @case ('resolved') {
+                      <span class="badge-success gap-1 shrink-0">
+                        <lucide-icon [img]="icons.CheckCircle2" [size]="12"></lucide-icon>
+                        Resolved
+                      </span>
+                    }
+                    @case ('closed') {
+                      <span class="badge-neutral gap-1 shrink-0">
+                        <lucide-icon [img]="icons.XCircle" [size]="12"></lucide-icon>
+                        Closed
+                      </span>
+                    }
                   }
-                  @case ('investigating') {
-                    <span class="badge-info gap-1 shrink-0">
-                      <lucide-icon [img]="icons.Search" [size]="12"></lucide-icon>
-                      Investigating
-                    </span>
-                  }
-                  @case ('resolved') {
-                    <span class="badge-success gap-1 shrink-0">
-                      <lucide-icon [img]="icons.CheckCircle2" [size]="12"></lucide-icon>
-                      Resolved
-                    </span>
-                  }
-                  @case ('closed') {
-                    <span class="badge-neutral gap-1 shrink-0">
-                      <lucide-icon [img]="icons.XCircle" [size]="12"></lucide-icon>
-                      Closed
-                    </span>
-                  }
-                }
-
-                <!-- Issue type -->
-                <span class="badge-neutral shrink-0">
-                  {{ issueTypeLabel(issue.issue_type) }}
-                </span>
-
-                <!-- Course + Module -->
-                <div class="flex-1 min-w-0">
+                  <span class="badge-neutral shrink-0">
+                    {{ issueTypeLabel(issue.issue_type) }}
+                  </span>
+                  <span class="ml-auto text-xs text-slate-400 whitespace-nowrap">{{ formatRelativeTime(issue.created_at) }}</span>
+                  <lucide-icon [img]="expandedId() === issue.id ? icons.ChevronUp : icons.ChevronDown" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
+                </div>
+                <!-- Bottom row: course/module + description -->
+                <div class="min-w-0">
                   <span class="text-sm font-semibold text-slate-900">{{ issue.course?.title ?? 'Unknown Course' }}</span>
                   @if (issue.module) {
                     <span class="text-xs text-slate-400"> / {{ issue.module.title }}</span>
                   }
                   <p class="text-sm text-slate-600 truncate mt-0.5">{{ issue.description }}</p>
                 </div>
-
-                <!-- Timestamp + chevron -->
-                <span class="text-xs text-slate-400 whitespace-nowrap shrink-0">{{ formatRelativeTime(issue.created_at) }}</span>
-                <lucide-icon [img]="expandedId() === issue.id ? icons.ChevronUp : icons.ChevronDown" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
               </button>
 
               <!-- Expanded detail -->
