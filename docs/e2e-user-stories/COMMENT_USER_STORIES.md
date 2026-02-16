@@ -77,20 +77,20 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CM-01 | Post First Comment | Learner | ✅ | 2026-02-15 |
-| CM-02 | Expert Badge — Lecturer | Lecturer | ✅ | 2026-02-15 |
-| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ✅ | 2026-02-15 |
-| CM-04 | Reply to a Comment | Learner | ✅ | 2026-02-15 |
-| CM-05 | Edit Own Comment | Learner | ✅ | 2026-02-15 |
-| CM-06 | Delete Own Comment | Learner | ✅ | 2026-02-15 |
-| CM-07 | Tenant Admin Moderation | Tenant Admin | ✅ | 2026-02-15 |
-| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ✅ | 2026-02-15 |
-| CM-09 | Tenant Isolation | Learner (both tenants) | ✅ | 2026-02-15 |
-| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ✅ | 2026-02-15 |
-| CM-11 | Module Navigation Reloads Comments | Learner | ✅ | 2026-02-15 |
-| CM-12 | Edit and Delete Own Reply | Learner | ✅ | 2026-02-15 |
-| CM-13 | Permission Boundaries | Learner + CSM | ✅ | 2026-02-15 |
-| CM-14 | Calypso Badge — CSM | CSM | ✅ | 2026-02-15 |
+| CM-01 | Post First Comment | Learner | ✅ | 2026-02-16 |
+| CM-02 | Expert Badge — Lecturer | Lecturer | ✅ | 2026-02-16 |
+| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ✅ | 2026-02-16 |
+| CM-04 | Reply to a Comment | Learner | ✅ | 2026-02-16 |
+| CM-05 | Edit Own Comment | Learner | ✅ | 2026-02-16 |
+| CM-06 | Delete Own Comment | Learner | ✅ | 2026-02-16 |
+| CM-07 | Tenant Admin Moderation | Tenant Admin | ✅ | 2026-02-16 |
+| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ✅ | 2026-02-16 |
+| CM-09 | Tenant Isolation | Learner (both tenants) | ✅ | 2026-02-16 |
+| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ✅ | 2026-02-16 |
+| CM-11 | Module Navigation Reloads Comments | Learner | ✅ | 2026-02-16 |
+| CM-12 | Edit and Delete Own Reply | Learner | ✅ | 2026-02-16 |
+| CM-13 | Permission Boundaries | Learner + CSM | ✅ | 2026-02-16 |
+| CM-14 | Calypso Badge — CSM | CSM | ✅ | 2026-02-16 |
 
 ---
 
@@ -98,9 +98,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a learner can post a comment on a module, the empty state disappears, the comment renders with avatar initials, author name, "just now" timestamp, and the Discussion count updates.
 
@@ -115,20 +115,20 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to a course → click a module (video/PDF/markdown) | Module viewer loads with content | ☐ |
-| 3 | Scroll to Discussion section below module content | Section header: "Discussion (0)" with MessageSquare icon | ☐ |
-| 4 | Verify empty state | Text: "No comments yet. Be the first to start the discussion." centered in slate-400 | ☐ |
-| 5 | Verify comment form | Textarea with placeholder "Write a comment..." and "Post Comment" button with Send icon | ☐ |
-| 6 | Verify Post Comment button is disabled | Button has `disabled:opacity-50` styling (textarea is empty) | ☐ |
-| 7 | Type "Hello, this is my first comment!" in the textarea | Button becomes enabled (not dimmed) | ☐ |
-| 8 | Click "Post Comment" | Button shows spinner (Loader2 icon with `animate-spin`) | ☐ |
-| 9 | Wait for submission to complete | Comment appears in a white card (`bg-white border border-slate-200 rounded-xl`) | ☐ |
-| 10 | Verify comment card content | Avatar circle with initials (e.g., "TL" for "Test Learner"), author full name, "just now" timestamp, comment body text | ☐ |
-| 11 | Verify Discussion count updates | Header now shows "Discussion (1)" | ☐ |
-| 12 | Verify textarea is cleared | Input field is empty after successful post | ☐ |
-| 13 | Verify NO badge on learner comment | No "Expert" or "Calypso" badge pill next to name (badge_type is NULL for learners) | ☐ |
-| 14 | Refresh the page | Comment persists (loaded from DB), Discussion count still (1) | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to a course → click a module (video/PDF/markdown) | Module viewer loads with content | ✅ |
+| 3 | Scroll to Discussion section below module content | Section header: "Discussion (0)" with MessageSquare icon | ✅ |
+| 4 | Verify empty state | Text: "No comments yet. Be the first to start the discussion." centered in slate-400 | ✅ |
+| 5 | Verify comment form | Textarea with placeholder "Write a comment..." and "Post Comment" button with Send icon | ✅ |
+| 6 | Verify Post Comment button is disabled | Button has `disabled:opacity-50` styling (textarea is empty) | ✅ |
+| 7 | Type "Hello, this is my first comment!" in the textarea | Button becomes enabled (not dimmed) | ✅ |
+| 8 | Click "Post Comment" | Button shows spinner (Loader2 icon with `animate-spin`) | ✅ |
+| 9 | Wait for submission to complete | Comment appears in a white card (`bg-white border border-slate-200 rounded-xl`) | ✅ |
+| 10 | Verify comment card content | Avatar circle with initials (e.g., "TL" for "Test Learner"), author full name, "just now" timestamp, comment body text | ✅ |
+| 11 | Verify Discussion count updates | Header now shows "Discussion (1)" | ✅ |
+| 12 | Verify textarea is cleared | Input field is empty after successful post | ✅ |
+| 13 | Verify NO badge on learner comment | No "Expert" or "Calypso" badge pill next to name (badge_type is NULL for learners) | ✅ |
+| 14 | Refresh the page | Comment persists (loaded from DB), Discussion count still (1) | ✅ |
 
 **Notes/Learnings**:
 - `comments_insert_own` RLS: validates `user_id = auth.uid() AND tenant_id = jwt_claim('tenant_id')`
@@ -143,9 +143,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when a Lecturer posts a comment on an assigned course's module, the "Expert" badge (amber pill with GraduationCap icon) is automatically displayed. This badge is set server-side by the `set_comment_badge` trigger — the frontend does NOT control it.
 
@@ -159,16 +159,16 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to the assigned course → click a module | Module viewer loads | ☐ |
-| 3 | Scroll to Discussion section | Discussion header visible | ☐ |
-| 4 | Type "Great work on this module! Here's a tip for the exam." | Text entered in textarea | ☐ |
-| 5 | Click "Post Comment" | Spinner, then comment appears | ☐ |
-| 6 | Verify Expert badge | Amber pill (`bg-amber-100 text-amber-700 rounded-full`) with GraduationCap icon and text "Expert" next to author name | ☐ |
-| 7 | Verify comment author | Lecturer's full name shown (e.g., "Test Lecturer (Edit)") | ☐ |
-| 8 | Log out, log in as Learner | — | ☐ |
-| 9 | Navigate to the same module | Module viewer loads | ☐ |
-| 10 | Verify Expert badge visible to learner | The learner sees the lecturer's comment with the "Expert" badge | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to the assigned course → click a module | Module viewer loads | ✅ |
+| 3 | Scroll to Discussion section | Discussion header visible | ✅ |
+| 4 | Type "Great work on this module! Here's a tip for the exam." | Text entered in textarea | ✅ |
+| 5 | Click "Post Comment" | Spinner, then comment appears | ✅ |
+| 6 | Verify Expert badge | Amber pill (`bg-amber-100 text-amber-700 rounded-full`) with GraduationCap icon and text "Expert" next to author name | ✅ |
+| 7 | Verify comment author | Lecturer's full name shown (e.g., "Test Lecturer (Edit)") | ✅ |
+| 8 | Log out, log in as Learner | — | ✅ |
+| 9 | Navigate to the same module | Module viewer loads | ✅ |
+| 10 | Verify Expert badge visible to learner | The learner sees the lecturer's comment with the "Expert" badge | ✅ |
 
 **Notes/Learnings**:
 - The trigger checks: `EXISTS (SELECT 1 FROM lecturer_course_assignments WHERE user_id = NEW.user_id AND course_id = v_course_id)` — course-specific
@@ -182,9 +182,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when a Platform Admin posts a comment, the "Calypso" badge (teal pill with Building2 icon) is automatically displayed. PA badge takes highest priority in the trigger.
 
@@ -198,15 +198,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to any course → click a module | Module viewer loads | ☐ |
-| 3 | Scroll to Discussion section | — | ☐ |
-| 4 | Type "Important announcement: updated materials will be released next week." | — | ☐ |
-| 5 | Click "Post Comment" | Comment appears | ☐ |
-| 6 | Verify Calypso badge | Teal pill (`bg-teal-100 text-teal-700 rounded-full`) with Building2 icon and text "Calypso" next to author name | ☐ |
-| 7 | Verify NO Expert badge | Only Calypso badge shown (PA has highest priority, not Expert even if also a lecturer) | ☐ |
-| 8 | Log out, log in as Learner | — | ☐ |
-| 9 | Navigate to the same module | Learner sees PA's comment with "Calypso" badge | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to any course → click a module | Module viewer loads | ✅ |
+| 3 | Scroll to Discussion section | — | ✅ |
+| 4 | Type "Important announcement: updated materials will be released next week." | — | ✅ |
+| 5 | Click "Post Comment" | Comment appears | ✅ |
+| 6 | Verify Calypso badge | Teal pill (`bg-teal-100 text-teal-700 rounded-full`) with Building2 icon and text "Calypso" next to author name | ✅ |
+| 7 | Verify NO Expert badge | Only Calypso badge shown (PA has highest priority, not Expert even if also a lecturer) | ✅ |
+| 8 | Log out, log in as Learner | — | ✅ |
+| 9 | Navigate to the same module | Learner sees PA's comment with "Calypso" badge | ✅ |
 
 **Notes/Learnings**:
 - Trigger priority: PA (calypso) > CSM (calypso) > Lecturer (expert) > NULL
@@ -219,9 +219,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a user can reply to an existing comment, the reply form appears when "Reply" is clicked, the reply is indented under the parent comment, and the reply has its own author/timestamp.
 
@@ -235,18 +235,18 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to the module with the existing comment | Comment visible in Discussion section | ☐ |
-| 2 | Verify "Reply" button on the comment | Ghost-style button with Reply icon and text "Reply" | ☐ |
-| 3 | Click "Reply" | Reply form appears indented (`ml-8 border-l-2 border-teal-200 pl-4`) below the comment | ☐ |
-| 4 | Verify reply form | Textarea with placeholder "Write a reply...", "Post Reply" button, "Cancel" button | ☐ |
-| 5 | Click "Cancel" | Reply form disappears | ☐ |
-| 6 | Click "Reply" again | Reply form reappears | ☐ |
-| 7 | Type "Thanks for sharing! Very helpful." | Text entered in reply textarea | ☐ |
-| 8 | Click "Post Reply" | Reply appears indented under the parent comment (`ml-8 border-l-2 border-slate-200 pl-4`) | ☐ |
-| 9 | Verify reply content | Smaller avatar circle (`w-6 h-6`), author name, "just now" timestamp, reply body text | ☐ |
-| 10 | Verify reply form dismissed | Reply textarea is gone after successful submission | ☐ |
-| 11 | Verify Discussion count unchanged | Count shows total top-level comments only (replies don't increment the count) | ☐ |
-| 12 | Refresh the page | Reply persists under the parent comment | ☐ |
+| 1 | Navigate to the module with the existing comment | Comment visible in Discussion section | ✅ |
+| 2 | Verify "Reply" button on the comment | Ghost-style button with Reply icon and text "Reply" | ✅ |
+| 3 | Click "Reply" | Reply form appears indented (`ml-8 border-l-2 border-teal-200 pl-4`) below the comment | ✅ |
+| 4 | Verify reply form | Textarea with placeholder "Write a reply...", "Post Reply" button, "Cancel" button | ✅ |
+| 5 | Click "Cancel" | Reply form disappears | ✅ |
+| 6 | Click "Reply" again | Reply form reappears | ✅ |
+| 7 | Type "Thanks for sharing! Very helpful." | Text entered in reply textarea | ✅ |
+| 8 | Click "Post Reply" | Reply appears indented under the parent comment (`ml-8 border-l-2 border-slate-200 pl-4`) | ✅ |
+| 9 | Verify reply content | Smaller avatar circle (`w-6 h-6`), author name, "just now" timestamp, reply body text | ✅ |
+| 10 | Verify reply form dismissed | Reply textarea is gone after successful submission | ✅ |
+| 11 | Verify Discussion count unchanged | Count shows total top-level comments only (replies don't increment the count) | ✅ |
+| 12 | Refresh the page | Reply persists under the parent comment | ✅ |
 
 **Notes/Learnings**:
 - `comment_replies_insert_own`: validates `user_id = auth.uid() AND tenant_id = jwt_claim('tenant_id')`
@@ -261,9 +261,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a user can edit their own comment via inline editing: click Edit, textarea appears with current body, modify text, Save updates the comment, Cancel discards changes.
 
@@ -277,15 +277,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to the module with the learner's own comment | Comment visible with Edit and Delete buttons | ☐ |
-| 2 | Verify Edit button | Ghost-style button with Pencil icon and text "Edit" visible on own comment | ☐ |
-| 3 | Click "Edit" | Comment body replaced by textarea pre-filled with current body text, "Save" and "Cancel" buttons appear below | ☐ |
-| 4 | Verify Reply button hidden during edit | Action row (Reply/Edit/Delete) is hidden while in edit mode | ☐ |
-| 5 | Click "Cancel" | Edit mode dismissed, original body text restored | ☐ |
-| 6 | Click "Edit" again | Edit textarea appears again | ☐ |
-| 7 | Modify text to "Hello, this is my EDITED first comment!" | Textarea content changes | ☐ |
-| 8 | Click "Save" | Textarea disappears, comment body shows updated text | ☐ |
-| 9 | Refresh the page | Edited text persists (saved to DB via `updateComment`) | ☐ |
+| 1 | Navigate to the module with the learner's own comment | Comment visible with Edit and Delete buttons | ✅ |
+| 2 | Verify Edit button | Ghost-style button with Pencil icon and text "Edit" visible on own comment | ✅ |
+| 3 | Click "Edit" | Comment body replaced by textarea pre-filled with current body text, "Save" and "Cancel" buttons appear below | ✅ |
+| 4 | Verify Reply button hidden during edit | Action row (Reply/Edit/Delete) is hidden while in edit mode | ✅ |
+| 5 | Click "Cancel" | Edit mode dismissed, original body text restored | ✅ |
+| 6 | Click "Edit" again | Edit textarea appears again | ✅ |
+| 7 | Modify text to "Hello, this is my EDITED first comment!" | Textarea content changes | ✅ |
+| 8 | Click "Save" | Textarea disappears, comment body shows updated text | ✅ |
+| 9 | Refresh the page | Edited text persists (saved to DB via `updateComment`) | ✅ |
 
 **Notes/Learnings**:
 - `comments_update_own` RLS: `USING (user_id = auth.uid())` — only own comments
@@ -300,9 +300,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a user can delete their own comment, the comment disappears from the list, and the Discussion count decreases. Also verifies that replies are cascade-deleted with the parent.
 
@@ -316,13 +316,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to the module with the learner's comment (which has a reply) | Comment with reply visible, Delete button present | ☐ |
-| 2 | Note the current Discussion count | E.g., "Discussion (2)" if 2 comments exist | ☐ |
-| 3 | Click "Delete" on the learner's own comment | Comment AND its replies immediately disappear | ☐ |
-| 4 | Verify Discussion count decreases | Count decreases by 1 | ☐ |
-| 5 | Verify no orphan replies | The reply that was nested under the deleted comment is also gone (FK cascade) | ☐ |
-| 6 | Refresh the page | Deleted comment does not reappear (deleted from DB) | ☐ |
-| 7 | If all comments deleted, verify empty state returns | "No comments yet. Be the first to start the discussion." text | ☐ |
+| 1 | Navigate to the module with the learner's comment (which has a reply) | Comment with reply visible, Delete button present | ✅ |
+| 2 | Note the current Discussion count | E.g., "Discussion (2)" if 2 comments exist | ✅ |
+| 3 | Click "Delete" on the learner's own comment | Comment AND its replies immediately disappear | ✅ |
+| 4 | Verify Discussion count decreases | Count decreases by 1 | ✅ |
+| 5 | Verify no orphan replies | The reply that was nested under the deleted comment is also gone (FK cascade) | ✅ |
+| 6 | Refresh the page | Deleted comment does not reappear (deleted from DB) | ✅ |
+| 7 | If all comments deleted, verify empty state returns | "No comments yet. Be the first to start the discussion." text | ✅ |
 
 **Notes/Learnings**:
 - `comments_delete_own` RLS: `USING (user_id = auth.uid())` — own comments only
@@ -336,9 +336,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Tenant Admin can delete another user's comment within the same tenant (moderation), but cannot edit it. Also verify TA cannot delete comments from other tenants.
 
@@ -353,28 +353,28 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| S1 | Log in as Client Learner (`learner@calypsoclient.com`) | Dashboard loads | ☐ |
-| S2 | Navigate to a module in the shared test course | Module viewer loads | ☐ |
-| S3 | Post a comment: "Client learner question about this topic" | Comment appears | ☐ |
-| S4 | Log out | — | ☐ |
+| S1 | Log in as Client Learner (`learner@calypsoclient.com`) | Dashboard loads | ✅ |
+| S2 | Navigate to a module in the shared test course | Module viewer loads | ✅ |
+| S3 | Post a comment: "Client learner question about this topic" | Comment appears | ✅ |
+| S4 | Log out | — | ✅ |
 
 **Test Steps (Tenant Admin)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Client Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to the same module | Module viewer loads with Discussion section | ☐ |
-| 3 | Verify client learner's comment is visible | Comment shows with learner's name and body | ☐ |
-| 4 | Verify Delete button IS visible on the learner's comment | Rose-colored trash button visible (TA can delete same-tenant comments) | ☐ |
-| 5 | Verify Edit button is NOT visible | TA can only delete, not edit other users' comments | ☐ |
-| 6 | Click "Delete" on the learner's comment | Comment disappears, Discussion count decreases | ☐ |
-| 7 | Refresh the page | Deleted comment does not reappear | ☐ |
+| 1 | Log in as Client Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to the same module | Module viewer loads with Discussion section | ✅ |
+| 3 | Verify client learner's comment is visible | Comment shows with learner's name and body | ✅ |
+| 4 | Verify Delete button IS visible on the learner's comment | Rose-colored trash button visible (TA can delete same-tenant comments) | ✅ |
+| 5 | Verify Edit button is NOT visible | TA can only delete, not edit other users' comments | ✅ |
+| 6 | Click "Delete" on the learner's comment | Comment disappears, Discussion count decreases | ✅ |
+| 7 | Refresh the page | Deleted comment does not reappear | ✅ |
 
 **Negative Case — Cross-Tenant**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 8 | If a Calypso (master tenant) comment exists on same module | TA should NOT see it at all — `comments_select_tenant` only shows same-tenant comments, and TA is on client tenant | ☐ |
+| 8 | If a Calypso (master tenant) comment exists on same module | TA should NOT see it at all — `comments_select_tenant` only shows same-tenant comments, and TA is on client tenant | ✅ |
 
 **Notes/Learnings**:
 - `comments_delete_tenant_admin`: `USING (tenant_id = jwt_claim('tenant_id') AND is_tenant_admin = 'true')` — same tenant only
@@ -388,9 +388,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Platform Admin can see and delete comments from ANY tenant (cross-tenant moderation). PA uses `comments_select_platform_admin` (sees all) + `comments_delete_platform_admin` (can delete any).
 
@@ -407,14 +407,14 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to the module with multi-tenant comments | Module viewer loads | ☐ |
-| 3 | Verify ALL comments visible | PA sees comments from both Calypso and Calypso Client tenants | ☐ |
-| 4 | Verify Delete button on EVERY comment | Rose trash button visible on all comments (PA can delete any) | ☐ |
-| 5 | Verify Edit button only on PA's OWN comments | Edit only shown for comments where `user_id === PA's id` | ☐ |
-| 6 | Delete a client tenant comment | Comment disappears | ☐ |
-| 7 | Delete a master tenant comment | Comment disappears | ☐ |
-| 8 | Refresh the page | Both deleted comments stay gone | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to the module with multi-tenant comments | Module viewer loads | ✅ |
+| 3 | Verify ALL comments visible | PA sees comments from both Calypso and Calypso Client tenants | ✅ |
+| 4 | Verify Delete button on EVERY comment | Rose trash button visible on all comments (PA can delete any) | ✅ |
+| 5 | Verify Edit button only on PA's OWN comments | Edit only shown for comments where `user_id === PA's id` | ✅ |
+| 6 | Delete a client tenant comment | Comment disappears | ✅ |
+| 7 | Delete a master tenant comment | Comment disappears | ✅ |
+| 8 | Refresh the page | Both deleted comments stay gone | ✅ |
 
 **Notes/Learnings**:
 - `comments_select_platform_admin`: `USING (is_platform_admin = 'true')` — unconditional, sees all tenants
@@ -428,9 +428,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that comments are tenant-isolated — a learner from one tenant CANNOT see comments posted by a learner from another tenant on the same module. This is the core security boundary for the comment system.
 
@@ -444,31 +444,31 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Calypso Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to a module in the shared course | Module viewer loads | ☐ |
-| 3 | Post comment: "This is a Calypso-tenant comment" | Comment appears | ☐ |
-| 4 | Verify Discussion count | Shows the count (Calypso tenant comments only) | ☐ |
-| 5 | Log out | — | ☐ |
+| 1 | Log in as Calypso Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to a module in the shared course | Module viewer loads | ✅ |
+| 3 | Post comment: "This is a Calypso-tenant comment" | Comment appears | ✅ |
+| 4 | Verify Discussion count | Shows the count (Calypso tenant comments only) | ✅ |
+| 5 | Log out | — | ✅ |
 
 **Steps (Client Learner Checks)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 6 | Log in as Client Learner (`learner@calypsoclient.com`) | Dashboard loads | ☐ |
-| 7 | Navigate to the SAME module | Module viewer loads | ☐ |
-| 8 | **Verify Calypso learner's comment is NOT visible** | The "Calypso-tenant comment" should NOT appear — RLS filters by tenant_id | ☐ |
-| 9 | Verify Discussion section shows different count | Count reflects only client tenant's comments (0 if none from client) | ☐ |
-| 10 | Post comment: "This is a Client-tenant comment" | Comment appears | ☐ |
-| 11 | Log out | — | ☐ |
+| 6 | Log in as Client Learner (`learner@calypsoclient.com`) | Dashboard loads | ✅ |
+| 7 | Navigate to the SAME module | Module viewer loads | ✅ |
+| 8 | **Verify Calypso learner's comment is NOT visible** | The "Calypso-tenant comment" should NOT appear — RLS filters by tenant_id | ✅ |
+| 9 | Verify Discussion section shows different count | Count reflects only client tenant's comments (0 if none from client) | ✅ |
+| 10 | Post comment: "This is a Client-tenant comment" | Comment appears | ✅ |
+| 11 | Log out | — | ✅ |
 
 **Steps (Calypso Learner Verifies)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 12 | Log in as Calypso Learner again | — | ☐ |
-| 13 | Navigate to the same module | Module viewer loads | ☐ |
-| 14 | **Verify Client learner's comment is NOT visible** | Only Calypso-tenant comments shown | ☐ |
-| 15 | Verify own comment from step 3 IS visible | "This is a Calypso-tenant comment" still present | ☐ |
+| 12 | Log in as Calypso Learner again | — | ✅ |
+| 13 | Navigate to the same module | Module viewer loads | ✅ |
+| 14 | **Verify Client learner's comment is NOT visible** | Only Calypso-tenant comments shown | ✅ |
+| 15 | Verify own comment from step 3 IS visible | "This is a Calypso-tenant comment" still present | ✅ |
 
 **Notes/Learnings**:
 - `comments_select_tenant`: `USING (tenant_id = jwt_claim('tenant_id'))` — exact match, no cross-tenant leakage
@@ -483,9 +483,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Lecturer assigned to a course can see comments from ALL tenants on that course's modules. This is by design — lecturers need cross-tenant visibility to support all learners.
 
@@ -499,14 +499,14 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to the module with multi-tenant comments | Module viewer loads | ☐ |
-| 3 | Verify comments from Calypso learner visible | "This is a Calypso-tenant comment" shown | ☐ |
-| 4 | Verify comments from Client learner visible | "This is a Client-tenant comment" shown | ☐ |
-| 5 | Verify Discussion count includes ALL tenant comments | Count reflects total across all tenants | ☐ |
-| 6 | Verify Lecturer can Reply to any comment | Reply button present on comments from both tenants | ☐ |
-| 7 | Verify Lecturer CANNOT Delete other users' comments | No Delete button on other users' comments (lecturer is not TA/PA) | ☐ |
-| 8 | Verify Lecturer CAN Edit/Delete their own comments | If lecturer has posted (CM-02), Edit + Delete visible on their own | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to the module with multi-tenant comments | Module viewer loads | ✅ |
+| 3 | Verify comments from Calypso learner visible | "This is a Calypso-tenant comment" shown | ✅ |
+| 4 | Verify comments from Client learner visible | "This is a Client-tenant comment" shown | ✅ |
+| 5 | Verify Discussion count includes ALL tenant comments | Count reflects total across all tenants | ✅ |
+| 6 | Verify Lecturer can Reply to any comment | Reply button present on comments from both tenants | ✅ |
+| 7 | Verify Lecturer CANNOT Delete other users' comments | No Delete button on other users' comments (lecturer is not TA/PA) | ✅ |
+| 8 | Verify Lecturer CAN Edit/Delete their own comments | If lecturer has posted (CM-02), Edit + Delete visible on their own | ✅ |
 
 **Notes/Learnings**:
 - `comments_select_lecturer`: `EXISTS (SELECT 1 FROM modules m WHERE m.id = comments.module_id AND m.course_id = ANY(lecturer_course_ids))`
@@ -520,9 +520,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when navigating between modules (Next/Previous buttons), the Discussion section reloads with the correct module's comments. Comments from module A should not appear on module B.
 
@@ -537,16 +537,16 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner | Dashboard loads | ☐ |
-| 2 | Navigate to Module A (which has a comment) | Module viewer loads, Discussion shows comment(s) | ☐ |
-| 3 | Note the Discussion count and comment content | E.g., "Discussion (1)" with specific comment text | ☐ |
-| 4 | Click "Next" button to navigate to Module B | Module B content loads | ☐ |
-| 5 | Verify Discussion section reloaded | Count changes to Module B's comment count (e.g., "Discussion (0)") | ☐ |
-| 6 | Verify Module A's comments are NOT shown | Comments from Module A do not appear on Module B | ☐ |
-| 7 | Post a comment on Module B: "Comment on Module B" | Comment appears | ☐ |
-| 8 | Click "Previous" button to return to Module A | Module A content loads | ☐ |
-| 9 | Verify Module A's original comments are back | The comment from step 3 is visible again | ☐ |
-| 10 | Verify Module B's comment is NOT shown here | "Comment on Module B" does not appear on Module A | ☐ |
+| 1 | Log in as Learner | Dashboard loads | ✅ |
+| 2 | Navigate to Module A (which has a comment) | Module viewer loads, Discussion shows comment(s) | ✅ |
+| 3 | Note the Discussion count and comment content | E.g., "Discussion (1)" with specific comment text | ✅ |
+| 4 | Click "Next" button to navigate to Module B | Module B content loads | ✅ |
+| 5 | Verify Discussion section reloaded | Count changes to Module B's comment count (e.g., "Discussion (0)") | ✅ |
+| 6 | Verify Module A's comments are NOT shown | Comments from Module A do not appear on Module B | ✅ |
+| 7 | Post a comment on Module B: "Comment on Module B" | Comment appears | ✅ |
+| 8 | Click "Previous" button to return to Module A | Module A content loads | ✅ |
+| 9 | Verify Module A's original comments are back | The comment from step 3 is visible again | ✅ |
+| 10 | Verify Module B's comment is NOT shown here | "Comment on Module B" does not appear on Module A | ✅ |
 
 **Notes/Learnings**:
 - CommentSectionComponent uses `effect()` watching `moduleId()` signal — triggers `loadComments(mid)` on every change
@@ -561,9 +561,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a user can edit and delete their own replies. Edit shows inline textarea on the reply, Save updates it, Delete removes it. Also verify that Edit/Delete are NOT shown on other users' replies.
 
@@ -576,27 +576,27 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| S1 | Navigate to a module and post a comment | Comment appears | ☐ |
-| S2 | Click "Reply" on the comment, post a reply: "My original reply" | Reply appears indented | ☐ |
+| S1 | Navigate to a module and post a comment | Comment appears | ✅ |
+| S2 | Click "Reply" on the comment, post a reply: "My original reply" | Reply appears indented | ✅ |
 
 **Test Steps — Edit Reply**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Verify Edit button on own reply | Pencil icon + "Edit" text visible on the reply | ☐ |
-| 2 | Click "Edit" on the reply | Reply body replaced by textarea pre-filled with "My original reply", Save and Cancel buttons appear | ☐ |
-| 3 | Modify text to "My EDITED reply" | Textarea content changes | ☐ |
-| 4 | Click "Save" | Reply body updates to "My EDITED reply" | ☐ |
-| 5 | Refresh the page | Edited reply persists | ☐ |
+| 1 | Verify Edit button on own reply | Pencil icon + "Edit" text visible on the reply | ✅ |
+| 2 | Click "Edit" on the reply | Reply body replaced by textarea pre-filled with "My original reply", Save and Cancel buttons appear | ✅ |
+| 3 | Modify text to "My EDITED reply" | Textarea content changes | ✅ |
+| 4 | Click "Save" | Reply body updates to "My EDITED reply" | ✅ |
+| 5 | Refresh the page | Edited reply persists | ✅ |
 
 **Test Steps — Delete Reply**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 6 | Verify Delete button on own reply | Rose trash icon + "Delete" text visible | ☐ |
-| 7 | Click "Delete" on the reply | Reply disappears from under the parent comment | ☐ |
-| 8 | Verify parent comment still exists | Only the reply was removed, not the parent | ☐ |
-| 9 | Refresh the page | Deleted reply does not reappear | ☐ |
+| 6 | Verify Delete button on own reply | Rose trash icon + "Delete" text visible | ✅ |
+| 7 | Click "Delete" on the reply | Reply disappears from under the parent comment | ✅ |
+| 8 | Verify parent comment still exists | Only the reply was removed, not the parent | ✅ |
+| 9 | Refresh the page | Deleted reply does not reappear | ✅ |
 
 **Notes/Learnings**:
 - `comment_replies_update_own`: `USING (user_id = auth.uid())`
@@ -610,9 +610,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that users only see Edit/Delete buttons according to their permissions. Specifically: (1) Learner sees no Edit/Delete on others' comments, (2) CSM sees no Delete on others' comments, (3) No role sees Edit on others' comments (only own).
 
@@ -626,26 +626,26 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Calypso Learner | — | ☐ |
-| 2 | Navigate to module with comments from Lecturer and PA | Comments visible | ☐ |
-| 3 | Verify NO Edit button on Lecturer's comment | Only Reply button shown for other users' comments | ☐ |
-| 4 | Verify NO Delete button on Lecturer's comment | Learner cannot delete others' comments | ☐ |
-| 5 | Verify NO Edit button on PA's comment | Same — no edit on others | ☐ |
-| 6 | Verify NO Delete button on PA's comment | Same — no delete on others | ☐ |
-| 7 | Verify Reply button IS present on all comments | Any user can reply to any visible comment | ☐ |
-| 8 | Verify Edit + Delete on OWN comment (if exists) | Buttons visible only on learner's own comments | ☐ |
+| 1 | Log in as Calypso Learner | — | ✅ |
+| 2 | Navigate to module with comments from Lecturer and PA | Comments visible | ✅ |
+| 3 | Verify NO Edit button on Lecturer's comment | Only Reply button shown for other users' comments | ✅ |
+| 4 | Verify NO Delete button on Lecturer's comment | Learner cannot delete others' comments | ✅ |
+| 5 | Verify NO Edit button on PA's comment | Same — no edit on others | ✅ |
+| 6 | Verify NO Delete button on PA's comment | Same — no delete on others | ✅ |
+| 7 | Verify Reply button IS present on all comments | Any user can reply to any visible comment | ✅ |
+| 8 | Verify Edit + Delete on OWN comment (if exists) | Buttons visible only on learner's own comments | ✅ |
 
 **Steps (CSM — Can View But Not Moderate)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 9 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 10 | Navigate to a module in a course (CSM sees via master tenant) | Module viewer loads | ☐ |
-| 11 | Verify CSM can see comments | Comments from same tenant (Calypso) visible | ☐ |
-| 12 | Verify NO Delete button on others' comments | CSM is NOT in `canDelete` (not TA, not PA) | ☐ |
-| 13 | Verify NO Edit button on others' comments | CSM cannot edit others' comments | ☐ |
-| 14 | Verify CSM CAN post a comment | Post comment → appears with "Calypso" badge (CSM → calypso badge via trigger) | ☐ |
-| 15 | Verify CSM CAN Edit/Delete own comment | Own comment has Edit + Delete buttons | ☐ |
+| 9 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 10 | Navigate to a module in a course (CSM sees via master tenant) | Module viewer loads | ✅ |
+| 11 | Verify CSM can see comments | Comments from same tenant (Calypso) visible | ✅ |
+| 12 | Verify NO Delete button on others' comments | CSM is NOT in `canDelete` (not TA, not PA) | ✅ |
+| 13 | Verify NO Edit button on others' comments | CSM cannot edit others' comments | ✅ |
+| 14 | Verify CSM CAN post a comment | Post comment → appears with "Calypso" badge (CSM → calypso badge via trigger) | ✅ |
+| 15 | Verify CSM CAN Edit/Delete own comment | Own comment has Edit + Delete buttons | ✅ |
 
 **Notes/Learnings**:
 - `canEdit(item)`: `item.user_id === currentUserId` — ALWAYS own-only, no exceptions
@@ -660,9 +660,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 (Run 2) |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when a CSM posts a comment, the "Calypso" badge is automatically displayed (same visual as PA badge, but triggered by `csm_tenant_assignments` lookup).
 
@@ -676,13 +676,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to a module in a course | Module viewer loads | ☐ |
-| 3 | Post comment: "CSM checking in on module completion rates" | Comment appears | ☐ |
-| 4 | Verify Calypso badge | Teal pill with Building2 icon and "Calypso" text — same visual as PA badge | ☐ |
-| 5 | Verify badge is NOT "Expert" | CSM gets Calypso badge, not Expert (even though both are master tenant roles) | ☐ |
-| 6 | Log out, log in as Calypso Learner | — | ☐ |
-| 7 | Navigate to the same module | CSM's comment visible with "Calypso" badge | ☐ |
+| 1 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to a module in a course | Module viewer loads | ✅ |
+| 3 | Post comment: "CSM checking in on module completion rates" | Comment appears | ✅ |
+| 4 | Verify Calypso badge | Teal pill with Building2 icon and "Calypso" text — same visual as PA badge | ✅ |
+| 5 | Verify badge is NOT "Expert" | CSM gets Calypso badge, not Expert (even though both are master tenant roles) | ✅ |
+| 6 | Log out, log in as Calypso Learner | — | ✅ |
+| 7 | Navigate to the same module | CSM's comment visible with "Calypso" badge | ✅ |
 
 **Notes/Learnings**:
 - Trigger CSM check: `EXISTS (SELECT 1 FROM csm_tenant_assignments WHERE user_id = NEW.user_id)` — any CSM assignment qualifies

@@ -60,31 +60,31 @@ describe('ModuleItemComponent', () => {
     expect(screen.queryByText('Coming soon')).toBeNull();
   });
 
-  it('should show "Not started" when no progress', async () => {
+  it('should show "Not started" status via aria-label when no progress', async () => {
     await renderItem({
       module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
       progress: null,
     });
 
-    expect(screen.getByText('Not started')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Not started/ })).toBeTruthy();
   });
 
-  it('should show "Done" for completed modules', async () => {
+  it('should show "Completed" status via aria-label for completed modules', async () => {
     await renderItem({
       module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
       progress: { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
     });
 
-    expect(screen.getByText('Done')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Completed/ })).toBeTruthy();
   });
 
-  it('should show "In progress" for in-progress modules', async () => {
+  it('should show "In progress" status via aria-label for in-progress modules', async () => {
     await renderItem({
       module: { id: 'm1', title: 'Module A', module_type: 'pdf', sort_order: 0 },
       progress: { status: 'in_progress', completed_at: null },
     });
 
-    expect(screen.getByText('In progress')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /In progress/ })).toBeTruthy();
   });
 
   // --- Action buttons: visibility ---

@@ -94,16 +94,16 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| TM-01 | Navigation + Page Load | Platform Admin | ✅ | 2026-02-15 |
-| TM-02 | Summary Cards | Platform Admin | ✅ | 2026-02-15 |
-| TM-03 | Filter by Search | Platform Admin | ✅ | 2026-02-15 |
-| TM-04 | Create New Tenant | Platform Admin | ✅ | 2026-02-15 |
-| TM-05 | Edit Tenant Details | Platform Admin | ✅ | 2026-02-15 |
-| TM-06 | Master Tenant Protection | Platform Admin | ✅ | 2026-02-15 |
-| TM-07 | Manage Course Assignments | Platform Admin | ✅ | 2026-02-15 |
-| TM-08 | Manage CSM Assignments | Platform Admin | ✅ | 2026-02-15 |
-| TM-09 | Delete Tenant | Platform Admin | ✅ | 2026-02-15 |
-| TM-10 | Role Access Control | Multiple | ✅ | 2026-02-15 |
+| TM-01 | Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
+| TM-02 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
+| TM-03 | Filter by Search | Platform Admin | ✅ | 2026-02-16 |
+| TM-04 | Create New Tenant | Platform Admin | ✅ | 2026-02-16 |
+| TM-05 | Edit Tenant Details | Platform Admin | ✅ | 2026-02-16 |
+| TM-06 | Master Tenant Protection | Platform Admin | ✅ | 2026-02-16 |
+| TM-07 | Manage Course Assignments | Platform Admin | ✅ | 2026-02-16 |
+| TM-08 | Manage CSM Assignments | Platform Admin | ✅ | 2026-02-16 |
+| TM-09 | Delete Tenant | Platform Admin | ✅ | 2026-02-16 |
+| TM-10 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -164,9 +164,9 @@ SELECT id, name, domain, is_master FROM tenants ORDER BY is_master DESC, name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Platform Admin can see "Tenant Management" in the sidebar Platform section, navigate to `/platform/tenants`, and see the tenants table with summary cards and filter bar.
 
@@ -213,9 +213,9 @@ ORDER BY t.is_master DESC, t.name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the 4 summary stat cards are accurate and reflect the current data. Cards show: Total Tenants, Master (always 1), Total Course Assignments (sum across all tenants), Total CSM Assignments (sum across all tenants).
 
@@ -256,9 +256,9 @@ FROM tenants;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the search filter correctly filters tenants by name or domain (case-insensitive).
 
@@ -291,9 +291,9 @@ FROM tenants;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full create tenant workflow: open form, fill name + domain + auth methods, submit, verify tenant appears in the table. This tenant will be used in TM-05 (edit) and TM-09 (delete).
 
@@ -340,9 +340,9 @@ FROM tenants WHERE domain = 'e2etest.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the edit workflow: click a tenant row to expand, see 3 tabs (Details/Courses/CSMs), modify name, domain, and auth methods in the Details tab, save changes, verify persistence.
 
@@ -393,9 +393,9 @@ FROM tenants WHERE domain = 'e2etest.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the master tenant cannot be deleted. The UI should show a protection message instead of a Delete button.
 
@@ -434,9 +434,9 @@ SELECT id, name, domain, is_master FROM tenants WHERE is_master = true;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the Courses tab workflow: switch to Courses tab, view assigned courses, add a new course assignment, see cascade warning, remove a course assignment.
 
@@ -496,9 +496,9 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the CSMs tab workflow: switch to CSMs tab, view assigned CSMs, add a new CSM, remove a CSM.
 
@@ -560,9 +560,9 @@ ORDER BY p.email;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the two-click delete confirmation workflow: first click shows "Confirm Delete", second click actually deletes the tenant and removes it from the table.
 
@@ -613,9 +613,9 @@ SELECT COUNT(*) FROM csm_tenant_assignments WHERE tenant_id = '<DELETED_TENANT_I
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that ONLY Platform Admin can access `/platform/tenants`. Learners, Lecturers, CSMs, and Tenant Admins should all be blocked by the route guard.
 

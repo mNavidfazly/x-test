@@ -107,18 +107,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| UM-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 15 Feb 2026 |
-| UM-03 | Summary Cards | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-04 | Filter by Search | Tenant Admin | ✅ | 15 Feb 2026 |
-| UM-05 | Filter by Role | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-06 | Expand Row + Edit Profile | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-07 | Toggle Tenant Admin Role | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-09 | Self-Role Protection | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-10 | Invite User (TA Flow) | Tenant Admin | ✅ | 15 Feb 2026 |
-| UM-11 | Invite User (PA Flow) | Platform Admin | ✅ | 15 Feb 2026 |
-| UM-12 | Role Access Control | Multiple | ✅ | 15 Feb 2026 |
+| UM-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
+| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 2026-02-16 |
+| UM-03 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
+| UM-04 | Filter by Search | Tenant Admin | ✅ | 2026-02-16 |
+| UM-05 | Filter by Role | Platform Admin | ✅ | 2026-02-16 |
+| UM-06 | Expand Row + Edit Profile | Platform Admin | ✅ | 2026-02-16 |
+| UM-07 | Toggle Tenant Admin Role | Platform Admin | ✅ | 2026-02-16 |
+| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ✅ | 2026-02-16 |
+| UM-09 | Self-Role Protection | Platform Admin | ✅ | 2026-02-16 |
+| UM-10 | Invite User (TA Flow) | Tenant Admin | ✅ | 2026-02-16 |
+| UM-11 | Invite User (PA Flow) | Platform Admin | ✅ | 2026-02-16 |
+| UM-12 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -175,9 +175,9 @@ WHERE p.email IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Platform Admin can see "User Management" in the sidebar (under "Tenant Admin" section — PA was added to this section's roles), navigate to `/admin/users`, and see the full user table with tenant column, PA-specific summary cards, and filter bar.
 
@@ -228,9 +228,9 @@ ORDER BY p.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Tenant Admin sees only users from their own tenant (RLS-scoped by `profiles_select_tenant`), does NOT see the tenant column, does NOT see the "Platform Admins" summary card, and does NOT see the Platform Admin role toggle in expanded rows.
 
@@ -279,9 +279,9 @@ WHERE tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com');
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that summary stat cards show accurate counts for the current (filtered) user list. PA sees 4 cards, TA sees 3.
 
@@ -322,9 +322,9 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify search filter correctly filters users by name or email (case-insensitive).
 
@@ -352,9 +352,9 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the role dropdown filter correctly filters users by role category.
 
@@ -385,9 +385,9 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the expand/collapse row behavior and profile name editing: click a user row to expand, see name input pre-filled, modify name, save, verify persistence.
 
@@ -431,9 +431,9 @@ FROM profiles WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that PA can toggle the `is_tenant_admin` flag on another user, and the role badge updates accordingly. Then toggle back to restore original state.
 
@@ -477,9 +477,9 @@ FROM profiles WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that PA can toggle the `is_platform_admin` flag on another master-tenant user. TA should NOT see this toggle at all.
 
@@ -523,9 +523,9 @@ WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a user cannot modify their own admin flags — checkboxes are disabled and a "Cannot modify own role" message is shown. This prevents accidental self-lockout.
 
@@ -555,9 +555,9 @@ WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the TA invite workflow: open invite form (no tenant picker), enter email, submit via FastAPI, see success message. The backend uses the TA's JWT `tenant_id` to determine which tenant to create the user in.
 
@@ -617,9 +617,9 @@ DELETE FROM auth.users WHERE email = 'e2e-invite-ta@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the PA invite workflow: open invite form WITH tenant picker, select a tenant, enter email, submit. Also tests the duplicate email error case.
 
@@ -679,9 +679,9 @@ DELETE FROM auth.users WHERE email = 'e2e-invite-pa@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude E2E |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that ONLY Tenant Admin and Platform Admin can access `/admin/users`. Learners, Lecturers, and CSMs should be blocked by the route guard.
 

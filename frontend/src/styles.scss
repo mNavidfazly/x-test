@@ -311,6 +311,35 @@
   .progress-fill {
     @apply h-full bg-teal-500 rounded-full transition-[width] duration-500 ease-out;
   }
+
+  /* === Module Item (Course Curriculum) === */
+  .module-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer flex-1 min-w-0
+           transition-[background-color,box-shadow] duration-200
+           hover:bg-slate-100/70 hover:shadow-sm;
+  }
+  .module-item-completed {
+    @apply hover:bg-emerald-50/60;
+  }
+  .module-item-active {
+    @apply bg-teal-50/50 border-l-2 border-teal-500 pl-2.5
+           hover:bg-teal-50;
+  }
+  .module-item-disabled {
+    @apply cursor-default opacity-60;
+    &:hover {
+      background-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  /* === Lecture Section === */
+  .lecture-progress-bar {
+    @apply w-full h-1 bg-slate-100 rounded-full overflow-hidden mt-1;
+  }
+  .lecture-progress-fill {
+    @apply h-full bg-teal-500 rounded-full transition-[width] duration-500 ease-out;
+  }
   .skeleton-bar {
     @apply animate-pulse bg-slate-200 rounded;
   }

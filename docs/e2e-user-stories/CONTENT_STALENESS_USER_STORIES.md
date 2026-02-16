@@ -111,20 +111,20 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CS-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-15 |
-| CS-02 | Per-Module Staleness Data Accuracy | Platform Admin | ✅ | 2026-02-15 |
-| CS-03 | Summary Cards (Module-Level Counts) | Platform Admin | ✅ | 2026-02-15 |
-| CS-04 | Search Filter | Platform Admin | ✅ | 2026-02-15 |
-| CS-05 | Status Filter (Has Stale / All Fresh / Has Postponed / No Modules) | Platform Admin | ✅ | 2026-02-15 |
-| CS-06 | View Course Link → Course Detail | Platform Admin | ✅ | 2026-02-15 |
-| CS-07 | Expand Course Row — Module Details | Platform Admin | ✅ | 2026-02-15 |
-| CS-08 | Expand/Collapse Behavior | Platform Admin | ✅ | 2026-02-15 |
-| CS-09 | Lecturer Sees Only Assigned Courses | Lecturer | ✅ | 2026-02-15 |
-| CS-10 | Role Access Control | Multiple | ✅ | 2026-02-15 |
-| CS-11 | Postpone Single Module | Platform Admin | ✅ | 2026-02-15 |
-| CS-12 | Postpone All Stale Modules (Course-Level) | Platform Admin | ✅ | 2026-02-15 |
-| CS-13 | Postpone Badge + Status Update | Platform Admin | ✅ | 2026-02-15 |
-| CS-14 | Postpone — Lecturer with can_edit | Lecturer | ✅ | 2026-02-15 |
+| CS-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
+| CS-02 | Per-Module Staleness Data Accuracy | Platform Admin | ✅ | 2026-02-16 |
+| CS-03 | Summary Cards (Module-Level Counts) | Platform Admin | ✅ | 2026-02-16 |
+| CS-04 | Search Filter | Platform Admin | ✅ | 2026-02-16 |
+| CS-05 | Status Filter (Has Stale / All Fresh / Has Postponed / No Modules) | Platform Admin | ✅ | 2026-02-16 |
+| CS-06 | View Course Link → Course Detail | Platform Admin | ✅ | 2026-02-16 |
+| CS-07 | Expand Course Row — Module Details | Platform Admin | ✅ | 2026-02-16 |
+| CS-08 | Expand/Collapse Behavior | Platform Admin | ✅ | 2026-02-16 |
+| CS-09 | Lecturer Sees Only Assigned Courses | Lecturer | ✅ | 2026-02-16 |
+| CS-10 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| CS-11 | Postpone Single Module | Platform Admin | ✅ | 2026-02-16 |
+| CS-12 | Postpone All Stale Modules (Course-Level) | Platform Admin | ✅ | 2026-02-16 |
+| CS-13 | Postpone Badge + Status Update | Platform Admin | ✅ | 2026-02-16 |
+| CS-14 | Postpone — Lecturer with can_edit | Lecturer | ✅ | 2026-02-16 |
 
 ---
 
@@ -247,9 +247,9 @@ WHERE lca.lecturer_id = (SELECT id FROM profiles WHERE email = 'lecturer-edit@ca
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the Platform Admin can find and navigate to the Content Staleness dashboard via the sidebar Teaching section, and that the page renders the full structure: header with course count badge, filter bar, 4 module-level summary cards, and expandable data table with correct columns.
 
@@ -259,16 +259,16 @@ WHERE lca.lecturer_id = (SELECT id FROM profiles WHERE email = 'lecturer-edit@ca
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Look at sidebar Teaching section | "Content Staleness" item visible with Clock icon | ☐ |
-| 3 | Click "Content Staleness" in sidebar | Navigates to `/teaching/staleness` | ☐ |
-| 4 | Verify page header | "Content Staleness" heading with Clock icon and teal course count badge | ☐ |
-| 5 | Verify teal badge shows total count | Number in badge matches total courses visible in table (unfiltered) | ☐ |
-| 6 | Verify filter bar | Search input ("Search by course title...") + Status dropdown ("All Status") visible | ☐ |
-| 7 | Verify summary cards row | 4 cards: "Total Modules" (slate), "Stale Modules" (rose), "Fresh Modules" (emerald), "Courses" (slate) | ☐ |
-| 8 | Verify table headers | 7 columns: (chevron), Course, Modules, Stale / Fresh, Threshold, Status, Action | ☐ |
-| 9 | Verify at least one data row | Row with chevron icon, course title, total module count, stale/fresh counts, threshold + "days", status badge, "View" link | ☐ |
-| 10 | Verify PA sees ALL courses | Total count matches the number of courses in the system (PA has no RLS restriction on courses) | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Look at sidebar Teaching section | "Content Staleness" item visible with Clock icon | ✅ |
+| 3 | Click "Content Staleness" in sidebar | Navigates to `/teaching/staleness` | ✅ |
+| 4 | Verify page header | "Content Staleness" heading with Clock icon and teal course count badge | ✅ |
+| 5 | Verify teal badge shows total count | Number in badge matches total courses visible in table (unfiltered) | ✅ |
+| 6 | Verify filter bar | Search input ("Search by course title...") + Status dropdown ("All Status") visible | ✅ |
+| 7 | Verify summary cards row | 4 cards: "Total Modules" (slate), "Stale Modules" (rose), "Fresh Modules" (emerald), "Courses" (slate) | ✅ |
+| 8 | Verify table headers | 7 columns: (chevron), Course, Modules, Stale / Fresh, Threshold, Status, Action | ✅ |
+| 9 | Verify at least one data row | Row with chevron icon, course title, total module count, stale/fresh counts, threshold + "days", status badge, "View" link | ✅ |
+| 10 | Verify PA sees ALL courses | Total count matches the number of courses in the system (PA has no RLS restriction on courses) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -289,9 +289,9 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that per-module staleness computations in the table and expanded module details are correct by cross-referencing with actual database values. This is the most important test — if the computation is wrong, the entire dashboard is misleading.
 
@@ -307,22 +307,22 @@ SELECT COUNT(*) FROM courses;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Run the per-module SQL verification query (from Preconditions section) | Get expected per-module staleness values | ☐ |
-| 2 | Navigate to `/teaching/staleness` as PA | Dashboard loads with all courses | ☐ |
-| 3 | Find a course with **"Has Stale"** badge | Rose badge with AlertTriangle icon visible in Status column | ☐ |
-| 4 | Check the Stale / Fresh column for that course | Shows "N / M" where N = stale modules (rose), M = fresh modules (emerald), matches SQL | ☐ |
-| 5 | Expand that course (click the row) | Nested module table appears with Type, Module, Last Updated, Age, Status, Action columns | ☐ |
-| 6 | Verify stale module in expanded view | Module shows: type icon, title, formatted date, "N days ago", rose "Stale (Xd overdue)" badge, "Postpone" button | ☐ |
-| 7 | Verify stale module's `daysOverdue` | Value = `daysSinceUpdate - thresholdDays` — matches SQL computation (±1 day) | ☐ |
-| 8 | Verify fresh module in expanded view | Module shows: type icon, title, formatted date, "N days ago", emerald "Fresh" badge, no Postpone button | ☐ |
-| 9 | Find a course with **"All Fresh"** badge | Emerald badge with CheckCircle2 icon — all modules within threshold | ☐ |
-| 10 | Expand that course | All modules show "Fresh" badge, no stale modules, no Postpone buttons | ☐ |
-| 11 | Find a course with **"No Modules"** badge | Slate badge with Package icon, module count = 0, Stale/Fresh shows em-dash (—) | ☐ |
-| 12 | Expand that course | Shows "This course has no modules yet." message | ☐ |
-| 13 | Verify threshold column | Shows course-specific threshold (or default 180) + "days" suffix | ☐ |
-| 14 | If a course has custom threshold, verify it | The non-180 value appears in the Threshold column AND affects per-module staleness | ☐ |
-| 15 | Verify sort order | Courses with stale modules first (by max `daysOverdue` desc), then postponed, then all-fresh, then no-modules | ☐ |
-| 16 | Verify module sort within expanded row | Stale modules first (by `daysOverdue` desc), then postponed, then fresh (by `daysSinceUpdate` desc) | ☐ |
+| 1 | Run the per-module SQL verification query (from Preconditions section) | Get expected per-module staleness values | ✅ |
+| 2 | Navigate to `/teaching/staleness` as PA | Dashboard loads with all courses | ✅ |
+| 3 | Find a course with **"Has Stale"** badge | Rose badge with AlertTriangle icon visible in Status column | ✅ |
+| 4 | Check the Stale / Fresh column for that course | Shows "N / M" where N = stale modules (rose), M = fresh modules (emerald), matches SQL | ✅ |
+| 5 | Expand that course (click the row) | Nested module table appears with Type, Module, Last Updated, Age, Status, Action columns | ✅ |
+| 6 | Verify stale module in expanded view | Module shows: type icon, title, formatted date, "N days ago", rose "Stale (Xd overdue)" badge, "Postpone" button | ✅ |
+| 7 | Verify stale module's `daysOverdue` | Value = `daysSinceUpdate - thresholdDays` — matches SQL computation (±1 day) | ✅ |
+| 8 | Verify fresh module in expanded view | Module shows: type icon, title, formatted date, "N days ago", emerald "Fresh" badge, no Postpone button | ✅ |
+| 9 | Find a course with **"All Fresh"** badge | Emerald badge with CheckCircle2 icon — all modules within threshold | ✅ |
+| 10 | Expand that course | All modules show "Fresh" badge, no stale modules, no Postpone buttons | ✅ |
+| 11 | Find a course with **"No Modules"** badge | Slate badge with Package icon, module count = 0, Stale/Fresh shows em-dash (—) | ✅ |
+| 12 | Expand that course | Shows "This course has no modules yet." message | ✅ |
+| 13 | Verify threshold column | Shows course-specific threshold (or default 180) + "days" suffix | ✅ |
+| 14 | If a course has custom threshold, verify it | The non-180 value appears in the Threshold column AND affects per-module staleness | ✅ |
+| 15 | Verify sort order | Courses with stale modules first (by max `daysOverdue` desc), then postponed, then all-fresh, then no-modules | ✅ |
+| 16 | Verify module sort within expanded row | Stale modules first (by `daysOverdue` desc), then postponed, then fresh (by `daysSinceUpdate` desc) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -364,9 +364,9 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the 4 summary cards display correct module-level counts and update reactively when filters are applied.
 
@@ -376,15 +376,15 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads with all courses | ☐ |
-| 2 | Verify "Total Modules" card | Sum of all `totalModuleCount` across all courses (slate-900 color) | ☐ |
-| 3 | Verify "Stale Modules" card | Sum of all `staleModuleCount` (rose-600 color) — excludes postponed modules | ☐ |
-| 4 | Verify "Fresh Modules" card | Sum of all `freshModuleCount` (emerald-600 color) — excludes postponed modules | ☐ |
-| 5 | Verify "Courses" card | Total number of courses in filtered list (slate-600 color) | ☐ |
-| 6 | Verify sum consistency | Stale Modules + Fresh Modules + Postponed Modules = Total Modules | ☐ |
-| 7 | Apply status filter "Has Stale Modules" | Cards update: Total Modules = sum across stale-courses only, Courses = number of courses with stale modules | ☐ |
-| 8 | Clear filter, apply search that matches 1 course | All 4 cards update to reflect just the 1 filtered course's module counts | ☐ |
-| 9 | Clear filter | All cards return to original values | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads with all courses | ✅ |
+| 2 | Verify "Total Modules" card | Sum of all `totalModuleCount` across all courses (slate-900 color) | ✅ |
+| 3 | Verify "Stale Modules" card | Sum of all `staleModuleCount` (rose-600 color) — excludes postponed modules | ✅ |
+| 4 | Verify "Fresh Modules" card | Sum of all `freshModuleCount` (emerald-600 color) — excludes postponed modules | ✅ |
+| 5 | Verify "Courses" card | Total number of courses in filtered list (slate-600 color) | ✅ |
+| 6 | Verify sum consistency | Stale Modules + Fresh Modules + Postponed Modules = Total Modules | ✅ |
+| 7 | Apply status filter "Has Stale Modules" | Cards update: Total Modules = sum across stale-courses only, Courses = number of courses with stale modules | ✅ |
+| 8 | Clear filter, apply search that matches 1 course | All 4 cards update to reflect just the 1 filtered course's module counts | ✅ |
+| 9 | Clear filter | All cards return to original values | ✅ |
 
 ### Notes / Learnings
 - All counts derive from `filteredCourses()` — applying any filter recalculates all 4 cards
@@ -400,9 +400,9 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the search input filters courses by title (case-insensitive partial match).
 
@@ -415,15 +415,15 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | Full course list visible, no "Clear filters" link | ☐ |
-| 2 | Note the total course count | e.g., Courses card = 4 | ☐ |
-| 3 | Type a partial course title in the search input (e.g., "LNG") | Table filters to rows where title contains "LNG" (case-insensitive) | ☐ |
-| 4 | Verify non-matching courses are hidden | Only matching courses visible; summary cards update | ☐ |
-| 5 | Verify "Clear filters" link appears | Underlined text link visible next to the status dropdown | ☐ |
-| 6 | Verify case insensitivity | Typing "lng" (lowercase) matches "LNG Fundamentals" | ☐ |
-| 7 | Clear the search input manually (backspace) | Full course list restored | ☐ |
-| 8 | Type a non-matching query (e.g., "xyzzzz") | Empty state: "No courses found." with CheckCircle2 icon | ☐ |
-| 9 | Click "Clear filters" | Search cleared, full list restored | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | Full course list visible, no "Clear filters" link | ✅ |
+| 2 | Note the total course count | e.g., Courses card = 4 | ✅ |
+| 3 | Type a partial course title in the search input (e.g., "LNG") | Table filters to rows where title contains "LNG" (case-insensitive) | ✅ |
+| 4 | Verify non-matching courses are hidden | Only matching courses visible; summary cards update | ✅ |
+| 5 | Verify "Clear filters" link appears | Underlined text link visible next to the status dropdown | ✅ |
+| 6 | Verify case insensitivity | Typing "lng" (lowercase) matches "LNG Fundamentals" | ✅ |
+| 7 | Clear the search input manually (backspace) | Full course list restored | ✅ |
+| 8 | Type a non-matching query (e.g., "xyzzzz") | Empty state: "No courses found." with CheckCircle2 icon | ✅ |
+| 9 | Click "Clear filters" | Search cleared, full list restored | ✅ |
 
 ### Notes / Learnings
 - Search only matches course `title` (NOT description, module names, etc.)
@@ -438,9 +438,9 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the status dropdown correctly filters courses into four categories based on per-module staleness, and that combined search + status filtering works.
 
@@ -454,17 +454,17 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | All courses visible, dropdown shows "All Status" | ☐ |
-| 2 | Select "Has Stale Modules" from status dropdown | Only courses with "Has Stale" badge visible; All Fresh, Postponed, and No Modules courses hidden | ☐ |
-| 3 | Verify summary cards update | Total Modules = sum of modules in has-stale courses only; Courses = number of has-stale courses | ☐ |
-| 4 | Select "Has Postponed" from status dropdown | Only courses with `postponedModuleCount > 0` visible | ☐ |
-| 5 | Select "All Fresh" from status dropdown | Only courses with "All Fresh" badge visible; Has Stale, Postponed, and No Modules hidden | ☐ |
-| 6 | Verify All Fresh filter logic | All Fresh = `!hasStaleModules && postponedModuleCount === 0 && totalModuleCount > 0` — courses where every module is within threshold and none are postponed | ☐ |
-| 7 | Select "No Modules" from status dropdown | Only courses with "No Modules" badge visible | ☐ |
-| 8 | Verify No Modules filter logic | All visible courses show module count = 0 and Stale / Fresh column shows em-dash (—) | ☐ |
-| 9 | Select "All Status" | Full list restored | ☐ |
-| 10 | **Combined filter**: Select "Has Stale Modules" + type a search term | Both filters apply with AND logic — only has-stale courses matching the search term shown | ☐ |
-| 11 | Click "Clear filters" | Search cleared, status reset to "All Status", full list restored | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | All courses visible, dropdown shows "All Status" | ✅ |
+| 2 | Select "Has Stale Modules" from status dropdown | Only courses with "Has Stale" badge visible; All Fresh, Postponed, and No Modules courses hidden | ✅ |
+| 3 | Verify summary cards update | Total Modules = sum of modules in has-stale courses only; Courses = number of has-stale courses | ✅ |
+| 4 | Select "Has Postponed" from status dropdown | Only courses with `postponedModuleCount > 0` visible | ✅ |
+| 5 | Select "All Fresh" from status dropdown | Only courses with "All Fresh" badge visible; Has Stale, Postponed, and No Modules hidden | ✅ |
+| 6 | Verify All Fresh filter logic | All Fresh = `!hasStaleModules && postponedModuleCount === 0 && totalModuleCount > 0` — courses where every module is within threshold and none are postponed | ✅ |
+| 7 | Select "No Modules" from status dropdown | Only courses with "No Modules" badge visible | ✅ |
+| 8 | Verify No Modules filter logic | All visible courses show module count = 0 and Stale / Fresh column shows em-dash (—) | ✅ |
+| 9 | Select "All Status" | Full list restored | ✅ |
+| 10 | **Combined filter**: Select "Has Stale Modules" + type a search term | Both filters apply with AND logic — only has-stale courses matching the search term shown | ✅ |
+| 11 | Click "Clear filters" | Search cleared, status reset to "All Status", full list restored | ✅ |
 
 ### Notes / Learnings
 - Status categories are mutually exclusive per course:
@@ -482,9 +482,9 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the "View" link in each row navigates to the correct course detail page. This is the dashboard's primary call-to-action — content maintainers identify stale modules here and navigate to fix them.
 
@@ -494,12 +494,12 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | Courses visible with "View" links in the Action column | ☐ |
-| 2 | Note the title of a course with stale modules | e.g., "LNG Fundamentals" | ☐ |
-| 3 | Click the "View" link (teal text with ExternalLink icon) on that row | Navigates to `/courses/<course-id>` — row does NOT expand (stopPropagation) | ☐ |
-| 4 | Verify course detail page loads | Course title matches, lectures and modules visible | ☐ |
-| 5 | Navigate back to `/teaching/staleness` | Dashboard reloads with all data | ☐ |
-| 6 | Click "View" on a different course | Navigates to that course's detail page with correct data | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | Courses visible with "View" links in the Action column | ✅ |
+| 2 | Note the title of a course with stale modules | e.g., "LNG Fundamentals" | ✅ |
+| 3 | Click the "View" link (teal text with ExternalLink icon) on that row | Navigates to `/courses/<course-id>` — row does NOT expand (stopPropagation) | ✅ |
+| 4 | Verify course detail page loads | Course title matches, lectures and modules visible | ✅ |
+| 5 | Navigate back to `/teaching/staleness` | Dashboard reloads with all data | ✅ |
+| 6 | Click "View" on a different course | Navigates to that course's detail page with correct data | ✅ |
 
 ### Notes / Learnings
 - "View" link uses `[routerLink]="['/courses', course.id]"` — Angular RouterLink, not `<a href>`
@@ -513,9 +513,9 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking a course row expands it to show individual module details in a nested table. This is the core per-module staleness feature — users need to see exactly which modules are stale within each course.
 
@@ -529,18 +529,18 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | Courses visible, all rows show right-pointing chevron (ChevronRight) | ☐ |
-| 2 | Click a course row that has modules | Row expands: chevron changes to down (ChevronDown), nested module table appears below the row | ☐ |
-| 3 | Verify nested table headers | 6 columns: Type, Module, Last Updated, Age, Status, Action | ☐ |
-| 4 | Verify module type icon | Each module shows the correct icon for its type (Video/FileText/Type/HelpCircle/ClipboardCheck/ExternalLink) | ☐ |
-| 5 | Verify module title | Each module's title is displayed | ☐ |
-| 6 | Verify "Last Updated" column | Shows formatted date of module's `updated_at` | ☐ |
-| 7 | Verify "Age" column | Shows "N days ago" where N = `daysSinceUpdate` | ☐ |
-| 8 | Find a **stale** module in the expanded view | Rose badge: "Stale (Xd overdue)" where X = `daysOverdue` | ☐ |
-| 9 | Verify stale module has "Postpone" button | Blue "Postpone" button with CalendarClock icon visible in Action column | ☐ |
-| 10 | Find a **fresh** module in the expanded view | Emerald badge: "Fresh", no Postpone button in Action column | ☐ |
-| 11 | Verify module sort order | Stale modules appear first (sorted by `daysOverdue` desc), then postponed, then fresh modules (sorted by `daysSinceUpdate` desc) | ☐ |
-| 12 | Click a "No Modules" course | Shows "This course has no modules yet." centered text instead of a module table | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | Courses visible, all rows show right-pointing chevron (ChevronRight) | ✅ |
+| 2 | Click a course row that has modules | Row expands: chevron changes to down (ChevronDown), nested module table appears below the row | ✅ |
+| 3 | Verify nested table headers | 6 columns: Type, Module, Last Updated, Age, Status, Action | ✅ |
+| 4 | Verify module type icon | Each module shows the correct icon for its type (Video/FileText/Type/HelpCircle/ClipboardCheck/ExternalLink) | ✅ |
+| 5 | Verify module title | Each module's title is displayed | ✅ |
+| 6 | Verify "Last Updated" column | Shows formatted date of module's `updated_at` | ✅ |
+| 7 | Verify "Age" column | Shows "N days ago" where N = `daysSinceUpdate` | ✅ |
+| 8 | Find a **stale** module in the expanded view | Rose badge: "Stale (Xd overdue)" where X = `daysOverdue` | ✅ |
+| 9 | Verify stale module has "Postpone" button | Blue "Postpone" button with CalendarClock icon visible in Action column | ✅ |
+| 10 | Find a **fresh** module in the expanded view | Emerald badge: "Fresh", no Postpone button in Action column | ✅ |
+| 11 | Verify module sort order | Stale modules appear first (sorted by `daysOverdue` desc), then postponed, then fresh modules (sorted by `daysSinceUpdate` desc) | ✅ |
+| 12 | Click a "No Modules" course | Shows "This course has no modules yet." centered text instead of a module table | ✅ |
 
 ### Notes / Learnings
 - Module type icon mapping: `video` → Video, `pdf` → FileText, `markdown` → Type, `quiz` → HelpCircle, `exam` → ClipboardCheck, `external_quiz` → ExternalLink
@@ -556,9 +556,9 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the expand/collapse toggle behavior — clicking the same course collapses it, clicking a different course switches the expansion, and only one course can be expanded at a time.
 
@@ -571,14 +571,14 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | No course expanded initially, all chevrons point right | ☐ |
-| 2 | Click Course A row | Course A expands: chevron changes to down, module table visible, row background highlights | ☐ |
-| 3 | Click Course A row again | Course A collapses: chevron changes back to right, module table hidden, background returns to normal | ☐ |
-| 4 | Click Course A to expand it again | Course A expanded | ☐ |
-| 5 | Click Course B row (different course) | Course A collapses AND Course B expands simultaneously — only one expanded at a time | ☐ |
-| 6 | Verify Course A is collapsed | Course A chevron points right, no module detail row visible | ☐ |
-| 7 | Verify Course B is expanded | Course B chevron points down, module detail row visible | ☐ |
-| 8 | Click Course B to collapse | All courses collapsed, no expanded rows | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | No course expanded initially, all chevrons point right | ✅ |
+| 2 | Click Course A row | Course A expands: chevron changes to down, module table visible, row background highlights | ✅ |
+| 3 | Click Course A row again | Course A collapses: chevron changes back to right, module table hidden, background returns to normal | ✅ |
+| 4 | Click Course A to expand it again | Course A expanded | ✅ |
+| 5 | Click Course B row (different course) | Course A collapses AND Course B expands simultaneously — only one expanded at a time | ✅ |
+| 6 | Verify Course A is collapsed | Course A chevron points right, no module detail row visible | ✅ |
+| 7 | Verify Course B is expanded | Course B chevron points down, module detail row visible | ✅ |
+| 8 | Click Course B to collapse | All courses collapsed, no expanded rows | ✅ |
 
 ### Notes / Learnings
 - Only one course can be expanded at a time (single `expandedCourseId` signal, not a Set)
@@ -592,9 +592,9 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that RLS correctly scopes the staleness dashboard for lecturers — they should only see courses they're assigned to via `lecturer_course_assignments`, not all courses. Module details within their assigned courses should be complete and accurate.
 
@@ -608,16 +608,16 @@ ORDER BY c.title, status, days_since_update DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Verify sidebar | "Teaching" section visible with "Content Staleness" item (Clock icon) | ☐ |
-| 3 | Click "Content Staleness" | Navigates to `/teaching/staleness` | ☐ |
-| 4 | Verify page loads with data | "Content Staleness" header visible, table has rows | ☐ |
-| 5 | Note the Courses card count | e.g., Courses = 1 (lecturer's assigned courses only) | ☐ |
-| 6 | Verify count is LESS than PA's total | Lecturer sees fewer courses than PA (from CS-01 step 10) | ☐ |
-| 7 | Verify each visible course matches assignment | All visible courses are in the lecturer's `lecturer_course_assignments` | ☐ |
-| 8 | Expand an assigned course | Module detail table shows all modules for that course with correct staleness | ☐ |
-| 9 | Verify module counts match | `totalModuleCount` and stale/fresh counts match the actual module data (not affected by RLS scoping) | ☐ |
-| 10 | Verify summary cards are correct | Total/Stale/Fresh Modules and Courses reflect only the lecturer's assigned courses | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Verify sidebar | "Teaching" section visible with "Content Staleness" item (Clock icon) | ✅ |
+| 3 | Click "Content Staleness" | Navigates to `/teaching/staleness` | ✅ |
+| 4 | Verify page loads with data | "Content Staleness" header visible, table has rows | ✅ |
+| 5 | Note the Courses card count | e.g., Courses = 1 (lecturer's assigned courses only) | ✅ |
+| 6 | Verify count is LESS than PA's total | Lecturer sees fewer courses than PA (from CS-01 step 10) | ✅ |
+| 7 | Verify each visible course matches assignment | All visible courses are in the lecturer's `lecturer_course_assignments` | ✅ |
+| 8 | Expand an assigned course | Module detail table shows all modules for that course with correct staleness | ✅ |
+| 9 | Verify module counts match | `totalModuleCount` and stale/fresh counts match the actual module data (not affected by RLS scoping) | ✅ |
+| 10 | Verify summary cards are correct | Total/Stale/Fresh Modules and Courses reflect only the lecturer's assigned courses | ✅ |
 
 ### SQL Verification
 ```sql
@@ -643,9 +643,9 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that only lecturers and platform admins can access `/teaching/staleness`. Learners, Tenant Admins, and CSMs should be blocked by the route guard and should not see the sidebar item.
 
@@ -655,42 +655,42 @@ SELECT COUNT(*) FROM courses;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as `learner@calypso-commodities.com` | Successful login | ☐ |
-| 2 | Check sidebar | "Teaching" section NOT visible | ☐ |
-| 3 | Navigate directly to `/teaching/staleness` in URL bar | Redirected away (to `/dashboard` or similar) — NOT the staleness dashboard | ☐ |
-| 4 | Verify no "Content Staleness" heading visible | Page content is NOT the staleness dashboard | ☐ |
+| 1 | Log in as `learner@calypso-commodities.com` | Successful login | ✅ |
+| 2 | Check sidebar | "Teaching" section NOT visible | ✅ |
+| 3 | Navigate directly to `/teaching/staleness` in URL bar | Redirected away (to `/dashboard` or similar) — NOT the staleness dashboard | ✅ |
+| 4 | Verify no "Content Staleness" heading visible | Page content is NOT the staleness dashboard | ✅ |
 
 ### Steps (Tenant Admin — BLOCKED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 5 | Log in as `admin@calypsoclient.com` | Successful login | ☐ |
-| 6 | Check sidebar | "Teaching" section NOT visible (TA is not in `['lecturer', 'platform_admin']`) | ☐ |
-| 7 | Navigate directly to `/teaching/staleness` | Redirected away | ☐ |
+| 5 | Log in as `admin@calypsoclient.com` | Successful login | ✅ |
+| 6 | Check sidebar | "Teaching" section NOT visible (TA is not in `['lecturer', 'platform_admin']`) | ✅ |
+| 7 | Navigate directly to `/teaching/staleness` | Redirected away | ✅ |
 
 ### Steps (CSM — BLOCKED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 8 | Log in as `csm@calypso-commodities.com` | Successful login | ☐ |
-| 9 | Check sidebar | "Teaching" section NOT visible (CSM is not in `['lecturer', 'platform_admin']`) | ☐ |
-| 10 | Navigate directly to `/teaching/staleness` | Redirected away | ☐ |
+| 8 | Log in as `csm@calypso-commodities.com` | Successful login | ✅ |
+| 9 | Check sidebar | "Teaching" section NOT visible (CSM is not in `['lecturer', 'platform_admin']`) | ✅ |
+| 10 | Navigate directly to `/teaching/staleness` | Redirected away | ✅ |
 
 ### Steps (Platform Admin — ALLOWED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 11 | Log in as `et@calypso-commodities.com` (Platform Admin) | Successful login | ☐ |
-| 12 | Check sidebar | "Teaching" section visible with "Content Staleness" (Clock icon) | ☐ |
-| 13 | Navigate to `/teaching/staleness` | Page loads successfully, all courses visible, expandable rows work | ☐ |
+| 11 | Log in as `et@calypso-commodities.com` (Platform Admin) | Successful login | ✅ |
+| 12 | Check sidebar | "Teaching" section visible with "Content Staleness" (Clock icon) | ✅ |
+| 13 | Navigate to `/teaching/staleness` | Page loads successfully, all courses visible, expandable rows work | ✅ |
 
 ### Steps (Lecturer — ALLOWED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 14 | Log in as `lecturer-edit@calypso-commodities.com` | Successful login | ☐ |
-| 15 | Check sidebar | "Teaching" section visible with "Content Staleness" | ☐ |
-| 16 | Navigate to `/teaching/staleness` | Page loads, only assigned courses visible, expandable rows work | ☐ |
+| 14 | Log in as `lecturer-edit@calypso-commodities.com` | Successful login | ✅ |
+| 15 | Check sidebar | "Teaching" section visible with "Content Staleness" | ✅ |
+| 16 | Navigate to `/teaching/staleness` | Page loads, only assigned courses visible, expandable rows work | ✅ |
 
 ### Notes / Learnings
 - Route guard checks JWT claims: `is_platform_admin` or `lecturer_course_ids` (non-empty)
@@ -704,9 +704,9 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking the "Postpone" button on a stale module sets `staleness_postponed_until` to 30 days from now, shows a success toast, reloads data, and the module's badge changes from "Stale" to "Postponed until {date}".
 
@@ -720,17 +720,17 @@ SELECT COUNT(*) FROM courses;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads with courses | ☐ |
-| 2 | Find a course with "Has Stale" badge | Note the stale module count | ☐ |
-| 3 | Expand the course (click the row) | Stale modules visible with rose badges and "Postpone" buttons | ☐ |
-| 4 | Note the stale module's `updated_at` date | e.g., "Jun 15, 2025" | ☐ |
-| 5 | Click "Postpone" on a stale module | Button shows loader spinner briefly | ☐ |
-| 6 | Verify success toast | Green toast: "Module postponed for 30 days" | ☐ |
-| 7 | Verify module badge changed | Module now shows blue badge: "Postponed until {date ~30 days from today}" | ☐ |
-| 8 | Verify module's `updated_at` did NOT change | The "Last Updated" column still shows the original date (trigger skipped `updated_at` bump) | ☐ |
-| 9 | Verify the module no longer has a "Postpone" button | Postponed modules have no action button | ☐ |
-| 10 | Verify stale module count decreased | Course's "Stale / Fresh" column updated, summary cards updated | ☐ |
-| 11 | If all stale modules postponed, verify course badge | Changes from "Has Stale" to "N Postponed" (blue badge with CalendarClock icon) | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads with courses | ✅ |
+| 2 | Find a course with "Has Stale" badge | Note the stale module count | ✅ |
+| 3 | Expand the course (click the row) | Stale modules visible with rose badges and "Postpone" buttons | ✅ |
+| 4 | Note the stale module's `updated_at` date | e.g., "Jun 15, 2025" | ✅ |
+| 5 | Click "Postpone" on a stale module | Button shows loader spinner briefly | ✅ |
+| 6 | Verify success toast | Green toast: "Module postponed for 30 days" | ✅ |
+| 7 | Verify module badge changed | Module now shows blue badge: "Postponed until {date ~30 days from today}" | ✅ |
+| 8 | Verify module's `updated_at` did NOT change | The "Last Updated" column still shows the original date (trigger skipped `updated_at` bump) | ✅ |
+| 9 | Verify the module no longer has a "Postpone" button | Postponed modules have no action button | ✅ |
+| 10 | Verify stale module count decreased | Course's "Stale / Fresh" column updated, summary cards updated | ✅ |
+| 11 | If all stale modules postponed, verify course badge | Changes from "Has Stale" to "N Postponed" (blue badge with CalendarClock icon) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -754,9 +754,9 @@ ORDER BY staleness_postponed_until DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking "Postpone All" in a course's Action column postpones all stale modules in that course at once. Fresh modules and already-postponed modules should not be affected.
 
@@ -770,18 +770,18 @@ ORDER BY staleness_postponed_until DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads | ☐ |
-| 2 | Find a course with "Has Stale" badge and multiple stale modules | Note the stale count in "Stale / Fresh" column | ☐ |
-| 3 | Verify "Postpone All" button visible | Blue button with CalendarClock icon in the Action column (next to "View") | ☐ |
-| 4 | Click "Postpone All" | Button shows loader spinner briefly | ☐ |
-| 5 | Verify success toast | Green toast: "All stale modules postponed for 30 days" | ☐ |
-| 6 | Verify course badge changed | Was "Has Stale" (rose) → now "N Postponed" (blue with CalendarClock icon) | ☐ |
-| 7 | Verify stale count is now 0 | "Stale / Fresh" column shows "0 / M" (all previously stale are now postponed) | ☐ |
-| 8 | Expand the course | All previously-stale modules show blue "Postponed until {date}" badges | ☐ |
-| 9 | Verify fresh modules unchanged | Fresh modules still show emerald "Fresh" badge | ☐ |
-| 10 | Verify no "Postpone" buttons remain | No stale modules = no Postpone buttons in the expanded view | ☐ |
-| 11 | Verify "Postpone All" button disappeared | No stale modules = "Postpone All" button hidden for this course | ☐ |
-| 12 | Verify summary cards updated | Stale Modules count decreased by the number of postponed modules | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads | ✅ |
+| 2 | Find a course with "Has Stale" badge and multiple stale modules | Note the stale count in "Stale / Fresh" column | ✅ |
+| 3 | Verify "Postpone All" button visible | Blue button with CalendarClock icon in the Action column (next to "View") | ✅ |
+| 4 | Click "Postpone All" | Button shows loader spinner briefly | ✅ |
+| 5 | Verify success toast | Green toast: "All stale modules postponed for 30 days" | ✅ |
+| 6 | Verify course badge changed | Was "Has Stale" (rose) → now "N Postponed" (blue with CalendarClock icon) | ✅ |
+| 7 | Verify stale count is now 0 | "Stale / Fresh" column shows "0 / M" (all previously stale are now postponed) | ✅ |
+| 8 | Expand the course | All previously-stale modules show blue "Postponed until {date}" badges | ✅ |
+| 9 | Verify fresh modules unchanged | Fresh modules still show emerald "Fresh" badge | ✅ |
+| 10 | Verify no "Postpone" buttons remain | No stale modules = no Postpone buttons in the expanded view | ✅ |
+| 11 | Verify "Postpone All" button disappeared | No stale modules = "Postpone All" button hidden for this course | ✅ |
+| 12 | Verify summary cards updated | Stale Modules count decreased by the number of postponed modules | ✅ |
 
 ### SQL Verification
 ```sql
@@ -804,9 +804,9 @@ ORDER BY staleness_postponed_until DESC NULLS LAST;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the visual state transitions after postponing modules — course-level badges, module-level badges, sort order changes, and summary card updates.
 
@@ -819,16 +819,16 @@ ORDER BY staleness_postponed_until DESC NULLS LAST;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads with postponed modules | ☐ |
-| 2 | Find a course with "N Postponed" badge | Blue badge with CalendarClock icon showing count of postponed modules | ☐ |
-| 3 | Verify badge shows correct count | Number matches actual postponed module count for that course | ☐ |
-| 4 | Expand the course | Postponed modules show blue badge "Postponed until {date}" | ☐ |
-| 5 | Verify postponed date is ~30 days from when you clicked | Date shown is approximately 30 days from today | ☐ |
-| 6 | Verify module sort order | Stale (if any) → Postponed → Fresh | ☐ |
-| 7 | Verify the "Last Updated" column was NOT changed | Original `updated_at` date preserved — trigger correctly skipped | ☐ |
-| 8 | Verify summary cards | Stale Modules decreased, Fresh Modules decreased by postponed count, Total Modules unchanged | ☐ |
-| 9 | Verify course sort order | Courses with stale modules first, then postponed-only courses, then all-fresh, then no-modules | ☐ |
-| 10 | Verify "Has Stale" overrides "Postponed" | If a course has BOTH stale AND postponed modules, the badge shows "Has Stale" (rose), not "N Postponed" | ☐ |
+| 1 | Navigate to `/teaching/staleness` as PA | Dashboard loads with postponed modules | ✅ |
+| 2 | Find a course with "N Postponed" badge | Blue badge with CalendarClock icon showing count of postponed modules | ✅ |
+| 3 | Verify badge shows correct count | Number matches actual postponed module count for that course | ✅ |
+| 4 | Expand the course | Postponed modules show blue badge "Postponed until {date}" | ✅ |
+| 5 | Verify postponed date is ~30 days from when you clicked | Date shown is approximately 30 days from today | ✅ |
+| 6 | Verify module sort order | Stale (if any) → Postponed → Fresh | ✅ |
+| 7 | Verify the "Last Updated" column was NOT changed | Original `updated_at` date preserved — trigger correctly skipped | ✅ |
+| 8 | Verify summary cards | Stale Modules decreased, Fresh Modules decreased by postponed count, Total Modules unchanged | ✅ |
+| 9 | Verify course sort order | Courses with stale modules first, then postponed-only courses, then all-fresh, then no-modules | ✅ |
+| 10 | Verify "Has Stale" overrides "Postponed" | If a course has BOTH stale AND postponed modules, the badge shows "Has Stale" (rose), not "N Postponed" | ✅ |
 
 ### Notes / Learnings
 - Three module states: Stale (rose) → Postponed (blue) → Fresh (emerald)
@@ -843,9 +843,9 @@ ORDER BY staleness_postponed_until DESC NULLS LAST;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a lecturer with `can_edit` permission can postpone stale modules in their assigned courses. The existing `modules_update_lecturer` RLS policy should allow the UPDATE.
 
@@ -859,14 +859,14 @@ ORDER BY staleness_postponed_until DESC NULLS LAST;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/teaching/staleness` | Page loads with assigned courses | ☐ |
-| 3 | Find a course with stale modules | "Has Stale" badge visible | ☐ |
-| 4 | Expand the course | Stale modules with "Postpone" buttons visible | ☐ |
-| 5 | Click "Postpone" on a stale module | Success toast: "Module postponed for 30 days" | ☐ |
-| 6 | Verify badge changed to "Postponed until {date}" | Blue badge visible, module no longer stale | ☐ |
-| 7 | Click "Postpone All" on a course (if still has stale) | Success toast: "All stale modules postponed for 30 days" | ☐ |
-| 8 | Verify all stale modules now postponed | All previously-stale modules show blue "Postponed until" badges | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/teaching/staleness` | Page loads with assigned courses | ✅ |
+| 3 | Find a course with stale modules | "Has Stale" badge visible | ✅ |
+| 4 | Expand the course | Stale modules with "Postpone" buttons visible | ✅ |
+| 5 | Click "Postpone" on a stale module | Success toast: "Module postponed for 30 days" | ✅ |
+| 6 | Verify badge changed to "Postponed until {date}" | Blue badge visible, module no longer stale | ✅ |
+| 7 | Click "Postpone All" on a course (if still has stale) | Success toast: "All stale modules postponed for 30 days" | ✅ |
+| 8 | Verify all stale modules now postponed | All previously-stale modules show blue "Postponed until" badges | ✅ |
 
 ### SQL Verification
 ```sql
@@ -977,8 +977,8 @@ DELETE FROM courses WHERE title = 'Empty Test Course';
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| 2026-02-15 | Claude Code | CS-01 through CS-14 | 14 | 0 | Tested on localhost:4200 (feature not yet deployed to production). 5 roles tested. CS-09 note: lecturer was assigned to all 4 courses so RLS scoping count matched PA. Postponements cleared via Supabase REST API between CS-12 and CS-14. |
-| 2026-02-15 | Claude (Playwright MCP) | CS-01 through CS-14 | 14 | 0 | Full regression run. 4 courses: CW01 (4 Postponed), CW-01 Updated (3 Fresh, 90d threshold), Intro Commodity (9 Fresh, 180d), Empty (No Modules). Expanded rows: 9 fresh modules with dates/ages, 4 postponed modules with blue badges. No regressions. |
+| 2026-02-16 | Claude Code | CS-01 through CS-14 | 14 | 0 | Tested on localhost:4200 (feature not yet deployed to production). 5 roles tested. CS-09 note: lecturer was assigned to all 4 courses so RLS scoping count matched PA. Postponements cleared via Supabase REST API between CS-12 and CS-14. |
+| 2026-02-16 | Claude (Playwright MCP) | CS-01 through CS-14 | 14 | 0 | Full regression run. 4 courses: CW01 (4 Postponed), CW-01 Updated (3 Fresh, 90d threshold), Intro Commodity (9 Fresh, 180d), Empty (No Modules). Expanded rows: 9 fresh modules with dates/ages, 4 postponed modules with blue badges. No regressions. |
 
 ---
 

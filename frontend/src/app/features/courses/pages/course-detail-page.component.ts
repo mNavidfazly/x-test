@@ -163,7 +163,7 @@ const BADGE_LABELS: Record<string, string> = {
             <p class="text-sm text-slate-500">No lectures added yet.</p>
           </div>
         } @else {
-          <div class="space-y-3">
+          <div class="space-y-4">
             @for (lecture of courseService.courseDetail()!.lectures; track lecture.id; let first = $first; let last = $last) {
               @if (editingLectureId() === lecture.id) {
                 <app-lecture-form

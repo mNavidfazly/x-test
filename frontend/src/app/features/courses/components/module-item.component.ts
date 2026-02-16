@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, LucideIconData, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, Headphones, FolderArchive, Check, Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, LucideIconData, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, Headphones, FolderArchive, CheckCircle2, Circle, PlayCircle, Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-angular';
 import { ModuleSummary, ModuleProgress } from '../../../core/models/course.model';
 import { formatDuration } from '../../../core/utils/date.utils';
 
@@ -27,36 +27,48 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
       <div class="flex items-center">
         @if (isLinkable()) {
           <a [routerLink]="['/courses', courseId(), 'modules', module().id]"
-             class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer flex-1 min-w-0">
-            <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
-            <span class="text-sm text-slate-700 flex-1 truncate">{{ module().title }}</span>
-            <span class="text-xs text-slate-400 shrink-0 tabular-nums">{{ formattedDuration() }}</span>
-            @if (progress(); as p) {
-              @switch (p.status) {
+             class="module-item"
+             [class.module-item-completed]="statusClass() === 'completed'"
+             [class.module-item-active]="statusClass() === 'in_progress'"
+             [attr.aria-label]="module().title + ' — ' + statusLabel()">
+
+            <!-- Progress circle (LEFT) -->
+            <span class="shrink-0 flex items-center justify-center w-5">
+              @switch (statusClass()) {
                 @case ('completed') {
-                  <span class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
-                    <lucide-icon [img]="icons.Check" [size]="14"></lucide-icon>
-                    Done
-                  </span>
+                  <lucide-icon [img]="icons.CheckCircle2" [size]="20" class="text-emerald-500"></lucide-icon>
                 }
                 @case ('in_progress') {
-                  <span class="inline-flex items-center rounded-full bg-teal-100 px-2 py-0.5 text-xs font-semibold text-teal-700">
-                    In progress
-                  </span>
+                  <lucide-icon [img]="icons.PlayCircle" [size]="20" class="text-teal-600"></lucide-icon>
                 }
                 @default {
-                  <span class="text-xs text-slate-400">Not started</span>
+                  <lucide-icon [img]="icons.Circle" [size]="20" class="text-slate-300 group-hover:text-slate-400 transition-[color] duration-200"></lucide-icon>
                 }
               }
-            } @else {
-              <span class="text-xs text-slate-400">Not started</span>
+            </span>
+
+            <!-- Module type icon -->
+            <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
+
+            <!-- Title -->
+            <span class="text-sm flex-1 truncate"
+                  [class]="statusClass() === 'completed' ? 'text-slate-500' : statusClass() === 'in_progress' ? 'text-slate-900 font-medium' : 'text-slate-700'">
+              {{ module().title }}
+            </span>
+
+            <!-- Duration -->
+            @if (formattedDuration() !== '0 min') {
+              <span class="text-xs text-slate-400 shrink-0 tabular-nums">{{ formattedDuration() }}</span>
             }
           </a>
         } @else {
-          <div class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200 cursor-default flex-1 min-w-0" title="Coming soon">
-            <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
+          <div class="module-item module-item-disabled" title="Coming soon">
+            <span class="shrink-0 flex items-center justify-center w-5">
+              <lucide-icon [img]="icons.Circle" [size]="20" class="text-slate-200"></lucide-icon>
+            </span>
+            <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-300 shrink-0"></lucide-icon>
             <span class="text-sm text-slate-400 flex-1 truncate">{{ module().title }}</span>
-            <span class="text-xs text-slate-400">Coming soon</span>
+            <span class="badge-neutral text-[10px]">Coming soon</span>
           </div>
         }
 
@@ -65,7 +77,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
           <div class="flex items-center gap-0.5 pr-2 shrink-0" (click)="$event.stopPropagation()">
             <button
               (click)="edit.emit()"
-              class="p-1 rounded text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-colors duration-200"
+              class="p-1 rounded text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-[color,background-color] duration-200"
               title="Edit module"
             >
               <lucide-icon [img]="icons.Pencil" [size]="12"></lucide-icon>
@@ -73,7 +85,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             @if (!isFirst()) {
               <button
                 (click)="moveUp.emit()"
-                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors duration-200"
+                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-[color,background-color] duration-200"
                 title="Move up"
               >
                 <lucide-icon [img]="icons.ChevronUp" [size]="12"></lucide-icon>
@@ -82,7 +94,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             @if (!isLast()) {
               <button
                 (click)="moveDown.emit()"
-                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors duration-200"
+                class="p-1 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-[color,background-color] duration-200"
                 title="Move down"
               >
                 <lucide-icon [img]="icons.ChevronDown" [size]="12"></lucide-icon>
@@ -91,7 +103,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             @if (!confirmingDelete()) {
               <button
                 (click)="confirmingDelete.set(true)"
-                class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors duration-200"
+                class="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-[color,background-color] duration-200"
                 title="Delete module"
               >
                 <lucide-icon [img]="icons.Trash2" [size]="12"></lucide-icon>
@@ -137,7 +149,7 @@ export class ModuleItemComponent {
   readonly moveUp = output<void>();
   readonly moveDown = output<void>();
 
-  readonly icons = { Check, Pencil, ChevronUp, ChevronDown, Trash2 };
+  readonly icons = { CheckCircle2, Circle, PlayCircle, Pencil, ChevronUp, ChevronDown, Trash2 };
   readonly confirmingDelete = signal(false);
 
   readonly formattedDuration = computed(() => formatDuration(this.module().estimated_duration_minutes));
@@ -148,5 +160,19 @@ export class ModuleItemComponent {
 
   readonly isLinkable = computed(() => {
     return LINKABLE_TYPES.has(this.module().module_type);
+  });
+
+  readonly statusClass = computed((): 'completed' | 'in_progress' | 'not_started' => {
+    const p = this.progress();
+    if (!p) return 'not_started';
+    return p.status === 'completed' ? 'completed' : p.status === 'in_progress' ? 'in_progress' : 'not_started';
+  });
+
+  readonly statusLabel = computed(() => {
+    switch (this.statusClass()) {
+      case 'completed': return 'Completed';
+      case 'in_progress': return 'In progress';
+      default: return 'Not started';
+    }
   });
 }

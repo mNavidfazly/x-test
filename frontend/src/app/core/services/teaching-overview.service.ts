@@ -60,8 +60,14 @@ export class TeachingOverviewService {
 
       const claims = this.#auth.currentUser()?.claims;
       const isPlatformAdmin = claims?.is_platform_admin === true;
+      const lecturerIds = new Set(claims?.lecturer_course_ids ?? []);
       const editIds = new Set(claims?.lecturer_can_edit_course_ids ?? []);
       const gradeIds = new Set(claims?.lecturer_can_grade_course_ids ?? []);
+
+      // Filter to only assigned courses (PA sees all)
+      const visibleCourses = (coursesRes.data ?? []).filter(
+        course => isPlatformAdmin || lecturerIds.has(course.id),
+      );
 
       const now = Date.now();
       const MS_PER_DAY = 86_400_000;
@@ -75,7 +81,7 @@ export class TeachingOverviewService {
 
       // Need course thresholds for staleness calc
       const thresholdMap = new Map<string, number>();
-      for (const course of coursesRes.data ?? []) {
+      for (const course of visibleCourses) {
         thresholdMap.set(course.id, course.staleness_threshold_days ?? 180);
       }
 
@@ -92,7 +98,7 @@ export class TeachingOverviewService {
         }
       }
 
-      const courses: TeachingCourseOverview[] = (coursesRes.data ?? []).map(course => {
+      const courses: TeachingCourseOverview[] = visibleCourses.map(course => {
         const canEdit = isPlatformAdmin || editIds.has(course.id);
         const canGrade = isPlatformAdmin || gradeIds.has(course.id);
         const pendingExams = canGrade ? (examMap.get(course.id) ?? 0) : 0;

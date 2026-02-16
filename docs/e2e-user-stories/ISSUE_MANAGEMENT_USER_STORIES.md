@@ -91,18 +91,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| IM-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-15 |
-| IM-02 | Platform Admin Sees All Issues | Platform Admin | ✅ | 2026-02-15 |
-| IM-03 | Filter by Search | PA (as Lecturer) | ✅ | 2026-02-15 |
-| IM-04 | Filter by Course, Status, and Type | PA (as Lecturer) | ✅ | 2026-02-15 |
-| IM-05 | Summary Cards | PA (as Lecturer) | ✅ | 2026-02-15 |
-| IM-06 | Investigate Open Issue + Add Internal Notes | Platform Admin | ✅ | 2026-02-15 |
-| IM-07 | Verify Internal Notes Persist | Platform Admin | ✅ | 2026-02-15 |
-| IM-08 | Resolve Issue with Auto-Resolution Fields | Platform Admin | ✅ | 2026-02-15 |
-| IM-09 | Learner Sees Status Change on My Issues | Learner | ✅ | 2026-02-15 |
-| IM-10 | Close Issue | Lecturer | ✅ | 2026-02-15 |
-| IM-11 | Clear Filters | Lecturer | ✅ | 2026-02-15 |
-| IM-12 | Role Access Control | Multiple | ✅ | 2026-02-15 |
+| IM-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-16 |
+| IM-02 | Platform Admin Sees All Issues | Platform Admin | ✅ | 2026-02-16 |
+| IM-03 | Filter by Search | PA (as Lecturer) | ✅ | 2026-02-16 |
+| IM-04 | Filter by Course, Status, and Type | PA (as Lecturer) | ✅ | 2026-02-16 |
+| IM-05 | Summary Cards | PA (as Lecturer) | ✅ | 2026-02-16 |
+| IM-06 | Investigate Open Issue + Add Internal Notes | Platform Admin | ✅ | 2026-02-16 |
+| IM-07 | Verify Internal Notes Persist | Platform Admin | ✅ | 2026-02-16 |
+| IM-08 | Resolve Issue with Auto-Resolution Fields | Platform Admin | ✅ | 2026-02-16 |
+| IM-09 | Learner Sees Status Change on My Issues | Learner | ✅ | 2026-02-16 |
+| IM-10 | Close Issue | Lecturer | ✅ | 2026-02-16 |
+| IM-11 | Clear Filters | Lecturer | ✅ | 2026-02-16 |
+| IM-12 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -173,9 +173,9 @@ DELETE FROM notifications WHERE type = 'issue_resolved';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a lecturer can see "Issue Management" in the sidebar Teaching section, navigate to `/teaching/issues`, and see the issues table with summary cards and filter bar.
 
@@ -228,9 +228,9 @@ ORDER BY i.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Platform Admin sees ALL issues across all courses and tenants (no RLS scoping limitation).
 
@@ -270,9 +270,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the search filter correctly filters issues by reporter email, reporter name, or description text.
 
@@ -304,9 +304,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that course dropdown, status dropdown, and **type dropdown** (unique to Issue Management) correctly filter issues, and that filters can be combined.
 
@@ -344,9 +344,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the 5 summary stat cards are accurate and reflect the current filter state. Cards should show correct counts for Total, Open, Investigating, Resolved, and Closed.
 
@@ -395,9 +395,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the core management workflow: expand an open issue row, view full details, change status to "Investigating", add internal notes, and save. This is the primary interaction of the Issue Management Board.
 
@@ -444,9 +444,9 @@ FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that after saving internal notes, re-expanding the same issue row shows the previously saved notes pre-filled in the textarea.
 
@@ -478,9 +478,9 @@ FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when a staff member sets status to "Resolved" and saves, the system automatically sets `resolved_by` and `resolved_at` fields. Also verifies the `notify_issue_resolved` trigger fires.
 
@@ -532,9 +532,9 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that after staff resolves an issue, the learner sees the updated status on their My Issues page, including the "Resolved" badge and the emerald resolution info panel with resolved date.
 
@@ -587,9 +587,9 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that an issue can be closed via the status dropdown. Closing is a terminal status — the issue is no longer actionable.
 
@@ -631,9 +631,9 @@ SELECT id, status, resolved_by, resolved_at FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that "Clear filters" resets all 4 active filters (search, course, status, type) back to defaults and restores the full issue list.
 
@@ -664,9 +664,9 @@ SELECT id, status, resolved_by, resolved_at FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that only lecturers and platform admins can access `/teaching/issues`. Learners, Tenant Admins, and CSMs should be blocked by the route guard.
 

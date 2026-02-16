@@ -16,11 +16,18 @@ import { ModuleItemComponent } from './module-item.component';
         <!-- Toggle button -->
         <button
           (click)="toggle()"
-          class="flex items-center gap-3 px-4 py-3 flex-1 text-left min-w-0"
+          class="flex items-center gap-3 px-4 py-3.5 flex-1 text-left min-w-0"
           [attr.aria-expanded]="isOpen()"
         >
           <lucide-icon [img]="isOpen() ? icons.ChevronDown : icons.ChevronRight" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
-          <span class="text-sm font-semibold text-slate-900 flex-1 truncate">{{ lecture().title }}</span>
+          <div class="flex-1 min-w-0">
+            <span class="text-sm font-semibold text-slate-900 block truncate">{{ lecture().title }}</span>
+            @if (totalCount() > 0) {
+              <div class="lecture-progress-bar">
+                <div class="lecture-progress-fill" [style.width.%]="lectureProgressPercent()"></div>
+              </div>
+            }
+          </div>
           <span class="text-xs text-slate-400 tabular-nums shrink-0">{{ formattedLectureDuration() }}</span>
           <span class="text-xs font-semibold rounded-full px-2 py-0.5 shrink-0"
                 [class]="completedCount() === totalCount() && totalCount() > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'">
@@ -160,6 +167,12 @@ export class LectureAccordionComponent {
   readonly completedCount = computed(() => {
     const map = this.progressMap();
     return this.lecture().modules.filter(m => map[m.id]?.status === 'completed').length;
+  });
+
+  readonly lectureProgressPercent = computed(() => {
+    const total = this.totalCount();
+    if (total === 0) return 0;
+    return Math.round((this.completedCount() / total) * 100);
   });
 
   toggle() {

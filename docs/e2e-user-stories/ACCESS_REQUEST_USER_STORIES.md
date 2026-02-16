@@ -104,17 +104,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| AR-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 15 Feb 2026 |
-| AR-03 | Summary Cards | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-04 | Filter by Search | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-05 | Filter by Status | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-06 | Expand Pending Request | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-07 | PA — Unknown Domain + Tenant Picker | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-08 | Approve & Invite | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-09 | Reject Request | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-10 | Already-Reviewed Read-Only | Platform Admin | ✅ | 15 Feb 2026 |
-| AR-11 | Role Access Control | Multiple | ✅ | 15 Feb 2026 |
+| AR-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
+| AR-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 2026-02-16 |
+| AR-03 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
+| AR-04 | Filter by Search | Platform Admin | ✅ | 2026-02-16 |
+| AR-05 | Filter by Status | Platform Admin | ✅ | 2026-02-16 |
+| AR-06 | Expand Pending Request | Platform Admin | ✅ | 2026-02-16 |
+| AR-07 | PA — Unknown Domain + Tenant Picker | Platform Admin | ✅ | 2026-02-16 |
+| AR-08 | Approve & Invite | Platform Admin | ✅ | 2026-02-16 |
+| AR-09 | Reject Request | Platform Admin | ✅ | 2026-02-16 |
+| AR-10 | Already-Reviewed Read-Only | Platform Admin | ✅ | 2026-02-16 |
+| AR-11 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -189,9 +189,9 @@ ORDER BY status, email;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Platform Admin can see "Access Requests" in the sidebar (under "Tenant Admin" section), navigate to `/admin/access-requests`, and see the full request table with tenant column, summary cards, and filter bar.
 
@@ -238,9 +238,9 @@ ORDER BY ar.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Tenant Admin sees only access requests from their own tenant (RLS-scoped by `access_requests_select_tenant_admin` where `tenant_id = jwt_claim('tenant_id')`), does NOT see the tenant column, does NOT see the tenant picker, and does NOT see requests from unknown domains.
 
@@ -285,9 +285,9 @@ ORDER BY ar.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that summary stat cards show accurate counts for the current (filtered) request list. Both PA and TA see 4 cards.
 
@@ -331,9 +331,9 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify search filter correctly filters requests by name, email, or domain (case-insensitive).
 
@@ -363,9 +363,9 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the status dropdown filter correctly filters requests by status.
 
@@ -397,9 +397,9 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the expand/collapse row behavior and review section for pending requests: click a request row to expand, see full details, review notes textarea, and Approve & Reject action buttons.
 
@@ -434,9 +434,9 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that PA sees "Unknown domain" badge for requests with `tenant_id = NULL`, and a tenant picker dropdown is shown in the expanded row. The "Approve & Invite" button should be disabled until a tenant is selected.
 
@@ -482,9 +482,9 @@ WHERE email = 'e2e-unknown@unknowndomain.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full approve workflow for a known-domain pending request: expand row, click "Approve & Invite", verify two-step process (status update + invite), see success, data reloads with updated status.
 
@@ -559,9 +559,9 @@ WHERE email = 'e2e-pending@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the reject workflow: expand a pending request, enter review notes, click "Reject", verify status change to 'rejected', data reloads.
 
@@ -615,9 +615,9 @@ WHERE email = 'e2e-unknown@unknowndomain.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that expanding an already-reviewed (approved or rejected) request shows read-only information instead of editable review fields and action buttons.
 
@@ -650,9 +650,9 @@ WHERE email = 'e2e-unknown@unknowndomain.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 14 Feb 2026 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that ONLY Tenant Admin and Platform Admin can access `/admin/access-requests`. Learners, Lecturers, and CSMs should be blocked by the route guard.
 

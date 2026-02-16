@@ -296,11 +296,56 @@ export class CourseService {
         : null;
 
       this.#moduleViewer.set({ module, content, files, progress, navigation });
+
+      // Auto-track in_progress when a user first views a module
+      const tenantId = this.#auth.currentUser()?.claims?.tenant_id;
+      if (tenantId) {
+        this.#autoTrackInProgress(module, progress, userId, tenantId);
+      }
     } catch (err) {
       this.#error.set(extractErrorMessage(err, 'Failed to load module'));
     } finally {
       this.#loading.set(false);
     }
+  }
+
+  /**
+   * Fire-and-forget: mark module as in_progress if no progress exists yet.
+   * Skips non-enrolled users. Uses ignoreDuplicates to avoid overwriting completed status.
+   */
+  async #autoTrackInProgress(
+    module: ModuleDetail,
+    existingProgress: ModuleProgress | null,
+    userId: string,
+    tenantId: string,
+  ) {
+    if (existingProgress) return; // already has progress (in_progress or completed)
+
+    const detail = this.#courseDetail();
+    if (!detail?.isEnrolled) return; // not enrolled
+
+    const inProgress: ModuleProgress = { status: 'in_progress', completed_at: null };
+
+    // Update local state immediately
+    this.#moduleViewer.update(v => v ? { ...v, progress: inProgress } : v);
+    if (detail) {
+      const updatedMap = { ...detail.progressMap, [module.id]: inProgress };
+      this.#courseDetail.set({ ...detail, progressMap: updatedMap });
+    }
+
+    // Fire-and-forget DB upsert (don't overwrite completed)
+    this.#supabase.client
+      .from('user_progress')
+      .upsert({
+        user_id: userId,
+        tenant_id: tenantId,
+        course_id: module.course_id,
+        lecture_id: module.lecture_id,
+        module_id: module.id,
+        status: 'in_progress' as const,
+        marked_by: 'system' as const,
+      }, { onConflict: 'user_id,tenant_id,module_id', ignoreDuplicates: true })
+      .then(); // fire and forget
   }
 
   async markModuleComplete(moduleId: string) {

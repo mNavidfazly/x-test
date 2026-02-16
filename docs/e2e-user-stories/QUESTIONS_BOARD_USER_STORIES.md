@@ -91,18 +91,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| QB-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-15 |
-| QB-02 | Platform Admin Sees All Questions | Platform Admin | ✅ | 2026-02-15 |
-| QB-03 | Filter by Search | Lecturer | ✅ | 2026-02-15 |
-| QB-04 | Filter by Course + Status | Lecturer | ✅ | 2026-02-15 |
-| QB-05 | Summary Stats | Lecturer | ✅ | 2026-02-15 |
-| QB-06 | Respond to Pending Question | Lecturer | ✅ | 2026-02-15 |
-| QB-07 | Learner Sees Response + Notification | Lecturer + Learner | ✅ | 2026-02-15 |
-| QB-08 | Update Existing Response | Lecturer | ✅ | 2026-02-15 |
-| QB-09 | Close Question | Lecturer | ✅ | 2026-02-15 |
-| QB-10 | Closed Question Read-Only | Lecturer | ✅ | 2026-02-15 |
-| QB-11 | Clear Filters | Lecturer | ✅ | 2026-02-15 |
-| QB-12 | Role Access Control | Multiple | ✅ | 2026-02-15 |
+| QB-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-16 |
+| QB-02 | Platform Admin Sees All Questions | Platform Admin | ✅ | 2026-02-16 |
+| QB-03 | Filter by Search | Lecturer | ✅ | 2026-02-16 |
+| QB-04 | Filter by Course + Status | Lecturer | ✅ | 2026-02-16 |
+| QB-05 | Summary Stats | Lecturer | ✅ | 2026-02-16 |
+| QB-06 | Respond to Pending Question | Lecturer | ✅ | 2026-02-16 |
+| QB-07 | Learner Sees Response + Notification | Lecturer + Learner | ✅ | 2026-02-16 |
+| QB-08 | Update Existing Response | Lecturer | ✅ | 2026-02-16 |
+| QB-09 | Close Question | Lecturer | ✅ | 2026-02-16 |
+| QB-10 | Closed Question Read-Only | Lecturer | ✅ | 2026-02-16 |
+| QB-11 | Clear Filters | Lecturer | ✅ | 2026-02-16 |
+| QB-12 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -169,9 +169,9 @@ DELETE FROM notifications WHERE type = 'question_answered';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a lecturer can see "Questions Board" in the sidebar Teaching section, navigate to `/teaching/questions`, and see the questions table with summary cards.
 
@@ -223,9 +223,9 @@ ORDER BY eq.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Platform Admin sees ALL expert questions across all courses and tenants (no RLS scoping limitation).
 
@@ -265,9 +265,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the search filter correctly filters questions by learner email, learner name, or question text.
 
@@ -299,9 +299,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that course dropdown and status dropdown correctly filter questions, and that filters can be combined.
 
@@ -335,9 +335,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that summary stat cards are accurate and reflect the current filter state. Cards should show correct counts for Total, Pending, Answered, and Closed.
 
@@ -384,9 +384,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full response workflow: expand a pending question row, enter a response, submit, verify UI updates. This is the core interaction of the Questions Board.
 
@@ -440,9 +440,9 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that after the lecturer responds to a question, the learner sees the response on their "My Questions" page and receives a notification via `notify_question_answered` trigger.
 
@@ -493,9 +493,9 @@ ORDER BY eq.created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that an already-answered question's response can be updated. Verify the form pre-fills with existing response text and button says "Update Response".
 
@@ -547,9 +547,9 @@ AND created_at > NOW() - INTERVAL '1 minute';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that an answered question can be closed. Closing sets `status = 'closed'` and makes the question read-only.
 
@@ -588,9 +588,9 @@ SELECT id, status, response_text FROM expert_questions WHERE id = '<QUESTION_ID>
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that expanding a closed question shows the response as read-only text (no textarea), with a "This question is closed" label.
 
@@ -621,9 +621,9 @@ SELECT id, status, response_text FROM expert_questions WHERE id = '<QUESTION_ID>
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that "Clear filters" resets all active filters (search, course, status) back to defaults and restores the full question list.
 
@@ -652,9 +652,9 @@ SELECT id, status, response_text FROM expert_questions WHERE id = '<QUESTION_ID>
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that only lecturers and platform admins can access `/teaching/questions`. Learners, Tenant Admins, and CSMs should be blocked by the route guard.
 

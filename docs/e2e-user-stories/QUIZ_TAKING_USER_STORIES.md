@@ -105,17 +105,17 @@ AND module_id IN (
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| QT-01 | Quiz Module Navigation | Learner | ✅ PASS | 2026-02-15 |
-| QT-02 | Start Phase — Metadata & Info Card | Learner | ✅ PASS | 2026-02-15 |
-| QT-03 | Start Quiz & Answer Questions (6 Types) | Learner | ✅ PASS | 2026-02-15 |
-| QT-04 | Timer Display & Color Transitions | Learner | ⚠️ PARTIAL | 2026-02-15 |
-| QT-05 | Submit & Pass — Grade Card | Learner | ✅ PASS | 2026-02-15 |
-| QT-06 | Results Review — Per-Question Breakdown | Learner | ✅ PASS | 2026-02-15 |
-| QT-07 | Retake Quiz After Failure | Learner | ✅ PASS | 2026-02-15 |
-| QT-08 | Auto-Mark Progress on Pass (PT-12) | Learner | ✅ PASS | 2026-02-15 |
-| QT-09 | Max Attempts Enforcement | Learner + PA | ✅ PASS | 2026-02-15 |
-| QT-10 | Continue Unsubmitted Attempt | Learner | ✅ PASS | 2026-02-15 |
-| QT-11 | View Past Attempt Results | Learner | ✅ PASS | 2026-02-15 |
+| QT-01 | Quiz Module Navigation | Learner | ✅ PASS | 2026-02-16 |
+| QT-02 | Start Phase — Metadata & Info Card | Learner | ✅ PASS | 2026-02-16 |
+| QT-03 | Start Quiz & Answer Questions (6 Types) | Learner | ✅ PASS | 2026-02-16 |
+| QT-04 | Timer Display & Color Transitions | Learner | ⚠️ PARTIAL | 2026-02-16 |
+| QT-05 | Submit & Pass — Grade Card | Learner | ✅ PASS | 2026-02-16 |
+| QT-06 | Results Review — Per-Question Breakdown | Learner | ✅ PASS | 2026-02-16 |
+| QT-07 | Retake Quiz After Failure | Learner | ✅ PASS | 2026-02-16 |
+| QT-08 | Auto-Mark Progress on Pass (PT-12) | Learner | ✅ PASS | 2026-02-16 |
+| QT-09 | Max Attempts Enforcement | Learner + PA | ✅ PASS | 2026-02-16 |
+| QT-10 | Continue Unsubmitted Attempt | Learner | ✅ PASS | 2026-02-16 |
+| QT-11 | View Past Attempt Results | Learner | ✅ PASS | 2026-02-16 |
 
 ---
 
@@ -123,9 +123,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify quiz modules are clickable in course detail and navigate to the module viewer with QuizTakerComponent rendered (replaces QB-12 "Coming Soon").
 
@@ -139,13 +139,13 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to course detail with quiz module | Course detail page loads, quiz module visible with HelpCircle icon | ☐ |
-| 3 | Verify quiz module is clickable (has link) | Module title is an `<a>` tag with `href="/courses/:courseId/modules/:moduleId"` | ☐ |
-| 4 | Click the quiz module | Navigates to `/courses/:courseId/modules/:moduleId` | ☐ |
-| 5 | Verify QuizTakerComponent renders (NOT "Coming soon") | Quiz info card visible with "Questions", "Passing Score", "Time Limit", "Attempts" stats | ☐ |
-| 6 | Verify module title in header | Module title displayed at top of page | ☐ |
-| 7 | Verify "Mark as complete" button is NOT shown | Quiz modules use auto-completion via grading, not manual mark complete | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to course detail with quiz module | Course detail page loads, quiz module visible with HelpCircle icon | ✅ |
+| 3 | Verify quiz module is clickable (has link) | Module title is an `<a>` tag with `href="/courses/:courseId/modules/:moduleId"` | ✅ |
+| 4 | Click the quiz module | Navigates to `/courses/:courseId/modules/:moduleId` | ✅ |
+| 5 | Verify QuizTakerComponent renders (NOT "Coming soon") | Quiz info card visible with "Questions", "Passing Score", "Time Limit", "Attempts" stats | ✅ |
+| 6 | Verify module title in header | Module title displayed at top of page | ✅ |
+| 7 | Verify "Mark as complete" button is NOT shown | Quiz modules use auto-completion via grading, not manual mark complete | ✅ |
 
 **Notes/Learnings**:
 - This story supersedes QB-12 ("Coming Soon") from `QUIZ_BUILDER_USER_STORIES.md`
@@ -159,9 +159,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the quiz start phase displays all metadata correctly: question count, passing score, time limit (human-readable), attempt count, quiz description, and the Start Quiz button.
 
@@ -176,14 +176,14 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Verify info card renders | White card (`rounded-xl border border-slate-200 bg-white`) with 4-column grid | ☐ |
-| 2 | Check "Questions" stat | Shows correct count (e.g., "6") matching DB question count | ☐ |
-| 3 | Check "Passing Score" stat | Shows percentage (e.g., "70%") from `quizzes.passing_score` | ☐ |
-| 4 | Check "Time Limit" stat | Shows human-readable time (e.g., "5 minutes"), NOT raw seconds (300) | ☐ |
-| 5 | Check "Attempts" stat | Shows "0 / 3" (used / max) or "0 / Unlimited" if no limit | ☐ |
-| 6 | Verify no "Previous Attempts" table | Table should NOT be present when there are no past attempts | ☐ |
-| 7 | Verify "Start Quiz" button | Teal button (`bg-teal-600`) with Play icon, text "Start Quiz" | ☐ |
-| 8 | Verify quiz description (if set) | Description text shown above stats grid in `text-sm text-slate-600` | ☐ |
+| 1 | Verify info card renders | White card (`rounded-xl border border-slate-200 bg-white`) with 4-column grid | ✅ |
+| 2 | Check "Questions" stat | Shows correct count (e.g., "6") matching DB question count | ✅ |
+| 3 | Check "Passing Score" stat | Shows percentage (e.g., "70%") from `quizzes.passing_score` | ✅ |
+| 4 | Check "Time Limit" stat | Shows human-readable time (e.g., "5 minutes"), NOT raw seconds (300) | ✅ |
+| 5 | Check "Attempts" stat | Shows "0 / 3" (used / max) or "0 / Unlimited" if no limit | ✅ |
+| 6 | Verify no "Previous Attempts" table | Table should NOT be present when there are no past attempts | ✅ |
+| 7 | Verify "Start Quiz" button | Teal button (`bg-teal-600`) with Play icon, text "Start Quiz" | ✅ |
+| 8 | Verify quiz description (if set) | Description text shown above stats grid in `text-sm text-slate-600` | ✅ |
 
 **Notes/Learnings**:
 - `time_limit` is stored in **seconds** in DB (`quizzes.time_limit`), displayed as minutes in UI
@@ -197,9 +197,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify starting a quiz transitions to active phase and all 6 question types render correctly with proper input controls. Each type has distinct UI.
 
@@ -214,24 +214,24 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Click "Start Quiz" | Phase transitions to 'active', all questions appear vertically | ☐ |
-| 2 | Verify question numbering | Each question shows "Question N" header (`text-sm font-semibold`) with question text below | ☐ |
-| 3 | Verify answer counter | Bottom bar shows "0 of N answered" in `text-xs text-slate-400` | ☐ |
-| 4 | **Single Choice**: find a `single_choice` question | Radio buttons (`<input type="radio">`) for each option, only one selectable at a time | ☐ |
-| 5 | Select a radio option | Radio fills, answer counter increments by 1 | ☐ |
-| 6 | Select a different option | Previous deselects, new one selected (single selection enforced) | ☐ |
-| 7 | **Multiple Choice**: find a `multiple_choice` question | Checkboxes (`<input type="checkbox">`) for each option, multiple selectable | ☐ |
-| 8 | Check 2+ checkboxes | All stay checked, counter increments (once, on first check) | ☐ |
-| 9 | Uncheck one checkbox | Checkbox clears, if all unchecked counter decrements | ☐ |
-| 10 | **True/False**: find a `true_false` question | Two radio buttons: "True" and "False" (fixed options, not from DB) | ☐ |
-| 11 | Select "True" or "False" | Radio fills, counter increments | ☐ |
-| 12 | **Fill in the Blank**: find a `fill_blank` question | Single text input (`<input type="text">`) with placeholder "Type your answer..." | ☐ |
-| 13 | Type an answer | Input populated, counter increments | ☐ |
-| 14 | **Short Answer**: find a `short_answer` question | Textarea (`<textarea>`) with placeholder "Type your answer..." | ☐ |
-| 15 | Type a paragraph | Textarea populated, counter increments | ☐ |
-| 16 | **Matching**: find a `matching` question | Table with left terms (text) and `<select>` dropdowns on right | ☐ |
-| 17 | Select matching options from dropdowns | Dropdowns show selected values, each dropdown contains all right-side terms | ☐ |
-| 18 | Verify all questions answered | Counter shows "N of N answered" | ☐ |
+| 1 | Click "Start Quiz" | Phase transitions to 'active', all questions appear vertically | ✅ |
+| 2 | Verify question numbering | Each question shows "Question N" header (`text-sm font-semibold`) with question text below | ✅ |
+| 3 | Verify answer counter | Bottom bar shows "0 of N answered" in `text-xs text-slate-400` | ✅ |
+| 4 | **Single Choice**: find a `single_choice` question | Radio buttons (`<input type="radio">`) for each option, only one selectable at a time | ✅ |
+| 5 | Select a radio option | Radio fills, answer counter increments by 1 | ✅ |
+| 6 | Select a different option | Previous deselects, new one selected (single selection enforced) | ✅ |
+| 7 | **Multiple Choice**: find a `multiple_choice` question | Checkboxes (`<input type="checkbox">`) for each option, multiple selectable | ✅ |
+| 8 | Check 2+ checkboxes | All stay checked, counter increments (once, on first check) | ✅ |
+| 9 | Uncheck one checkbox | Checkbox clears, if all unchecked counter decrements | ✅ |
+| 10 | **True/False**: find a `true_false` question | Two radio buttons: "True" and "False" (fixed options, not from DB) | ✅ |
+| 11 | Select "True" or "False" | Radio fills, counter increments | ✅ |
+| 12 | **Fill in the Blank**: find a `fill_blank` question | Single text input (`<input type="text">`) with placeholder "Type your answer..." | ✅ |
+| 13 | Type an answer | Input populated, counter increments | ✅ |
+| 14 | **Short Answer**: find a `short_answer` question | Textarea (`<textarea>`) with placeholder "Type your answer..." | ✅ |
+| 15 | Type a paragraph | Textarea populated, counter increments | ✅ |
+| 16 | **Matching**: find a `matching` question | Table with left terms (text) and `<select>` dropdowns on right | ✅ |
+| 17 | Select matching options from dropdowns | Dropdowns show selected values, each dropdown contains all right-side terms | ✅ |
+| 18 | Verify all questions answered | Counter shows "N of N answered" | ✅ |
 
 **Notes/Learnings**:
 - Question order may be randomized if `randomize_questions=true` on the quiz
@@ -248,9 +248,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the countdown timer appears for timed quizzes, displays in MM:SS format, counts down in real-time, and changes color as time decreases (teal → amber → rose).
 
@@ -264,12 +264,12 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Verify timer bar visible | Sticky bar at top with Clock icon, "MM:SS" display, "Time remaining" label | ☐ |
-| 2 | Verify timer format | Shows `MM:SS` with zero-padded values (e.g., "04:58") in `tabular-nums font-bold` | ☐ |
-| 3 | Verify timer is counting down | Seconds decrement each second (observe 2-3 ticks) | ☐ |
-| 4 | Verify initial color is teal (>50% remaining) | Timer bar: `bg-teal-50 border-teal-200`, text: `text-teal-700`, icon: `text-teal-600` | ☐ |
-| 5 | Wait until ≤50% time remaining | Timer bar transitions to amber: `bg-amber-50 border-amber-200`, text/icon amber | ☐ |
-| 6 | Wait until ≤10% time remaining | Timer bar transitions to rose: `bg-rose-50 border-rose-200`, text/icon rose | ☐ |
+| 1 | Verify timer bar visible | Sticky bar at top with Clock icon, "MM:SS" display, "Time remaining" label | ✅ |
+| 2 | Verify timer format | Shows `MM:SS` with zero-padded values (e.g., "04:58") in `tabular-nums font-bold` | ✅ |
+| 3 | Verify timer is counting down | Seconds decrement each second (observe 2-3 ticks) | ✅ |
+| 4 | Verify initial color is teal (>50% remaining) | Timer bar: `bg-teal-50 border-teal-200`, text: `text-teal-700`, icon: `text-teal-600` | ✅ |
+| 5 | Wait until ≤50% time remaining | Timer bar transitions to amber: `bg-amber-50 border-amber-200`, text/icon amber | ✅ |
+| 6 | Wait until ≤10% time remaining | Timer bar transitions to rose: `bg-rose-50 border-rose-200`, text/icon rose | ✅ |
 
 **Notes/Learnings**:
 - Timer color thresholds: `ratio > 0.5` = teal, `ratio > 0.1` = amber, else rose
@@ -283,9 +283,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the submit confirmation flow (two-step: "Submit Quiz" → "Submit quiz?" → "Yes, Submit") and that passing a quiz shows the correct green grade card with score, pass label, and points.
 
@@ -298,16 +298,16 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Click "Submit Quiz" button | Confirmation bar appears: "Submit quiz?" with "Yes, Submit" (teal) and "Cancel" (white) buttons | ☐ |
-| 2 | Click "Cancel" | Confirmation hides, back to quiz with all answers preserved | ☐ |
-| 3 | Click "Submit Quiz" again | Confirmation reappears | ☐ |
-| 4 | Click "Yes, Submit" | Button shows "Submitting..." disabled state, timer stops if running | ☐ |
-| 5 | Wait for grading to complete | Transitions to results phase | ☐ |
-| 6 | Verify grade card (passed) | Green card: `border-emerald-300 bg-emerald-50` with large CheckCircle2 icon | ☐ |
-| 7 | Verify score percentage | Large bold score (e.g., "100%") in `text-emerald-700 text-3xl font-bold tabular-nums` | ☐ |
-| 8 | Verify "Passed" label | Text "Passed" in `text-emerald-600 text-sm font-semibold` | ☐ |
-| 9 | Verify points | "X / Y points" shown below score in `text-xs text-slate-500` | ☐ |
-| 10 | Verify "Retake Quiz" button | Teal button with RotateCcw icon visible (if max_attempts not reached) | ☐ |
+| 1 | Click "Submit Quiz" button | Confirmation bar appears: "Submit quiz?" with "Yes, Submit" (teal) and "Cancel" (white) buttons | ✅ |
+| 2 | Click "Cancel" | Confirmation hides, back to quiz with all answers preserved | ✅ |
+| 3 | Click "Submit Quiz" again | Confirmation reappears | ✅ |
+| 4 | Click "Yes, Submit" | Button shows "Submitting..." disabled state, timer stops if running | ✅ |
+| 5 | Wait for grading to complete | Transitions to results phase | ✅ |
+| 6 | Verify grade card (passed) | Green card: `border-emerald-300 bg-emerald-50` with large CheckCircle2 icon | ✅ |
+| 7 | Verify score percentage | Large bold score (e.g., "100%") in `text-emerald-700 text-3xl font-bold tabular-nums` | ✅ |
+| 8 | Verify "Passed" label | Text "Passed" in `text-emerald-600 text-sm font-semibold` | ✅ |
+| 9 | Verify points | "X / Y points" shown below score in `text-xs text-slate-500` | ✅ |
+| 10 | Verify "Retake Quiz" button | Teal button with RotateCcw icon visible (if max_attempts not reached) | ✅ |
 
 **Notes/Learnings**:
 - `grade_quiz_attempt` RPC runs server-side: compares answers to `quiz_questions.correct_answer` and `quiz_question_options.is_correct`
@@ -321,9 +321,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the per-question results section shows correct/incorrect indicators, user's answer, and correct answer (when `show_correct_answers=true`) for each question.
 
@@ -337,13 +337,13 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Verify "Question Results" section header | Section header: `text-xs font-semibold uppercase tracking-wide text-slate-500` | ☐ |
-| 2 | Verify result card count | One card per question, matching total question count | ☐ |
-| 3 | Verify correct answer card | Green card: `bg-emerald-50 border-emerald-200` with CheckCircle2 icon in emerald | ☐ |
-| 4 | Verify correct answer shows question text | "Question N" header with question text and "Your answer: ..." | ☐ |
-| 5 | Verify incorrect answer card (if any) | Red card: `bg-rose-50 border-rose-200` with XCircle icon in rose | ☐ |
-| 6 | Verify correct answer revealed for wrong answers | "Correct answer: ..." text in `text-emerald-700` below the user's incorrect answer | ☐ |
-| 7 | Verify unanswered question (if any) | Shows "No answer provided" in `text-slate-400 italic` | ☐ |
+| 1 | Verify "Question Results" section header | Section header: `text-xs font-semibold uppercase tracking-wide text-slate-500` | ✅ |
+| 2 | Verify result card count | One card per question, matching total question count | ✅ |
+| 3 | Verify correct answer card | Green card: `bg-emerald-50 border-emerald-200` with CheckCircle2 icon in emerald | ✅ |
+| 4 | Verify correct answer shows question text | "Question N" header with question text and "Your answer: ..." | ✅ |
+| 5 | Verify incorrect answer card (if any) | Red card: `bg-rose-50 border-rose-200` with XCircle icon in rose | ✅ |
+| 6 | Verify correct answer revealed for wrong answers | "Correct answer: ..." text in `text-emerald-700` below the user's incorrect answer | ✅ |
+| 7 | Verify unanswered question (if any) | Shows "No answer provided" in `text-slate-400 italic` | ✅ |
 
 **Notes/Learnings**:
 - If `show_correct_answers=false`, steps 6-7 about correct answer display should show "—" instead
@@ -356,9 +356,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that failing a quiz shows the red failure grade card, the retake flow returns to start phase with updated attempt history, and a second attempt can pass.
 
@@ -375,20 +375,20 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to quiz module, click "Start Quiz" | Active phase, questions appear | ☐ |
-| 2 | Answer questions intentionally wrong | Score below `passing_score` (e.g., answer 0 correct out of 6) | ☐ |
-| 3 | Submit quiz ("Submit Quiz" → "Yes, Submit") | Transitions to results phase | ☐ |
-| 4 | Verify grade card (failed) | Red card: `border-rose-300 bg-rose-50` with XCircle icon (rose) | ☐ |
-| 5 | Verify score in rose | Score percentage in `text-rose-700`, "Failed" label in `text-rose-600` | ☐ |
-| 6 | Verify "Retake Quiz" button visible | Teal button with RotateCcw icon (attempts remaining) | ☐ |
-| 7 | Click "Retake Quiz" | Returns to start phase, quiz data reloaded | ☐ |
-| 8 | Verify "Previous Attempts" table appears | Table with headers: #, Score, Result, Date, View | ☐ |
-| 9 | Verify attempt #1 in table | Row: `1`, score %, "Failed" badge (`bg-rose-100 text-rose-700`), date, "View" link | ☐ |
-| 10 | Verify attempts counter updated | Shows "1 / 3" (or appropriate used/max) | ☐ |
-| 11 | Click "Start Quiz" | New attempt starts, fresh questions (may be re-randomized) | ☐ |
-| 12 | Answer all questions correctly | Score ≥ `passing_score` | ☐ |
-| 13 | Submit quiz | Transitions to results phase | ☐ |
-| 14 | Verify grade card shows "Passed" | Green grade card with passing score, CheckCircle2 icon | ☐ |
+| 1 | Navigate to quiz module, click "Start Quiz" | Active phase, questions appear | ✅ |
+| 2 | Answer questions intentionally wrong | Score below `passing_score` (e.g., answer 0 correct out of 6) | ✅ |
+| 3 | Submit quiz ("Submit Quiz" → "Yes, Submit") | Transitions to results phase | ✅ |
+| 4 | Verify grade card (failed) | Red card: `border-rose-300 bg-rose-50` with XCircle icon (rose) | ✅ |
+| 5 | Verify score in rose | Score percentage in `text-rose-700`, "Failed" label in `text-rose-600` | ✅ |
+| 6 | Verify "Retake Quiz" button visible | Teal button with RotateCcw icon (attempts remaining) | ✅ |
+| 7 | Click "Retake Quiz" | Returns to start phase, quiz data reloaded | ✅ |
+| 8 | Verify "Previous Attempts" table appears | Table with headers: #, Score, Result, Date, View | ✅ |
+| 9 | Verify attempt #1 in table | Row: `1`, score %, "Failed" badge (`bg-rose-100 text-rose-700`), date, "View" link | ✅ |
+| 10 | Verify attempts counter updated | Shows "1 / 3" (or appropriate used/max) | ✅ |
+| 11 | Click "Start Quiz" | New attempt starts, fresh questions (may be re-randomized) | ✅ |
+| 12 | Answer all questions correctly | Score ≥ `passing_score` | ✅ |
+| 13 | Submit quiz | Transitions to results phase | ✅ |
+| 14 | Verify grade card shows "Passed" | Green grade card with passing score, CheckCircle2 icon | ✅ |
 
 **Notes/Learnings**:
 - `onRetake()` calls `#loadQuiz()` which re-fetches quiz data and past attempts from DB
@@ -402,9 +402,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that passing a quiz automatically creates a `user_progress` row with `status='completed'` and `marked_by='system'` via the `auto_mark_quiz_completed` DB trigger. Also verify that the UI reflects this completion.
 
@@ -418,12 +418,12 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | After passing quiz, observe module viewer | `quizCompleted` event fires, `onQuizCompleted()` is a no-op (preserves results view) | ☐ |
-| 2 | Navigate back to course detail to see progress | Course detail shows "Done" badge on quiz module | ☐ |
-| 3 | Navigate back to course detail page | Course detail loads | ☐ |
-| 4 | Verify quiz module shows "Done" badge | Module item shows green "Done" status instead of "Not started" | ☐ |
-| 5 | Verify course progress bar updated | Overall progress percentage reflects the quiz module completion | ☐ |
-| 6 | **(DB verification)** Query `user_progress` via SQL Editor | Row exists with `status='completed'`, `marked_by='system'`, `completed_at` IS NOT NULL | ☐ |
+| 1 | After passing quiz, observe module viewer | `quizCompleted` event fires, `onQuizCompleted()` is a no-op (preserves results view) | ✅ |
+| 2 | Navigate back to course detail to see progress | Course detail shows "Done" badge on quiz module | ✅ |
+| 3 | Navigate back to course detail page | Course detail loads | ✅ |
+| 4 | Verify quiz module shows "Done" badge | Module item shows green "Done" status instead of "Not started" | ✅ |
+| 5 | Verify course progress bar updated | Overall progress percentage reflects the quiz module completion | ✅ |
+| 6 | **(DB verification)** Query `user_progress` via SQL Editor | Row exists with `status='completed'`, `marked_by='system'`, `completed_at` IS NOT NULL | ✅ |
 
 **SQL Verification**:
 ```sql
@@ -455,9 +455,9 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when a learner reaches the maximum number of attempts, no further attempts can be started. The "Start Quiz" button is replaced with "Maximum attempts reached" text.
 
@@ -471,10 +471,10 @@ AND m.course_id = '<COURSE_ID>';
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| S1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| S2 | Navigate to quiz module edit form | Quiz form loads with current settings | ☐ |
-| S3 | Set "Max Attempts" to `1` | Field updated | ☐ |
-| S4 | Click "Save Changes" | Quiz updated in DB | ☐ |
+| S1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| S2 | Navigate to quiz module edit form | Quiz form loads with current settings | ✅ |
+| S3 | Set "Max Attempts" to `1` | Field updated | ✅ |
+| S4 | Click "Save Changes" | Quiz updated in DB | ✅ |
 
 **Learner Setup**: Take and submit 1 quiz attempt (pass or fail, doesn't matter)
 
@@ -482,13 +482,13 @@ AND m.course_id = '<COURSE_ID>';
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner, navigate to quiz module | Quiz taker loads in start phase | ☐ |
-| 2 | Verify "Previous Attempts" table | Shows 1 past attempt with score, result badge, date | ☐ |
-| 3 | Verify attempts counter | Shows "1 / 1" | ☐ |
-| 4 | Verify NO "Start Quiz" button | Instead shows "Maximum attempts reached" text in `text-sm text-slate-500` | ☐ |
-| 5 | Verify "View" link on past attempt | "View" link/button visible in the table row | ☐ |
-| 6 | Click "View" on past attempt | Transitions to results phase, shows grade card and per-question results | ☐ |
-| 7 | Verify NO "Retake Quiz" button in results | Results phase should NOT show retake button when at max attempts | ☐ |
+| 1 | Log in as Learner, navigate to quiz module | Quiz taker loads in start phase | ✅ |
+| 2 | Verify "Previous Attempts" table | Shows 1 past attempt with score, result badge, date | ✅ |
+| 3 | Verify attempts counter | Shows "1 / 1" | ✅ |
+| 4 | Verify NO "Start Quiz" button | Instead shows "Maximum attempts reached" text in `text-sm text-slate-500` | ✅ |
+| 5 | Verify "View" link on past attempt | "View" link/button visible in the table row | ✅ |
+| 6 | Click "View" on past attempt | Transitions to results phase, shows grade card and per-question results | ✅ |
+| 7 | Verify NO "Retake Quiz" button in results | Results phase should NOT show retake button when at max attempts | ✅ |
 
 **Notes/Learnings**:
 - `canStartNewAttempt()`: returns `false` when `pastAttempts().length >= max_attempts`
@@ -502,9 +502,9 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that if a learner starts a quiz but navigates away before submitting, they see an amber "Continue Quiz" button on return and can resume the attempt with the timer correctly reflecting elapsed time.
 
@@ -518,18 +518,18 @@ AND m.course_id = '<COURSE_ID>';
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to quiz module, verify "Start Quiz" button | Teal "Start Quiz" button visible | ☐ |
-| 2 | Click "Start Quiz" | Active phase with timer counting down | ☐ |
-| 3 | Answer 1-2 questions | Answers registered, counter shows progress | ☐ |
-| 4 | Note the current timer value | E.g., "04:30" remaining | ☐ |
-| 5 | Navigate away (click course list link or browser back) | Leave the quiz page entirely | ☐ |
-| 6 | Wait ~30 seconds | Time passes while away from quiz | ☐ |
-| 7 | Navigate back to the same quiz module | Quiz taker loads in start phase | ☐ |
-| 8 | Verify "Continue Quiz" button (amber) | Amber button (`bg-amber-500 hover:bg-amber-600`) with Play icon, text "Continue Quiz" | ☐ |
-| 9 | Click "Continue Quiz" | Active phase resumes, all questions visible | ☐ |
-| 10 | Verify timer shows correct remaining time | Timer shows ~30s less than step 4 (elapsed time deducted from total) | ☐ |
-| 11 | Verify answers are blank | Answers NOT preserved client-side (signals reset on component reload) | ☐ |
-| 12 | Re-answer questions and submit | Quiz submits normally, results shown | ☐ |
+| 1 | Navigate to quiz module, verify "Start Quiz" button | Teal "Start Quiz" button visible | ✅ |
+| 2 | Click "Start Quiz" | Active phase with timer counting down | ✅ |
+| 3 | Answer 1-2 questions | Answers registered, counter shows progress | ✅ |
+| 4 | Note the current timer value | E.g., "04:30" remaining | ✅ |
+| 5 | Navigate away (click course list link or browser back) | Leave the quiz page entirely | ✅ |
+| 6 | Wait ~30 seconds | Time passes while away from quiz | ✅ |
+| 7 | Navigate back to the same quiz module | Quiz taker loads in start phase | ✅ |
+| 8 | Verify "Continue Quiz" button (amber) | Amber button (`bg-amber-500 hover:bg-amber-600`) with Play icon, text "Continue Quiz" | ✅ |
+| 9 | Click "Continue Quiz" | Active phase resumes, all questions visible | ✅ |
+| 10 | Verify timer shows correct remaining time | Timer shows ~30s less than step 4 (elapsed time deducted from total) | ✅ |
+| 11 | Verify answers are blank | Answers NOT preserved client-side (signals reset on component reload) | ✅ |
+| 12 | Re-answer questions and submit | Quiz submits normally, results shown | ✅ |
 
 **Notes/Learnings**:
 - `startQuizAttempt()` checks for existing unsubmitted attempt (`submitted_at IS NULL`) — returns it instead of creating new
@@ -543,9 +543,9 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⏳ |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that learners can view detailed results from past submitted attempts via the "View" link in the Previous Attempts table.
 
@@ -559,15 +559,15 @@ AND m.course_id = '<COURSE_ID>';
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to quiz module | Start phase loads with "Previous Attempts" table visible | ☐ |
-| 2 | Verify table columns | Headers: #, Score, Result, Date, (View link column) | ☐ |
-| 3 | Verify attempt row data | Correct attempt number, score % (bold, colored by pass/fail), pass/fail badge, formatted date | ☐ |
-| 4 | Verify passed attempt styling | Score in `text-emerald-700`, "Passed" badge (`bg-emerald-100 text-emerald-700`) | ☐ |
-| 5 | Verify failed attempt styling | Score in `text-rose-700`, "Failed" badge (`bg-rose-100 text-rose-700`) | ☐ |
-| 6 | Click "View" on a past attempt | Loading state briefly, then transitions to results phase | ☐ |
-| 7 | Verify grade card matches the attempt | Score, passed/failed, points all match the table row data | ☐ |
-| 8 | Verify per-question results load | "Question Results" section visible with all questions and indicators | ☐ |
-| 9 | Click "Retake Quiz" (if available) | Returns to start phase with Previous Attempts table (not back to the viewed attempt) | ☐ |
+| 1 | Navigate to quiz module | Start phase loads with "Previous Attempts" table visible | ✅ |
+| 2 | Verify table columns | Headers: #, Score, Result, Date, (View link column) | ✅ |
+| 3 | Verify attempt row data | Correct attempt number, score % (bold, colored by pass/fail), pass/fail badge, formatted date | ✅ |
+| 4 | Verify passed attempt styling | Score in `text-emerald-700`, "Passed" badge (`bg-emerald-100 text-emerald-700`) | ✅ |
+| 5 | Verify failed attempt styling | Score in `text-rose-700`, "Failed" badge (`bg-rose-100 text-rose-700`) | ✅ |
+| 6 | Click "View" on a past attempt | Loading state briefly, then transitions to results phase | ✅ |
+| 7 | Verify grade card matches the attempt | Score, passed/failed, points all match the table row data | ✅ |
+| 8 | Verify per-question results load | "Question Results" section visible with all questions and indicators | ✅ |
+| 9 | Click "Retake Quiz" (if available) | Returns to start phase with Previous Attempts table (not back to the viewed attempt) | ✅ |
 
 **Notes/Learnings**:
 - `onViewResults(attemptId)` calls `getQuizAttemptResults` which fetches the specific attempt + `get_quiz_results` RPC

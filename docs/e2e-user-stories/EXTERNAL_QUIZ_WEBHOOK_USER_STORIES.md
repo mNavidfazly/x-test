@@ -110,12 +110,12 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| EQW-01 | External Quiz Viewer Rendering | Learner | ✅ | 2026-02-15 |
-| EQW-02 | Manual Mark Complete (Fallback) | Learner | ✅ | 2026-02-15 |
-| EQW-03 | Webhook Auto-Marks Progress on Pass | Learner + API | ✅ | 2026-02-15 |
-| EQW-04 | Webhook Fail Does NOT Auto-Mark | Learner + API | ✅ | 2026-02-15 |
-| EQW-05 | Webhook API Key Validation | API only | ✅ | 2026-02-15 |
-| EQW-06 | Progress Visible After Webhook (Course Detail) | Learner + Admin | ✅ | 2026-02-15 |
+| EQW-01 | External Quiz Viewer Rendering | Learner | ✅ | 2026-02-16 |
+| EQW-02 | Manual Mark Complete (Fallback) | Learner | ✅ | 2026-02-16 |
+| EQW-03 | Webhook Auto-Marks Progress on Pass | Learner + API | ✅ | 2026-02-16 |
+| EQW-04 | Webhook Fail Does NOT Auto-Mark | Learner + API | ✅ | 2026-02-16 |
+| EQW-05 | Webhook API Key Validation | API only | ✅ | 2026-02-16 |
+| EQW-06 | Progress Visible After Webhook (Course Detail) | Learner + Admin | ✅ | 2026-02-16 |
 
 ---
 
@@ -123,9 +123,9 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the external quiz viewer component renders correctly: heading, quiz ID, passing score, "Take External Quiz" button linking to the external URL, and the automatic recording note.
 
@@ -139,18 +139,18 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to course detail with external quiz module | Course detail page loads, external quiz module visible with ExternalLink icon | ☐ |
-| 3 | Verify external quiz module is clickable | Module title is an `<a>` tag with link to `/courses/:courseId/modules/:moduleId` | ☐ |
-| 4 | Click the external quiz module | Navigates to module viewer page | ☐ |
-| 5 | Verify "External Quiz" heading | Card with ExternalLink icon (teal) and "External Quiz" text | ☐ |
-| 6 | Verify Quiz ID displayed | "Quiz ID: EXT-QUIZ-E2E-001" shown | ☐ |
-| 7 | Verify passing score displayed | "Passing score: 75%" shown | ☐ |
-| 8 | Verify "Take External Quiz" button | Teal button (`bg-teal-600`) with ExternalLink icon, text "Take External Quiz" | ☐ |
-| 9 | Verify button links to external URL | Button is an `<a>` tag with `href` pointing to the configured quiz URL, `target="_blank"` | ☐ |
-| 10 | Verify automatic recording note | Text: "Results will be recorded automatically when you complete the quiz on the external platform." in `text-xs text-slate-400` | ☐ |
-| 11 | Verify "Mark as complete" button visible | Bottom bar shows "Mark as complete" button (manual fallback, since learner is enrolled) | ☐ |
-| 12 | Verify module status is NOT "Completed" | No green "Completed" badge — module is not yet completed | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to course detail with external quiz module | Course detail page loads, external quiz module visible with ExternalLink icon | ✅ |
+| 3 | Verify external quiz module is clickable | Module title is an `<a>` tag with link to `/courses/:courseId/modules/:moduleId` | ✅ |
+| 4 | Click the external quiz module | Navigates to module viewer page | ✅ |
+| 5 | Verify "External Quiz" heading | Card with ExternalLink icon (teal) and "External Quiz" text | ✅ |
+| 6 | Verify Quiz ID displayed | "Quiz ID: EXT-QUIZ-E2E-001" shown | ✅ |
+| 7 | Verify passing score displayed | "Passing score: 75%" shown | ✅ |
+| 8 | Verify "Take External Quiz" button | Teal button (`bg-teal-600`) with ExternalLink icon, text "Take External Quiz" | ✅ |
+| 9 | Verify button links to external URL | Button is an `<a>` tag with `href` pointing to the configured quiz URL, `target="_blank"` | ✅ |
+| 10 | Verify automatic recording note | Text: "Results will be recorded automatically when you complete the quiz on the external platform." in `text-xs text-slate-400` | ✅ |
+| 11 | Verify "Mark as complete" button visible | Bottom bar shows "Mark as complete" button (manual fallback, since learner is enrolled) | ✅ |
+| 12 | Verify module status is NOT "Completed" | No green "Completed" badge — module is not yet completed | ✅ |
 
 **Notes/Learnings**:
 - External quiz is in `LINKABLE_TYPES` — renders as clickable link in course detail (not "Coming soon")
@@ -163,9 +163,9 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that learners can manually mark an external quiz module as complete using the "Mark as complete" button. This is the fallback path for when no webhook fires (e.g., external platform doesn't have webhook integration).
 
@@ -179,13 +179,13 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Verify "Mark as complete" button visible in bottom bar | Teal button with Check icon, text "Mark as complete" | ☐ |
-| 2 | Click "Mark as complete" | Button updates to "Completed" state | ☐ |
-| 3 | Verify completion state | Green "Completed" text with Check icon replaces the button | ☐ |
-| 4 | Navigate back to course detail | Course detail loads | ☐ |
-| 5 | Verify "Done" badge on external quiz module | Green "Done" badge with checkmark visible on the module row | ☐ |
-| 6 | Navigate back to the module viewer | Module viewer loads | ☐ |
-| 7 | Verify "Completed" state persists | Green "Completed" text still shown (not the "Mark as complete" button) | ☐ |
+| 1 | Verify "Mark as complete" button visible in bottom bar | Teal button with Check icon, text "Mark as complete" | ✅ |
+| 2 | Click "Mark as complete" | Button updates to "Completed" state | ✅ |
+| 3 | Verify completion state | Green "Completed" text with Check icon replaces the button | ✅ |
+| 4 | Navigate back to course detail | Course detail loads | ✅ |
+| 5 | Verify "Done" badge on external quiz module | Green "Done" badge with checkmark visible on the module row | ✅ |
+| 6 | Navigate back to the module viewer | Module viewer loads | ✅ |
+| 7 | Verify "Completed" state persists | Green "Completed" text still shown (not the "Mark as complete" button) | ✅ |
 
 **DB Verification**:
 ```sql
@@ -218,9 +218,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the core Phase 5B flow: sending a webhook with `passed: true` automatically marks the module as completed via the `auto_mark_external_quiz_completed` DB trigger (migration 00030). The learner sees the updated progress on page refresh.
 
@@ -236,15 +236,15 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner, navigate to the external quiz module | Module viewer shows, "Mark as complete" button visible (not yet completed) | ☐ |
-| 2 | Verify module is NOT completed | No "Completed" badge, "Mark as complete" button shown | ☐ |
-| 3 | **Send webhook** (via curl — see below) with `passed: true` | HTTP 200, `{ "status": "ok", "user_id": "...", "result_id": "..." }` | ☐ |
-| 4 | Verify webhook response | `status` is `"ok"`, `user_id` matches the learner's profile ID, `result_id` is non-null | ☐ |
-| 5 | Refresh the module viewer page in the browser | Page reloads, data refetched | ☐ |
-| 6 | Verify module now shows "Completed" | Green "Completed" text with Check icon (trigger auto-marked progress) | ☐ |
-| 7 | Navigate to course detail | Course detail loads | ☐ |
-| 8 | Verify "Done" badge on external quiz module | Green "Done" badge with checkmark on module row | ☐ |
-| 9 | Verify course progress bar updated | Overall progress percentage includes the external quiz module | ☐ |
+| 1 | Log in as Learner, navigate to the external quiz module | Module viewer shows, "Mark as complete" button visible (not yet completed) | ✅ |
+| 2 | Verify module is NOT completed | No "Completed" badge, "Mark as complete" button shown | ✅ |
+| 3 | **Send webhook** (via curl — see below) with `passed: true` | HTTP 200, `{ "status": "ok", "user_id": "...", "result_id": "..." }` | ✅ |
+| 4 | Verify webhook response | `status` is `"ok"`, `user_id` matches the learner's profile ID, `result_id` is non-null | ✅ |
+| 5 | Refresh the module viewer page in the browser | Page reloads, data refetched | ✅ |
+| 6 | Verify module now shows "Completed" | Green "Completed" text with Check icon (trigger auto-marked progress) | ✅ |
+| 7 | Navigate to course detail | Course detail loads | ✅ |
+| 8 | Verify "Done" badge on external quiz module | Green "Done" badge with checkmark on module row | ✅ |
+| 9 | Verify course progress bar updated | Overall progress percentage includes the external quiz module | ✅ |
 
 **Webhook Curl Command**:
 ```bash
@@ -293,9 +293,9 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that sending a webhook with `passed: false` (or `passed: null`) does NOT auto-mark the module as completed. The trigger should skip progress marking when the learner hasn't passed.
 
@@ -308,13 +308,13 @@ AND m.course_id = '<COURSE_ID>';
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | **Send webhook** with `passed: false` (see curl below) | HTTP 200, `{ "status": "ok", ... }` — result stored but no auto-mark | ☐ |
-| 2 | Verify webhook response | `status` is `"ok"`, `result_id` is non-null | ☐ |
-| 3 | Log in as Learner, navigate to the external quiz module | Module viewer loads | ☐ |
-| 4 | Verify module is NOT completed | "Mark as complete" button still visible (no "Completed" badge) | ☐ |
-| 5 | **Send webhook** with `passed: null` (omit passed field) | HTTP 200, result stored | ☐ |
-| 6 | Refresh the module viewer page | Page reloads | ☐ |
-| 7 | Verify module is still NOT completed | "Mark as complete" button still visible — neither `false` nor `null` triggers auto-mark | ☐ |
+| 1 | **Send webhook** with `passed: false` (see curl below) | HTTP 200, `{ "status": "ok", ... }` — result stored but no auto-mark | ✅ |
+| 2 | Verify webhook response | `status` is `"ok"`, `result_id` is non-null | ✅ |
+| 3 | Log in as Learner, navigate to the external quiz module | Module viewer loads | ✅ |
+| 4 | Verify module is NOT completed | "Mark as complete" button still visible (no "Completed" badge) | ✅ |
+| 5 | **Send webhook** with `passed: null` (omit passed field) | HTTP 200, result stored | ✅ |
+| 6 | Refresh the module viewer page | Page reloads | ✅ |
+| 7 | Verify module is still NOT completed | "Mark as complete" button still visible — neither `false` nor `null` triggers auto-mark | ✅ |
 
 **Webhook Curl Commands**:
 ```bash
@@ -368,9 +368,9 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the webhook endpoint correctly rejects requests with missing or invalid API keys. This is an API-level test (no browser interaction needed).
 
@@ -380,11 +380,11 @@ AND module_id IN (
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | **Send webhook without X-API-Key header** | HTTP 422 (FastAPI auto-rejects missing required header) | ☐ |
-| 2 | **Send webhook with wrong API key** | HTTP 403, `{ "detail": "Invalid API key" }` | ☐ |
-| 3 | **Send webhook with correct API key** | HTTP 200, `{ "status": "ok", ... }` (confirms correct key works) | ☐ |
-| 4 | **Send webhook with unknown email** | HTTP 404, `{ "detail": "No user found with email: unknown@test.com" }` | ☐ |
-| 5 | **Send webhook with missing required fields** | HTTP 422 (Pydantic validation rejects missing `external_quiz_id` or `user_email`) | ☐ |
+| 1 | **Send webhook without X-API-Key header** | HTTP 422 (FastAPI auto-rejects missing required header) | ✅ |
+| 2 | **Send webhook with wrong API key** | HTTP 403, `{ "detail": "Invalid API key" }` | ✅ |
+| 3 | **Send webhook with correct API key** | HTTP 200, `{ "status": "ok", ... }` (confirms correct key works) | ✅ |
+| 4 | **Send webhook with unknown email** | HTTP 404, `{ "detail": "No user found with email: unknown@test.com" }` | ✅ |
+| 5 | **Send webhook with missing required fields** | HTTP 422 (Pydantic validation rejects missing `external_quiz_id` or `user_email`) | ✅ |
 
 **Curl Commands**:
 ```bash
@@ -436,9 +436,9 @@ curl -s -X POST <BACKEND_URL>/api/quiz-results/external \
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: After a successful webhook auto-marks progress (EQW-03), verify that the completion is visible in the course detail progress bar and that an admin can see it in the Progress Manager/Dashboard.
 
@@ -452,22 +452,22 @@ curl -s -X POST <BACKEND_URL>/api/quiz-results/external \
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner, navigate to course detail | Course detail loads with module list | ☐ |
-| 2 | Verify "Done" badge on external quiz module | Green "Done" badge with Check icon on the module row | ☐ |
-| 3 | Verify course progress bar | Progress percentage includes the external quiz module completion | ☐ |
-| 4 | Click the external quiz module to view it | Module viewer loads | ☐ |
-| 5 | Verify "Completed" state in viewer | Green "Completed" text with Check icon (not "Mark as complete" button) | ☐ |
+| 1 | Log in as Learner, navigate to course detail | Course detail loads with module list | ✅ |
+| 2 | Verify "Done" badge on external quiz module | Green "Done" badge with Check icon on the module row | ✅ |
+| 3 | Verify course progress bar | Progress percentage includes the external quiz module completion | ✅ |
+| 4 | Click the external quiz module to view it | Module viewer loads | ✅ |
+| 5 | Verify "Completed" state in viewer | Green "Completed" text with Check icon (not "Mark as complete" button) | ✅ |
 
 **Steps (Admin View)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 6 | Log out, log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 7 | Navigate to course detail → Progress tab (ProgressManagerComponent) | Progress manager shows enrolled learners | ☐ |
-| 8 | Expand the learner's progress accordion | Per-module progress list shown | ☐ |
-| 9 | Verify external quiz module shows "Completed" | Green "Completed" status for the external quiz module | ☐ |
-| 10 | Navigate to Progress Dashboard | Dashboard loads with aggregated stats | ☐ |
-| 11 | Verify learner appears with updated progress | Learner row shows correct progress percentage including the webhook-completed module | ☐ |
+| 6 | Log out, log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 7 | Navigate to course detail → Progress tab (ProgressManagerComponent) | Progress manager shows enrolled learners | ✅ |
+| 8 | Expand the learner's progress accordion | Per-module progress list shown | ✅ |
+| 9 | Verify external quiz module shows "Completed" | Green "Completed" status for the external quiz module | ✅ |
+| 10 | Navigate to Progress Dashboard | Dashboard loads with aggregated stats | ✅ |
+| 11 | Verify learner appears with updated progress | Learner row shows correct progress percentage including the webhook-completed module | ✅ |
 
 **Notes/Learnings**:
 - The admin view confirms the trigger-created `user_progress` row is visible through normal RLS policies

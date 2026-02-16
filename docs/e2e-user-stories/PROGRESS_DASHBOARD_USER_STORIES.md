@@ -79,18 +79,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PD-01 | Dashboard Visible — Platform Admin | Platform Admin | ✅ | 2026-02-15 |
-| PD-02 | Dashboard Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-15 |
-| PD-03 | Dashboard Visible — Lecturer | Lecturer | ✅ | 2026-02-15 |
-| PD-04 | Dashboard Blocked — Learner | Learner | ✅ | 2026-02-15 |
-| PD-05 | User Table with Progress Bars | Platform Admin | ✅ | 2026-02-15 |
-| PD-06 | Summary Stats Cards | Platform Admin | ✅ | 2026-02-15 |
-| PD-07 | Search Filter — Name and Email | Platform Admin | ✅ | 2026-02-15 |
-| PD-08 | Course Dropdown Filter | Platform Admin | ✅ | 2026-02-15 |
-| PD-09 | Progress Range Filter + Clear Filters | Platform Admin | ✅ | 2026-02-15 |
-| PD-10 | Checkbox Selection + Select All | Platform Admin | ✅ | 2026-02-15 |
-| PD-11 | Send Reminder — Success Flow | Platform Admin | ⚠️ | 2026-02-15 |
-| PD-12 | Tenant Column Visibility | PA + TA + CSM + Lecturer | ✅ | 2026-02-15 |
+| PD-01 | Dashboard Visible — Platform Admin | Platform Admin | ✅ | 2026-02-16 |
+| PD-02 | Dashboard Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-16 |
+| PD-03 | Dashboard Visible — Lecturer | Lecturer | ✅ | 2026-02-16 |
+| PD-04 | Dashboard Blocked — Learner | Learner | ✅ | 2026-02-16 |
+| PD-05 | User Table with Progress Bars | Platform Admin | ✅ | 2026-02-16 |
+| PD-06 | Summary Stats Cards | Platform Admin | ✅ | 2026-02-16 |
+| PD-07 | Search Filter — Name and Email | Platform Admin | ✅ | 2026-02-16 |
+| PD-08 | Course Dropdown Filter | Platform Admin | ✅ | 2026-02-16 |
+| PD-09 | Progress Range Filter + Clear Filters | Platform Admin | ✅ | 2026-02-16 |
+| PD-10 | Checkbox Selection + Select All | Platform Admin | ✅ | 2026-02-16 |
+| PD-11 | Send Reminder — Success Flow | Platform Admin | ⚠️ | 2026-02-16 |
+| PD-12 | Tenant Column Visibility | PA + TA + CSM + Lecturer | ✅ | 2026-02-16 |
 
 ---
 
@@ -98,9 +98,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the Progress Dashboard page loads for Platform Admin at `/analytics/progress`, displays the page header, filter bar, and loads user data from all tenants.
 
@@ -115,14 +115,14 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Platform Admin | Dashboard loads | ☐ |
-| 2 | Click "Progress Dashboard" in sidebar under Analytics | Page navigates to `/analytics/progress` | ☐ |
-| 3 | Verify page header | "Progress Dashboard" heading with BarChart3 icon | ☐ |
-| 4 | Verify filter bar visible | Search input, Course dropdown ("All Courses"), progress range inputs (0–100%) | ☐ |
-| 5 | Verify summary cards row | 4 cards: Total Users, Avg Progress, Completed, At Risk | ☐ |
-| 6 | Verify user table visible | Table with columns: checkbox, Email, Name, Tenant, Courses, Overall, Last Active | ☐ |
-| 7 | Verify PA sees users from ALL tenants | Users from both Calypso and Calypso Client tenants visible in the table | ☐ |
-| 8 | Verify Tenant column IS visible | "Tenant" column header present, tenant names shown per row | ☐ |
+| 1 | Log in as Platform Admin | Dashboard loads | ✅ |
+| 2 | Click "Progress Dashboard" in sidebar under Analytics | Page navigates to `/analytics/progress` | ✅ |
+| 3 | Verify page header | "Progress Dashboard" heading with BarChart3 icon | ✅ |
+| 4 | Verify filter bar visible | Search input, Course dropdown ("All Courses"), progress range inputs (0–100%) | ✅ |
+| 5 | Verify summary cards row | 4 cards: Total Users, Avg Progress, Completed, At Risk | ✅ |
+| 6 | Verify user table visible | Table with columns: checkbox, Email, Name, Tenant, Courses, Overall, Last Active | ✅ |
+| 7 | Verify PA sees users from ALL tenants | Users from both Calypso and Calypso Client tenants visible in the table | ✅ |
+| 8 | Verify Tenant column IS visible | "Tenant" column header present, tenant names shown per row | ✅ |
 
 **Notes/Learnings**:
 - PA's RLS sees all `course_enrollments`, `user_progress`, `courses`, `modules` — no tenant scoping
@@ -135,9 +135,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Tenant Admin can access the Progress Dashboard and only sees users from their own tenant. Also verify that the Tenant column is NOT visible for TA.
 
@@ -152,13 +152,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/analytics/progress` via sidebar | Progress Dashboard loads | ☐ |
-| 3 | Verify page header | "Progress Dashboard" heading visible | ☐ |
-| 4 | Verify user table shows only own tenant users | Only `@calypsoclient.com` emails visible. NO `@calypso-commodities.com` emails. | ☐ |
-| 5 | Verify Tenant column NOT visible | No "Tenant" column header in table | ☐ |
-| 6 | Verify Total Users count | Matches number of enrolled users from Calypso Client tenant only | ☐ |
-| 7 | Verify course dropdown shows assigned courses | Only courses assigned to Calypso Client tenant via `tenant_courses` | ☐ |
+| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/analytics/progress` via sidebar | Progress Dashboard loads | ✅ |
+| 3 | Verify page header | "Progress Dashboard" heading visible | ✅ |
+| 4 | Verify user table shows only own tenant users | Only `@calypsoclient.com` emails visible. NO `@calypso-commodities.com` emails. | ✅ |
+| 5 | Verify Tenant column NOT visible | No "Tenant" column header in table | ✅ |
+| 6 | Verify Total Users count | Matches number of enrolled users from Calypso Client tenant only | ✅ |
+| 7 | Verify course dropdown shows assigned courses | Only courses assigned to Calypso Client tenant via `tenant_courses` | ✅ |
 
 **Notes/Learnings**:
 - RLS on `course_enrollments` filters by `tenant_id = jwt_claim('tenant_id')` for TA
@@ -172,9 +172,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Lecturer can access the Progress Dashboard and sees enrolled users across all tenants for their assigned courses only. Tenant column is hidden.
 
@@ -189,13 +189,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/analytics/progress` via sidebar | Progress Dashboard loads | ☐ |
-| 3 | Verify user table shows assigned course users | Users enrolled in the lecturer's assigned course(s) are visible | ☐ |
-| 4 | Verify cross-tenant visibility | Users from BOTH Calypso and Calypso Client tenants visible (if both enrolled) | ☐ |
-| 5 | Verify Tenant column NOT visible | No "Tenant" column header | ☐ |
-| 6 | Verify course dropdown shows only assigned courses | Lecturer sees only courses from `lecturer_course_ids` claim | ☐ |
-| 7 | Verify no courses the lecturer is NOT assigned to | Unassigned courses do not appear in dropdown or user data | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/analytics/progress` via sidebar | Progress Dashboard loads | ✅ |
+| 3 | Verify user table shows assigned course users | Users enrolled in the lecturer's assigned course(s) are visible | ✅ |
+| 4 | Verify cross-tenant visibility | Users from BOTH Calypso and Calypso Client tenants visible (if both enrolled) | ✅ |
+| 5 | Verify Tenant column NOT visible | No "Tenant" column header | ✅ |
+| 6 | Verify course dropdown shows only assigned courses | Lecturer sees only courses from `lecturer_course_ids` claim | ✅ |
+| 7 | Verify no courses the lecturer is NOT assigned to | Unassigned courses do not appear in dropdown or user data | ✅ |
 
 **Notes/Learnings**:
 - Lecturer RLS on `courses` uses `lecturer_course_assignments` join — only assigned courses visible
@@ -209,9 +209,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Learner cannot access the Progress Dashboard. The `roleGuard` should redirect them away.
 
@@ -224,10 +224,10 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Verify sidebar does NOT show "Progress Dashboard" link | Analytics section hidden or "Progress Dashboard" not listed | ☐ |
-| 3 | Navigate directly to `/analytics/progress` in URL bar | Redirected away (to `/dashboard` or login) — NOT the progress dashboard | ☐ |
-| 4 | Verify no "Progress Dashboard" heading visible | Page content is NOT the progress dashboard | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Verify sidebar does NOT show "Progress Dashboard" link | Analytics section hidden or "Progress Dashboard" not listed | ✅ |
+| 3 | Navigate directly to `/analytics/progress` in URL bar | Redirected away (to `/dashboard` or login) — NOT the progress dashboard | ✅ |
+| 4 | Verify no "Progress Dashboard" heading visible | Page content is NOT the progress dashboard | ✅ |
 
 **Notes/Learnings**:
 - `roleGuard` checks JWT claims: learner has no admin/CSM/lecturer flags → redirect
@@ -240,9 +240,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the user table renders correctly with email, name, per-course mini progress bars, overall percentage, and last active timestamp.
 
@@ -256,18 +256,18 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/analytics/progress` | Dashboard loads with user data | ☐ |
-| 2 | Verify table header row | Columns: checkbox, Email, Name, Tenant, Courses, Overall, Last Active | ☐ |
-| 3 | Verify user email column | Email addresses displayed, truncated with `max-w-[200px]` if long | ☐ |
-| 4 | Verify user name column | Full name displayed, or "—" if null | ☐ |
-| 5 | Verify Courses column — per-course mini bars | Each enrolled course shows: course title (truncated), teal progress bar, "X/Y" count | ☐ |
-| 6 | Verify progress bar fill | Bar width proportional to `completed/total` for each course | ☐ |
-| 7 | Verify Overall % column | Bold percentage number with `tabular-nums` styling | ☐ |
-| 8 | Verify color coding for Overall % | 100% = emerald-600, < 25% = rose-600, else = teal-600 | ☐ |
-| 9 | Verify Last Active column | Relative timestamp: "Today", "Yesterday", "3d ago", "2w ago", "1mo ago", or "Never" | ☐ |
-| 10 | Verify user with 0% progress | Overall shows "0%" in rose, progress bars at 0% width, "0/Y" counts | ☐ |
-| 11 | Verify user with 100% progress | Overall shows "100%" in emerald, progress bars fully filled | ☐ |
-| 12 | Verify hover effect on rows | `hover:bg-slate-50/50 transition-colors` on table rows | ☐ |
+| 1 | Navigate to `/analytics/progress` | Dashboard loads with user data | ✅ |
+| 2 | Verify table header row | Columns: checkbox, Email, Name, Tenant, Courses, Overall, Last Active | ✅ |
+| 3 | Verify user email column | Email addresses displayed, truncated with `max-w-[200px]` if long | ✅ |
+| 4 | Verify user name column | Full name displayed, or "—" if null | ✅ |
+| 5 | Verify Courses column — per-course mini bars | Each enrolled course shows: course title (truncated), teal progress bar, "X/Y" count | ✅ |
+| 6 | Verify progress bar fill | Bar width proportional to `completed/total` for each course | ✅ |
+| 7 | Verify Overall % column | Bold percentage number with `tabular-nums` styling | ✅ |
+| 8 | Verify color coding for Overall % | 100% = emerald-600, < 25% = rose-600, else = teal-600 | ✅ |
+| 9 | Verify Last Active column | Relative timestamp: "Today", "Yesterday", "3d ago", "2w ago", "1mo ago", or "Never" | ✅ |
+| 10 | Verify user with 0% progress | Overall shows "0%" in rose, progress bars at 0% width, "0/Y" counts | ✅ |
+| 11 | Verify user with 100% progress | Overall shows "100%" in emerald, progress bars fully filled | ✅ |
+| 12 | Verify hover effect on rows | `hover:bg-slate-50/50 transition-colors` on table rows | ✅ |
 
 **Notes/Learnings**:
 - Per-course bars use `w-16 h-1.5 bg-slate-200 rounded-full` track with `bg-teal-500` fill
@@ -281,9 +281,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the 4 summary stat cards display correct values computed from the filtered user list.
 
@@ -297,13 +297,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/analytics/progress` | Dashboard loads | ☐ |
-| 2 | Verify "Total Users" card | Shows count of all users in the filtered list | ☐ |
-| 3 | Verify "Avg Progress" card | Shows average `overallPercent` across all filtered users, rounded, in teal-600, with % suffix | ☐ |
-| 4 | Verify "Completed" card | Shows count of users with `overallPercent === 100`, in emerald-600 | ☐ |
-| 5 | Verify "At Risk" card | Shows count of users with `overallPercent < 25` (excluding 100%), in rose-600 | ☐ |
-| 6 | Apply a filter (e.g., search for a specific user) | Stats update to reflect filtered subset | ☐ |
-| 7 | Clear filter | Stats return to original values for full user list | ☐ |
+| 1 | Navigate to `/analytics/progress` | Dashboard loads | ✅ |
+| 2 | Verify "Total Users" card | Shows count of all users in the filtered list | ✅ |
+| 3 | Verify "Avg Progress" card | Shows average `overallPercent` across all filtered users, rounded, in teal-600, with % suffix | ✅ |
+| 4 | Verify "Completed" card | Shows count of users with `overallPercent === 100`, in emerald-600 | ✅ |
+| 5 | Verify "At Risk" card | Shows count of users with `overallPercent < 25` (excluding 100%), in rose-600 | ✅ |
+| 6 | Apply a filter (e.g., search for a specific user) | Stats update to reflect filtered subset | ✅ |
+| 7 | Clear filter | Stats return to original values for full user list | ✅ |
 
 **Notes/Learnings**:
 - All stats are computed from `filteredUsers()` — they update reactively when filters change
@@ -317,9 +317,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the search input filters the user table by matching against email and full name (case-insensitive).
 
@@ -333,15 +333,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/analytics/progress` | Full user list visible | ☐ |
-| 2 | Type a partial email in the search input (e.g., "calypsoclient") | Only users with matching email shown (e.g., `@calypsoclient.com`) | ☐ |
-| 3 | Verify non-matching users hidden | Users from other domains not visible in table | ☐ |
-| 4 | Verify Total Users card updates | Card shows filtered count | ☐ |
-| 5 | Clear search input | Full user list restored | ☐ |
-| 6 | Type a partial name (e.g., "Learner") | Users with matching `full_name` shown | ☐ |
-| 7 | Verify case insensitivity | Searching "LEARNER" matches "Test Learner" | ☐ |
-| 8 | Type a non-matching query (e.g., "zzzzzzz") | Empty state: "No users match the current filters." with Users icon | ☐ |
-| 9 | Verify "Clear filters" link appears | Underlined text link below filter bar when search is active | ☐ |
+| 1 | Navigate to `/analytics/progress` | Full user list visible | ✅ |
+| 2 | Type a partial email in the search input (e.g., "calypsoclient") | Only users with matching email shown (e.g., `@calypsoclient.com`) | ✅ |
+| 3 | Verify non-matching users hidden | Users from other domains not visible in table | ✅ |
+| 4 | Verify Total Users card updates | Card shows filtered count | ✅ |
+| 5 | Clear search input | Full user list restored | ✅ |
+| 6 | Type a partial name (e.g., "Learner") | Users with matching `full_name` shown | ✅ |
+| 7 | Verify case insensitivity | Searching "LEARNER" matches "Test Learner" | ✅ |
+| 8 | Type a non-matching query (e.g., "zzzzzzz") | Empty state: "No users match the current filters." with Users icon | ✅ |
+| 9 | Verify "Clear filters" link appears | Underlined text link below filter bar when search is active | ✅ |
 
 **Notes/Learnings**:
 - Search matches `email.toLowerCase().includes(search)` OR `full_name?.toLowerCase().includes(search)`
@@ -355,9 +355,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the course dropdown filter narrows the user list to only users enrolled in the selected course.
 
@@ -372,13 +372,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/analytics/progress` | Full user list visible, dropdown shows "All Courses" | ☐ |
-| 2 | Open the course dropdown | All visible courses listed as options | ☐ |
-| 3 | Select a specific course | Table filters to only users enrolled in that course | ☐ |
-| 4 | Verify users NOT enrolled in selected course are hidden | User count decreases | ☐ |
-| 5 | Verify summary stats update | Total Users, Avg Progress, etc. reflect filtered set | ☐ |
-| 6 | Select "All Courses" option | Full user list restored | ☐ |
-| 7 | Verify courses in dropdown match what RLS returns | PA sees all courses, TA sees only tenant-assigned courses | ☐ |
+| 1 | Navigate to `/analytics/progress` | Full user list visible, dropdown shows "All Courses" | ✅ |
+| 2 | Open the course dropdown | All visible courses listed as options | ✅ |
+| 3 | Select a specific course | Table filters to only users enrolled in that course | ✅ |
+| 4 | Verify users NOT enrolled in selected course are hidden | User count decreases | ✅ |
+| 5 | Verify summary stats update | Total Users, Avg Progress, etc. reflect filtered set | ✅ |
+| 6 | Select "All Courses" option | Full user list restored | ✅ |
+| 7 | Verify courses in dropdown match what RLS returns | PA sees all courses, TA sees only tenant-assigned courses | ✅ |
 
 **Notes/Learnings**:
 - Course filter uses `users.filter(u => u.courses.some(c => c.course_id === courseId))` — keeps users who have at least one enrollment in the selected course
@@ -392,9 +392,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the progress range filter (min–max %) narrows the user list by overall progress percentage, and that the "Clear filters" button resets all filters.
 
@@ -408,15 +408,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/analytics/progress` | Full user list visible, range inputs show 0–100 | ☐ |
-| 2 | Set minimum to 50 | Only users with `overallPercent >= 50` shown | ☐ |
-| 3 | Verify users below 50% are hidden | User with 0% or 30% not visible | ☐ |
-| 4 | Set maximum to 80 | Only users with `50% <= overallPercent <= 80%` shown | ☐ |
-| 5 | Verify 100% users are hidden | Fully completed users filtered out | ☐ |
-| 6 | Verify summary stats update | Cards reflect the narrowed range | ☐ |
-| 7 | Click "Clear filters" link | Min resets to 0, max resets to 100, full user list restored | ☐ |
-| 8 | Set search + course filter + progress range simultaneously | All 3 filters apply together (AND logic) | ☐ |
-| 9 | Click "Clear filters" | All 3 filters reset at once, full list shown | ☐ |
+| 1 | Navigate to `/analytics/progress` | Full user list visible, range inputs show 0–100 | ✅ |
+| 2 | Set minimum to 50 | Only users with `overallPercent >= 50` shown | ✅ |
+| 3 | Verify users below 50% are hidden | User with 0% or 30% not visible | ✅ |
+| 4 | Set maximum to 80 | Only users with `50% <= overallPercent <= 80%` shown | ✅ |
+| 5 | Verify 100% users are hidden | Fully completed users filtered out | ✅ |
+| 6 | Verify summary stats update | Cards reflect the narrowed range | ✅ |
+| 7 | Click "Clear filters" link | Min resets to 0, max resets to 100, full user list restored | ✅ |
+| 8 | Set search + course filter + progress range simultaneously | All 3 filters apply together (AND logic) | ✅ |
+| 9 | Click "Clear filters" | All 3 filters reset at once, full list shown | ✅ |
 
 **Notes/Learnings**:
 - Progress range uses two `<input type="number">` fields with min=0, max=100
@@ -431,9 +431,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify individual user checkboxes and the "Select All" header checkbox work correctly for bulk reminder selection.
 
@@ -447,17 +447,17 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/analytics/progress` | User table visible, all checkboxes unchecked | ☐ |
-| 2 | Verify no "Send Reminder" button in header | Button only appears when users are selected | ☐ |
-| 3 | Click checkbox on first user row | Checkbox becomes checked, "Send Reminder (1)" button appears in header | ☐ |
-| 4 | Click checkbox on second user row | Both checked, button updates to "Send Reminder (2)" | ☐ |
-| 5 | Click first checkbox again | First unchecked, button shows "Send Reminder (1)" | ☐ |
-| 6 | Uncheck all | Button disappears from header | ☐ |
-| 7 | Click "Select All" checkbox in table header | All visible user checkboxes become checked, button shows "Send Reminder (N)" | ☐ |
-| 8 | Verify header checkbox is checked | `allSelected` computed returns true | ☐ |
-| 9 | Click "Select All" checkbox again | All checkboxes unchecked, button disappears | ☐ |
-| 10 | Apply a filter (e.g., search), then "Select All" | Only filtered users selected, count matches filtered list | ☐ |
-| 11 | Clear filter | Previously selected users remain selected (selection persists across filter changes) | ☐ |
+| 1 | Navigate to `/analytics/progress` | User table visible, all checkboxes unchecked | ✅ |
+| 2 | Verify no "Send Reminder" button in header | Button only appears when users are selected | ✅ |
+| 3 | Click checkbox on first user row | Checkbox becomes checked, "Send Reminder (1)" button appears in header | ✅ |
+| 4 | Click checkbox on second user row | Both checked, button updates to "Send Reminder (2)" | ✅ |
+| 5 | Click first checkbox again | First unchecked, button shows "Send Reminder (1)" | ✅ |
+| 6 | Uncheck all | Button disappears from header | ✅ |
+| 7 | Click "Select All" checkbox in table header | All visible user checkboxes become checked, button shows "Send Reminder (N)" | ✅ |
+| 8 | Verify header checkbox is checked | `allSelected` computed returns true | ✅ |
+| 9 | Click "Select All" checkbox again | All checkboxes unchecked, button disappears | ✅ |
+| 10 | Apply a filter (e.g., search), then "Select All" | Only filtered users selected, count matches filtered list | ✅ |
+| 11 | Clear filter | Previously selected users remain selected (selection persists across filter changes) | ✅ |
 
 **Notes/Learnings**:
 - `selectedUserIds` is a `Set<string>` signal — toggleUser adds/removes from the set
@@ -472,9 +472,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⚠️ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full bulk reminder flow: select users, open reminder panel, customize message, send, and verify success response + UI feedback.
 
@@ -489,25 +489,25 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/analytics/progress` | Dashboard loads | ☐ |
-| 2 | Select at least 1 user via checkbox | "Send Reminder (1)" button appears in header | ☐ |
-| 3 | Click "Send Reminder (1)" | Reminder panel opens below header: teal border, teal-50 background | ☐ |
-| 4 | Verify panel header | "Send Reminder to 1 user(s)" with X close button | ☐ |
-| 5 | Verify default message in textarea | Pre-filled: "You have incomplete courses. Continue learning to stay on track!" | ☐ |
-| 6 | Optionally customize the message | Type a custom reminder message | ☐ |
-| 7 | Verify Send and Cancel buttons | "Send" primary button, "Cancel" text link | ☐ |
-| 8 | Click "Send" | Loading spinner appears on Send button (disabled state) | ☐ |
-| 9 | Wait for response | Success text appears: "Sent N, failed 0" in teal | ☐ |
-| 10 | Verify selection cleared after success | All checkboxes unchecked, "Send Reminder" button disappears from header | ☐ |
-| 11 | Click the X button on reminder panel | Panel closes | ☐ |
+| 1 | Navigate to `/analytics/progress` | Dashboard loads | ✅ |
+| 2 | Select at least 1 user via checkbox | "Send Reminder (1)" button appears in header | ✅ |
+| 3 | Click "Send Reminder (1)" | Reminder panel opens below header: teal border, teal-50 background | ✅ |
+| 4 | Verify panel header | "Send Reminder to 1 user(s)" with X close button | ✅ |
+| 5 | Verify default message in textarea | Pre-filled: "You have incomplete courses. Continue learning to stay on track!" | ✅ |
+| 6 | Optionally customize the message | Type a custom reminder message | ✅ |
+| 7 | Verify Send and Cancel buttons | "Send" primary button, "Cancel" text link | ✅ |
+| 8 | Click "Send" | Loading spinner appears on Send button (disabled state) | ✅ |
+| 9 | Wait for response | Success text appears: "Sent N, failed 0" in teal | ✅ |
+| 10 | Verify selection cleared after success | All checkboxes unchecked, "Send Reminder" button disappears from header | ✅ |
+| 11 | Click the X button on reminder panel | Panel closes | ✅ |
 
 **Verify Backend Side Effects**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 12 | Check recipient's email inbox | Email received with "Course Progress Reminder" subject, custom message body, "Continue Learning" button | ☐ |
-| 13 | Query `reminder_history` table | New row: `sent_by` = PA user ID, `sent_to` = recipient ID, `tenant_id` = recipient's tenant | ☐ |
-| 14 | Query `notifications` table | New notification with `notification_type = 'reminder'` created by `notify_reminder_sent()` trigger | ☐ |
+| 12 | Check recipient's email inbox | Email received with "Course Progress Reminder" subject, custom message body, "Continue Learning" button | ✅ |
+| 13 | Query `reminder_history` table | New row: `sent_by` = PA user ID, `sent_to` = recipient ID, `tenant_id` = recipient's tenant | ✅ |
+| 14 | Query `notifications` table | New notification with `notification_type = 'reminder'` created by `notify_reminder_sent()` trigger | ✅ |
 
 **Notes/Learnings**:
 - `onSendReminders()` uses `firstValueFrom(progressService.sendReminders(...))` — converts Observable to Promise
@@ -523,9 +523,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the "Tenant" column is visible for PA and CSM roles (who manage cross-tenant data), but hidden for TA and Lecturer roles (who are scoped to one tenant or course-based).
 
@@ -538,36 +538,36 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as PA (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/analytics/progress` | Progress Dashboard loads | ☐ |
-| 3 | Verify "Tenant" column header exists | 7 columns: checkbox, Email, Name, **Tenant**, Courses, Overall, Last Active | ☐ |
-| 4 | Verify tenant names in rows | Each row shows tenant name (e.g., "Calypso", "Calypso Client") | ☐ |
+| 1 | Log in as PA (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/analytics/progress` | Progress Dashboard loads | ✅ |
+| 3 | Verify "Tenant" column header exists | 7 columns: checkbox, Email, Name, **Tenant**, Courses, Overall, Last Active | ✅ |
+| 4 | Verify tenant names in rows | Each row shows tenant name (e.g., "Calypso", "Calypso Client") | ✅ |
 
 **Steps (CSM — Tenant Column VISIBLE)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 5 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 6 | Navigate to `/analytics/progress` | Progress Dashboard loads | ☐ |
-| 7 | Verify "Tenant" column header exists | Tenant column visible (CSM manages assigned tenants) | ☐ |
-| 8 | Verify tenant names shown | Only assigned tenant names visible (Calypso Client) | ☐ |
+| 5 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 6 | Navigate to `/analytics/progress` | Progress Dashboard loads | ✅ |
+| 7 | Verify "Tenant" column header exists | Tenant column visible (CSM manages assigned tenants) | ✅ |
+| 8 | Verify tenant names shown | Only assigned tenant names visible (Calypso Client) | ✅ |
 
 **Steps (Tenant Admin — Tenant Column HIDDEN)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 9 | Log in as TA (`admin@calypsoclient.com`) | Dashboard loads | ☐ |
-| 10 | Navigate to `/analytics/progress` | Progress Dashboard loads | ☐ |
-| 11 | Verify NO "Tenant" column header | 6 columns: checkbox, Email, Name, Courses, Overall, Last Active | ☐ |
-| 12 | Verify no tenant data in rows | All users are from TA's own tenant — column unnecessary | ☐ |
+| 9 | Log in as TA (`admin@calypsoclient.com`) | Dashboard loads | ✅ |
+| 10 | Navigate to `/analytics/progress` | Progress Dashboard loads | ✅ |
+| 11 | Verify NO "Tenant" column header | 6 columns: checkbox, Email, Name, Courses, Overall, Last Active | ✅ |
+| 12 | Verify no tenant data in rows | All users are from TA's own tenant — column unnecessary | ✅ |
 
 **Steps (Lecturer — Tenant Column HIDDEN)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 13 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 14 | Navigate to `/analytics/progress` | Progress Dashboard loads | ☐ |
-| 15 | Verify NO "Tenant" column header | 6 columns without Tenant | ☐ |
+| 13 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 14 | Navigate to `/analytics/progress` | Progress Dashboard loads | ✅ |
+| 15 | Verify NO "Tenant" column header | 6 columns without Tenant | ✅ |
 
 **Notes/Learnings**:
 - `showTenantColumn = computed(() => is_platform_admin || csm_tenant_ids.length > 0)`

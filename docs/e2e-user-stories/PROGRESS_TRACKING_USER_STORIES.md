@@ -75,19 +75,19 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PT-01 | Progress Manager Visible — Platform Admin | Platform Admin | ✅ | 2026-02-15 |
-| PT-02 | Progress Manager Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-15 |
-| PT-03 | Progress Manager Hidden — Unauthorized | Learner + Lecturer | ✅ | 2026-02-15 |
-| PT-04 | Empty State — No Enrolled Users | Platform Admin | ✅ | 2026-02-15 |
-| PT-05 | User List with Progress Bars | Platform Admin | ✅ | 2026-02-15 |
-| PT-06 | Expand User — Module Details | Platform Admin | ✅ | 2026-02-15 |
-| PT-07 | Admin Mark Module Complete | Platform Admin | ✅ | 2026-02-15 |
-| PT-08 | Admin Reset Module Progress | Platform Admin | ✅ | 2026-02-15 |
-| PT-09 | Significant Update Checkbox — Edit Mode Only | PA + Lecturer | ✅ | 2026-02-15 |
-| PT-10 | Significant Update Resets Completed Progress | Platform Admin | ✅ | 2026-02-15 |
-| PT-11 | TA Cross-Tenant Progress Isolation | Tenant Admin | ✅ | 2026-02-15 |
-| PT-12 | Auto-Mark on Quiz Pass (Deferred) | Learner | ✅ (via QT-08) | 2026-02-15 |
-| PT-13 | Auto-Mark on Exam Grade (Deferred) | Learner + PA | ✅ (via EG-07) | 2026-02-15 |
+| PT-01 | Progress Manager Visible — Platform Admin | Platform Admin | ✅ | 2026-02-16 |
+| PT-02 | Progress Manager Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-16 |
+| PT-03 | Progress Manager Hidden — Unauthorized | Learner + Lecturer | ✅ | 2026-02-16 |
+| PT-04 | Empty State — No Enrolled Users | Platform Admin | ✅ | 2026-02-16 |
+| PT-05 | User List with Progress Bars | Platform Admin | ✅ | 2026-02-16 |
+| PT-06 | Expand User — Module Details | Platform Admin | ✅ | 2026-02-16 |
+| PT-07 | Admin Mark Module Complete | Platform Admin | ✅ | 2026-02-16 |
+| PT-08 | Admin Reset Module Progress | Platform Admin | ✅ | 2026-02-16 |
+| PT-09 | Significant Update Checkbox — Edit Mode Only | PA + Lecturer | ✅ | 2026-02-16 |
+| PT-10 | Significant Update Resets Completed Progress | Platform Admin | ✅ | 2026-02-16 |
+| PT-11 | TA Cross-Tenant Progress Isolation | Tenant Admin | ✅ | 2026-02-16 |
+| PT-12 | Auto-Mark on Quiz Pass (Deferred) | Learner | ✅ (via QT-08) | 2026-02-16 |
+| PT-13 | Auto-Mark on Exam Grade (Deferred) | Learner + PA | ✅ (via EG-07) | 2026-02-16 |
 
 ---
 
@@ -95,9 +95,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the Progress Manager section is visible on the course detail page for Platform Admin, positioned after the Enrollment Manager.
 
@@ -111,11 +111,11 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Platform Admin | Dashboard loads | ☐ |
-| 2 | Navigate to a course with enrolled users | Course detail page loads | ☐ |
-| 3 | Scroll past enrollment manager section | Progress Manager section visible below Enrollment Manager, separated by `border-t border-slate-200` | ☐ |
-| 4 | Verify section header | "USER PROGRESS (N USERS)" uppercase text with BarChart3 icon, where N = number of enrolled users | ☐ |
-| 5 | Verify user count matches enrollment count | N in progress header should match enrolled user count from Enrollment Manager above | ☐ |
+| 1 | Log in as Platform Admin | Dashboard loads | ✅ |
+| 2 | Navigate to a course with enrolled users | Course detail page loads | ✅ |
+| 3 | Scroll past enrollment manager section | Progress Manager section visible below Enrollment Manager, separated by `border-t border-slate-200` | ✅ |
+| 4 | Verify section header | "USER PROGRESS (N USERS)" uppercase text with BarChart3 icon, where N = number of enrolled users | ✅ |
+| 5 | Verify user count matches enrollment count | N in progress header should match enrolled user count from Enrollment Manager above | ✅ |
 
 **Notes/Learnings**:
 - `canManageEnrollments()` returns true for `is_platform_admin || is_tenant_admin`
@@ -129,9 +129,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Tenant Admin sees the Progress Manager section on the course detail page for courses assigned to their tenant.
 
@@ -146,11 +146,11 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to a course assigned to their tenant | Course detail loads | ☐ |
-| 3 | Scroll to Progress Manager section | Section visible after enrollment manager | ☐ |
-| 4 | Verify section header shows user count | "USER PROGRESS (N USERS)" — N should match TA's tenant-scoped enrollment count | ☐ |
-| 5 | Verify NO "Edit" button on course header | TA cannot edit content (canEdit = false) | ☐ |
+| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to a course assigned to their tenant | Course detail loads | ✅ |
+| 3 | Scroll to Progress Manager section | Section visible after enrollment manager | ✅ |
+| 4 | Verify section header shows user count | "USER PROGRESS (N USERS)" — N should match TA's tenant-scoped enrollment count | ✅ |
+| 5 | Verify NO "Edit" button on course header | TA cannot edit content (canEdit = false) | ✅ |
 
 **Notes/Learnings**:
 - RLS on `course_enrollments` and `user_progress` auto-filters by `tenant_id` for TA
@@ -163,9 +163,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that users without admin roles (Learner, Lecturer) do NOT see the Progress Manager section.
 
@@ -178,19 +178,19 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to any course detail | Course detail loads | ☐ |
-| 3 | Verify NO "User Progress" section | No progress manager table, no BarChart3 icon header, no module-level actions | ☐ |
-| 4 | Verify enrollment CTA IS visible | Enroll button or enrolled badge shown (depending on enrollment status) | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to any course detail | Course detail loads | ✅ |
+| 3 | Verify NO "User Progress" section | No progress manager table, no BarChart3 icon header, no module-level actions | ✅ |
+| 4 | Verify enrollment CTA IS visible | Enroll button or enrolled badge shown (depending on enrollment status) | ✅ |
 
 **Steps (Lecturer with can_edit)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 5 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 6 | Navigate to assigned course detail | Course detail loads with edit buttons | ☐ |
-| 7 | Verify NO "User Progress" section | Lecturer cannot manage progress | ☐ |
-| 8 | Verify NO enrollment manager either | Enrollment manager also hidden for lecturers | ☐ |
+| 5 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 6 | Navigate to assigned course detail | Course detail loads with edit buttons | ✅ |
+| 7 | Verify NO "User Progress" section | Lecturer cannot manage progress | ✅ |
+| 8 | Verify NO enrollment manager either | Enrollment manager also hidden for lecturers | ✅ |
 
 **Notes/Learnings**:
 - `canManageEnrollments` is `is_platform_admin || is_tenant_admin` — lecturers and CSMs are excluded
@@ -203,9 +203,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the Progress Manager shows an appropriate empty state when a course has no enrolled users.
 
@@ -219,10 +219,10 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to a course with no enrolled users | Course detail loads | ☐ |
-| 2 | Scroll to Progress Manager section | Section header: "USER PROGRESS (0 USERS)" | ☐ |
-| 3 | Verify empty state display | Centered BarChart3 icon (large, slate-300), text: "No enrolled users to show progress for." | ☐ |
-| 4 | Verify no user rows or module actions visible | No expandable rows, no Mark Complete/Reset buttons | ☐ |
+| 1 | Navigate to a course with no enrolled users | Course detail loads | ✅ |
+| 2 | Scroll to Progress Manager section | Section header: "USER PROGRESS (0 USERS)" | ✅ |
+| 3 | Verify empty state display | Centered BarChart3 icon (large, slate-300), text: "No enrolled users to show progress for." | ✅ |
+| 4 | Verify no user rows or module actions visible | No expandable rows, no Mark Complete/Reset buttons | ✅ |
 
 **Notes/Learnings**:
 - Empty state is shown when `loadCourseProgressAdmin` returns an empty array
@@ -235,9 +235,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the Progress Manager displays enrolled users in a list with email, name, progress bar, and completion count.
 
@@ -251,15 +251,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to a course with enrolled users | Course detail loads | ☐ |
-| 2 | Scroll to Progress Manager section | "USER PROGRESS (N USERS)" header visible | ☐ |
-| 3 | Verify user rows in bordered container | Container has `border border-slate-200 rounded-xl overflow-hidden` | ☐ |
-| 4 | Verify each user row content | Email (text-sm font-medium text-slate-700), full name below in text-xs (or "—" if null) | ☐ |
-| 5 | Verify progress bar per user | Teal bar (`bg-teal-500`) inside slate track (`bg-slate-200`), width proportional to completion | ☐ |
-| 6 | Verify completion count | "X/Y" text (tabular-nums) where X = completed modules, Y = total modules in course | ☐ |
-| 7 | Verify chevron icon | ChevronDown icon on right side (collapsed state) | ☐ |
-| 8 | Verify user with 0 progress | Progress bar at 0% width, count shows "0/Y" | ☐ |
-| 9 | Verify user with some progress | Bar partially filled, count shows partial completion | ☐ |
+| 1 | Navigate to a course with enrolled users | Course detail loads | ✅ |
+| 2 | Scroll to Progress Manager section | "USER PROGRESS (N USERS)" header visible | ✅ |
+| 3 | Verify user rows in bordered container | Container has `border border-slate-200 rounded-xl overflow-hidden` | ✅ |
+| 4 | Verify each user row content | Email (text-sm font-medium text-slate-700), full name below in text-xs (or "—" if null) | ✅ |
+| 5 | Verify progress bar per user | Teal bar (`bg-teal-500`) inside slate track (`bg-slate-200`), width proportional to completion | ✅ |
+| 6 | Verify completion count | "X/Y" text (tabular-nums) where X = completed modules, Y = total modules in course | ✅ |
+| 7 | Verify chevron icon | ChevronDown icon on right side (collapsed state) | ✅ |
+| 8 | Verify user with 0 progress | Progress bar at 0% width, count shows "0/Y" | ✅ |
+| 9 | Verify user with some progress | Bar partially filled, count shows partial completion | ✅ |
 
 **Notes/Learnings**:
 - Progress bar width: `(user.completed / user.total) * 100`%
@@ -273,9 +273,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking a user row expands an accordion showing module-level progress grouped by lecture, with status badges and action buttons.
 
@@ -289,18 +289,18 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Click on a user row in the progress manager | Row expands, showing module list below | ☐ |
-| 2 | Verify chevron changes | ChevronDown → ChevronUp on the clicked row | ☐ |
-| 3 | Verify expanded area styling | `bg-slate-50/50 border-t border-slate-100` background, padded | ☐ |
-| 4 | Verify modules grouped by lecture | Each lecture has an uppercase heading (text-xs font-semibold text-slate-400) | ☐ |
-| 5 | Verify completed module badge | Emerald badge (`bg-emerald-100 text-emerald-700`) with Check icon and "Done" text | ☐ |
-| 6 | Verify in-progress module badge | Amber badge (`bg-amber-100 text-amber-700`) with "In Progress" text | ☐ |
-| 7 | Verify not-started module badge | Slate badge (`bg-slate-100 text-slate-500`) with "Not Started" text | ☐ |
-| 8 | Verify module titles | Module title text (text-sm text-slate-700) next to status badge | ☐ |
-| 9 | Verify "Mark Complete" button on non-completed modules | Teal text button with Check icon, "Mark Complete" label | ☐ |
-| 10 | Verify "Reset" button on completed modules | Rose text button with RotateCcw icon, "Reset" label | ☐ |
-| 11 | Click the same user row again | Accordion collapses, module list hidden | ☐ |
-| 12 | Click a different user row | Previous user collapses, new user expands (only one open at a time) | ☐ |
+| 1 | Click on a user row in the progress manager | Row expands, showing module list below | ✅ |
+| 2 | Verify chevron changes | ChevronDown → ChevronUp on the clicked row | ✅ |
+| 3 | Verify expanded area styling | `bg-slate-50/50 border-t border-slate-100` background, padded | ✅ |
+| 4 | Verify modules grouped by lecture | Each lecture has an uppercase heading (text-xs font-semibold text-slate-400) | ✅ |
+| 5 | Verify completed module badge | Emerald badge (`bg-emerald-100 text-emerald-700`) with Check icon and "Done" text | ✅ |
+| 6 | Verify in-progress module badge | Amber badge (`bg-amber-100 text-amber-700`) with "In Progress" text | ✅ |
+| 7 | Verify not-started module badge | Slate badge (`bg-slate-100 text-slate-500`) with "Not Started" text | ✅ |
+| 8 | Verify module titles | Module title text (text-sm text-slate-700) next to status badge | ✅ |
+| 9 | Verify "Mark Complete" button on non-completed modules | Teal text button with Check icon, "Mark Complete" label | ✅ |
+| 10 | Verify "Reset" button on completed modules | Rose text button with RotateCcw icon, "Reset" label | ✅ |
+| 11 | Click the same user row again | Accordion collapses, module list hidden | ✅ |
+| 12 | Click a different user row | Previous user collapses, new user expands (only one open at a time) | ✅ |
 
 **Notes/Learnings**:
 - Only one user accordion is open at a time — `expandedUserId` signal stores the currently expanded user
@@ -315,9 +315,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking "Mark Complete" on a module in the expanded progress view successfully marks it as completed for that user, and the UI updates to reflect the change.
 
@@ -332,22 +332,22 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Find a module with "Not Started" or "In Progress" status | "Mark Complete" teal button visible on that row | ☐ |
-| 2 | Click "Mark Complete" | All action buttons become disabled (`actionInProgress` signal) | ☐ |
-| 3 | Wait for action to complete | Data reloads from DB | ☐ |
-| 4 | Verify status badge changes | Badge changes to emerald "Done" with Check icon | ☐ |
-| 5 | Verify action button changes | "Mark Complete" button replaced by "Reset" button (rose) | ☐ |
-| 6 | Verify progress bar updates | User's progress bar fills further, count increments (e.g., "1/5" → "2/5") | ☐ |
-| 7 | Verify header count unchanged | User count stays the same (marking complete doesn't add/remove users) | ☐ |
-| 8 | Refresh the page | Progress persists — module still shows "Done" | ☐ |
+| 1 | Find a module with "Not Started" or "In Progress" status | "Mark Complete" teal button visible on that row | ✅ |
+| 2 | Click "Mark Complete" | All action buttons become disabled (`actionInProgress` signal) | ✅ |
+| 3 | Wait for action to complete | Data reloads from DB | ✅ |
+| 4 | Verify status badge changes | Badge changes to emerald "Done" with Check icon | ✅ |
+| 5 | Verify action button changes | "Mark Complete" button replaced by "Reset" button (rose) | ✅ |
+| 6 | Verify progress bar updates | User's progress bar fills further, count increments (e.g., "1/5" → "2/5") | ✅ |
+| 7 | Verify header count unchanged | User count stays the same (marking complete doesn't add/remove users) | ✅ |
+| 8 | Refresh the page | Progress persists — module still shows "Done" | ✅ |
 
 **Verify Learner Can See Progress**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 9 | Log in as the learner whose module was admin-marked | Dashboard loads | ☐ |
-| 10 | Navigate to the module in the course | Module viewer loads | ☐ |
-| 11 | Verify "Completed" state on module | "Completed" button/badge visible (was marked by admin) | ☐ |
+| 9 | Log in as the learner whose module was admin-marked | Dashboard loads | ✅ |
+| 10 | Navigate to the module in the course | Module viewer loads | ✅ |
+| 11 | Verify "Completed" state on module | "Completed" button/badge visible (was marked by admin) | ✅ |
 
 **Notes/Learnings**:
 - `adminMarkModuleComplete` uses `marked_by='admin'` which bypasses the `enforce_quiz_exam_completion` BEFORE trigger — allows marking quiz/exam modules without a passing attempt
@@ -361,9 +361,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking "Reset" on a completed module reverts it to "Not Started" status, and the UI updates accordingly.
 
@@ -378,19 +378,19 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Find a module with "Done" status | "Reset" rose button with RotateCcw icon visible | ☐ |
-| 2 | Click "Reset" | All action buttons become disabled | ☐ |
-| 3 | Wait for action to complete | Data reloads from DB | ☐ |
-| 4 | Verify status badge changes | Badge changes to slate "Not Started" | ☐ |
-| 5 | Verify action button changes | "Reset" button replaced by "Mark Complete" button (teal) | ☐ |
-| 6 | Verify progress bar updates | User's progress bar decreases, count decrements (e.g., "2/5" → "1/5") | ☐ |
-| 7 | Refresh the page | Reset persists — module shows "Not Started" | ☐ |
+| 1 | Find a module with "Done" status | "Reset" rose button with RotateCcw icon visible | ✅ |
+| 2 | Click "Reset" | All action buttons become disabled | ✅ |
+| 3 | Wait for action to complete | Data reloads from DB | ✅ |
+| 4 | Verify status badge changes | Badge changes to slate "Not Started" | ✅ |
+| 5 | Verify action button changes | "Reset" button replaced by "Mark Complete" button (teal) | ✅ |
+| 6 | Verify progress bar updates | User's progress bar decreases, count decrements (e.g., "2/5" → "1/5") | ✅ |
+| 7 | Refresh the page | Reset persists — module shows "Not Started" | ✅ |
 
 **Verify Notification Sent**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 8 | Check the learner's notifications (if notification UI exists) or query DB | `notify_progress_reset` trigger should have created a notification row for the affected user | ☐ |
+| 8 | Check the learner's notifications (if notification UI exists) or query DB | `notify_progress_reset` trigger should have created a notification row for the affected user | ✅ |
 
 **Notes/Learnings**:
 - `adminResetModuleProgress` updates `status='not_started'`, `completed_at=null`, `marked_by=null`, `notes='Reset by admin'`
@@ -404,9 +404,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the "This is a significant update" checkbox appears only when editing an existing module, not when creating a new one.
 
@@ -420,32 +420,32 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Platform Admin | Dashboard loads | ☐ |
-| 2 | Navigate to a course detail | Course with modules loads | ☐ |
-| 3 | Click the pencil icon on any module | Module edit form loads ("Edit Module" heading) | ☐ |
-| 4 | Verify significant update checkbox visible | Amber box (`bg-amber-50 border-amber-200`) with checkbox, label "This is a significant update" | ☐ |
-| 5 | Verify help text | "Resets learner progress for this module. Use for content changes, not typo fixes." below checkbox | ☐ |
-| 6 | Verify checkbox is unchecked by default | Checkbox not checked on load | ☐ |
-| 7 | Click the checkbox | Checkbox becomes checked | ☐ |
-| 8 | Click the checkbox again | Checkbox unchecked (toggle behavior) | ☐ |
+| 1 | Log in as Platform Admin | Dashboard loads | ✅ |
+| 2 | Navigate to a course detail | Course with modules loads | ✅ |
+| 3 | Click the pencil icon on any module | Module edit form loads ("Edit Module" heading) | ✅ |
+| 4 | Verify significant update checkbox visible | Amber box (`bg-amber-50 border-amber-200`) with checkbox, label "This is a significant update" | ✅ |
+| 5 | Verify help text | "Resets learner progress for this module. Use for content changes, not typo fixes." below checkbox | ✅ |
+| 6 | Verify checkbox is unchecked by default | Checkbox not checked on load | ✅ |
+| 7 | Click the checkbox | Checkbox becomes checked | ✅ |
+| 8 | Click the checkbox again | Checkbox unchecked (toggle behavior) | ✅ |
 
 **Steps (Create Mode — Checkbox Hidden)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 9 | Navigate to "Add Module" for a lecture (click + button on a lecture) | New module page loads ("New Module" heading) | ☐ |
-| 10 | Verify type selector grid | 6 module type cards shown (Video, PDF, Markdown, Quiz, Exam, External Quiz) | ☐ |
-| 11 | Verify NO significant update checkbox | Amber box NOT visible | ☐ |
-| 12 | Select a type (e.g., "Markdown") | Module form loads for the selected type | ☐ |
-| 13 | Verify STILL no significant update checkbox | Checkbox only appears in edit mode, never in create mode | ☐ |
+| 9 | Navigate to "Add Module" for a lecture (click + button on a lecture) | New module page loads ("New Module" heading) | ✅ |
+| 10 | Verify type selector grid | 6 module type cards shown (Video, PDF, Markdown, Quiz, Exam, External Quiz) | ✅ |
+| 11 | Verify NO significant update checkbox | Amber box NOT visible | ✅ |
+| 12 | Select a type (e.g., "Markdown") | Module form loads for the selected type | ✅ |
+| 13 | Verify STILL no significant update checkbox | Checkbox only appears in edit mode, never in create mode | ✅ |
 
 **Steps (Lecturer with can_edit)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 14 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 15 | Navigate to an assigned course, click pencil on a module | Module edit form loads | ☐ |
-| 16 | Verify significant update checkbox visible | Same amber box with checkbox — lecturers with can_edit see it too | ☐ |
+| 14 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 15 | Navigate to an assigned course, click pencil on a module | Module edit form loads | ✅ |
+| 16 | Verify significant update checkbox visible | Same amber box with checkbox — lecturers with can_edit see it too | ✅ |
 
 **Notes/Learnings**:
 - `isEditMode()` is `computed(() => !!this.moduleId())` — true only when route has `:moduleId` param
@@ -460,9 +460,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full E2E flow: admin marks a module complete for a user, then edits that module with the "significant update" checkbox checked, and the DB trigger automatically resets the user's progress back to "Not Started".
 
@@ -477,23 +477,23 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to the test course detail | Course detail loads | ☐ |
-| 2 | Scroll to Progress Manager, expand a user | Verify the target module shows "Done" status with "Reset" button | ☐ |
-| 3 | Note the module that is "Done" | Remember module title for later verification | ☐ |
-| 4 | Click pencil icon on that same module | Module edit form loads | ☐ |
-| 5 | Check the "This is a significant update" checkbox | Checkbox becomes checked | ☐ |
-| 6 | Click "Save Changes" | Module saves successfully, redirects back to course detail | ☐ |
-| 7 | Scroll to Progress Manager | Progress data reloads | ☐ |
-| 8 | Expand the same user | Module list visible | ☐ |
-| 9 | Verify the module status is now "Not Started" | Badge changed from emerald "Done" to slate "Not Started" | ☐ |
-| 10 | Verify "Mark Complete" button now shown | Rose "Reset" button replaced by teal "Mark Complete" | ☐ |
-| 11 | Verify progress bar decreased | User's completion count decreased by 1 | ☐ |
+| 1 | Navigate to the test course detail | Course detail loads | ✅ |
+| 2 | Scroll to Progress Manager, expand a user | Verify the target module shows "Done" status with "Reset" button | ✅ |
+| 3 | Note the module that is "Done" | Remember module title for later verification | ✅ |
+| 4 | Click pencil icon on that same module | Module edit form loads | ✅ |
+| 5 | Check the "This is a significant update" checkbox | Checkbox becomes checked | ✅ |
+| 6 | Click "Save Changes" | Module saves successfully, redirects back to course detail | ✅ |
+| 7 | Scroll to Progress Manager | Progress data reloads | ✅ |
+| 8 | Expand the same user | Module list visible | ✅ |
+| 9 | Verify the module status is now "Not Started" | Badge changed from emerald "Done" to slate "Not Started" | ✅ |
+| 10 | Verify "Mark Complete" button now shown | Rose "Reset" button replaced by teal "Mark Complete" | ✅ |
+| 11 | Verify progress bar decreased | User's completion count decreased by 1 | ✅ |
 
 **Verify Notification Created**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 12 | Query DB for notification | `SELECT * FROM notifications WHERE user_id = '<learner_id>' AND notification_type = 'progress_reset'` should return a row | ☐ |
+| 12 | Query DB for notification | `SELECT * FROM notifications WHERE user_id = '<learner_id>' AND notification_type = 'progress_reset'` should return a row | ✅ |
 
 **Notes/Learnings**:
 - The cascade chain: `modules UPDATE (significant_update_at)` → `reset_progress_on_significant_update` trigger → `user_progress UPDATE (status='not_started')` → `notify_progress_reset` trigger → `notifications INSERT`
@@ -508,9 +508,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Tenant Admin only sees progress data for users in their own tenant, not from other tenants. Also verify TA can perform Mark Complete and Reset for their tenant's users.
 
@@ -527,34 +527,34 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as TA (`admin@calypsoclient.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to the test course detail | Course detail loads | ☐ |
-| 3 | Scroll to Progress Manager | "USER PROGRESS (N USERS)" — N should only count Client tenant users | ☐ |
-| 4 | Verify only client tenant users shown | `learner@calypsoclient.com` visible, but `learner@calypso-commodities.com` NOT visible | ☐ |
-| 5 | Verify no data leakage | No email addresses or progress data from Calypso (master) tenant shown | ☐ |
+| 1 | Log in as TA (`admin@calypsoclient.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to the test course detail | Course detail loads | ✅ |
+| 3 | Scroll to Progress Manager | "USER PROGRESS (N USERS)" — N should only count Client tenant users | ✅ |
+| 4 | Verify only client tenant users shown | `learner@calypsoclient.com` visible, but `learner@calypso-commodities.com` NOT visible | ✅ |
+| 5 | Verify no data leakage | No email addresses or progress data from Calypso (master) tenant shown | ✅ |
 
 **Steps (TA Mark Complete)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 6 | Expand the client tenant learner's row | Module list visible with status badges | ☐ |
-| 7 | Click "Mark Complete" on a module | Action succeeds, module changes to "Done" | ☐ |
-| 8 | Verify progress bar updates | Count increments | ☐ |
+| 6 | Expand the client tenant learner's row | Module list visible with status badges | ✅ |
+| 7 | Click "Mark Complete" on a module | Action succeeds, module changes to "Done" | ✅ |
+| 8 | Verify progress bar updates | Count increments | ✅ |
 
 **Steps (TA Reset)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 9 | Click "Reset" on the completed module | Action succeeds, module changes to "Not Started" | ☐ |
-| 10 | Verify progress bar updates | Count decrements back | ☐ |
+| 9 | Click "Reset" on the completed module | Action succeeds, module changes to "Not Started" | ✅ |
+| 10 | Verify progress bar updates | Count decrements back | ✅ |
 
 **Cross-Verify with PA**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 11 | Log in as PA (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 12 | Navigate to same course, scroll to Progress Manager | PA sees users from ALL tenants (both Calypso and Client users) | ☐ |
-| 13 | Verify PA user count > TA user count | PA's N > TA's N (PA sees cross-tenant) | ☐ |
+| 11 | Log in as PA (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 12 | Navigate to same course, scroll to Progress Manager | PA sees users from ALL tenants (both Calypso and Client users) | ✅ |
+| 13 | Verify PA user count > TA user count | PA's N > TA's N (PA sees cross-tenant) | ✅ |
 
 **Notes/Learnings**:
 - RLS on `course_enrollments` and `user_progress` both filter by `tenant_id` for TA users
@@ -568,9 +568,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Covered by **QT-08** in `QUIZ_TAKING_USER_STORIES.md` |
-| **Tester** | — |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 > **UNBLOCKED**: Phase 5A (Quiz Taking) is now complete. This story is fully covered by **QT-08** in [`QUIZ_TAKING_USER_STORIES.md`](QUIZ_TAKING_USER_STORIES.md). QT-08 tests the same trigger flow end-to-end: learner passes quiz → `auto_mark_quiz_completed` trigger fires → `user_progress` row created with `marked_by='system'` → UI reflects completion.
 
@@ -592,9 +592,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-13 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS (via EG-07) |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when an admin grades an exam submission with a passing score, the `auto_mark_exam_completed` trigger automatically marks the exam module as completed.
 

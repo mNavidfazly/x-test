@@ -114,16 +114,16 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CM-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-15 |
-| CM-02 | Role Access Control | Multiple | ✅ | 2026-02-15 |
-| CM-03 | Course Data Accuracy | Platform Admin | ✅ | 2026-02-15 |
-| CM-04 | Summary Cards | Platform Admin | ✅ | 2026-02-15 |
-| CM-05 | Search + Filter Bar | Platform Admin | ✅ | 2026-02-15 |
-| CM-06 | Expand Course — Content Structure Tree | Platform Admin | ✅ | 2026-02-15 |
-| CM-07 | Expand Course — Tenant Assignments | Platform Admin | ✅ | 2026-02-15 |
-| CM-08 | Assign Tenant to Course | Platform Admin | ✅ | 2026-02-15 |
-| CM-09 | Remove Tenant from Course | Platform Admin | ✅ | 2026-02-15 |
-| CM-10 | Navigate to Edit Course | Platform Admin | ✅ | 2026-02-15 |
+| CM-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
+| CM-02 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| CM-03 | Course Data Accuracy | Platform Admin | ✅ | 2026-02-16 |
+| CM-04 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
+| CM-05 | Search + Filter Bar | Platform Admin | ✅ | 2026-02-16 |
+| CM-06 | Expand Course — Content Structure Tree | Platform Admin | ✅ | 2026-02-16 |
+| CM-07 | Expand Course — Tenant Assignments | Platform Admin | ✅ | 2026-02-16 |
+| CM-08 | Assign Tenant to Course | Platform Admin | ✅ | 2026-02-16 |
+| CM-09 | Remove Tenant from Course | Platform Admin | ✅ | 2026-02-16 |
+| CM-10 | Navigate to Edit Course | Platform Admin | ✅ | 2026-02-16 |
 
 ---
 
@@ -193,9 +193,9 @@ ORDER BY c.title, t.name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the Platform Admin can find and navigate to the Content Management page via the sidebar Platform section, and that the page renders the full structure: header with course count badge, filter bar, 4 summary cards, and data table with correct columns.
 
@@ -205,16 +205,16 @@ ORDER BY c.title, t.name;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Look at sidebar Platform section | "Content Management" item visible with FolderOpen icon | ☐ |
-| 3 | Click "Content Management" in sidebar | Navigates to `/platform/content` | ☐ |
-| 4 | Verify page header | "Content Management" heading with FolderOpen icon and teal course count badge | ☐ |
-| 5 | Verify teal badge shows total count | Number in badge matches total courses visible in table (unfiltered) | ☐ |
-| 6 | Verify filter bar | Search input ("Search courses or modules...") + 2 dropdowns ("All Staleness", "All Types") + "Unassigned only" checkbox | ☐ |
-| 7 | Verify summary cards row | 4 cards: "Total Courses", "Total Modules" (blue), "Stale Modules" (rose), "Unassigned Courses" (amber) | ☐ |
-| 8 | Verify table headers | 7 columns: Course, Lectures, Modules, Tenants, Staleness, Last Updated, (chevron) | ☐ |
-| 9 | Verify at least one data row | Row with course title + enrollment badge, lecture count, module type pills, tenant count, staleness badge, date, chevron | ☐ |
-| 10 | Verify PA sees ALL courses | Total count matches `SELECT COUNT(*) FROM courses;` — PA has no RLS restriction | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Look at sidebar Platform section | "Content Management" item visible with FolderOpen icon | ✅ |
+| 3 | Click "Content Management" in sidebar | Navigates to `/platform/content` | ✅ |
+| 4 | Verify page header | "Content Management" heading with FolderOpen icon and teal course count badge | ✅ |
+| 5 | Verify teal badge shows total count | Number in badge matches total courses visible in table (unfiltered) | ✅ |
+| 6 | Verify filter bar | Search input ("Search courses or modules...") + 2 dropdowns ("All Staleness", "All Types") + "Unassigned only" checkbox | ✅ |
+| 7 | Verify summary cards row | 4 cards: "Total Courses", "Total Modules" (blue), "Stale Modules" (rose), "Unassigned Courses" (amber) | ✅ |
+| 8 | Verify table headers | 7 columns: Course, Lectures, Modules, Tenants, Staleness, Last Updated, (chevron) | ✅ |
+| 9 | Verify at least one data row | Row with course title + enrollment badge, lecture count, module type pills, tenant count, staleness badge, date, chevron | ✅ |
+| 10 | Verify PA sees ALL courses | Total count matches `SELECT COUNT(*) FROM courses;` — PA has no RLS restriction | ✅ |
 
 ### SQL Verification
 ```sql
@@ -233,9 +233,9 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that only Platform Admins can access `/platform/content`. Lecturers, Tenant Admins, CSMs, and Learners should be blocked by the route guard and should NOT see the sidebar item.
 
@@ -245,41 +245,41 @@ SELECT COUNT(*) FROM courses;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as `learner@calypso-commodities.com` | Successful login | ☐ |
-| 2 | Check sidebar | "Platform" section NOT visible | ☐ |
-| 3 | Navigate directly to `/platform/content` in URL bar | Redirected away (to `/dashboard` or similar) — NOT the Content Management page | ☐ |
+| 1 | Log in as `learner@calypso-commodities.com` | Successful login | ✅ |
+| 2 | Check sidebar | "Platform" section NOT visible | ✅ |
+| 3 | Navigate directly to `/platform/content` in URL bar | Redirected away (to `/dashboard` or similar) — NOT the Content Management page | ✅ |
 
 ### Steps (Tenant Admin — BLOCKED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 4 | Log in as `admin@calypsoclient.com` | Successful login | ☐ |
-| 5 | Check sidebar | "Platform" section NOT visible | ☐ |
-| 6 | Navigate directly to `/platform/content` | Redirected away | ☐ |
+| 4 | Log in as `admin@calypsoclient.com` | Successful login | ✅ |
+| 5 | Check sidebar | "Platform" section NOT visible | ✅ |
+| 6 | Navigate directly to `/platform/content` | Redirected away | ✅ |
 
 ### Steps (CSM — BLOCKED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 7 | Log in as `csm@calypso-commodities.com` | Successful login | ☐ |
-| 8 | Check sidebar | "Platform" section NOT visible | ☐ |
-| 9 | Navigate directly to `/platform/content` | Redirected away | ☐ |
+| 7 | Log in as `csm@calypso-commodities.com` | Successful login | ✅ |
+| 8 | Check sidebar | "Platform" section NOT visible | ✅ |
+| 9 | Navigate directly to `/platform/content` | Redirected away | ✅ |
 
 ### Steps (Lecturer — BLOCKED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 10 | Log in as `lecturer-edit@calypso-commodities.com` | Successful login | ☐ |
-| 11 | Check sidebar | "Platform" section NOT visible (Lecturers have Teaching, not Platform) | ☐ |
-| 12 | Navigate directly to `/platform/content` | Redirected away | ☐ |
+| 10 | Log in as `lecturer-edit@calypso-commodities.com` | Successful login | ✅ |
+| 11 | Check sidebar | "Platform" section NOT visible (Lecturers have Teaching, not Platform) | ✅ |
+| 12 | Navigate directly to `/platform/content` | Redirected away | ✅ |
 
 ### Steps (Platform Admin — ALLOWED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 13 | Log in as `et@calypso-commodities.com` (Platform Admin) | Successful login | ☐ |
-| 14 | Check sidebar | "Platform" section visible with "Content Management" (FolderOpen icon) | ☐ |
-| 15 | Navigate to `/platform/content` | Page loads successfully, all courses visible | ☐ |
+| 13 | Log in as `et@calypso-commodities.com` (Platform Admin) | Successful login | ✅ |
+| 14 | Check sidebar | "Platform" section visible with "Content Management" (FolderOpen icon) | ✅ |
+| 15 | Navigate to `/platform/content` | Page loads successfully, all courses visible | ✅ |
 
 ### Notes / Learnings
 - Route guard checks JWT claim: `is_platform_admin === true`
@@ -293,9 +293,9 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the table data matches the actual database state — lecture counts, module type breakdown, tenant counts, and staleness badges are all correct. This is the most important test because the page depends on a complex nested FK join.
 
@@ -310,20 +310,20 @@ SELECT COUNT(*) FROM courses;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Run the precondition SQL queries | Get expected lecture/module/tenant counts per course | ☐ |
-| 2 | Navigate to `/platform/content` as PA | Dashboard loads with all courses | ☐ |
-| 3 | Find a course with known data | Verify course title in the table | ☐ |
-| 4 | Verify "Lectures" column | Number matches `COUNT(DISTINCT lectures)` from SQL | ☐ |
-| 5 | Verify "Modules" column | Module type pills show correct breakdown (e.g., "3 Video", "2 PDF", "1 Quiz") | ☐ |
-| 6 | Verify total module count | Sum of type pills = total modules from SQL | ☐ |
-| 7 | Verify "Tenants" column | Number matches `COUNT(tenant_courses)` from SQL | ☐ |
-| 8 | Find a course with **stale modules** | "Staleness" column shows red badge: "N stale" | ☐ |
-| 9 | Find a course with **all fresh modules** | "Staleness" column shows green badge: "Fresh" | ☐ |
-| 10 | Find a course with **postponed modules** (if any) | "Staleness" column shows blue badge: "N postponed" | ☐ |
-| 11 | Find a course with **0 modules** | "Modules" column shows "None", "Staleness" shows em-dash (—) | ☐ |
-| 12 | Verify "Last Updated" column | Shows the most recent `module.updated_at` across all modules in the course | ☐ |
-| 13 | Verify enrollment type badge | Open → green "Open", invite_only → amber "Invite", password_protected → blue "Password" | ☐ |
-| 14 | Verify courses are sorted alphabetically by title | First course alphabetically is first in the table | ☐ |
+| 1 | Run the precondition SQL queries | Get expected lecture/module/tenant counts per course | ✅ |
+| 2 | Navigate to `/platform/content` as PA | Dashboard loads with all courses | ✅ |
+| 3 | Find a course with known data | Verify course title in the table | ✅ |
+| 4 | Verify "Lectures" column | Number matches `COUNT(DISTINCT lectures)` from SQL | ✅ |
+| 5 | Verify "Modules" column | Module type pills show correct breakdown (e.g., "3 Video", "2 PDF", "1 Quiz") | ✅ |
+| 6 | Verify total module count | Sum of type pills = total modules from SQL | ✅ |
+| 7 | Verify "Tenants" column | Number matches `COUNT(tenant_courses)` from SQL | ✅ |
+| 8 | Find a course with **stale modules** | "Staleness" column shows red badge: "N stale" | ✅ |
+| 9 | Find a course with **all fresh modules** | "Staleness" column shows green badge: "Fresh" | ✅ |
+| 10 | Find a course with **postponed modules** (if any) | "Staleness" column shows blue badge: "N postponed" | ✅ |
+| 11 | Find a course with **0 modules** | "Modules" column shows "None", "Staleness" shows em-dash (—) | ✅ |
+| 12 | Verify "Last Updated" column | Shows the most recent `module.updated_at` across all modules in the course | ✅ |
+| 13 | Verify enrollment type badge | Open → green "Open", invite_only → amber "Invite", password_protected → blue "Password" | ✅ |
+| 14 | Verify courses are sorted alphabetically by title | First course alphabetically is first in the table | ✅ |
 
 ### SQL Verification
 ```sql
@@ -363,9 +363,9 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the 4 summary cards display correct counts and update reactively when filters are applied.
 
@@ -375,15 +375,15 @@ ORDER BY c.title;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/platform/content` as PA | Dashboard loads with all courses | ☐ |
-| 2 | Verify "Total Courses" card | Shows count of all courses (matches table row count) | ☐ |
-| 3 | Verify "Total Modules" card | Shows sum of all modules across all courses (blue text) | ☐ |
-| 4 | Verify "Stale Modules" card | Shows sum of stale modules across all courses (rose text) | ☐ |
-| 5 | Verify "Unassigned Courses" card | Shows count of courses with `tenantCount === 0` (amber text) | ☐ |
-| 6 | Check "Unassigned only" checkbox | Cards update: Total Courses = only unassigned courses, other counts = only from those courses | ☐ |
-| 7 | Uncheck the checkbox | All cards return to original values | ☐ |
-| 8 | Select "Has Stale" from staleness dropdown | Cards update to reflect only has-stale courses | ☐ |
-| 9 | Click "Clear filters" | All cards return to original unfiltered values | ☐ |
+| 1 | Navigate to `/platform/content` as PA | Dashboard loads with all courses | ✅ |
+| 2 | Verify "Total Courses" card | Shows count of all courses (matches table row count) | ✅ |
+| 3 | Verify "Total Modules" card | Shows sum of all modules across all courses (blue text) | ✅ |
+| 4 | Verify "Stale Modules" card | Shows sum of stale modules across all courses (rose text) | ✅ |
+| 5 | Verify "Unassigned Courses" card | Shows count of courses with `tenantCount === 0` (amber text) | ✅ |
+| 6 | Check "Unassigned only" checkbox | Cards update: Total Courses = only unassigned courses, other counts = only from those courses | ✅ |
+| 7 | Uncheck the checkbox | All cards return to original values | ✅ |
+| 8 | Select "Has Stale" from staleness dropdown | Cards update to reflect only has-stale courses | ✅ |
+| 9 | Click "Clear filters" | All cards return to original unfiltered values | ✅ |
 
 ### SQL Verification
 ```sql
@@ -404,9 +404,9 @@ WHERE NOT EXISTS (SELECT 1 FROM tenant_courses tc WHERE tc.course_id = c.id);
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that all 4 filters work independently and in combination — search (with debounce), staleness dropdown, module type dropdown, and unassigned toggle.
 
@@ -422,21 +422,21 @@ WHERE NOT EXISTS (SELECT 1 FROM tenant_courses tc WHERE tc.course_id = c.id);
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/platform/content` as PA | Full course list, no "Clear filters" link visible | ☐ |
-| 2 | Type partial course title in search (e.g., "LNG") | After ~300ms debounce, table filters to matching courses | ☐ |
-| 3 | Verify non-matching courses hidden | Only courses with title OR module titles containing "LNG" visible | ☐ |
-| 4 | Verify "Clear filters" link appears | Blue link text visible next to the checkbox | ☐ |
-| 5 | Clear search manually (backspace all) | Full list restored | ☐ |
-| 6 | Select "Has Stale" from staleness dropdown | Only courses with stale modules visible | ☐ |
-| 7 | Select "All Fresh" from staleness dropdown | Only courses with all fresh modules (no stale, no postponed, has modules) | ☐ |
-| 8 | Reset staleness to "All Staleness" | Full list | ☐ |
-| 9 | Select "Video" from module type dropdown | Only courses containing at least 1 video module visible | ☐ |
-| 10 | Select "PDF" from module type dropdown | Only courses containing at least 1 PDF module visible | ☐ |
-| 11 | Reset type to "All Types" | Full list | ☐ |
-| 12 | Check "Unassigned only" | Only courses with `tenantCount === 0` visible | ☐ |
-| 13 | **Combined filter**: Check "Unassigned only" + select "Has Stale" | Both apply with AND logic — only unassigned courses that have stale modules | ☐ |
-| 14 | Click "Clear filters" | Search cleared, all dropdowns reset, checkbox unchecked, full list restored | ☐ |
-| 15 | Type a non-matching query (e.g., "xyzzzz") | Empty state: "No courses found." with FolderOpen icon | ☐ |
+| 1 | Navigate to `/platform/content` as PA | Full course list, no "Clear filters" link visible | ✅ |
+| 2 | Type partial course title in search (e.g., "LNG") | After ~300ms debounce, table filters to matching courses | ✅ |
+| 3 | Verify non-matching courses hidden | Only courses with title OR module titles containing "LNG" visible | ✅ |
+| 4 | Verify "Clear filters" link appears | Blue link text visible next to the checkbox | ✅ |
+| 5 | Clear search manually (backspace all) | Full list restored | ✅ |
+| 6 | Select "Has Stale" from staleness dropdown | Only courses with stale modules visible | ✅ |
+| 7 | Select "All Fresh" from staleness dropdown | Only courses with all fresh modules (no stale, no postponed, has modules) | ✅ |
+| 8 | Reset staleness to "All Staleness" | Full list | ✅ |
+| 9 | Select "Video" from module type dropdown | Only courses containing at least 1 video module visible | ✅ |
+| 10 | Select "PDF" from module type dropdown | Only courses containing at least 1 PDF module visible | ✅ |
+| 11 | Reset type to "All Types" | Full list | ✅ |
+| 12 | Check "Unassigned only" | Only courses with `tenantCount === 0` visible | ✅ |
+| 13 | **Combined filter**: Check "Unassigned only" + select "Has Stale" | Both apply with AND logic — only unassigned courses that have stale modules | ✅ |
+| 14 | Click "Clear filters" | Search cleared, all dropdowns reset, checkbox unchecked, full list restored | ✅ |
+| 15 | Type a non-matching query (e.g., "xyzzzz") | Empty state: "No courses found." with FolderOpen icon | ✅ |
 
 ### Notes / Learnings
 - Search is debounced (300ms) — there's a brief delay before filtering kicks in
@@ -454,9 +454,9 @@ WHERE NOT EXISTS (SELECT 1 FROM tenant_courses tc WHERE tc.course_id = c.id);
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking a course row expands it to show a two-column detail view, with the left side displaying a collapsible lecture/module tree with per-module staleness badges. This validates that the nested FK join data (`courses → lectures → modules`) renders correctly.
 
@@ -470,20 +470,20 @@ WHERE NOT EXISTS (SELECT 1 FROM tenant_courses tc WHERE tc.course_id = c.id);
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/platform/content` as PA | Courses visible, all rows show down-chevron in last column | ☐ |
-| 2 | Click a course row that has lectures | Row expands: chevron changes to up, two-column detail appears below | ☐ |
-| 3 | Verify left column header | "Content Structure" section label visible | ☐ |
-| 4 | Verify lectures are listed | Each lecture shows as collapsible item with title + module count in parentheses | ☐ |
-| 5 | Verify all lectures are auto-expanded | On first expand, all lectures are open (all module lists visible) | ☐ |
-| 6 | Verify module rows within a lecture | Each module shows: type icon (Video/FileText/Type/HelpCircle/ClipboardCheck) + title + staleness badge + date | ☐ |
-| 7 | Find a **stale** module | Red badge: "Stale" | ☐ |
-| 8 | Find a **fresh** module | Green badge: "Fresh" | ☐ |
-| 9 | Find a **postponed** module (if any) | Blue badge: "Postponed" | ☐ |
-| 10 | Click a lecture title to collapse it | Module list hides, chevron changes from down to right | ☐ |
-| 11 | Click the lecture title again | Module list reappears | ☐ |
-| 12 | Click the same course row (or chevron) | Entire expanded row collapses | ☐ |
-| 13 | Click a different course | Previous course collapses, new one expands (only one at a time) | ☐ |
-| 14 | Expand a course with 0 lectures | Shows "No lectures yet." text | ☐ |
+| 1 | Navigate to `/platform/content` as PA | Courses visible, all rows show down-chevron in last column | ✅ |
+| 2 | Click a course row that has lectures | Row expands: chevron changes to up, two-column detail appears below | ✅ |
+| 3 | Verify left column header | "Content Structure" section label visible | ✅ |
+| 4 | Verify lectures are listed | Each lecture shows as collapsible item with title + module count in parentheses | ✅ |
+| 5 | Verify all lectures are auto-expanded | On first expand, all lectures are open (all module lists visible) | ✅ |
+| 6 | Verify module rows within a lecture | Each module shows: type icon (Video/FileText/Type/HelpCircle/ClipboardCheck) + title + staleness badge + date | ✅ |
+| 7 | Find a **stale** module | Red badge: "Stale" | ✅ |
+| 8 | Find a **fresh** module | Green badge: "Fresh" | ✅ |
+| 9 | Find a **postponed** module (if any) | Blue badge: "Postponed" | ✅ |
+| 10 | Click a lecture title to collapse it | Module list hides, chevron changes from down to right | ✅ |
+| 11 | Click the lecture title again | Module list reappears | ✅ |
+| 12 | Click the same course row (or chevron) | Entire expanded row collapses | ✅ |
+| 13 | Click a different course | Previous course collapses, new one expands (only one at a time) | ✅ |
+| 14 | Expand a course with 0 lectures | Shows "No lectures yet." text | ✅ |
 
 ### SQL Verification
 ```sql
@@ -509,9 +509,9 @@ ORDER BY l.sort_order, m.sort_order;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the right column of the expanded row shows tenant assignments, lazy-loaded via `CourseService.loadTenantAssignments(courseId)`. The add-tenant dropdown should show only unassigned tenants.
 
@@ -525,17 +525,17 @@ ORDER BY l.sort_order, m.sort_order;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/platform/content` as PA | Courses visible | ☐ |
-| 2 | Expand a course that has tenant assignments | Right column shows "Tenant Assignments" section label | ☐ |
-| 3 | Verify loading state | Brief "Loading..." with spinner while tenant data loads | ☐ |
-| 4 | Verify assigned tenant list | Each assigned tenant shown with name + X (remove) button | ☐ |
-| 5 | Verify assigned tenant count matches table | Number of listed tenants = "Tenants" column value in the main row | ☐ |
-| 6 | Verify add-tenant dropdown | "Select a tenant..." placeholder + only unassigned tenants listed | ☐ |
-| 7 | Verify already-assigned tenants NOT in dropdown | Tenants shown in the list above are filtered OUT of the dropdown options | ☐ |
-| 8 | Verify "Add" button is disabled | Button disabled when no tenant selected (placeholder active) | ☐ |
-| 9 | Verify warning footer | "Removing a tenant also removes all enrollments and progress." with AlertTriangle icon | ☐ |
-| 10 | Verify "Edit Course →" link | Ghost-styled teal link at bottom of tenant panel | ☐ |
-| 11 | Expand a course with 0 tenants | Shows "No tenants assigned." text instead of a list, dropdown still available | ☐ |
+| 1 | Navigate to `/platform/content` as PA | Courses visible | ✅ |
+| 2 | Expand a course that has tenant assignments | Right column shows "Tenant Assignments" section label | ✅ |
+| 3 | Verify loading state | Brief "Loading..." with spinner while tenant data loads | ✅ |
+| 4 | Verify assigned tenant list | Each assigned tenant shown with name + X (remove) button | ✅ |
+| 5 | Verify assigned tenant count matches table | Number of listed tenants = "Tenants" column value in the main row | ✅ |
+| 6 | Verify add-tenant dropdown | "Select a tenant..." placeholder + only unassigned tenants listed | ✅ |
+| 7 | Verify already-assigned tenants NOT in dropdown | Tenants shown in the list above are filtered OUT of the dropdown options | ✅ |
+| 8 | Verify "Add" button is disabled | Button disabled when no tenant selected (placeholder active) | ✅ |
+| 9 | Verify warning footer | "Removing a tenant also removes all enrollments and progress." with AlertTriangle icon | ✅ |
+| 10 | Verify "Edit Course →" link | Ghost-styled teal link at bottom of tenant panel | ✅ |
+| 11 | Expand a course with 0 tenants | Shows "No tenants assigned." text instead of a list, dropdown still available | ✅ |
 
 ### SQL Verification
 ```sql
@@ -563,9 +563,9 @@ SELECT id, name FROM tenants ORDER BY name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that selecting a tenant from the dropdown and clicking "Add" creates a `tenant_courses` row, shows a success toast, refreshes both the tenant list and the main course data (tenant count in table updates). This is a real data mutation — after assignment, learners in that tenant can see this course.
 
@@ -579,16 +579,16 @@ SELECT id, name FROM tenants ORDER BY name;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/platform/content` as PA | Courses visible | ☐ |
-| 2 | Expand a course | Tenant panel visible with add dropdown | ☐ |
-| 3 | Note the current tenant count in the table row | e.g., "Tenants: 1" | ☐ |
-| 4 | Select an unassigned tenant from dropdown | "Add" button becomes enabled | ☐ |
-| 5 | Click "Add" | Button shows brief loading state | ☐ |
-| 6 | Verify success toast | Green toast: "Tenant assigned" | ☐ |
-| 7 | Verify tenant appears in assigned list | Newly assigned tenant now shown with X button | ☐ |
-| 8 | Verify tenant removed from dropdown | The just-assigned tenant is no longer in the dropdown options | ☐ |
-| 9 | Verify tenant count in table row updated | e.g., "Tenants: 2" (incremented by 1) | ☐ |
-| 10 | Verify dropdown reset | Dropdown shows "Select a tenant..." placeholder again | ☐ |
+| 1 | Navigate to `/platform/content` as PA | Courses visible | ✅ |
+| 2 | Expand a course | Tenant panel visible with add dropdown | ✅ |
+| 3 | Note the current tenant count in the table row | e.g., "Tenants: 1" | ✅ |
+| 4 | Select an unassigned tenant from dropdown | "Add" button becomes enabled | ✅ |
+| 5 | Click "Add" | Button shows brief loading state | ✅ |
+| 6 | Verify success toast | Green toast: "Tenant assigned" | ✅ |
+| 7 | Verify tenant appears in assigned list | Newly assigned tenant now shown with X button | ✅ |
+| 8 | Verify tenant removed from dropdown | The just-assigned tenant is no longer in the dropdown options | ✅ |
+| 9 | Verify tenant count in table row updated | e.g., "Tenants: 2" (incremented by 1) | ✅ |
+| 10 | Verify dropdown reset | Dropdown shows "Select a tenant..." placeholder again | ✅ |
 
 ### SQL Verification
 ```sql
@@ -622,9 +622,9 @@ WHERE course_id = '<COURSE_ID>'
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking the X button next to an assigned tenant removes the `tenant_courses` row, shows a success toast, and refreshes data. **This is a destructive action** — removing a tenant also cascades and removes all enrollments and progress for that tenant's users on this course.
 
@@ -637,15 +637,15 @@ WHERE course_id = '<COURSE_ID>'
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/platform/content` as PA | Courses visible | ☐ |
-| 2 | Expand a course with assigned tenants | Tenant list visible with X buttons | ☐ |
-| 3 | Note the current tenant count | e.g., "Tenants: 2" | ☐ |
-| 4 | Note the tenant name to be removed | e.g., "Calypso Client" | ☐ |
-| 5 | Click the X button next to that tenant | X button fires (row does NOT collapse — stopPropagation works) | ☐ |
-| 6 | Verify success toast | Green toast: "Tenant removed" | ☐ |
-| 7 | Verify tenant disappears from assigned list | The removed tenant is no longer in the list | ☐ |
-| 8 | Verify tenant reappears in dropdown | The removed tenant is now available for re-assignment | ☐ |
-| 9 | Verify tenant count in table row updated | e.g., "Tenants: 1" (decremented by 1) | ☐ |
+| 1 | Navigate to `/platform/content` as PA | Courses visible | ✅ |
+| 2 | Expand a course with assigned tenants | Tenant list visible with X buttons | ✅ |
+| 3 | Note the current tenant count | e.g., "Tenants: 2" | ✅ |
+| 4 | Note the tenant name to be removed | e.g., "Calypso Client" | ✅ |
+| 5 | Click the X button next to that tenant | X button fires (row does NOT collapse — stopPropagation works) | ✅ |
+| 6 | Verify success toast | Green toast: "Tenant removed" | ✅ |
+| 7 | Verify tenant disappears from assigned list | The removed tenant is no longer in the list | ✅ |
+| 8 | Verify tenant reappears in dropdown | The removed tenant is now available for re-assignment | ✅ |
+| 9 | Verify tenant count in table row updated | e.g., "Tenants: 1" (decremented by 1) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -683,9 +683,9 @@ ON CONFLICT DO NOTHING;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the "Edit Course →" link in the expanded row navigates to the correct course edit page. This completes the "overview → edit" workflow that makes Content Management a useful hub.
 
@@ -695,12 +695,12 @@ ON CONFLICT DO NOTHING;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/platform/content` as PA | Courses visible | ☐ |
-| 2 | Expand a course | Two-column detail visible | ☐ |
-| 3 | Find "Edit Course →" link | Teal ghost-styled link at the bottom of the right (tenant) column | ☐ |
-| 4 | Click "Edit Course →" | Navigates to `/courses/<course-id>` — expanded row does NOT collapse (stopPropagation) | ☐ |
-| 5 | Verify course detail/edit page loads | Correct course title, lectures, modules visible | ☐ |
-| 6 | Navigate back to `/platform/content` | Content Management page reloads with all data | ☐ |
+| 1 | Navigate to `/platform/content` as PA | Courses visible | ✅ |
+| 2 | Expand a course | Two-column detail visible | ✅ |
+| 3 | Find "Edit Course →" link | Teal ghost-styled link at the bottom of the right (tenant) column | ✅ |
+| 4 | Click "Edit Course →" | Navigates to `/courses/<course-id>` — expanded row does NOT collapse (stopPropagation) | ✅ |
+| 5 | Verify course detail/edit page loads | Correct course title, lectures, modules visible | ✅ |
+| 6 | Navigate back to `/platform/content` | Content Management page reloads with all data | ✅ |
 
 ### Notes / Learnings
 - The link uses `Router.navigate(['/courses', courseId])` — programmatic navigation, not `<a href>`
@@ -772,7 +772,7 @@ DELETE FROM courses WHERE title = 'Unassigned Test Course';
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| 2026-02-15 | Claude Code | CM-01 to CM-10 | 10 | 0 | All 10 stories pass on localhost:4200. 5 roles tested. Assign/remove tenant mutations verified with toast + data refresh. |
+| 2026-02-16 | Claude Code | CM-01 to CM-10 | 10 | 0 | All 10 stories pass on localhost:4200. 5 roles tested. Assign/remove tenant mutations verified with toast + data refresh. |
 
 ---
 

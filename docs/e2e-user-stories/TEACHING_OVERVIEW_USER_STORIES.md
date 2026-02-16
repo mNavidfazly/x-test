@@ -99,16 +99,16 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| TO-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-15 |
-| TO-02 | Per-Course Count Accuracy | Platform Admin | ✅ | 2026-02-15 |
-| TO-03 | Summary Cards | Platform Admin | ✅ | 2026-02-15 |
-| TO-04 | Search Filter | Platform Admin | ✅ | 2026-02-15 |
-| TO-05 | Status Filter (Needs Attention / All Clear) | Platform Admin | ✅ | 2026-02-15 |
-| TO-06 | Permission Badges | Platform Admin | ✅ | 2026-02-15 |
-| TO-07 | Expand Course Row — Quick Actions | Platform Admin | ✅ | 2026-02-15 |
-| TO-08 | Deep-Link to Board Pages with Course Pre-Filtering | Platform Admin | ✅ | 2026-02-15 |
-| TO-09 | Lecturer Scoped View | Lecturer | ✅ | 2026-02-15 |
-| TO-10 | Role Access Control | Multiple | ✅ | 2026-02-15 |
+| TO-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
+| TO-02 | Per-Course Count Accuracy | Platform Admin | ✅ | 2026-02-16 |
+| TO-03 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
+| TO-04 | Search Filter | Platform Admin | ✅ | 2026-02-16 |
+| TO-05 | Status Filter (Needs Attention / All Clear) | Platform Admin | ✅ | 2026-02-16 |
+| TO-06 | Permission Badges | Platform Admin | ✅ | 2026-02-16 |
+| TO-07 | Expand Course Row — Quick Actions | Platform Admin | ✅ | 2026-02-16 |
+| TO-08 | Deep-Link to Board Pages with Course Pre-Filtering | Platform Admin | ✅ | 2026-02-16 |
+| TO-09 | Lecturer Scoped View | Lecturer | ✅ | 2026-02-16 |
+| TO-10 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -164,9 +164,9 @@ WHERE lca.lecturer_id = (SELECT id FROM profiles WHERE email = 'lecturer-view@ca
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the Platform Admin can find and navigate to the Teaching Overview page via the sidebar Teaching section, and that the page renders the full structure: header with course count badge, filter bar, 4 summary cards, and data table with correct columns.
 
@@ -176,16 +176,16 @@ WHERE lca.lecturer_id = (SELECT id FROM profiles WHERE email = 'lecturer-view@ca
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Look at sidebar Teaching section | "Teaching Overview" item visible with GraduationCap icon (NOT "My Courses") | ☐ |
-| 3 | Click "Teaching Overview" in sidebar | Navigates to `/teaching/courses` | ☐ |
-| 4 | Verify page header | "Teaching Overview" heading with GraduationCap icon and teal badge showing course count | ☐ |
-| 5 | Verify teal badge shows total count | Number in badge matches total courses visible in table (unfiltered) | ☐ |
-| 6 | Verify filter bar | Search input ("Search by course title...") + Status dropdown ("All Courses" / "Needs Attention" / "All Clear") visible | ☐ |
-| 7 | Verify summary cards row | 4 cards: "Pending Exams" (amber-600), "Open Questions" (amber-600), "Open Issues" (amber-600), "Stale Modules" (rose-600) | ☐ |
-| 8 | Verify table headers | 8 columns: (chevron), Course, Permissions, Learners, Exams, Questions, Issues, Staleness | ☐ |
-| 9 | Verify at least one data row | Row with chevron icon, course title, permission badges, enrolled count, action item counts, staleness badge | ☐ |
-| 10 | Verify PA sees ALL courses | Total count matches the number of courses in the system (PA has no RLS restriction on courses) | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Look at sidebar Teaching section | "Teaching Overview" item visible with GraduationCap icon (NOT "My Courses") | ✅ |
+| 3 | Click "Teaching Overview" in sidebar | Navigates to `/teaching/courses` | ✅ |
+| 4 | Verify page header | "Teaching Overview" heading with GraduationCap icon and teal badge showing course count | ✅ |
+| 5 | Verify teal badge shows total count | Number in badge matches total courses visible in table (unfiltered) | ✅ |
+| 6 | Verify filter bar | Search input ("Search by course title...") + Status dropdown ("All Courses" / "Needs Attention" / "All Clear") visible | ✅ |
+| 7 | Verify summary cards row | 4 cards: "Pending Exams" (amber-600), "Open Questions" (amber-600), "Open Issues" (amber-600), "Stale Modules" (rose-600) | ✅ |
+| 8 | Verify table headers | 8 columns: (chevron), Course, Permissions, Learners, Exams, Questions, Issues, Staleness | ✅ |
+| 9 | Verify at least one data row | Row with chevron icon, course title, permission badges, enrolled count, action item counts, staleness badge | ✅ |
+| 10 | Verify PA sees ALL courses | Total count matches the number of courses in the system (PA has no RLS restriction on courses) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -205,9 +205,9 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the per-course counts displayed in the table (enrolled learners, pending exams, pending questions, open issues, stale modules) are accurate by cross-referencing with actual database values. This is the most important test — if counts are wrong, the entire dashboard is misleading.
 
@@ -221,17 +221,17 @@ SELECT COUNT(*) FROM courses;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Run the per-course SQL verification query (from Preconditions section) | Get expected counts per course | ☐ |
-| 2 | Navigate to `/teaching/courses` as PA | Dashboard loads with all courses | ☐ |
-| 3 | Pick a course with pending exams | Exams column shows the count matching `pending_exams` from SQL | ☐ |
-| 4 | Verify enrolled learner count | Learners column shows `enrolled_count` matching SQL (tabular-nums) | ☐ |
-| 5 | Verify pending questions count | Questions column shows count matching `pending_questions` from SQL | ☐ |
-| 6 | Verify open issues count | Issues column shows count matching `open_issues` from SQL | ☐ |
-| 7 | Verify staleness badge | If `stale_modules > 0`: warning badge "N stale" (with AlertTriangle icon). If `total_modules > 0 && stale_modules == 0`: success badge "All fresh" (with CheckCircle2 icon). If `total_modules == 0`: neutral badge "No modules" | ☐ |
-| 8 | Verify counts > 0 are highlighted | Non-zero counts appear in `text-amber-600 font-semibold`; zero counts in plain `text-slate-600` | ☐ |
-| 9 | Find a course where canGrade is false (if any) | Exams column shows em-dash "—" instead of a count | ☐ |
-| 10 | Verify sort order | Courses with highest `totalActionItems` appear first; within same count, alphabetical | ☐ |
-| 11 | Pick a course with zero action items | All counts are 0 or "—", staleness shows "All fresh" or "No modules" | ☐ |
+| 1 | Run the per-course SQL verification query (from Preconditions section) | Get expected counts per course | ✅ |
+| 2 | Navigate to `/teaching/courses` as PA | Dashboard loads with all courses | ✅ |
+| 3 | Pick a course with pending exams | Exams column shows the count matching `pending_exams` from SQL | ✅ |
+| 4 | Verify enrolled learner count | Learners column shows `enrolled_count` matching SQL (tabular-nums) | ✅ |
+| 5 | Verify pending questions count | Questions column shows count matching `pending_questions` from SQL | ✅ |
+| 6 | Verify open issues count | Issues column shows count matching `open_issues` from SQL | ✅ |
+| 7 | Verify staleness badge | If `stale_modules > 0`: warning badge "N stale" (with AlertTriangle icon). If `total_modules > 0 && stale_modules == 0`: success badge "All fresh" (with CheckCircle2 icon). If `total_modules == 0`: neutral badge "No modules" | ✅ |
+| 8 | Verify counts > 0 are highlighted | Non-zero counts appear in `text-amber-600 font-semibold`; zero counts in plain `text-slate-600` | ✅ |
+| 9 | Find a course where canGrade is false (if any) | Exams column shows em-dash "—" instead of a count | ✅ |
+| 10 | Verify sort order | Courses with highest `totalActionItems` appear first; within same count, alphabetical | ✅ |
+| 11 | Pick a course with zero action items | All counts are 0 or "—", staleness shows "All fresh" or "No modules" | ✅ |
 
 ### SQL Verification
 ```sql
@@ -266,9 +266,9 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the 4 summary cards display correct aggregate counts (summed across all filtered courses) and update reactively when filters are applied.
 
@@ -278,14 +278,14 @@ ORDER BY c.title;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/courses` as PA | Dashboard loads with all courses | ☐ |
-| 2 | Verify "Pending Exams" card | Sum of `pendingExams` across all courses (amber-600 color) | ☐ |
-| 3 | Verify "Open Questions" card | Sum of `pendingQuestions` across all courses (amber-600 color) | ☐ |
-| 4 | Verify "Open Issues" card | Sum of `openIssues` across all courses (amber-600 color) | ☐ |
-| 5 | Verify "Stale Modules" card | Sum of `staleModules` across all courses (rose-600 color) | ☐ |
-| 6 | Select "Needs Attention" from status dropdown | Cards update: all counts now sum only across courses with `totalActionItems > 0` | ☐ |
-| 7 | Clear filter, type a search term matching 1 course | All 4 cards update to reflect just the 1 filtered course's counts | ☐ |
-| 8 | Clear filter | All cards return to original (unfiltered) values | ☐ |
+| 1 | Navigate to `/teaching/courses` as PA | Dashboard loads with all courses | ✅ |
+| 2 | Verify "Pending Exams" card | Sum of `pendingExams` across all courses (amber-600 color) | ✅ |
+| 3 | Verify "Open Questions" card | Sum of `pendingQuestions` across all courses (amber-600 color) | ✅ |
+| 4 | Verify "Open Issues" card | Sum of `openIssues` across all courses (amber-600 color) | ✅ |
+| 5 | Verify "Stale Modules" card | Sum of `staleModules` across all courses (rose-600 color) | ✅ |
+| 6 | Select "Needs Attention" from status dropdown | Cards update: all counts now sum only across courses with `totalActionItems > 0` | ✅ |
+| 7 | Clear filter, type a search term matching 1 course | All 4 cards update to reflect just the 1 filtered course's counts | ✅ |
+| 8 | Clear filter | All cards return to original (unfiltered) values | ✅ |
 
 ### Notes / Learnings
 - All cards derive from `filteredCourses()` — applying any filter recalculates all 4 cards
@@ -299,9 +299,9 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the search input filters courses by title (case-insensitive partial match).
 
@@ -314,15 +314,15 @@ ORDER BY c.title;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/courses` as PA | Full course list visible, no "Clear filters" link | ☐ |
-| 2 | Note the total course count from header badge | e.g., badge shows "4" | ☐ |
-| 3 | Type a partial course title in the search input (e.g., "LNG") | Table filters to rows where title contains "LNG" (case-insensitive) | ☐ |
-| 4 | Verify non-matching courses are hidden | Only matching courses visible; summary cards update | ☐ |
-| 5 | Verify "Clear filters" link appears | Underlined text link visible next to the status dropdown | ☐ |
-| 6 | Verify case insensitivity | Typing "lng" (lowercase) matches "LNG Fundamentals" | ☐ |
-| 7 | Clear the search input manually (backspace) | Full course list restored | ☐ |
-| 8 | Type a non-matching query (e.g., "xyzzzz") | Empty state: "No courses found." with GraduationCap icon | ☐ |
-| 9 | Click "Clear filters" | Search cleared, full list restored | ☐ |
+| 1 | Navigate to `/teaching/courses` as PA | Full course list visible, no "Clear filters" link | ✅ |
+| 2 | Note the total course count from header badge | e.g., badge shows "4" | ✅ |
+| 3 | Type a partial course title in the search input (e.g., "LNG") | Table filters to rows where title contains "LNG" (case-insensitive) | ✅ |
+| 4 | Verify non-matching courses are hidden | Only matching courses visible; summary cards update | ✅ |
+| 5 | Verify "Clear filters" link appears | Underlined text link visible next to the status dropdown | ✅ |
+| 6 | Verify case insensitivity | Typing "lng" (lowercase) matches "LNG Fundamentals" | ✅ |
+| 7 | Clear the search input manually (backspace) | Full course list restored | ✅ |
+| 8 | Type a non-matching query (e.g., "xyzzzz") | Empty state: "No courses found." with GraduationCap icon | ✅ |
+| 9 | Click "Clear filters" | Search cleared, full list restored | ✅ |
 
 ### Notes / Learnings
 - Search only matches course `title` (NOT description, module names, or other fields)
@@ -337,9 +337,9 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the status dropdown correctly filters courses into two action-oriented categories based on aggregate action item counts, and that combined search + status filtering works.
 
@@ -353,15 +353,15 @@ ORDER BY c.title;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/courses` as PA | All courses visible, dropdown shows "All Courses" | ☐ |
-| 2 | Select "Needs Attention" from status dropdown | Only courses with `totalActionItems > 0` visible (at least one non-zero count in exams/questions/issues/stale) | ☐ |
-| 3 | Verify summary cards update | All counts now reflect only the "needs attention" courses | ☐ |
-| 4 | Verify hidden courses are gone | Courses with all zeros are not in the table | ☐ |
-| 5 | Select "All Clear" from status dropdown | Only courses with `totalActionItems === 0` visible — all counts are 0 | ☐ |
-| 6 | Verify visible courses have zero action items | Every visible course has: pending exams = 0 (or "—"), questions = 0, issues = 0, staleness shows "All fresh" or "No modules" | ☐ |
-| 7 | Select "All Courses" | Full list restored | ☐ |
-| 8 | **Combined filter**: Select "Needs Attention" + type a search term | Both filters apply with AND logic — only needs-attention courses matching the search term | ☐ |
-| 9 | Click "Clear filters" | Search cleared, status reset to "All Courses", full list restored | ☐ |
+| 1 | Navigate to `/teaching/courses` as PA | All courses visible, dropdown shows "All Courses" | ✅ |
+| 2 | Select "Needs Attention" from status dropdown | Only courses with `totalActionItems > 0` visible (at least one non-zero count in exams/questions/issues/stale) | ✅ |
+| 3 | Verify summary cards update | All counts now reflect only the "needs attention" courses | ✅ |
+| 4 | Verify hidden courses are gone | Courses with all zeros are not in the table | ✅ |
+| 5 | Select "All Clear" from status dropdown | Only courses with `totalActionItems === 0` visible — all counts are 0 | ✅ |
+| 6 | Verify visible courses have zero action items | Every visible course has: pending exams = 0 (or "—"), questions = 0, issues = 0, staleness shows "All fresh" or "No modules" | ✅ |
+| 7 | Select "All Courses" | Full list restored | ✅ |
+| 8 | **Combined filter**: Select "Needs Attention" + type a search term | Both filters apply with AND logic — only needs-attention courses matching the search term | ✅ |
+| 9 | Click "Clear filters" | Search cleared, status reset to "All Courses", full list restored | ✅ |
 
 ### Notes / Learnings
 - `totalActionItems = pendingExams + pendingQuestions + openIssues + staleModules`
@@ -378,9 +378,9 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that permission badges (Edit, Grade, Read) in the Permissions column correctly reflect the user's JWT claims for each course. This is critical for lecturers who need to understand their access level per course.
 
@@ -394,25 +394,25 @@ ORDER BY c.title;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as PA (`et@calypso-commodities.com`) | Teaching Overview loads | ☐ |
-| 2 | Check Permissions column for all courses | PA sees "Edit" (teal) + "Grade" (blue) badges on every course — PA has full access | ☐ |
+| 1 | Log in as PA (`et@calypso-commodities.com`) | Teaching Overview loads | ✅ |
+| 2 | Check Permissions column for all courses | PA sees "Edit" (teal) + "Grade" (blue) badges on every course — PA has full access | ✅ |
 
 ### Steps (Lecturer with can_edit + can_grade)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 3 | Log in as `lecturer-edit@calypso-commodities.com` | Teaching Overview loads with assigned courses | ☐ |
-| 4 | Find an assigned course with `can_edit = true` | Permissions column shows "Edit" (teal badge-primary) | ☐ |
-| 5 | Find an assigned course with `can_grade = true` | Permissions column shows "Grade" (blue badge-info) | ☐ |
-| 6 | If course has both | Both "Edit" and "Grade" badges visible side by side | ☐ |
+| 3 | Log in as `lecturer-edit@calypso-commodities.com` | Teaching Overview loads with assigned courses | ✅ |
+| 4 | Find an assigned course with `can_edit = true` | Permissions column shows "Edit" (teal badge-primary) | ✅ |
+| 5 | Find an assigned course with `can_grade = true` | Permissions column shows "Grade" (blue badge-info) | ✅ |
+| 6 | If course has both | Both "Edit" and "Grade" badges visible side by side | ✅ |
 
 ### Steps (Lecturer with read-only)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 7 | Log in as `lecturer-view@calypso-commodities.com` | Teaching Overview loads with assigned courses | ☐ |
-| 8 | Check Permissions column | Shows "Read" (slate badge-neutral) — no "Edit" or "Grade" badge | ☐ |
-| 9 | Verify Exams column shows "—" | Read-only lecturer has no grading access, so exams column shows em-dash | ☐ |
+| 7 | Log in as `lecturer-view@calypso-commodities.com` | Teaching Overview loads with assigned courses | ✅ |
+| 8 | Check Permissions column | Shows "Read" (slate badge-neutral) — no "Edit" or "Grade" badge | ✅ |
+| 9 | Verify Exams column shows "—" | Read-only lecturer has no grading access, so exams column shows em-dash | ✅ |
 
 ### SQL Verification
 ```sql
@@ -438,9 +438,9 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking a course row expands it to show a detail panel with quick-action links. The expanded row shows course info on the left and contextual navigation links on the right. Only one course can be expanded at a time.
 
@@ -454,18 +454,18 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/courses` as PA | Courses visible, all rows show right-pointing chevron (ChevronRight) | ☐ |
-| 2 | Click a course row that has pending items | Row expands: chevron changes to down (ChevronDown), detail panel appears below the row | ☐ |
-| 3 | Verify left column of expanded row | Course title (text-lg font-semibold), enrolled learner count with Users icon, permission explanation text | ☐ |
-| 4 | Verify right column heading | "Quick Actions" section label (uppercase, slate-500) | ☐ |
-| 5 | Verify "pending exams" link (if canGrade) | Shows "N pending exams" with ClipboardCheck icon, or "Exam grading" if 0 pending | ☐ |
-| 6 | Verify "unanswered questions" link | Shows "N unanswered questions" with MessageSquare icon, or "Questions board" if 0 pending | ☐ |
-| 7 | Verify "open issues" link | Shows "N open issues" with Flag icon, or "Issue management" if 0 open | ☐ |
-| 8 | Verify "stale modules" link (if canEdit) | Shows "N stale modules" with Clock icon, or "Content staleness" if 0 stale | ☐ |
-| 9 | Verify "View learner progress" link | Always present with BarChart3 icon | ☐ |
-| 10 | Verify "Edit course" link (if canEdit) | Present with Pencil icon, links to `/courses/{id}/edit` | ☐ |
-| 11 | Click the same course row again | Row collapses: chevron returns to right, detail panel hidden | ☐ |
-| 12 | Click Course A to expand, then click Course B | Course A collapses AND Course B expands — only one expanded at a time | ☐ |
+| 1 | Navigate to `/teaching/courses` as PA | Courses visible, all rows show right-pointing chevron (ChevronRight) | ✅ |
+| 2 | Click a course row that has pending items | Row expands: chevron changes to down (ChevronDown), detail panel appears below the row | ✅ |
+| 3 | Verify left column of expanded row | Course title (text-lg font-semibold), enrolled learner count with Users icon, permission explanation text | ✅ |
+| 4 | Verify right column heading | "Quick Actions" section label (uppercase, slate-500) | ✅ |
+| 5 | Verify "pending exams" link (if canGrade) | Shows "N pending exams" with ClipboardCheck icon, or "Exam grading" if 0 pending | ✅ |
+| 6 | Verify "unanswered questions" link | Shows "N unanswered questions" with MessageSquare icon, or "Questions board" if 0 pending | ✅ |
+| 7 | Verify "open issues" link | Shows "N open issues" with Flag icon, or "Issue management" if 0 open | ✅ |
+| 8 | Verify "stale modules" link (if canEdit) | Shows "N stale modules" with Clock icon, or "Content staleness" if 0 stale | ✅ |
+| 9 | Verify "View learner progress" link | Always present with BarChart3 icon | ✅ |
+| 10 | Verify "Edit course" link (if canEdit) | Present with Pencil icon, links to `/courses/{id}/edit` | ✅ |
+| 11 | Click the same course row again | Row collapses: chevron returns to right, detail panel hidden | ✅ |
+| 12 | Click Course A to expand, then click Course B | Course A collapses AND Course B expands — only one expanded at a time | ✅ |
 
 ### Notes / Learnings
 - Only one course can be expanded at a time (single `expandedCourseId` signal)
@@ -483,9 +483,9 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking action links in the expanded row navigates to the corresponding board page AND pre-selects the course in the course filter dropdown. This is the critical UX improvement — without pre-filtering, users land on unfiltered board pages and must manually find the course.
 
@@ -499,35 +499,35 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/teaching/courses` as PA | Dashboard loads | ☐ |
-| 2 | Expand a course with pending questions | "N unanswered questions" link visible | ☐ |
-| 3 | Click "N unanswered questions" link | Navigates to `/teaching/questions?courseId={uuid}` | ☐ |
-| 4 | Verify Questions Board page loads | "Questions Board" heading visible | ☐ |
-| 5 | Verify course dropdown is pre-selected | The course filter dropdown shows the course name (NOT "All Courses") | ☐ |
-| 6 | Verify table is filtered | Only questions for the selected course are visible | ☐ |
-| 7 | Clear the course filter | All questions across all courses appear | ☐ |
+| 1 | Navigate to `/teaching/courses` as PA | Dashboard loads | ✅ |
+| 2 | Expand a course with pending questions | "N unanswered questions" link visible | ✅ |
+| 3 | Click "N unanswered questions" link | Navigates to `/teaching/questions?courseId={uuid}` | ✅ |
+| 4 | Verify Questions Board page loads | "Questions Board" heading visible | ✅ |
+| 5 | Verify course dropdown is pre-selected | The course filter dropdown shows the course name (NOT "All Courses") | ✅ |
+| 6 | Verify table is filtered | Only questions for the selected course are visible | ✅ |
+| 7 | Clear the course filter | All questions across all courses appear | ✅ |
 
 ### Steps (Issue Management)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 8 | Navigate back to `/teaching/courses` | Dashboard reloads | ☐ |
-| 9 | Expand a course with open issues | "N open issues" link visible | ☐ |
-| 10 | Click "N open issues" link | Navigates to `/teaching/issues?courseId={uuid}` | ☐ |
-| 11 | Verify Issue Management page loads | "Issue Management" heading visible | ☐ |
-| 12 | Verify course dropdown is pre-selected | The course filter dropdown shows the course name (NOT "All Courses") | ☐ |
-| 13 | Verify table is filtered | Only issues for the selected course are visible | ☐ |
+| 8 | Navigate back to `/teaching/courses` | Dashboard reloads | ✅ |
+| 9 | Expand a course with open issues | "N open issues" link visible | ✅ |
+| 10 | Click "N open issues" link | Navigates to `/teaching/issues?courseId={uuid}` | ✅ |
+| 11 | Verify Issue Management page loads | "Issue Management" heading visible | ✅ |
+| 12 | Verify course dropdown is pre-selected | The course filter dropdown shows the course name (NOT "All Courses") | ✅ |
+| 13 | Verify table is filtered | Only issues for the selected course are visible | ✅ |
 
 ### Steps (Exam Grading)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 14 | Navigate back to `/teaching/courses` | Dashboard reloads | ☐ |
-| 15 | Expand a course with pending exams (must have canGrade) | "N pending exams" link visible | ☐ |
-| 16 | Click "N pending exams" link | Navigates to `/teaching/grading?courseId={uuid}` | ☐ |
-| 17 | Verify Exam Grading page loads | "Exam Grading" heading visible | ☐ |
-| 18 | Verify course dropdown is pre-selected | The course filter dropdown shows the course name (NOT "All Courses") | ☐ |
-| 19 | Verify table is filtered | Only submissions for the selected course are visible | ☐ |
+| 14 | Navigate back to `/teaching/courses` | Dashboard reloads | ✅ |
+| 15 | Expand a course with pending exams (must have canGrade) | "N pending exams" link visible | ✅ |
+| 16 | Click "N pending exams" link | Navigates to `/teaching/grading?courseId={uuid}` | ✅ |
+| 17 | Verify Exam Grading page loads | "Exam Grading" heading visible | ✅ |
+| 18 | Verify course dropdown is pre-selected | The course filter dropdown shows the course name (NOT "All Courses") | ✅ |
+| 19 | Verify table is filtered | Only submissions for the selected course are visible | ✅ |
 
 ### Notes / Learnings
 - The `courseId` query param is a UUID string passed via Angular `[queryParams]`
@@ -543,9 +543,9 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that RLS correctly scopes the Teaching Overview for lecturers — they should only see courses they're assigned to via `lecturer_course_assignments`, not all courses. Counts for visible courses should be complete and accurate.
 
@@ -559,17 +559,17 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Verify sidebar | "Teaching" section visible with "Teaching Overview" item (GraduationCap icon) | ☐ |
-| 3 | Click "Teaching Overview" | Navigates to `/teaching/courses` | ☐ |
-| 4 | Verify page loads with data | "Teaching Overview" header visible, table has rows | ☐ |
-| 5 | Note the header badge count | e.g., badge shows "2" (lecturer's assigned courses only) | ☐ |
-| 6 | Verify count is LESS than PA's total | Lecturer sees fewer courses than PA (from TO-01 step 10) | ☐ |
-| 7 | Verify each visible course matches assignment | All visible courses are in the lecturer's `lecturer_course_assignments` | ☐ |
-| 8 | Verify per-course counts are correct | Enrolled, exams, questions, issues, stale counts match DB for the lecturer's assigned courses | ☐ |
-| 9 | Verify summary cards reflect scoped data | All 4 stat cards sum counts only across the lecturer's assigned courses | ☐ |
-| 10 | Expand a course | Quick-action links are correct; "Edit course" and "Stale modules" only appear if `can_edit` for this course | ☐ |
-| 11 | Verify exam column for non-gradable courses | If lecturer has courses where `can_grade = false`, exams column shows "—" | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Verify sidebar | "Teaching" section visible with "Teaching Overview" item (GraduationCap icon) | ✅ |
+| 3 | Click "Teaching Overview" | Navigates to `/teaching/courses` | ✅ |
+| 4 | Verify page loads with data | "Teaching Overview" header visible, table has rows | ✅ |
+| 5 | Note the header badge count | e.g., badge shows "2" (lecturer's assigned courses only) | ✅ |
+| 6 | Verify count is LESS than PA's total | Lecturer sees fewer courses than PA (from TO-01 step 10) | ✅ |
+| 7 | Verify each visible course matches assignment | All visible courses are in the lecturer's `lecturer_course_assignments` | ✅ |
+| 8 | Verify per-course counts are correct | Enrolled, exams, questions, issues, stale counts match DB for the lecturer's assigned courses | ✅ |
+| 9 | Verify summary cards reflect scoped data | All 4 stat cards sum counts only across the lecturer's assigned courses | ✅ |
+| 10 | Expand a course | Quick-action links are correct; "Edit course" and "Stale modules" only appear if `can_edit` for this course | ✅ |
+| 11 | Verify exam column for non-gradable courses | If lecturer has courses where `can_grade = false`, exams column shows "—" | ✅ |
 
 ### SQL Verification
 ```sql
@@ -596,9 +596,9 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that only lecturers and platform admins can access `/teaching/courses`. Learners, Tenant Admins, and CSMs should be blocked by the route guard and should not see the sidebar item.
 
@@ -608,42 +608,42 @@ SELECT COUNT(*) FROM courses;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as `learner@calypso-commodities.com` | Successful login | ☐ |
-| 2 | Check sidebar | "Teaching" section NOT visible | ☐ |
-| 3 | Navigate directly to `/teaching/courses` in URL bar | Redirected away (to `/dashboard` or similar) — NOT the Teaching Overview | ☐ |
-| 4 | Verify no "Teaching Overview" heading visible | Page content is NOT the Teaching Overview | ☐ |
+| 1 | Log in as `learner@calypso-commodities.com` | Successful login | ✅ |
+| 2 | Check sidebar | "Teaching" section NOT visible | ✅ |
+| 3 | Navigate directly to `/teaching/courses` in URL bar | Redirected away (to `/dashboard` or similar) — NOT the Teaching Overview | ✅ |
+| 4 | Verify no "Teaching Overview" heading visible | Page content is NOT the Teaching Overview | ✅ |
 
 ### Steps (Tenant Admin — BLOCKED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 5 | Log in as `admin@calypsoclient.com` | Successful login | ☐ |
-| 6 | Check sidebar | "Teaching" section NOT visible (TA is not in `['lecturer', 'platform_admin']`) | ☐ |
-| 7 | Navigate directly to `/teaching/courses` | Redirected away | ☐ |
+| 5 | Log in as `admin@calypsoclient.com` | Successful login | ✅ |
+| 6 | Check sidebar | "Teaching" section NOT visible (TA is not in `['lecturer', 'platform_admin']`) | ✅ |
+| 7 | Navigate directly to `/teaching/courses` | Redirected away | ✅ |
 
 ### Steps (CSM — BLOCKED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 8 | Log in as `csm@calypso-commodities.com` | Successful login | ☐ |
-| 9 | Check sidebar | "Teaching" section NOT visible (CSM is not in `['lecturer', 'platform_admin']`) | ☐ |
-| 10 | Navigate directly to `/teaching/courses` | Redirected away | ☐ |
+| 8 | Log in as `csm@calypso-commodities.com` | Successful login | ✅ |
+| 9 | Check sidebar | "Teaching" section NOT visible (CSM is not in `['lecturer', 'platform_admin']`) | ✅ |
+| 10 | Navigate directly to `/teaching/courses` | Redirected away | ✅ |
 
 ### Steps (Platform Admin — ALLOWED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 11 | Log in as `et@calypso-commodities.com` (Platform Admin) | Successful login | ☐ |
-| 12 | Check sidebar | "Teaching" section visible with "Teaching Overview" (GraduationCap icon) | ☐ |
-| 13 | Navigate to `/teaching/courses` | Page loads successfully, all courses visible | ☐ |
+| 11 | Log in as `et@calypso-commodities.com` (Platform Admin) | Successful login | ✅ |
+| 12 | Check sidebar | "Teaching" section visible with "Teaching Overview" (GraduationCap icon) | ✅ |
+| 13 | Navigate to `/teaching/courses` | Page loads successfully, all courses visible | ✅ |
 
 ### Steps (Lecturer — ALLOWED)
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 14 | Log in as `lecturer-edit@calypso-commodities.com` | Successful login | ☐ |
-| 15 | Check sidebar | "Teaching" section visible with "Teaching Overview" | ☐ |
-| 16 | Navigate to `/teaching/courses` | Page loads, only assigned courses visible | ☐ |
+| 14 | Log in as `lecturer-edit@calypso-commodities.com` | Successful login | ✅ |
+| 15 | Check sidebar | "Teaching" section visible with "Teaching Overview" | ✅ |
+| 16 | Navigate to `/teaching/courses` | Page loads, only assigned courses visible | ✅ |
 
 ### Notes / Learnings
 - Route guard checks JWT claims: `is_platform_admin` or `lecturer_course_ids` (non-empty)

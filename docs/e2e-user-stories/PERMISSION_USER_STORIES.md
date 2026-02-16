@@ -88,19 +88,19 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PM-01 | Lecturer (can_edit) Full Content CRUD | Lecturer (can_edit) | ✅ Passed | 2026-02-15 |
-| PM-02 | Lecturer Boundary — Assigned vs Unassigned | Lecturer (can_edit) | ✅ Passed | 2026-02-15 |
-| PM-03 | Learner Cannot Mutate Content via Direct API | Learner (Calypso) | ✅ Passed | 2026-02-15 |
-| PM-04 | Tenant Admin Cannot Write Content via Direct API | Tenant Admin | ✅ Passed | 2026-02-15 |
-| PM-05 | CSM Cannot Write Content via Direct API | CSM | ✅ Passed | 2026-02-15 |
-| PM-06 | Read-Only Lecturer Cannot Write via Direct API | Lecturer (read-only) | ✅ Passed | 2026-02-15 |
-| PM-07 | Lecturer (can_edit) Cannot Delete Course or Manage Tenants | Lecturer (can_edit) | ✅ Passed | 2026-02-15 |
-| PM-08 | Read-Only Lecturer URL Navigation Redirect | Lecturer (read-only) | ✅ Passed | 2026-02-15 |
-| PM-09 | Learner Route Guard Denial — All Write Routes | Learner (both tenants) | ✅ Passed | 2026-02-15 |
-| PM-10 | Cross-Tenant Content Visibility Enforcement | Learner (Calypso Client) | ✅ Passed | 2026-02-15 |
-| PM-11 | Cross-Tenant User Data Isolation | Learner (Calypso) | ✅ Passed | 2026-02-15 |
-| PM-12 | Tenant Admin Route Guard Denial | Tenant Admin | ✅ Passed | 2026-02-15 |
-| PM-13 | Full Permission Denial Matrix — All 4 Non-Write Roles | Learner / TA / CSM / Lecturer (read-only) | ✅ Passed | 2026-02-15 |
+| PM-01 | Lecturer (can_edit) Full Content CRUD | Lecturer (can_edit) | ✅ Passed | 2026-02-16 |
+| PM-02 | Lecturer Boundary — Assigned vs Unassigned | Lecturer (can_edit) | ✅ Passed | 2026-02-16 |
+| PM-03 | Learner Cannot Mutate Content via Direct API | Learner (Calypso) | ✅ Passed | 2026-02-16 |
+| PM-04 | Tenant Admin Cannot Write Content via Direct API | Tenant Admin | ✅ Passed | 2026-02-16 |
+| PM-05 | CSM Cannot Write Content via Direct API | CSM | ✅ Passed | 2026-02-16 |
+| PM-06 | Read-Only Lecturer Cannot Write via Direct API | Lecturer (read-only) | ✅ Passed | 2026-02-16 |
+| PM-07 | Lecturer (can_edit) Cannot Delete Course or Manage Tenants | Lecturer (can_edit) | ✅ Passed | 2026-02-16 |
+| PM-08 | Read-Only Lecturer URL Navigation Redirect | Lecturer (read-only) | ✅ Passed | 2026-02-16 |
+| PM-09 | Learner Route Guard Denial — All Write Routes | Learner (both tenants) | ✅ Passed | 2026-02-16 |
+| PM-10 | Cross-Tenant Content Visibility Enforcement | Learner (Calypso Client) | ✅ Passed | 2026-02-16 |
+| PM-11 | Cross-Tenant User Data Isolation | Learner (Calypso) | ✅ Passed | 2026-02-16 |
+| PM-12 | Tenant Admin Route Guard Denial | Tenant Admin | ✅ Passed | 2026-02-16 |
+| PM-13 | Full Permission Denial Matrix — All 4 Non-Write Roles | Learner / TA / CSM / Lecturer (read-only) | ✅ Passed | 2026-02-16 |
 
 ---
 
@@ -108,9 +108,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Verified during CW-04. Lecturer (can_edit) successfully created, edited, reordered, and deleted lectures and modules on assigned course. All write UI visible. No course delete or tenant assignment sections shown.
 
@@ -127,30 +127,30 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `lecturer-edit@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ☐ |
-| 2 | Navigate to `/courses` | Course list page loads, assigned course visible in grid | ☐ |
-| 3 | Click the assigned course card | Navigated to `/courses/:courseId`, course detail page loads | ☐ |
-| 4 | Verify "Edit" button IS visible in course header (secondary style, Pencil icon) | Button present — `canEdit()` returns true for this course | ☐ |
-| 5 | Verify "Add Lecture" button IS visible (dashed border, Plus icon) | Button present at bottom of lecture list | ☐ |
-| 6 | Verify existing lectures show pencil, trash, and chevron (reorder) icons in accordion headers | All action icons visible on each lecture | ☐ |
-| 7 | Click "Add Lecture" | Inline form appears: "New Lecture" heading, Title input, Description textarea, "Add Lecture" and "Cancel" buttons | ☐ |
-| 8 | Enter Title: "PM-01 Test Lecture", click "Add Lecture" | Form disappears, new lecture appears in the accordion list | ☐ |
-| 9 | Click pencil icon on "PM-01 Test Lecture" | Inline edit form appears, pre-populated with current title and description | ☐ |
-| 10 | Change Title to "PM-01 Test Lecture (Edited)", click "Save" | Form disappears, updated title shown in accordion | ☐ |
-| 11 | Expand the "PM-01 Test Lecture (Edited)" accordion | Module list visible (empty), "Add Module" dashed button visible | ☐ |
-| 12 | Click "Add Module" | Navigated to `/courses/:courseId/modules/new?lectureId=<lectureId>`, type selector shown | ☐ |
-| 13 | Select "Video" type card | VideoFormComponent appears with Title, Description, Video URL, Thumbnail URL, Duration fields | ☐ |
-| 14 | Enter Title: "PM-01 Video", Video URL: "https://cdn.example.com/pm01.mp4", click "Create Module" | Module created (two-step: INSERT module + INSERT module_videos), redirected to course detail | ☐ |
-| 15 | Verify "PM-01 Video" appears in the lecture accordion with Video icon | Module visible in the expanded lecture | ☐ |
-| 16 | Click pencil icon on "PM-01 Video" module | Navigated to `/courses/:courseId/modules/:moduleId/edit`, edit form loads pre-populated | ☐ |
-| 17 | Append " (Updated)" to the title, click "Save Changes" | Module updated, redirected to course detail, updated title shown | ☐ |
-| 18 | Verify NO "Delete Course" section anywhere on the course detail or edit pages | Section absent — course deletion is Platform Admin only | ☐ |
-| 19 | Click "Edit" button on course header to navigate to `/courses/:courseId/edit` | Edit page loads with course form | ☐ |
-| 20 | Verify NO "Tenant Assignment" section below the form | Section absent — tenant management is Platform Admin only | ☐ |
-| 21 | Navigate back to course detail, click trash icon on "PM-01 Video" module | Inline confirmation: "Delete this module?" with "Yes, Delete" and "Cancel" | ☐ |
-| 22 | Click "Yes, Delete" | Module deleted, removed from lecture module list | ☐ |
-| 23 | Click trash icon on "PM-01 Test Lecture (Edited)" | Inline confirmation: "Are you sure? This will delete the lecture and all its modules." | ☐ |
-| 24 | Click "Yes, Delete" | Lecture deleted, removed from accordion list | ☐ |
+| 1 | Log in as `lecturer-edit@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ✅ |
+| 2 | Navigate to `/courses` | Course list page loads, assigned course visible in grid | ✅ |
+| 3 | Click the assigned course card | Navigated to `/courses/:courseId`, course detail page loads | ✅ |
+| 4 | Verify "Edit" button IS visible in course header (secondary style, Pencil icon) | Button present — `canEdit()` returns true for this course | ✅ |
+| 5 | Verify "Add Lecture" button IS visible (dashed border, Plus icon) | Button present at bottom of lecture list | ✅ |
+| 6 | Verify existing lectures show pencil, trash, and chevron (reorder) icons in accordion headers | All action icons visible on each lecture | ✅ |
+| 7 | Click "Add Lecture" | Inline form appears: "New Lecture" heading, Title input, Description textarea, "Add Lecture" and "Cancel" buttons | ✅ |
+| 8 | Enter Title: "PM-01 Test Lecture", click "Add Lecture" | Form disappears, new lecture appears in the accordion list | ✅ |
+| 9 | Click pencil icon on "PM-01 Test Lecture" | Inline edit form appears, pre-populated with current title and description | ✅ |
+| 10 | Change Title to "PM-01 Test Lecture (Edited)", click "Save" | Form disappears, updated title shown in accordion | ✅ |
+| 11 | Expand the "PM-01 Test Lecture (Edited)" accordion | Module list visible (empty), "Add Module" dashed button visible | ✅ |
+| 12 | Click "Add Module" | Navigated to `/courses/:courseId/modules/new?lectureId=<lectureId>`, type selector shown | ✅ |
+| 13 | Select "Video" type card | VideoFormComponent appears with Title, Description, Video URL, Thumbnail URL, Duration fields | ✅ |
+| 14 | Enter Title: "PM-01 Video", Video URL: "https://cdn.example.com/pm01.mp4", click "Create Module" | Module created (two-step: INSERT module + INSERT module_videos), redirected to course detail | ✅ |
+| 15 | Verify "PM-01 Video" appears in the lecture accordion with Video icon | Module visible in the expanded lecture | ✅ |
+| 16 | Click pencil icon on "PM-01 Video" module | Navigated to `/courses/:courseId/modules/:moduleId/edit`, edit form loads pre-populated | ✅ |
+| 17 | Append " (Updated)" to the title, click "Save Changes" | Module updated, redirected to course detail, updated title shown | ✅ |
+| 18 | Verify NO "Delete Course" section anywhere on the course detail or edit pages | Section absent — course deletion is Platform Admin only | ✅ |
+| 19 | Click "Edit" button on course header to navigate to `/courses/:courseId/edit` | Edit page loads with course form | ✅ |
+| 20 | Verify NO "Tenant Assignment" section below the form | Section absent — tenant management is Platform Admin only | ✅ |
+| 21 | Navigate back to course detail, click trash icon on "PM-01 Video" module | Inline confirmation: "Delete this module?" with "Yes, Delete" and "Cancel" | ✅ |
+| 22 | Click "Yes, Delete" | Module deleted, removed from lecture module list | ✅ |
+| 23 | Click trash icon on "PM-01 Test Lecture (Edited)" | Inline confirmation: "Are you sure? This will delete the lecture and all its modules." | ✅ |
+| 24 | Click "Yes, Delete" | Lecture deleted, removed from accordion list | ✅ |
 
 **Notes/Learnings**:
 - This is the HAPPY PATH test for lecturer content CRUD — it must pass before testing denial scenarios
@@ -166,9 +166,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Verified during CR-13. Assigned course (CW01): full write UI (Edit, Add Lecture, Add Module, pencil/trash/reorder icons). Non-assigned course (E2E): read-only, zero write UI. Direct URL `/courses/:unassignedId/edit` redirects to `/courses`.
 
@@ -187,18 +187,18 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/courses/:courseAId` (assigned course) | Course detail loads | ☐ |
-| 2 | Verify "Edit" button IS visible in header | Pencil button present — `canEdit()` true for Course A | ☐ |
-| 3 | Verify "Add Lecture" button IS visible | Dashed button present | ☐ |
-| 4 | Verify pencil/trash/reorder icons on lectures | All action icons visible | ☐ |
-| 5 | Verify "Add Module" button visible inside expanded lecture | Dashed button present | ☐ |
-| 6 | Verify pencil/trash/reorder icons on modules | All module action icons visible | ☐ |
-| 7 | Navigate to `/courses/:courseBId` (unassigned course) | Course detail loads (read access via tenant_courses) | ☐ |
-| 8 | Verify NO "Edit" button in header | Pencil button absent — `canEdit()` false for Course B | ☐ |
-| 9 | Verify NO "Add Lecture" button | Dashed button absent | ☐ |
-| 10 | Verify NO pencil/trash/reorder icons on lectures or modules | All action icons absent — read-only view | ☐ |
-| 11 | Navigate directly to `/courses/:courseBId/edit` | Brief load, then redirected to `/courses/:courseBId` — `ngOnInit` canEdit check fails, `router.navigate` fires | ☐ |
-| 12 | Navigate directly to `/courses/:courseBId/modules/new?lectureId=<id>` | Redirected to `/courses/:courseBId` — same canEdit check in ModuleFormPageComponent | ☐ |
+| 1 | Navigate to `/courses/:courseAId` (assigned course) | Course detail loads | ✅ |
+| 2 | Verify "Edit" button IS visible in header | Pencil button present — `canEdit()` true for Course A | ✅ |
+| 3 | Verify "Add Lecture" button IS visible | Dashed button present | ✅ |
+| 4 | Verify pencil/trash/reorder icons on lectures | All action icons visible | ✅ |
+| 5 | Verify "Add Module" button visible inside expanded lecture | Dashed button present | ✅ |
+| 6 | Verify pencil/trash/reorder icons on modules | All module action icons visible | ✅ |
+| 7 | Navigate to `/courses/:courseBId` (unassigned course) | Course detail loads (read access via tenant_courses) | ✅ |
+| 8 | Verify NO "Edit" button in header | Pencil button absent — `canEdit()` false for Course B | ✅ |
+| 9 | Verify NO "Add Lecture" button | Dashed button absent | ✅ |
+| 10 | Verify NO pencil/trash/reorder icons on lectures or modules | All action icons absent — read-only view | ✅ |
+| 11 | Navigate directly to `/courses/:courseBId/edit` | Brief load, then redirected to `/courses/:courseBId` — `ngOnInit` canEdit check fails, `router.navigate` fires | ✅ |
+| 12 | Navigate directly to `/courses/:courseBId/modules/new?lectureId=<id>` | Redirected to `/courses/:courseBId` — same canEdit check in ModuleFormPageComponent | ✅ |
 
 **Notes/Learnings**:
 - The `canEdit` signal is computed per-course — the same user can have edit access on Course A but not Course B
@@ -213,9 +213,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — All 6 direct API mutations blocked:
 - Course INSERT: 403 RLS violation
@@ -240,16 +240,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ☐ |
-| 2 | Navigate to `/courses/:courseId` to confirm the course is readable | Course detail page loads with title, lectures, and modules visible | ☐ |
-| 3 | Open browser console (via Playwright `browser_evaluate`) and attempt: `supabase.from('courses').insert({ title: 'Hacked Course', enrollment_type: 'open' }).select()` | Error returned — RLS INSERT policy requires `is_platform_admin = true`; response contains error code or empty data with error | ☐ |
-| 4 | Attempt: `supabase.from('courses').update({ title: 'Hacked Title' }).eq('id', '<courseId>').select()` | Returns `{ data: [], count: 0 }` — RLS UPDATE policy filters out the row (learner is neither platform_admin nor lecturer with can_edit) | ☐ |
-| 5 | Attempt: `supabase.from('courses').delete().eq('id', '<courseId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE policy requires `is_platform_admin = true`; row filtered out | ☐ |
-| 6 | Attempt: `supabase.from('lectures').insert({ course_id: '<courseId>', title: 'Injected Lecture', sort_order: 999 }).select()` | Error returned — RLS INSERT policy requires platform_admin or lecturer with can_edit for this course | ☐ |
-| 7 | Attempt: `supabase.from('modules').delete().eq('id', '<moduleId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE policy filters out the row | ☐ |
-| 8 | Attempt: `supabase.from('lectures').update({ title: 'Tampered' }).eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — no matching rows after RLS filter | ☐ |
-| 9 | Reload the page (`/courses/:courseId`) | Course detail loads unchanged — original title, original lectures, original modules all intact | ☐ |
-| 10 | Verify course title is NOT "Hacked Title", no "Injected Lecture" exists, module count unchanged | All data verified unchanged — RLS successfully blocked every mutation | ☐ |
+| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ✅ |
+| 2 | Navigate to `/courses/:courseId` to confirm the course is readable | Course detail page loads with title, lectures, and modules visible | ✅ |
+| 3 | Open browser console (via Playwright `browser_evaluate`) and attempt: `supabase.from('courses').insert({ title: 'Hacked Course', enrollment_type: 'open' }).select()` | Error returned — RLS INSERT policy requires `is_platform_admin = true`; response contains error code or empty data with error | ✅ |
+| 4 | Attempt: `supabase.from('courses').update({ title: 'Hacked Title' }).eq('id', '<courseId>').select()` | Returns `{ data: [], count: 0 }` — RLS UPDATE policy filters out the row (learner is neither platform_admin nor lecturer with can_edit) | ✅ |
+| 5 | Attempt: `supabase.from('courses').delete().eq('id', '<courseId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE policy requires `is_platform_admin = true`; row filtered out | ✅ |
+| 6 | Attempt: `supabase.from('lectures').insert({ course_id: '<courseId>', title: 'Injected Lecture', sort_order: 999 }).select()` | Error returned — RLS INSERT policy requires platform_admin or lecturer with can_edit for this course | ✅ |
+| 7 | Attempt: `supabase.from('modules').delete().eq('id', '<moduleId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE policy filters out the row | ✅ |
+| 8 | Attempt: `supabase.from('lectures').update({ title: 'Tampered' }).eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — no matching rows after RLS filter | ✅ |
+| 9 | Reload the page (`/courses/:courseId`) | Course detail loads unchanged — original title, original lectures, original modules all intact | ✅ |
+| 10 | Verify course title is NOT "Hacked Title", no "Injected Lecture" exists, module count unchanged | All data verified unchanged — RLS successfully blocked every mutation | ✅ |
 
 **Notes/Learnings**:
 - Direct API tests require accessing the Supabase client from the browser console. The SupabaseService stores the client instance — it can be accessed via `ng.getComponent(document.querySelector('app-root')).__injector.get(SupabaseService)` or a global if exposed
@@ -265,9 +265,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — All 5 direct API mutations blocked:
 - Lecture INSERT: 403 RLS violation
@@ -290,14 +290,14 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `admin@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads, session established | ☐ |
-| 2 | Navigate to `/courses/:courseId` to confirm course is readable | Course detail loads — TA can read assigned courses | ☐ |
-| 3 | Open browser console and attempt: `supabase.from('lectures').insert({ course_id: '<courseId>', title: 'TA Injected', sort_order: 999 }).select()` | Error returned — RLS INSERT denies (TA is not platform_admin or lecturer) | ☐ |
-| 4 | Attempt: `supabase.from('modules').update({ title: 'TA Tampered' }).eq('id', '<moduleId>').select()` | Returns `{ data: [], count: 0 }` — 0 rows affected, RLS filters the row | ☐ |
-| 5 | Attempt: `supabase.from('lectures').delete().eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — RLS filters out the row | ☐ |
-| 6 | Attempt: `supabase.from('tenant_courses').insert({ tenant_id: '<tenantId>', course_id: '<unassignedCourseId>' }).select()` | Error returned — RLS INSERT on `tenant_courses` requires `is_platform_admin = true`; TA cannot self-assign courses to their own tenant | ☐ |
-| 7 | Attempt: `supabase.from('courses').insert({ title: 'TA New Course', enrollment_type: 'open' }).select()` | Error returned — RLS INSERT requires platform_admin | ☐ |
-| 8 | Reload the page, verify all data unchanged | Course detail loads with original data — no injected lectures, no tampered modules, no new courses | ☐ |
+| 1 | Log in as `admin@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads, session established | ✅ |
+| 2 | Navigate to `/courses/:courseId` to confirm course is readable | Course detail loads — TA can read assigned courses | ✅ |
+| 3 | Open browser console and attempt: `supabase.from('lectures').insert({ course_id: '<courseId>', title: 'TA Injected', sort_order: 999 }).select()` | Error returned — RLS INSERT denies (TA is not platform_admin or lecturer) | ✅ |
+| 4 | Attempt: `supabase.from('modules').update({ title: 'TA Tampered' }).eq('id', '<moduleId>').select()` | Returns `{ data: [], count: 0 }` — 0 rows affected, RLS filters the row | ✅ |
+| 5 | Attempt: `supabase.from('lectures').delete().eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — RLS filters out the row | ✅ |
+| 6 | Attempt: `supabase.from('tenant_courses').insert({ tenant_id: '<tenantId>', course_id: '<unassignedCourseId>' }).select()` | Error returned — RLS INSERT on `tenant_courses` requires `is_platform_admin = true`; TA cannot self-assign courses to their own tenant | ✅ |
+| 7 | Attempt: `supabase.from('courses').insert({ title: 'TA New Course', enrollment_type: 'open' }).select()` | Error returned — RLS INSERT requires platform_admin | ✅ |
+| 8 | Reload the page, verify all data unchanged | Course detail loads with original data — no injected lectures, no tampered modules, no new courses | ✅ |
 
 **Notes/Learnings**:
 - The `tenant_courses` self-assignment test (step 6) is CRITICAL — if a TA could add rows to `tenant_courses`, they could give their tenant access to courses that were never assigned to them, bypassing the content access boundary
@@ -311,9 +311,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — All 4 write mutations blocked, read intact:
 - Course INSERT: 403 RLS violation
@@ -334,14 +334,14 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `csm@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ☐ |
-| 2 | Navigate to `/courses/:courseId` to confirm CSM can read the course | Course detail loads — CSM has SELECT access via `courses_select_csm` policy | ☐ |
-| 3 | Open browser console and attempt: `supabase.from('courses').insert({ title: 'CSM Injected', enrollment_type: 'open' }).select()` | Error returned — RLS INSERT requires `is_platform_admin = true` | ☐ |
-| 4 | Attempt: `supabase.from('modules').update({ title: 'CSM Tampered' }).eq('id', '<moduleId>').select()` | Returns `{ data: [], count: 0 }` — RLS UPDATE filters the row (CSM has no UPDATE policy on modules) | ☐ |
-| 5 | Attempt: `supabase.from('lectures').delete().eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE filters the row | ☐ |
-| 6 | Attempt: `supabase.from('tenant_courses').insert({ tenant_id: '<clientTenantId>', course_id: '<someOtherCourseId>' }).select()` | Error returned — `tenant_courses` INSERT requires `is_platform_admin = true` | ☐ |
-| 7 | Reload the page, verify all data unchanged | Course detail loads with original data intact | ☐ |
-| 8 | Verify via console: `supabase.from('courses').select('id, title')` returns courses (confirming read still works) | Non-empty result — CSM read access is intact, only write was denied | ☐ |
+| 1 | Log in as `csm@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ✅ |
+| 2 | Navigate to `/courses/:courseId` to confirm CSM can read the course | Course detail loads — CSM has SELECT access via `courses_select_csm` policy | ✅ |
+| 3 | Open browser console and attempt: `supabase.from('courses').insert({ title: 'CSM Injected', enrollment_type: 'open' }).select()` | Error returned — RLS INSERT requires `is_platform_admin = true` | ✅ |
+| 4 | Attempt: `supabase.from('modules').update({ title: 'CSM Tampered' }).eq('id', '<moduleId>').select()` | Returns `{ data: [], count: 0 }` — RLS UPDATE filters the row (CSM has no UPDATE policy on modules) | ✅ |
+| 5 | Attempt: `supabase.from('lectures').delete().eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE filters the row | ✅ |
+| 6 | Attempt: `supabase.from('tenant_courses').insert({ tenant_id: '<clientTenantId>', course_id: '<someOtherCourseId>' }).select()` | Error returned — `tenant_courses` INSERT requires `is_platform_admin = true` | ✅ |
+| 7 | Reload the page, verify all data unchanged | Course detail loads with original data intact | ✅ |
+| 8 | Verify via console: `supabase.from('courses').select('id, title')` returns courses (confirming read still works) | Non-empty result — CSM read access is intact, only write was denied | ✅ |
 
 **Notes/Learnings**:
 - CSM has ELEVATED read access (cross-tenant via `csm_tenant_ids` in JWT) which makes accidental write policy leakage MORE RISKY — a misconfigured RLS policy using `csm_tenant_ids` for write operations would silently allow mutations
@@ -355,9 +355,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Most critical security test. All writes blocked despite having `lecturer_course_ids`:
 - Course UPDATE: 200, 0 rows (RLS checks `lecturer_can_edit_course_ids`, which is EMPTY)
@@ -380,14 +380,14 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `lecturer-view@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ☐ |
-| 2 | Navigate to `/courses/:courseId` to confirm read access works | Course detail loads — `lecturer_course_ids` grants SELECT access | ☐ |
-| 3 | Open browser console and attempt: `supabase.from('courses').update({ title: 'Read-Only Tampered' }).eq('id', '<courseId>').select()` | Returns `{ data: [], count: 0 }` — RLS UPDATE checks `lecturer_can_edit_course_ids` which is EMPTY for this user | ☐ |
-| 4 | Attempt: `supabase.from('lectures').insert({ course_id: '<courseId>', title: 'RO Injected', sort_order: 999 }).select()` | Error returned — RLS INSERT checks `lecturer_can_edit_course_ids`, not `lecturer_course_ids` | ☐ |
-| 5 | Attempt: `supabase.from('modules').insert({ lecture_id: '<lectureId>', course_id: '<courseId>', title: 'RO Module', module_type: 'markdown', sort_order: 999 }).select()` | Error returned — same `lecturer_can_edit_course_ids` check | ☐ |
-| 6 | Attempt: `supabase.from('module_markdown').update({ content: 'HACKED CONTENT' }).eq('module_id', '<markdownModuleId>').select()` | Returns `{ data: [], count: 0 }` — subtable RLS inherits from module policies via JOIN | ☐ |
-| 7 | Attempt: `supabase.from('lectures').delete().eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE checks `lecturer_can_edit_course_ids` | ☐ |
-| 8 | Reload the page, verify all content unchanged | Course detail shows original title, original lectures, original module content — nothing tampered | ☐ |
+| 1 | Log in as `lecturer-view@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads, session established | ✅ |
+| 2 | Navigate to `/courses/:courseId` to confirm read access works | Course detail loads — `lecturer_course_ids` grants SELECT access | ✅ |
+| 3 | Open browser console and attempt: `supabase.from('courses').update({ title: 'Read-Only Tampered' }).eq('id', '<courseId>').select()` | Returns `{ data: [], count: 0 }` — RLS UPDATE checks `lecturer_can_edit_course_ids` which is EMPTY for this user | ✅ |
+| 4 | Attempt: `supabase.from('lectures').insert({ course_id: '<courseId>', title: 'RO Injected', sort_order: 999 }).select()` | Error returned — RLS INSERT checks `lecturer_can_edit_course_ids`, not `lecturer_course_ids` | ✅ |
+| 5 | Attempt: `supabase.from('modules').insert({ lecture_id: '<lectureId>', course_id: '<courseId>', title: 'RO Module', module_type: 'markdown', sort_order: 999 }).select()` | Error returned — same `lecturer_can_edit_course_ids` check | ✅ |
+| 6 | Attempt: `supabase.from('module_markdown').update({ content: 'HACKED CONTENT' }).eq('module_id', '<markdownModuleId>').select()` | Returns `{ data: [], count: 0 }` — subtable RLS inherits from module policies via JOIN | ✅ |
+| 7 | Attempt: `supabase.from('lectures').delete().eq('id', '<lectureId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE checks `lecturer_can_edit_course_ids` | ✅ |
+| 8 | Reload the page, verify all content unchanged | Course detail shows original title, original lectures, original module content — nothing tampered | ✅ |
 
 **Notes/Learnings**:
 - This is the HIGHEST PRIORITY security test because a misconfigured RLS policy checking `lecturer_course_ids` instead of `lecturer_can_edit_course_ids` would SILENTLY ALLOW WRITES — there would be no error, just an unauthorized successful mutation
@@ -402,9 +402,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Escalation boundary enforced:
 - Course DELETE: 200, 0 rows (no delete policy for lecturer)
@@ -427,16 +427,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `lecturer-edit@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/courses/:assignedCourseId/edit` | Course edit page loads, form pre-populated | ☐ |
-| 3 | Scroll through the entire edit page | Verify NO "Delete Course" section (danger zone) visible anywhere on the page | ☐ |
-| 4 | Verify NO "Tenant Assignment" section visible | Neither the section heading nor the tenant checkbox list is rendered | ☐ |
-| 5 | Open browser console and attempt: `supabase.from('courses').delete().eq('id', '<assignedCourseId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE requires `is_platform_admin = true`, which this lecturer does NOT have | ☐ |
-| 6 | Attempt: `supabase.from('tenant_courses').insert({ course_id: '<assignedCourseId>', tenant_id: '<otherTenantId>' }).select()` | Error returned — `tenant_courses` INSERT requires `is_platform_admin`; lecturer cannot assign courses to tenants | ☐ |
-| 7 | Attempt: `supabase.from('tenant_courses').delete().eq('course_id', '<assignedCourseId>').eq('tenant_id', '<existingTenantId>').select()` | Returns `{ data: [], count: 0 }` — `tenant_courses` DELETE requires `is_platform_admin` | ☐ |
-| 8 | Navigate to `/courses/:assignedCourseId` and verify the course still exists | Course detail loads normally — course was NOT deleted | ☐ |
-| 9 | Verify tenant assignment count unchanged (if visible via admin tools or console query) | `supabase.from('tenant_courses').select('*').eq('course_id', '<assignedCourseId>')` returns same rows as before | ☐ |
-| 10 | Verify the lecturer CAN still update the course (to confirm edit access is intact): `supabase.from('courses').update({ description: 'Still editable' }).eq('id', '<assignedCourseId>').select()` | Returns `{ data: [{...}], count: 1 }` — UPDATE succeeds (can_edit privilege is intact) | ☐ |
+| 1 | Log in as `lecturer-edit@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/courses/:assignedCourseId/edit` | Course edit page loads, form pre-populated | ✅ |
+| 3 | Scroll through the entire edit page | Verify NO "Delete Course" section (danger zone) visible anywhere on the page | ✅ |
+| 4 | Verify NO "Tenant Assignment" section visible | Neither the section heading nor the tenant checkbox list is rendered | ✅ |
+| 5 | Open browser console and attempt: `supabase.from('courses').delete().eq('id', '<assignedCourseId>').select()` | Returns `{ data: [], count: 0 }` — RLS DELETE requires `is_platform_admin = true`, which this lecturer does NOT have | ✅ |
+| 6 | Attempt: `supabase.from('tenant_courses').insert({ course_id: '<assignedCourseId>', tenant_id: '<otherTenantId>' }).select()` | Error returned — `tenant_courses` INSERT requires `is_platform_admin`; lecturer cannot assign courses to tenants | ✅ |
+| 7 | Attempt: `supabase.from('tenant_courses').delete().eq('course_id', '<assignedCourseId>').eq('tenant_id', '<existingTenantId>').select()` | Returns `{ data: [], count: 0 }` — `tenant_courses` DELETE requires `is_platform_admin` | ✅ |
+| 8 | Navigate to `/courses/:assignedCourseId` and verify the course still exists | Course detail loads normally — course was NOT deleted | ✅ |
+| 9 | Verify tenant assignment count unchanged (if visible via admin tools or console query) | `supabase.from('tenant_courses').select('*').eq('course_id', '<assignedCourseId>')` returns same rows as before | ✅ |
+| 10 | Verify the lecturer CAN still update the course (to confirm edit access is intact): `supabase.from('courses').update({ description: 'Still editable' }).eq('id', '<assignedCourseId>').select()` | Returns `{ data: [{...}], count: 1 }` — UPDATE succeeds (can_edit privilege is intact) | ✅ |
 
 **Notes/Learnings**:
 - Course deletion cascades to ALL student progress across ALL tenants — this is the most destructive single operation in the system. A lecturer should NEVER have this power
@@ -451,9 +451,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Two-layer defense confirmed:
 - `/courses/:courseId/edit` → redirected to `/courses` (guard passes, component canEdit blocks)
@@ -474,14 +474,14 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `lecturer-view@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Navigate directly to `/courses/:courseId/edit` via URL bar | Route guard passes (user IS a lecturer), page briefly loads, then `ngOnInit` checks `canEdit()` which returns false — redirected to `/courses/:courseId` | ☐ |
-| 3 | Verify URL is now `/courses/:courseId` (course detail page) | URL changed, course detail content visible, no edit form | ☐ |
-| 4 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Route guard passes, page briefly loads, then `ngOnInit` checks `canEdit()` — redirected to `/courses/:courseId` | ☐ |
-| 5 | Verify URL is now `/courses/:courseId` | URL changed back to course detail | ☐ |
-| 6 | Navigate directly to `/courses/:courseId/modules/:moduleId/edit` | Route guard passes, page briefly loads, then `ngOnInit` checks `canEdit()` — redirected to `/courses/:courseId` | ☐ |
-| 7 | Verify URL is now `/courses/:courseId` | URL changed back to course detail | ☐ |
-| 8 | Navigate to `/courses/:courseId` and verify normal read access works | Course detail loads fully — title, lectures, modules all visible. No edit buttons shown | ☐ |
+| 1 | Log in as `lecturer-view@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Navigate directly to `/courses/:courseId/edit` via URL bar | Route guard passes (user IS a lecturer), page briefly loads, then `ngOnInit` checks `canEdit()` which returns false — redirected to `/courses/:courseId` | ✅ |
+| 3 | Verify URL is now `/courses/:courseId` (course detail page) | URL changed, course detail content visible, no edit form | ✅ |
+| 4 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Route guard passes, page briefly loads, then `ngOnInit` checks `canEdit()` — redirected to `/courses/:courseId` | ✅ |
+| 5 | Verify URL is now `/courses/:courseId` | URL changed back to course detail | ✅ |
+| 6 | Navigate directly to `/courses/:courseId/modules/:moduleId/edit` | Route guard passes, page briefly loads, then `ngOnInit` checks `canEdit()` — redirected to `/courses/:courseId` | ✅ |
+| 7 | Verify URL is now `/courses/:courseId` | URL changed back to course detail | ✅ |
+| 8 | Navigate to `/courses/:courseId` and verify normal read access works | Course detail loads fully — title, lectures, modules all visible. No edit buttons shown | ✅ |
 
 **Notes/Learnings**:
 - This tests the TWO-LAYER defense: (1) route guard checks role (lecturer = allowed), (2) component `ngOnInit` checks per-course `canEdit()` (empty `lecturer_can_edit_course_ids` = denied)
@@ -496,9 +496,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Calypso learner tested (Client learner covered in CR-12):
 - `/courses/new` → `/dashboard` (roleGuard blocks)
@@ -521,23 +521,23 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Navigate directly to `/courses/new` | Redirected to `/` (which cascades to `/dashboard`) — `roleGuard('platform_admin')` denies access | ☐ |
-| 3 | Verify URL is `/dashboard` (or `/`) | URL changed, dashboard content visible, no course creation form | ☐ |
-| 4 | Navigate directly to `/courses/:courseId/edit` | Redirected to `/` — `roleGuard('platform_admin', 'lecturer')` denies (learner is neither) | ☐ |
-| 5 | Verify URL is `/dashboard` (or `/`) | URL changed, no edit form visible | ☐ |
-| 6 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` — same role guard denial | ☐ |
-| 7 | Navigate directly to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` — same role guard denial | ☐ |
+| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Navigate directly to `/courses/new` | Redirected to `/` (which cascades to `/dashboard`) — `roleGuard('platform_admin')` denies access | ✅ |
+| 3 | Verify URL is `/dashboard` (or `/`) | URL changed, dashboard content visible, no course creation form | ✅ |
+| 4 | Navigate directly to `/courses/:courseId/edit` | Redirected to `/` — `roleGuard('platform_admin', 'lecturer')` denies (learner is neither) | ✅ |
+| 5 | Verify URL is `/dashboard` (or `/`) | URL changed, no edit form visible | ✅ |
+| 6 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` — same role guard denial | ✅ |
+| 7 | Navigate directly to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` — same role guard denial | ✅ |
 
 **Steps (Calypso Client Learner)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 8 | Log out, then log in as `learner@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads (different tenant) | ☐ |
-| 9 | Navigate directly to `/courses/new` | Redirected to `/` — same guard applies regardless of tenant | ☐ |
-| 10 | Navigate directly to `/courses/:courseId/edit` | Redirected to `/` | ☐ |
-| 11 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` | ☐ |
-| 12 | Navigate directly to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` | ☐ |
+| 8 | Log out, then log in as `learner@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads (different tenant) | ✅ |
+| 9 | Navigate directly to `/courses/new` | Redirected to `/` — same guard applies regardless of tenant | ✅ |
+| 10 | Navigate directly to `/courses/:courseId/edit` | Redirected to `/` | ✅ |
+| 11 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` | ✅ |
+| 12 | Navigate directly to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` | ✅ |
 
 **Notes/Learnings**:
 - Route guards fire BEFORE the component loads — the learner never sees the edit form at all (unlike PM-08 where the page briefly renders)
@@ -552,9 +552,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ⚠️ Partial |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PARTIAL** — RLS mechanism works correctly but cannot fully test exclusion:
 - Client learner sees 3 courses (all 3 are assigned to both tenants via tenant_courses)
@@ -578,16 +578,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `learner@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/courses` | Course list loads, shows ONLY courses assigned to Calypso Client tenant | ☐ |
-| 3 | Verify Course A IS visible in the list | Course card present — this course is assigned to Calypso Client via `tenant_courses` | ☐ |
-| 4 | Verify Course B is NOT visible in the list | No card for the Calypso-only course — `tenant_courses` has no row for Calypso Client + Course B | ☐ |
-| 5 | Navigate directly to `/courses/:calypsoOnlyCourseId` | Error state or empty page — course not found from this user's perspective (RLS filters it out of the SELECT) | ☐ |
-| 6 | Navigate directly to `/courses/:calypsoOnlyCourseId/modules/:moduleId` | Error state or empty page — module's course is not accessible | ☐ |
-| 7 | Open browser console and attempt: `supabase.from('courses').select('id, title')` | Returns ONLY courses assigned to Calypso Client — Course B is NOT in the result | ☐ |
-| 8 | Attempt: `supabase.from('lectures').select('*').eq('course_id', '<calypsoOnlyCourseId>')` | Returns empty `{ data: [] }` — lectures inherit course-level access via RLS JOIN | ☐ |
-| 9 | Attempt: `supabase.from('modules').select('*').eq('course_id', '<calypsoOnlyCourseId>')` | Returns empty `{ data: [] }` — modules also filtered by course access | ☐ |
-| 10 | Attempt: `supabase.from('module_videos').select('*, modules!inner(course_id)').eq('modules.course_id', '<calypsoOnlyCourseId>')` | Returns empty — subtable access also gated via course chain | ☐ |
+| 1 | Log in as `learner@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/courses` | Course list loads, shows ONLY courses assigned to Calypso Client tenant | ✅ |
+| 3 | Verify Course A IS visible in the list | Course card present — this course is assigned to Calypso Client via `tenant_courses` | ✅ |
+| 4 | Verify Course B is NOT visible in the list | No card for the Calypso-only course — `tenant_courses` has no row for Calypso Client + Course B | ✅ |
+| 5 | Navigate directly to `/courses/:calypsoOnlyCourseId` | Error state or empty page — course not found from this user's perspective (RLS filters it out of the SELECT) | ✅ |
+| 6 | Navigate directly to `/courses/:calypsoOnlyCourseId/modules/:moduleId` | Error state or empty page — module's course is not accessible | ✅ |
+| 7 | Open browser console and attempt: `supabase.from('courses').select('id, title')` | Returns ONLY courses assigned to Calypso Client — Course B is NOT in the result | ✅ |
+| 8 | Attempt: `supabase.from('lectures').select('*').eq('course_id', '<calypsoOnlyCourseId>')` | Returns empty `{ data: [] }` — lectures inherit course-level access via RLS JOIN | ✅ |
+| 9 | Attempt: `supabase.from('modules').select('*').eq('course_id', '<calypsoOnlyCourseId>')` | Returns empty `{ data: [] }` — modules also filtered by course access | ✅ |
+| 10 | Attempt: `supabase.from('module_videos').select('*, modules!inner(course_id)').eq('modules.course_id', '<calypsoOnlyCourseId>')` | Returns empty — subtable access also gated via course chain | ✅ |
 
 **Notes/Learnings**:
 - `tenant_courses` is the PRIMARY access boundary for content — it determines which courses a tenant's users can see
@@ -602,9 +602,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Complete user data isolation verified:
 - `profiles` query: 1 row (own profile only, email: learner@calypso-commodities.com)
@@ -627,14 +627,14 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Open browser console and query: `supabase.from('profiles').select('*')` | Returns ONLY the logged-in user's own profile (1 row) — `profiles_select_own` policy: `auth.uid() = id` | ☐ |
-| 3 | Verify the returned profile has `email: 'learner@calypso-commodities.com'` | Correct — only own data | ☐ |
-| 4 | Verify NO profiles from Calypso Client are returned | No rows with `@calypsoclient.com` emails — cross-tenant profiles are invisible | ☐ |
-| 5 | Query: `supabase.from('user_progress').select('*')` | Returns ONLY the logged-in user's own progress records (may be empty if no progress yet) | ☐ |
-| 6 | Query: `supabase.from('course_enrollments').select('*')` | Returns ONLY the logged-in user's own enrollments | ☐ |
-| 7 | Attempt to query all profiles with tenant filter: `supabase.from('profiles').select('*').neq('id', '<ownUserId>')` | Returns empty — RLS enforces `id = auth.uid()` regardless of additional filters | ☐ |
-| 8 | Query: `supabase.from('notifications').select('*')` | Returns ONLY the logged-in user's own notifications (filtered by `user_id = auth.uid()`) | ☐ |
+| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Open browser console and query: `supabase.from('profiles').select('*')` | Returns ONLY the logged-in user's own profile (1 row) — `profiles_select_own` policy: `auth.uid() = id` | ✅ |
+| 3 | Verify the returned profile has `email: 'learner@calypso-commodities.com'` | Correct — only own data | ✅ |
+| 4 | Verify NO profiles from Calypso Client are returned | No rows with `@calypsoclient.com` emails — cross-tenant profiles are invisible | ✅ |
+| 5 | Query: `supabase.from('user_progress').select('*')` | Returns ONLY the logged-in user's own progress records (may be empty if no progress yet) | ✅ |
+| 6 | Query: `supabase.from('course_enrollments').select('*')` | Returns ONLY the logged-in user's own enrollments | ✅ |
+| 7 | Attempt to query all profiles with tenant filter: `supabase.from('profiles').select('*').neq('id', '<ownUserId>')` | Returns empty — RLS enforces `id = auth.uid()` regardless of additional filters | ✅ |
+| 8 | Query: `supabase.from('notifications').select('*')` | Returns ONLY the logged-in user's own notifications (filtered by `user_id = auth.uid()`) | ✅ |
 
 **Notes/Learnings**:
 - Learner-level profile access is `read_own_profile` — they can ONLY see their own profile, not even other users in the same tenant
@@ -649,9 +649,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — Verified during CR-12 and PM-13:
 - No "Create Course" button on course list
@@ -673,16 +673,16 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `admin@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/courses` | Course list loads with courses assigned to Calypso Client | ☐ |
-| 3 | Verify NO "Create Course" button visible (top-right area) | Button absent — `isPlatformAdmin()` is false for Tenant Admins | ☐ |
-| 4 | Click a course card to navigate to `/courses/:courseId` | Course detail loads | ☐ |
-| 5 | Verify NO "Edit" button in course header | Pencil button absent — `canEdit()` is false (not platform_admin, not lecturer) | ☐ |
-| 6 | Verify NO "Add Lecture" button | Dashed button absent | ☐ |
-| 7 | Verify NO pencil/trash/reorder icons on lectures or modules | All action icons absent — read-only view | ☐ |
-| 8 | Navigate directly to `/courses/new` | Redirected to `/` (dashboard) — `roleGuard('platform_admin')` denies | ☐ |
-| 9 | Navigate directly to `/courses/:courseId/edit` | Redirected to `/` — `roleGuard('platform_admin', 'lecturer')` denies (TA is neither) | ☐ |
-| 10 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<id>` | Redirected to `/` — same guard denial | ☐ |
+| 1 | Log in as `admin@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/courses` | Course list loads with courses assigned to Calypso Client | ✅ |
+| 3 | Verify NO "Create Course" button visible (top-right area) | Button absent — `isPlatformAdmin()` is false for Tenant Admins | ✅ |
+| 4 | Click a course card to navigate to `/courses/:courseId` | Course detail loads | ✅ |
+| 5 | Verify NO "Edit" button in course header | Pencil button absent — `canEdit()` is false (not platform_admin, not lecturer) | ✅ |
+| 6 | Verify NO "Add Lecture" button | Dashed button absent | ✅ |
+| 7 | Verify NO pencil/trash/reorder icons on lectures or modules | All action icons absent — read-only view | ✅ |
+| 8 | Navigate directly to `/courses/new` | Redirected to `/` (dashboard) — `roleGuard('platform_admin')` denies | ✅ |
+| 9 | Navigate directly to `/courses/:courseId/edit` | Redirected to `/` — `roleGuard('platform_admin', 'lecturer')` denies (TA is neither) | ✅ |
+| 10 | Navigate directly to `/courses/:courseId/modules/new?lectureId=<id>` | Redirected to `/` — same guard denial | ✅ |
 
 **Notes/Learnings**:
 - Tenant Admins have `is_tenant_admin = true` in their JWT but this claim is NOT checked by any content write route guard or component
@@ -697,9 +697,9 @@ These stories assume content has already been created (via CW-01 through CW-09).
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-11 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **PASSED** — 44/44 checks across 4 roles:
 - **Learner**: 11/11 — no write UI, all 4 routes → `/dashboard`
@@ -729,65 +729,65 @@ KEY FINDING: Redirect destination differs by defense layer:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — Learner is not Platform Admin | ☐ |
-| 3 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false | ☐ |
-| 4 | Check for "Add Lecture" button | Button ABSENT | ☐ |
-| 5 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT on all lecture accordion headers | ☐ |
-| 6 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT on all module items | ☐ |
-| 7 | Expand a lecture — check for "Add Module" button | Button ABSENT | ☐ |
-| 8 | Navigate to `/courses/new` | Redirected to `/` — `roleGuard('platform_admin')` denies | ☐ |
-| 9 | Navigate to `/courses/:courseId/edit` | Redirected to `/` — `roleGuard('platform_admin', 'lecturer')` denies | ☐ |
-| 10 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` — same guard | ☐ |
-| 11 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` — same guard | ☐ |
+| 1 | Log in as `learner@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — Learner is not Platform Admin | ✅ |
+| 3 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false | ✅ |
+| 4 | Check for "Add Lecture" button | Button ABSENT | ✅ |
+| 5 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT on all lecture accordion headers | ✅ |
+| 6 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT on all module items | ✅ |
+| 7 | Expand a lecture — check for "Add Module" button | Button ABSENT | ✅ |
+| 8 | Navigate to `/courses/new` | Redirected to `/` — `roleGuard('platform_admin')` denies | ✅ |
+| 9 | Navigate to `/courses/:courseId/edit` | Redirected to `/` — `roleGuard('platform_admin', 'lecturer')` denies | ✅ |
+| 10 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` — same guard | ✅ |
+| 11 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` — same guard | ✅ |
 
 **Tenant Admin (admin@calypsoclient.com)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 12 | Log in as `admin@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 13 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — TA is not Platform Admin | ☐ |
-| 14 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false | ☐ |
-| 15 | Check for "Add Lecture" button | Button ABSENT | ☐ |
-| 16 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT | ☐ |
-| 17 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT | ☐ |
-| 18 | Expand a lecture — check for "Add Module" button | Button ABSENT | ☐ |
-| 19 | Navigate to `/courses/new` | Redirected to `/` — guard denies | ☐ |
-| 20 | Navigate to `/courses/:courseId/edit` | Redirected to `/` — guard denies (TA is neither platform_admin nor lecturer) | ☐ |
-| 21 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` | ☐ |
-| 22 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` | ☐ |
+| 12 | Log in as `admin@calypsoclient.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 13 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — TA is not Platform Admin | ✅ |
+| 14 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false | ✅ |
+| 15 | Check for "Add Lecture" button | Button ABSENT | ✅ |
+| 16 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT | ✅ |
+| 17 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT | ✅ |
+| 18 | Expand a lecture — check for "Add Module" button | Button ABSENT | ✅ |
+| 19 | Navigate to `/courses/new` | Redirected to `/` — guard denies | ✅ |
+| 20 | Navigate to `/courses/:courseId/edit` | Redirected to `/` — guard denies (TA is neither platform_admin nor lecturer) | ✅ |
+| 21 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` | ✅ |
+| 22 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` | ✅ |
 
 **CSM (csm@calypso-commodities.com)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 23 | Log in as `csm@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 24 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — CSM is not Platform Admin | ☐ |
-| 25 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false (CSM has no lecturer assignment) | ☐ |
-| 26 | Check for "Add Lecture" button | Button ABSENT | ☐ |
-| 27 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT | ☐ |
-| 28 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT | ☐ |
-| 29 | Expand a lecture — check for "Add Module" button | Button ABSENT | ☐ |
-| 30 | Navigate to `/courses/new` | Redirected to `/` — guard denies | ☐ |
-| 31 | Navigate to `/courses/:courseId/edit` | Redirected to `/` — guard denies (CSM is neither platform_admin nor lecturer) | ☐ |
-| 32 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` | ☐ |
-| 33 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` | ☐ |
+| 23 | Log in as `csm@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 24 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — CSM is not Platform Admin | ✅ |
+| 25 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false (CSM has no lecturer assignment) | ✅ |
+| 26 | Check for "Add Lecture" button | Button ABSENT | ✅ |
+| 27 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT | ✅ |
+| 28 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT | ✅ |
+| 29 | Expand a lecture — check for "Add Module" button | Button ABSENT | ✅ |
+| 30 | Navigate to `/courses/new` | Redirected to `/` — guard denies | ✅ |
+| 31 | Navigate to `/courses/:courseId/edit` | Redirected to `/` — guard denies (CSM is neither platform_admin nor lecturer) | ✅ |
+| 32 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Redirected to `/` | ✅ |
+| 33 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Redirected to `/` | ✅ |
 
 **Lecturer — Read-Only (lecturer-view@calypso-commodities.com)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 34 | Log in as `lecturer-view@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ☐ |
-| 35 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — Lecturer is not Platform Admin | ☐ |
-| 36 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false (empty `lecturer_can_edit_course_ids`) | ☐ |
-| 37 | Check for "Add Lecture" button | Button ABSENT — `canEdit()` false | ☐ |
-| 38 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT | ☐ |
-| 39 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT | ☐ |
-| 40 | Expand a lecture — check for "Add Module" button | Button ABSENT | ☐ |
-| 41 | Navigate to `/courses/new` | Redirected to `/` — `roleGuard('platform_admin')` denies (lecturer role is NOT platform_admin) | ☐ |
-| 42 | Navigate to `/courses/:courseId/edit` | Guard PASSES (role is `lecturer`), but component `ngOnInit` checks `canEdit()` → redirected to `/courses/:courseId` | ☐ |
-| 43 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Guard PASSES, then component redirects to `/courses/:courseId` | ☐ |
-| 44 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Guard PASSES, then component redirects to `/courses/:courseId` | ☐ |
+| 34 | Log in as `lecturer-view@calypso-commodities.com` (password: `TestUser123!`) | Dashboard loads | ✅ |
+| 35 | Navigate to `/courses` — check for "Create Course" button | Button ABSENT — Lecturer is not Platform Admin | ✅ |
+| 36 | Navigate to `/courses/:courseId` — check for "Edit" button | Button ABSENT — `canEdit()` false (empty `lecturer_can_edit_course_ids`) | ✅ |
+| 37 | Check for "Add Lecture" button | Button ABSENT — `canEdit()` false | ✅ |
+| 38 | Check for pencil/trash/reorder icons on lectures | Icons ABSENT | ✅ |
+| 39 | Expand a lecture — check for pencil/trash/reorder icons on modules | Icons ABSENT | ✅ |
+| 40 | Expand a lecture — check for "Add Module" button | Button ABSENT | ✅ |
+| 41 | Navigate to `/courses/new` | Redirected to `/` — `roleGuard('platform_admin')` denies (lecturer role is NOT platform_admin) | ✅ |
+| 42 | Navigate to `/courses/:courseId/edit` | Guard PASSES (role is `lecturer`), but component `ngOnInit` checks `canEdit()` → redirected to `/courses/:courseId` | ✅ |
+| 43 | Navigate to `/courses/:courseId/modules/new?lectureId=<lectureId>` | Guard PASSES, then component redirects to `/courses/:courseId` | ✅ |
+| 44 | Navigate to `/courses/:courseId/modules/:moduleId/edit` | Guard PASSES, then component redirects to `/courses/:courseId` | ✅ |
 
 **Notes/Learnings**:
 - KEY DIFFERENCE: Learner/TA/CSM are blocked by `roleGuard` (instant redirect to `/`); Lecturer (read-only) PASSES `roleGuard` but is blocked by component `ngOnInit canEdit()` check (redirect to `/courses/:courseId`)
@@ -847,7 +847,7 @@ If time is limited, execute tests in this priority order:
 |------|--------|------------------|------|------|-------|
 | 2026-02-11 | Claude Code (Playwright MCP) | PM-01 through PM-13 (all 13) | 12 | 0 | 1 partial (PM-10: no Calypso-only course to test exclusion). Direct API tests used `fetch()` with user JWT against PostgREST REST API. All RLS policies correctly enforced. Most critical test (PM-06: read-only lecturer) confirmed `lecturer_can_edit_course_ids` is used for write policies, not `lecturer_course_ids`. |
 | 2026-02-14 | Claude (Playwright MCP) | PM-01 through PM-13 (all 13) | 12 | 0 | Full regression. PM-01: lecture create+delete CRUD verified. PM-02: unassigned course shows zero edit UI, /edit redirects to /courses. PM-07: no Delete Course or Tenant Assignment on edit page. PM-08: read-only lecturer /edit redirects to /courses, /modules/new redirects to /courses/:id. PM-09: all 4 learner write routes → /dashboard. PM-12: all TA write routes → /dashboard. PM-05/PM-13: CSM write routes → /dashboard. PM-10 still partial (no Calypso-only course). No regressions found. |
-| 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | PM-01 through PM-13 (all 13) | 13 | 0 | Full regression run. **PM-10 UPGRADED to ✅ Passed** — "CW-01 (Updated)" and "Empty Test Course" now Calypso-only, enabling full cross-tenant exclusion testing. PM-13: 44/44 UI+route checks across 4 roles. All redirect destinations correct: Learner/TA/CSM → /dashboard (roleGuard), read-only lecturer edit/module → /courses/:id (component canEdit). Zero regressions. |
+| 2026-02-16 | Claude Opus 4.6 (Playwright MCP) | PM-01 through PM-13 (all 13) | 13 | 0 | Full regression run. **PM-10 UPGRADED to ✅ Passed** — "CW-01 (Updated)" and "Empty Test Course" now Calypso-only, enabling full cross-tenant exclusion testing. PM-13: 44/44 UI+route checks across 4 roles. All redirect destinations correct: Learner/TA/CSM → /dashboard (roleGuard), read-only lecturer edit/module → /courses/:id (component canEdit). Zero regressions. |
 
 ---
 

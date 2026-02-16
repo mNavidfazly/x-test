@@ -73,17 +73,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| EN-01 | Open Course Self-Enrollment | Learner | ✅ PASS | 2026-02-15 |
-| EN-02 | Password Protected Enrollment | Learner + PA | ✅ PASS | 2026-02-15 |
-| EN-03 | Invite-Only Course Info | Learner + PA | ✅ PASS | 2026-02-15 |
-| EN-04 | Enrolled Badge Display | Learner | ✅ PASS | 2026-02-15 |
-| EN-05 | Enrollment CTA Hidden for Editors | PA + Lecturer | ✅ PASS | 2026-02-15 |
-| EN-06 | Enrollment Manager — Platform Admin View | Platform Admin | ✅ PASS | 2026-02-15 |
-| EN-07 | Enrollment Manager — Add User by Email | Platform Admin | ✅ PASS | 2026-02-15 |
-| EN-08 | Enrollment Manager — Unenroll User | Platform Admin | ✅ PASS | 2026-02-15 |
-| EN-09 | Enrollment Manager — Tenant Admin | Tenant Admin | ✅ PASS | 2026-02-15 |
-| EN-10 | Enrollment Manager Hidden for Unauthorized | Learner + Lecturer | ✅ PASS | 2026-02-15 |
-| EN-11 | Module Completion Gated by Enrollment | Learner | ✅ PASS | 2026-02-15 |
+| EN-01 | Open Course Self-Enrollment | Learner | ✅ PASS | 2026-02-16 |
+| EN-02 | Password Protected Enrollment | Learner + PA | ✅ PASS | 2026-02-16 |
+| EN-03 | Invite-Only Course Info | Learner + PA | ✅ PASS | 2026-02-16 |
+| EN-04 | Enrolled Badge Display | Learner | ✅ PASS | 2026-02-16 |
+| EN-05 | Enrollment CTA Hidden for Editors | PA + Lecturer | ✅ PASS | 2026-02-16 |
+| EN-06 | Enrollment Manager — Platform Admin View | Platform Admin | ✅ PASS | 2026-02-16 |
+| EN-07 | Enrollment Manager — Add User by Email | Platform Admin | ✅ PASS | 2026-02-16 |
+| EN-08 | Enrollment Manager — Unenroll User | Platform Admin | ✅ PASS | 2026-02-16 |
+| EN-09 | Enrollment Manager — Tenant Admin | Tenant Admin | ✅ PASS | 2026-02-16 |
+| EN-10 | Enrollment Manager Hidden for Unauthorized | Learner + Lecturer | ✅ PASS | 2026-02-16 |
+| EN-11 | Module Completion Gated by Enrollment | Learner | ✅ PASS | 2026-02-16 |
 
 ---
 
@@ -91,9 +91,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a learner can self-enroll in an open course by clicking "Enroll Now", and that the enrollment CTA updates to show the enrolled badge after success.
 
@@ -108,14 +108,14 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to the open course detail | Course detail page loads with title, description, lectures | ☐ |
-| 3 | Verify enrollment CTA visible | "Enroll Now" teal button with UserPlus icon displayed between header and lectures | ☐ |
-| 4 | Verify NO "You're enrolled" badge | Badge should NOT be visible yet | ☐ |
-| 5 | Click "Enroll Now" button | Button shows "Enrolling..." loading state | ☐ |
-| 6 | Wait for enrollment to complete | Loading state disappears | ☐ |
-| 7 | Verify "You're enrolled" badge | Green badge (`bg-emerald-50 border-emerald-200`) with Check icon and "You're enrolled" text replaces the enroll button | ☐ |
-| 8 | Refresh the page | "You're enrolled" badge persists (enrollment saved to DB) | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to the open course detail | Course detail page loads with title, description, lectures | ✅ |
+| 3 | Verify enrollment CTA visible | "Enroll Now" teal button with UserPlus icon displayed between header and lectures | ✅ |
+| 4 | Verify NO "You're enrolled" badge | Badge should NOT be visible yet | ✅ |
+| 5 | Click "Enroll Now" button | Button shows "Enrolling..." loading state | ✅ |
+| 6 | Wait for enrollment to complete | Loading state disappears | ✅ |
+| 7 | Verify "You're enrolled" badge | Green badge (`bg-emerald-50 border-emerald-200`) with Check icon and "You're enrolled" text replaces the enroll button | ✅ |
+| 8 | Refresh the page | "You're enrolled" badge persists (enrollment saved to DB) | ✅ |
 
 **Notes/Learnings**:
 - `ce_insert_self` RLS policy validates: `enrollment_type = 'open'` + tenant_courses assignment + not already enrolled
@@ -129,9 +129,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a password-protected course shows a password input field, rejects wrong passwords, and accepts the correct one to enroll the user.
 
@@ -146,26 +146,26 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| S1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| S2 | Navigate to a course, click "Edit" | Course edit form loads | ☐ |
-| S3 | Change "Enrollment Type" to "Password Protected" | Dropdown value changes, password field appears | ☐ |
-| S4 | Enter course password (e.g., "CoursePass123") | Password field accepts input | ☐ |
-| S5 | Click "Save Changes" | Course updated, `hash_course_password()` trigger hashes the password | ☐ |
+| S1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| S2 | Navigate to a course, click "Edit" | Course edit form loads | ✅ |
+| S3 | Change "Enrollment Type" to "Password Protected" | Dropdown value changes, password field appears | ✅ |
+| S4 | Enter course password (e.g., "CoursePass123") | Password field accepts input | ✅ |
+| S5 | Click "Save Changes" | Course updated, `hash_course_password()` trigger hashes the password | ✅ |
 
 **Test Steps (Learner)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner | Dashboard loads | ☐ |
-| 2 | Navigate to the password-protected course detail | Course detail loads | ☐ |
-| 3 | Verify password enrollment form | Glassmorphism card with Lock icon, "Password required to enroll" text, password input, "Enroll" button | ☐ |
-| 4 | Leave password empty, click "Enroll" | Error text "Please enter the course password" appears below input | ☐ |
-| 5 | Enter wrong password: "WrongPassword" | — | ☐ |
-| 6 | Click "Enroll" | Button shows "..." loading, then RPC error — error message displayed (e.g., "Invalid password" or RPC error text) | ☐ |
-| 7 | Clear the error by typing in password field | Error text disappears | ☐ |
-| 8 | Enter correct password: "CoursePass123" | — | ☐ |
-| 9 | Click "Enroll" | Loading state, then "You're enrolled" badge appears | ☐ |
-| 10 | Refresh the page | Enrolled badge persists | ☐ |
+| 1 | Log in as Learner | Dashboard loads | ✅ |
+| 2 | Navigate to the password-protected course detail | Course detail loads | ✅ |
+| 3 | Verify password enrollment form | Glassmorphism card with Lock icon, "Password required to enroll" text, password input, "Enroll" button | ✅ |
+| 4 | Leave password empty, click "Enroll" | Error text "Please enter the course password" appears below input | ✅ |
+| 5 | Enter wrong password: "WrongPassword" | — | ✅ |
+| 6 | Click "Enroll" | Button shows "..." loading, then RPC error — error message displayed (e.g., "Invalid password" or RPC error text) | ✅ |
+| 7 | Clear the error by typing in password field | Error text disappears | ✅ |
+| 8 | Enter correct password: "CoursePass123" | — | ✅ |
+| 9 | Click "Enroll" | Loading state, then "You're enrolled" badge appears | ✅ |
+| 10 | Refresh the page | Enrolled badge persists | ✅ |
 
 **Notes/Learnings**:
 - The `enroll_with_password()` RPC is SECURITY DEFINER — it handles bcrypt comparison server-side
@@ -180,9 +180,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that an invite-only course shows an informational message (not a button) telling the user they need an administrator invitation.
 
@@ -196,20 +196,20 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| S1 | Log in as Platform Admin | — | ☐ |
-| S2 | Navigate to a course, click "Edit" | Course edit form loads | ☐ |
-| S3 | Change "Enrollment Type" to "Invite Only" | Dropdown value changes | ☐ |
-| S4 | Click "Save Changes" | Course updated | ☐ |
+| S1 | Log in as Platform Admin | — | ✅ |
+| S2 | Navigate to a course, click "Edit" | Course edit form loads | ✅ |
+| S3 | Change "Enrollment Type" to "Invite Only" | Dropdown value changes | ✅ |
+| S4 | Click "Save Changes" | Course updated | ✅ |
 
 **Test Steps (Learner)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner | Dashboard loads | ☐ |
-| 2 | Navigate to the invite-only course detail | Course detail loads | ☐ |
-| 3 | Verify invite-only info card | Amber card (`bg-amber-50 border-amber-200`) with Info icon and text: "This course requires an invitation from your administrator." | ☐ |
-| 4 | Verify NO "Enroll Now" button | No teal button visible | ☐ |
-| 5 | Verify NO password input | No password form visible | ☐ |
+| 1 | Log in as Learner | Dashboard loads | ✅ |
+| 2 | Navigate to the invite-only course detail | Course detail loads | ✅ |
+| 3 | Verify invite-only info card | Amber card (`bg-amber-50 border-amber-200`) with Info icon and text: "This course requires an invitation from your administrator." | ✅ |
+| 4 | Verify NO "Enroll Now" button | No teal button visible | ✅ |
+| 5 | Verify NO password input | No password form visible | ✅ |
 
 **Notes/Learnings**:
 - Invite-only courses can only be enrolled via the enrollment manager (PA/TA adds user by email)
@@ -222,9 +222,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that an already-enrolled learner sees the "You're enrolled" badge on the course detail page, and that the badge persists across page navigations.
 
@@ -237,13 +237,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner | Dashboard loads | ☐ |
-| 2 | Navigate to the enrolled course detail | Course detail loads | ☐ |
-| 3 | Verify enrolled badge | Green badge with Check icon: "You're enrolled" | ☐ |
-| 4 | Verify badge position | Between course header/progress bar and lecture list | ☐ |
-| 5 | Verify NO "Enroll Now" button | Badge replaces the enroll button | ☐ |
-| 6 | Navigate to another page (e.g., course list) | Different page loads | ☐ |
-| 7 | Navigate back to the enrolled course | Badge still shows "You're enrolled" (loaded from DB, not local state) | ☐ |
+| 1 | Log in as Learner | Dashboard loads | ✅ |
+| 2 | Navigate to the enrolled course detail | Course detail loads | ✅ |
+| 3 | Verify enrolled badge | Green badge with Check icon: "You're enrolled" | ✅ |
+| 4 | Verify badge position | Between course header/progress bar and lecture list | ✅ |
+| 5 | Verify NO "Enroll Now" button | Badge replaces the enroll button | ✅ |
+| 6 | Navigate to another page (e.g., course list) | Different page loads | ✅ |
+| 7 | Navigate back to the enrolled course | Badge still shows "You're enrolled" (loaded from DB, not local state) | ✅ |
 
 **Notes/Learnings**:
 - `loadCourseDetail` runs a 3rd parallel query: `course_enrollments.select('id').eq('course_id', courseId).eq('user_id', userId).maybeSingle()`
@@ -257,9 +257,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that users with edit permissions (Platform Admin, Lecturer with can_edit) do NOT see the enrollment CTA — they have implicit content access.
 
@@ -272,19 +272,19 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to any course detail | Course detail loads with "Edit" button and lecture management UI | ☐ |
-| 3 | Verify NO enrollment CTA | No "Enroll Now" button, no password input, no "You're enrolled" badge, no invite-only info | ☐ |
-| 4 | Verify enrollment manager IS visible | "Enrolled Users (N)" section shown (PA has `canManageEnrollments`) | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to any course detail | Course detail loads with "Edit" button and lecture management UI | ✅ |
+| 3 | Verify NO enrollment CTA | No "Enroll Now" button, no password input, no "You're enrolled" badge, no invite-only info | ✅ |
+| 4 | Verify enrollment manager IS visible | "Enrolled Users (N)" section shown (PA has `canManageEnrollments`) | ✅ |
 
 **Steps (Lecturer with can_edit)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 5 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 6 | Navigate to the assigned course detail | Course detail loads with edit buttons on modules | ☐ |
-| 7 | Verify NO enrollment CTA | No enrollment-related UI between header and lectures | ☐ |
-| 8 | Verify NO enrollment manager | Enrollment manager only visible for PA/TA, not lecturers | ☐ |
+| 5 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 6 | Navigate to the assigned course detail | Course detail loads with edit buttons on modules | ✅ |
+| 7 | Verify NO enrollment CTA | No enrollment-related UI between header and lectures | ✅ |
+| 8 | Verify NO enrollment manager | Enrollment manager only visible for PA/TA, not lecturers | ✅ |
 
 **Notes/Learnings**:
 - `canEdit()` computed: `is_platform_admin || courseId in lecturer_can_edit_course_ids`
@@ -298,9 +298,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the enrollment manager section is visible to Platform Admin, shows enrolled users in a table, and displays the correct count.
 
@@ -314,22 +314,22 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to a course with NO enrolled users | Course detail loads | ☐ |
-| 2 | Scroll to enrollment manager section | Section visible below lectures, above delete course button, separated by border-top | ☐ |
-| 3 | Verify section header | "ENROLLED USERS (0)" uppercase text with Users icon | ☐ |
-| 4 | Verify email input + Add button | Email input (`placeholder="Enter user email to enroll"`) and teal "Add" button with UserPlus icon | ☐ |
-| 5 | Verify empty state | Users icon (large, slate-300), "No users enrolled yet." text centered | ☐ |
+| 1 | Navigate to a course with NO enrolled users | Course detail loads | ✅ |
+| 2 | Scroll to enrollment manager section | Section visible below lectures, above delete course button, separated by border-top | ✅ |
+| 3 | Verify section header | "ENROLLED USERS (0)" uppercase text with Users icon | ✅ |
+| 4 | Verify email input + Add button | Email input (`placeholder="Enter user email to enroll"`) and teal "Add" button with UserPlus icon | ✅ |
+| 5 | Verify empty state | Users icon (large, slate-300), "No users enrolled yet." text centered | ✅ |
 
 **Steps (With Enrolled Users)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 6 | Navigate to a course that has enrolled users | Course detail loads | ☐ |
-| 7 | Verify section header count updates | "ENROLLED USERS (N)" where N matches actual enrolled count | ☐ |
-| 8 | Verify users table | Table with columns: Email, Name, Enrolled, (unenroll action) | ☐ |
-| 9 | Verify table header row | "EMAIL", "NAME", "ENROLLED" uppercase headers in `bg-slate-50` | ☐ |
-| 10 | Verify user row data | Email in slate-700, Name in slate-600 (or "—" if null), date in "D Mon YYYY" format (en-GB locale) | ☐ |
-| 11 | Verify unenroll button per row | Trash2 icon in rose color on hover, `title="Unenroll user"` | ☐ |
+| 6 | Navigate to a course that has enrolled users | Course detail loads | ✅ |
+| 7 | Verify section header count updates | "ENROLLED USERS (N)" where N matches actual enrolled count | ✅ |
+| 8 | Verify users table | Table with columns: Email, Name, Enrolled, (unenroll action) | ✅ |
+| 9 | Verify table header row | "EMAIL", "NAME", "ENROLLED" uppercase headers in `bg-slate-50` | ✅ |
+| 10 | Verify user row data | Email in slate-700, Name in slate-600 (or "—" if null), date in "D Mon YYYY" format (en-GB locale) | ✅ |
+| 11 | Verify unenroll button per row | Trash2 icon in rose color on hover, `title="Unenroll user"` | ✅ |
 
 **Notes/Learnings**:
 - `canManageEnrollments()` returns true for `is_platform_admin || is_tenant_admin`
@@ -344,9 +344,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Platform Admin can add a user to a course by entering their email in the enrollment manager, and that error cases (empty email, non-existent user, already enrolled) are handled.
 
@@ -361,39 +361,39 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | In enrollment manager, enter email: `learner@calypso-commodities.com` | Email input accepts text | ☐ |
-| 2 | Click "Add" button | Button shows "Adding..." loading state | ☐ |
-| 3 | Wait for add to complete | User appears in enrolled users table | ☐ |
-| 4 | Verify user row | Email: `learner@calypso-commodities.com`, Name: "Test Learner (Calypso)", Enrolled: today's date | ☐ |
-| 5 | Verify count updates | Header changes from "(N)" to "(N+1)" | ☐ |
-| 6 | Verify email input cleared | Input field is empty after successful add | ☐ |
+| 1 | In enrollment manager, enter email: `learner@calypso-commodities.com` | Email input accepts text | ✅ |
+| 2 | Click "Add" button | Button shows "Adding..." loading state | ✅ |
+| 3 | Wait for add to complete | User appears in enrolled users table | ✅ |
+| 4 | Verify user row | Email: `learner@calypso-commodities.com`, Name: "Test Learner (Calypso)", Enrolled: today's date | ✅ |
+| 5 | Verify count updates | Header changes from "(N)" to "(N+1)" | ✅ |
+| 6 | Verify email input cleared | Input field is empty after successful add | ✅ |
 
 **Steps (Error — Empty Email)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 7 | Leave email input empty, click "Add" | Error message: "Please enter an email address" in rose box below input | ☐ |
-| 8 | Start typing in email field | Error message disappears | ☐ |
+| 7 | Leave email input empty, click "Add" | Error message: "Please enter an email address" in rose box below input | ✅ |
+| 8 | Start typing in email field | Error message disappears | ✅ |
 
 **Steps (Error — Non-Existent User)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 9 | Enter email: `nonexistent@calypso-commodities.com` | — | ☐ |
-| 10 | Click "Add" | Error message: "No user found with this email in your tenant" | ☐ |
+| 9 | Enter email: `nonexistent@calypso-commodities.com` | — | ✅ |
+| 10 | Click "Add" | Error message: "No user found with this email in your tenant" | ✅ |
 
 **Steps (Error — Already Enrolled)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 11 | Enter email of user already in the table (e.g., `learner@calypso-commodities.com` again) | — | ☐ |
-| 12 | Click "Add" | Error message: "This user is already enrolled" | ☐ |
+| 11 | Enter email of user already in the table (e.g., `learner@calypso-commodities.com` again) | — | ✅ |
+| 12 | Click "Add" | Error message: "This user is already enrolled" | ✅ |
 
 **Steps (Enter Key Submit)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 13 | Enter a valid email, press Enter key (don't click Add) | Same behavior as clicking "Add" — user enrolled | ☐ |
+| 13 | Enter a valid email, press Enter key (don't click Add) | Same behavior as clicking "Add" — user enrolled | ✅ |
 
 **Notes/Learnings**:
 - `lookupUserByEmail` queries `profiles` by email + tenant_id — scoped to admin's own tenant
@@ -408,9 +408,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Platform Admin can remove a user from a course by clicking the unenroll (trash) button, and that the table updates correctly.
 
@@ -424,20 +424,20 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to course with enrolled users | Enrollment manager shows table with users | ☐ |
-| 2 | Note the current enrolled count | E.g., "ENROLLED USERS (2)" | ☐ |
-| 3 | Click the trash icon (Unenroll user) on one user row | Row removed from table | ☐ |
-| 4 | Verify count updates | Header changes from "(2)" to "(1)" | ☐ |
-| 5 | Verify the removed user no longer appears in table | Only remaining users shown | ☐ |
-| 6 | Unenroll all remaining users | Table replaced by empty state: Users icon + "No users enrolled yet." | ☐ |
-| 7 | Verify count shows (0) | "ENROLLED USERS (0)" | ☐ |
+| 1 | Navigate to course with enrolled users | Enrollment manager shows table with users | ✅ |
+| 2 | Note the current enrolled count | E.g., "ENROLLED USERS (2)" | ✅ |
+| 3 | Click the trash icon (Unenroll user) on one user row | Row removed from table | ✅ |
+| 4 | Verify count updates | Header changes from "(2)" to "(1)" | ✅ |
+| 5 | Verify the removed user no longer appears in table | Only remaining users shown | ✅ |
+| 6 | Unenroll all remaining users | Table replaced by empty state: Users icon + "No users enrolled yet." | ✅ |
+| 7 | Verify count shows (0) | "ENROLLED USERS (0)" | ✅ |
 
 **Verify Unenrollment Persists**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 8 | Refresh the page | Enrollment manager still shows the updated state | ☐ |
-| 9 | Log in as the unenrolled learner, navigate to the course | Enrollment CTA reappears (e.g., "Enroll Now" for open course) — no longer shows "You're enrolled" | ☐ |
+| 8 | Refresh the page | Enrollment manager still shows the updated state | ✅ |
+| 9 | Log in as the unenrolled learner, navigate to the course | Enrollment CTA reappears (e.g., "Enroll Now" for open course) — no longer shows "You're enrolled" | ✅ |
 
 **Notes/Learnings**:
 - `unenrollUser` performs DELETE by enrollment `id` (not user_id + course_id)
@@ -452,9 +452,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Tenant Admin can see the enrollment manager and manage enrollments for courses assigned to their tenant, but only for users within their own tenant.
 
@@ -469,27 +469,27 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to the test course detail | Course detail loads | ☐ |
-| 3 | Verify enrollment manager visible | "ENROLLED USERS (N)" section with email input + Add button | ☐ |
-| 4 | Verify NO "Edit" button on course | TA cannot edit content (canEdit = false) | ☐ |
-| 5 | Verify enrollment CTA visible | TA is not an editor, so they see enrollment CTA (if not enrolled) | ☐ |
-| 6 | Enter email: `learner@calypsoclient.com` in enrollment manager | — | ☐ |
-| 7 | Click "Add" | Client learner enrolled, appears in table | ☐ |
-| 8 | Verify user row | Email, name, enrolled date shown correctly | ☐ |
+| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to the test course detail | Course detail loads | ✅ |
+| 3 | Verify enrollment manager visible | "ENROLLED USERS (N)" section with email input + Add button | ✅ |
+| 4 | Verify NO "Edit" button on course | TA cannot edit content (canEdit = false) | ✅ |
+| 5 | Verify enrollment CTA visible | TA is not an editor, so they see enrollment CTA (if not enrolled) | ✅ |
+| 6 | Enter email: `learner@calypsoclient.com` in enrollment manager | — | ✅ |
+| 7 | Click "Add" | Client learner enrolled, appears in table | ✅ |
+| 8 | Verify user row | Email, name, enrolled date shown correctly | ✅ |
 
 **Cross-Tenant Restriction**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 9 | Enter email: `learner@calypso-commodities.com` (different tenant) | — | ☐ |
-| 10 | Click "Add" | Error: "No user found with this email in your tenant" (lookupUserByEmail scoped to TA's tenant_id) | ☐ |
+| 9 | Enter email: `learner@calypso-commodities.com` (different tenant) | — | ✅ |
+| 10 | Click "Add" | Error: "No user found with this email in your tenant" (lookupUserByEmail scoped to TA's tenant_id) | ✅ |
 
 **Unenroll**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 11 | Click unenroll on the client learner | User removed from table | ☐ |
+| 11 | Click unenroll on the client learner | User removed from table | ✅ |
 
 **Notes/Learnings**:
 - TA's `tenant_id` JWT claim scopes `lookupUserByEmail` — can only find users in their own tenant
@@ -503,9 +503,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that users without admin roles (Learner, Lecturer, CSM) do NOT see the enrollment manager section on the course detail page.
 
@@ -518,18 +518,18 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to a course detail | Course detail loads | ☐ |
-| 3 | Verify NO "Enrolled Users" section | No enrollment manager table, no email input, no "Add" button | ☐ |
-| 4 | Verify enrollment CTA IS visible | Enroll button or badge shown (depending on enrollment status) | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to a course detail | Course detail loads | ✅ |
+| 3 | Verify NO "Enrolled Users" section | No enrollment manager table, no email input, no "Add" button | ✅ |
+| 4 | Verify enrollment CTA IS visible | Enroll button or badge shown (depending on enrollment status) | ✅ |
 
 **Steps (Lecturer with can_edit)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 5 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 6 | Navigate to the assigned course detail | Course detail loads with edit buttons | ☐ |
-| 7 | Verify NO "Enrolled Users" section | Lecturer cannot manage enrollments | ☐ |
+| 5 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 6 | Navigate to the assigned course detail | Course detail loads with edit buttons | ✅ |
+| 7 | Verify NO "Enrolled Users" section | Lecturer cannot manage enrollments | ✅ |
 
 **Notes/Learnings**:
 - `canManageEnrollments` is `is_platform_admin || is_tenant_admin` — lecturers and CSMs are excluded
@@ -543,9 +543,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-12 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ PASS |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the "Mark as complete" button in the module viewer is only visible when the user is enrolled in the course. Unenrolled users can view content but cannot track progress.
 
@@ -559,28 +559,28 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner, enroll in the course (or already enrolled from EN-01) | Enrolled in course | ☐ |
-| 2 | Navigate to a video/PDF/markdown module in the course | Module viewer loads with content | ☐ |
-| 3 | Verify "Mark as complete" button visible | Button at bottom of module viewer, below content area | ☐ |
-| 4 | Click "Mark as complete" | Button changes to "Completed" with Check icon, green styling | ☐ |
-| 5 | Navigate to a different module (same course) | "Mark as complete" button visible on the new module (if not already completed) | ☐ |
+| 1 | Log in as Learner, enroll in the course (or already enrolled from EN-01) | Enrolled in course | ✅ |
+| 2 | Navigate to a video/PDF/markdown module in the course | Module viewer loads with content | ✅ |
+| 3 | Verify "Mark as complete" button visible | Button at bottom of module viewer, below content area | ✅ |
+| 4 | Click "Mark as complete" | Button changes to "Completed" with Check icon, green styling | ✅ |
+| 5 | Navigate to a different module (same course) | "Mark as complete" button visible on the new module (if not already completed) | ✅ |
 
 **Steps (Unenrolled — Cannot Mark Complete)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 6 | Unenroll the learner (PA uses enrollment manager) or use a fresh unenrolled user | User not enrolled | ☐ |
-| 7 | Navigate to a module in the same course (direct URL if needed) | Module viewer loads — content IS visible (RLS allows reading if tenant_courses exists) | ☐ |
-| 8 | Verify NO "Mark as complete" button | Button is hidden — `canMarkComplete` returns false when `!isEnrolled` | ☐ |
-| 9 | Verify module navigation still works | Previous/Next buttons functional | ☐ |
-| 10 | Verify "Back to course" link works | Returns to course detail | ☐ |
+| 6 | Unenroll the learner (PA uses enrollment manager) or use a fresh unenrolled user | User not enrolled | ✅ |
+| 7 | Navigate to a module in the same course (direct URL if needed) | Module viewer loads — content IS visible (RLS allows reading if tenant_courses exists) | ✅ |
+| 8 | Verify NO "Mark as complete" button | Button is hidden — `canMarkComplete` returns false when `!isEnrolled` | ✅ |
+| 9 | Verify module navigation still works | Previous/Next buttons functional | ✅ |
+| 10 | Verify "Back to course" link works | Returns to course detail | ✅ |
 
 **Steps (Quiz/Exam — Never Mark Complete)**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 11 | Navigate to a quiz module (if enrolled) | "Coming soon" placeholder shown | ☐ |
-| 12 | Verify NO "Mark as complete" button | Quiz/exam use their own completion mechanism — not manual marking | ☐ |
+| 11 | Navigate to a quiz module (if enrolled) | "Coming soon" placeholder shown | ✅ |
+| 12 | Verify NO "Mark as complete" button | Quiz/exam use their own completion mechanism — not manual marking | ✅ |
 
 **Notes/Learnings**:
 - `canMarkComplete` computed logic: `viewer exists && courseDetail?.isEnrolled && type in [video, pdf, markdown, external_quiz]`

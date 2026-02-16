@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { StalenessService } from './staleness.service';
 import { SupabaseService } from './supabase.service';
+import { AuthService } from './auth.service';
 import { createMockSupabaseService } from '../../__mocks__/supabase.mock';
+import { createMockAuthService } from '../../__mocks__/auth.mock';
 
 describe('StalenessService', () => {
   let service: StalenessService;
@@ -10,11 +12,17 @@ describe('StalenessService', () => {
 
   beforeEach(() => {
     supabase = createMockSupabaseService();
+    const auth = createMockAuthService({
+      isAuthenticated: true,
+      roles: ['platform_admin'],
+      claims: { is_platform_admin: true, lecturer_course_ids: [] },
+    });
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         StalenessService,
         { provide: SupabaseService, useValue: supabase },
+        { provide: AuthService, useValue: auth },
       ],
     });
     service = TestBed.inject(StalenessService);
@@ -327,6 +335,36 @@ describe('StalenessService', () => {
     await service.postponeModule('mod-123');
 
     expect(supabase.client.from).toHaveBeenCalledWith('modules');
+  });
+
+  it('should filter out courses not in lecturer_course_ids for lecturers', async () => {
+    const lecturerAuth = createMockAuthService({
+      isAuthenticated: true,
+      roles: ['lecturer'],
+      claims: { is_platform_admin: false, lecturer_course_ids: ['c1'] },
+    });
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        StalenessService,
+        { provide: SupabaseService, useValue: supabase },
+        { provide: AuthService, useValue: lecturerAuth },
+      ],
+    });
+    const lecturerService = TestBed.inject(StalenessService);
+
+    mockResponses(
+      [
+        { id: 'c1', title: 'Assigned', staleness_threshold_days: 180 },
+        { id: 'c2', title: 'Not Assigned', staleness_threshold_days: 180 },
+      ],
+      [],
+    );
+
+    await lecturerService.loadStalenessData();
+
+    expect(lecturerService.courses().length).toBe(1);
+    expect(lecturerService.courses()[0].id).toBe('c1');
   });
 
   it('should call update with .in() for postponeAllStaleModules', async () => {

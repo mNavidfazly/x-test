@@ -74,19 +74,19 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| IR-01 | Report an Issue from Module Viewer | Learner | ✅ | 2026-02-15 |
-| IR-02 | View My Issues Page | Learner | ✅ | 2026-02-15 |
-| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ✅ | 2026-02-15 |
-| IR-04 | Form Validation and Cancel | Learner | ✅ | 2026-02-15 |
-| IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-15 |
-| IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-15 |
-| IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-15 |
-| IR-08 | Empty State on My Issues Page | Lecturer | ✅ | 2026-02-15 |
-| IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | Learner (both tenants) | ✅ | 2026-02-15 |
-| IR-10 | Platform Admin Can Report Issue | Platform Admin | ✅ | 2026-02-15 |
-| IR-11 | Status Badges — Investigating, Resolved, Closed | Learner | ✅ | 2026-02-15 |
-| IR-12 | Resolved Issue — Resolution Info Panel | Learner | ✅ | 2026-02-15 |
-| IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | Learner | ✅ | 2026-02-15 |
+| IR-01 | Report an Issue from Module Viewer | Learner | ✅ | 2026-02-16 |
+| IR-02 | View My Issues Page | Learner | ✅ | 2026-02-16 |
+| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ✅ | 2026-02-16 |
+| IR-04 | Form Validation and Cancel | Learner | ✅ | 2026-02-16 |
+| IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-16 |
+| IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-16 |
+| IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-16 |
+| IR-08 | Empty State on My Issues Page | Lecturer | ✅ | 2026-02-16 |
+| IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | Learner (both tenants) | ✅ | 2026-02-16 |
+| IR-10 | Platform Admin Can Report Issue | Platform Admin | ✅ | 2026-02-16 |
+| IR-11 | Status Badges — Investigating, Resolved, Closed | Learner | ✅ | 2026-02-16 |
+| IR-12 | Resolved Issue — Resolution Info Panel | Learner | ✅ | 2026-02-16 |
+| IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | Learner | ✅ | 2026-02-16 |
 
 ---
 
@@ -94,9 +94,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the complete issue reporting flow: learner clicks "Report Issue" button on module viewer, selects an issue type, writes a description, submits, and sees the success confirmation. This is the core happy path.
 
@@ -110,19 +110,19 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Navigate to a course → click a module (video/PDF/markdown) | Module viewer loads with content | ☐ |
-| 3 | Scroll down past "Ask an Expert" section | "Report Issue" button visible (rose-tinted: white bg, rose border, rose text, Flag icon) | ☐ |
-| 4 | Verify "Report Issue" button styling | `bg-white border border-rose-300 text-rose-700` with Flag icon | ☐ |
-| 5 | Click "Report Issue" button | Form expands: card with issue type dropdown, description textarea, Submit + Cancel buttons | ☐ |
-| 6 | Verify issue type dropdown has 4 options | "Content Error", "Technical Problem", "Accessibility Issue", "Other" | ☐ |
-| 7 | Verify Submit button is disabled | Button is dimmed (no type selected, no description) | ☐ |
-| 8 | Select "Content Error" from the dropdown | Type is selected | ☐ |
-| 9 | Verify Submit still disabled | Description is still empty | ☐ |
-| 10 | Type "There is a typo on slide 3 — 'recieve' should be 'receive'" in description | Text entered in textarea | ☐ |
-| 11 | Click "Submit Issue" button | Button shows spinner (Loader2 with animate-spin), then success state appears | ☐ |
-| 12 | Verify success confirmation | Emerald card with CheckCircle2 icon, "Your issue has been reported!" message, "The course team will be notified." text | ☐ |
-| 13 | Verify "Report Another" button | Rose-tinted button to reset and report a new issue | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Navigate to a course → click a module (video/PDF/markdown) | Module viewer loads with content | ✅ |
+| 3 | Scroll down past "Ask an Expert" section | "Report Issue" button visible (rose-tinted: white bg, rose border, rose text, Flag icon) | ✅ |
+| 4 | Verify "Report Issue" button styling | `bg-white border border-rose-300 text-rose-700` with Flag icon | ✅ |
+| 5 | Click "Report Issue" button | Form expands: card with issue type dropdown, description textarea, Submit + Cancel buttons | ✅ |
+| 6 | Verify issue type dropdown has 4 options | "Content Error", "Technical Problem", "Accessibility Issue", "Other" | ✅ |
+| 7 | Verify Submit button is disabled | Button is dimmed (no type selected, no description) | ✅ |
+| 8 | Select "Content Error" from the dropdown | Type is selected | ✅ |
+| 9 | Verify Submit still disabled | Description is still empty | ✅ |
+| 10 | Type "There is a typo on slide 3 — 'recieve' should be 'receive'" in description | Text entered in textarea | ✅ |
+| 11 | Click "Submit Issue" button | Button shows spinner (Loader2 with animate-spin), then success state appears | ✅ |
+| 12 | Verify success confirmation | Emerald card with CheckCircle2 icon, "Your issue has been reported!" message, "The course team will be notified." text | ✅ |
+| 13 | Verify "Report Another" button | Rose-tinted button to reset and report a new issue | ✅ |
 
 **Notes/Learnings**:
 - `issues_insert_own` RLS: validates `user_id = auth.uid() AND tenant_id = jwt_claim('tenant_id')`
@@ -136,9 +136,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that after reporting an issue, the learner can navigate to the My Issues page (`/issues`) and see their reported issue with correct status badge, issue type, course/module info, and relative timestamp.
 
@@ -152,15 +152,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Click "My Issues" in the sidebar (Flag icon) | Page navigates to `/issues` | ☐ |
-| 2 | Verify page header | Flag icon in rose-100 circle + "My Issues" title + count badge showing number of issues | ☐ |
-| 3 | Verify issue card is visible | Card with issue description text, status badge, issue type, course/module names | ☐ |
-| 4 | Verify "Open" status badge | Amber badge (`bg-amber-100 text-amber-700`) with Clock icon and text "Open" | ☐ |
-| 5 | Verify issue type label | "Content Error" label displayed on the card | ☐ |
-| 6 | Verify course name | Course title shown on the card | ☐ |
-| 7 | Verify module name | "/ Module Title" shown after course name (with separator) | ☐ |
-| 8 | Verify relative timestamp | "just now" or "X minutes ago" shown | ☐ |
-| 9 | Verify count badge | Number matches total issues displayed | ☐ |
+| 1 | Click "My Issues" in the sidebar (Flag icon) | Page navigates to `/issues` | ✅ |
+| 2 | Verify page header | Flag icon in rose-100 circle + "My Issues" title + count badge showing number of issues | ✅ |
+| 3 | Verify issue card is visible | Card with issue description text, status badge, issue type, course/module names | ✅ |
+| 4 | Verify "Open" status badge | Amber badge (`bg-amber-100 text-amber-700`) with Clock icon and text "Open" | ✅ |
+| 5 | Verify issue type label | "Content Error" label displayed on the card | ✅ |
+| 6 | Verify course name | Course title shown on the card | ✅ |
+| 7 | Verify module name | "/ Module Title" shown after course name (with separator) | ✅ |
+| 8 | Verify relative timestamp | "just now" or "X minutes ago" shown | ✅ |
+| 9 | Verify count badge | Number matches total issues displayed | ✅ |
 
 **Notes/Learnings**:
 - `loadMyIssues()` queries `issues_safe` view with FK joins: `course:courses!issues_course_id_fkey(title), module:modules!issues_module_id_fkey(title)`
@@ -174,9 +174,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking an issue card expands to show full details (description, resolution info), and the "Go to module" link navigates to the correct module.
 
@@ -190,16 +190,16 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to My Issues page (`/issues`) | Issue cards visible | ☐ |
-| 2 | Click on an issue card (the description text or expand area) | Card expands to show detail panel | ☐ |
-| 3 | Verify "Description" heading in expanded area | "Description" label visible | ☐ |
-| 4 | Verify full description text | The complete issue description from IR-01 is shown | ☐ |
-| 5 | Verify "Go to module" link | Teal link with ArrowRight icon pointing to the module page | ☐ |
-| 6 | Click "Go to module" link | Navigates to the module viewer page (`/courses/:courseId/modules/:moduleId`) | ☐ |
-| 7 | Verify correct module loaded | The module that was reported on is displayed | ☐ |
-| 8 | Navigate back to My Issues page | Issue still present, accordion collapsed | ☐ |
-| 9 | Click the same issue card again | Expands again (toggle behavior) | ☐ |
-| 10 | Click the same issue card once more | Collapses (accordion toggle) | ☐ |
+| 1 | Navigate to My Issues page (`/issues`) | Issue cards visible | ✅ |
+| 2 | Click on an issue card (the description text or expand area) | Card expands to show detail panel | ✅ |
+| 3 | Verify "Description" heading in expanded area | "Description" label visible | ✅ |
+| 4 | Verify full description text | The complete issue description from IR-01 is shown | ✅ |
+| 5 | Verify "Go to module" link | Teal link with ArrowRight icon pointing to the module page | ✅ |
+| 6 | Click "Go to module" link | Navigates to the module viewer page (`/courses/:courseId/modules/:moduleId`) | ✅ |
+| 7 | Verify correct module loaded | The module that was reported on is displayed | ✅ |
+| 8 | Navigate back to My Issues page | Issue still present, accordion collapsed | ✅ |
+| 9 | Click the same issue card again | Expands again (toggle behavior) | ✅ |
+| 10 | Click the same issue card once more | Collapses (accordion toggle) | ✅ |
 
 **Notes/Learnings**:
 - `expandedId` signal tracks which issue is expanded — only one at a time
@@ -213,9 +213,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the report issue form enforces validation (both type and description required) and the cancel button closes the form without submitting.
 
@@ -228,18 +228,18 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to a module viewer page | Module content loads, "Report Issue" button visible | ☐ |
-| 2 | Click "Report Issue" | Form expands | ☐ |
-| 3 | Verify Submit disabled (no type, no description) | Button has `disabled:opacity-50` styling | ☐ |
-| 4 | Select "Technical Problem" from dropdown | Type selected | ☐ |
-| 5 | Verify Submit still disabled (no description) | Button still dimmed | ☐ |
-| 6 | Clear the type selection (select placeholder) | Type unselected | ☐ |
-| 7 | Type "Test description" in textarea | Text entered | ☐ |
-| 8 | Verify Submit still disabled (no type) | Button still dimmed — both fields required | ☐ |
-| 9 | Select "Technical Problem" again | Both type and description now filled | ☐ |
-| 10 | Verify Submit is now enabled | Button is not dimmed, clickable | ☐ |
-| 11 | Click the X (close) button instead of submitting | Form collapses back to "Report Issue" button | ☐ |
-| 12 | Click "Report Issue" again | Form re-opens with fields reset (empty type, empty description) | ☐ |
+| 1 | Navigate to a module viewer page | Module content loads, "Report Issue" button visible | ✅ |
+| 2 | Click "Report Issue" | Form expands | ✅ |
+| 3 | Verify Submit disabled (no type, no description) | Button has `disabled:opacity-50` styling | ✅ |
+| 4 | Select "Technical Problem" from dropdown | Type selected | ✅ |
+| 5 | Verify Submit still disabled (no description) | Button still dimmed | ✅ |
+| 6 | Clear the type selection (select placeholder) | Type unselected | ✅ |
+| 7 | Type "Test description" in textarea | Text entered | ✅ |
+| 8 | Verify Submit still disabled (no type) | Button still dimmed — both fields required | ✅ |
+| 9 | Select "Technical Problem" again | Both type and description now filled | ✅ |
+| 10 | Verify Submit is now enabled | Button is not dimmed, clickable | ✅ |
+| 11 | Click the X (close) button instead of submitting | Form collapses back to "Report Issue" button | ✅ |
+| 12 | Click "Report Issue" again | Form re-opens with fields reset (empty type, empty description) | ✅ |
 
 **Notes/Learnings**:
 - Submit disabled condition: `!description().trim() || !issueType() || submitting()`
@@ -252,9 +252,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that after successfully reporting an issue, the "Report Another" button resets the form to allow submitting a new issue. Also verifies a second issue appears on the My Issues page.
 
@@ -268,17 +268,17 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to a module viewer page | Module loads | ☐ |
-| 2 | Click "Report Issue" (or "Report Another" if success state showing) | Form is open with empty fields | ☐ |
-| 3 | Select "Accessibility Issue" from dropdown | Type selected | ☐ |
-| 4 | Type "Screen reader cannot read the diagram on this page" | Description entered | ☐ |
-| 5 | Click "Submit Issue" | Spinner → success confirmation | ☐ |
-| 6 | Click "Report Another" button | Form resets: empty dropdown, empty textarea, submit disabled | ☐ |
-| 7 | Select "Other" from dropdown | Type selected | ☐ |
-| 8 | Type "The page takes too long to load" | Description entered | ☐ |
-| 9 | Click "Submit Issue" | Spinner → success confirmation again | ☐ |
-| 10 | Navigate to My Issues page (`/issues`) | Page loads | ☐ |
-| 11 | Verify multiple issues visible | At least 3 issues now (from IR-01, step 5, step 9) with correct types | ☐ |
+| 1 | Navigate to a module viewer page | Module loads | ✅ |
+| 2 | Click "Report Issue" (or "Report Another" if success state showing) | Form is open with empty fields | ✅ |
+| 3 | Select "Accessibility Issue" from dropdown | Type selected | ✅ |
+| 4 | Type "Screen reader cannot read the diagram on this page" | Description entered | ✅ |
+| 5 | Click "Submit Issue" | Spinner → success confirmation | ✅ |
+| 6 | Click "Report Another" button | Form resets: empty dropdown, empty textarea, submit disabled | ✅ |
+| 7 | Select "Other" from dropdown | Type selected | ✅ |
+| 8 | Type "The page takes too long to load" | Description entered | ✅ |
+| 9 | Click "Submit Issue" | Spinner → success confirmation again | ✅ |
+| 10 | Navigate to My Issues page (`/issues`) | Page loads | ✅ |
+| 11 | Verify multiple issues visible | At least 3 issues now (from IR-01, step 5, step 9) with correct types | ✅ |
 
 **Notes/Learnings**:
 - "Report Another" sets `submitted` signal to false, `isOpen` to true, clears `issueType` and `description`
@@ -291,9 +291,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that all 4 issue types display with their correct human-readable labels on the My Issues page.
 
@@ -306,11 +306,11 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to My Issues page (`/issues`) | Page loads with issue cards | ☐ |
-| 2 | Verify "Content Error" label | Issue from IR-01 shows "Content Error" type label | ☐ |
-| 3 | Verify "Accessibility" label | Issue from IR-05 step 5 shows "Accessibility" type label | ☐ |
-| 4 | Verify "Other" label | Issue from IR-05 step 9 shows "Other" type label | ☐ |
-| 5 | (If "Technical" issue exists) Verify "Technical" label | Shows "Technical" type label | ☐ |
+| 1 | Navigate to My Issues page (`/issues`) | Page loads with issue cards | ✅ |
+| 2 | Verify "Content Error" label | Issue from IR-01 shows "Content Error" type label | ✅ |
+| 3 | Verify "Accessibility" label | Issue from IR-05 step 5 shows "Accessibility" type label | ✅ |
+| 4 | Verify "Other" label | Issue from IR-05 step 9 shows "Other" type label | ✅ |
+| 5 | (If "Technical" issue exists) Verify "Technical" label | Shows "Technical" type label | ✅ |
 
 **Notes/Learnings**:
 - Type label mapping: `content_error` → "Content Error", `technical` → "Technical", `accessibility` → "Accessibility", `other` → "Other"
@@ -323,9 +323,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that "My Issues" appears in the sidebar with the Flag icon, is visible to all roles, and navigates correctly to `/issues`.
 
@@ -338,12 +338,12 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Look at the sidebar navigation | "My Issues" link visible in the main section (after "My Questions") | ☐ |
-| 2 | Verify Flag icon | Flag icon (lucide) is displayed next to "My Issues" | ☐ |
-| 3 | Click "My Issues" | Page navigates to `/issues`, My Issues page loads | ☐ |
-| 4 | Verify the sidebar highlights "My Issues" | Active state styling on the nav item | ☐ |
-| 5 | Click "Dashboard" to navigate away | Dashboard loads | ☐ |
-| 6 | Click "My Issues" again | Returns to My Issues page, issues still shown | ☐ |
+| 1 | Look at the sidebar navigation | "My Issues" link visible in the main section (after "My Questions") | ✅ |
+| 2 | Verify Flag icon | Flag icon (lucide) is displayed next to "My Issues" | ✅ |
+| 3 | Click "My Issues" | Page navigates to `/issues`, My Issues page loads | ✅ |
+| 4 | Verify the sidebar highlights "My Issues" | Active state styling on the nav item | ✅ |
+| 5 | Click "Dashboard" to navigate away | Dashboard loads | ✅ |
+| 6 | Click "My Issues" again | Returns to My Issues page, issues still shown | ✅ |
 
 **Notes/Learnings**:
 - "My Issues" is in the `roles: 'all'` section — visible to every authenticated user
@@ -356,9 +356,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the empty state on the My Issues page when a user has no reported issues. Uses Lecturer (who has never reported issues) to guarantee clean state.
 
@@ -371,12 +371,12 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com` / `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Verify "My Issues" visible in sidebar | Flag icon + "My Issues" nav item shown (roles: 'all') | ☐ |
-| 3 | Click "My Issues" in sidebar | Page navigates to `/issues` | ☐ |
-| 4 | Verify empty state message | "No issues reported yet" heading visible | ☐ |
-| 5 | Verify empty state subtitle | "You can report issues from any module page." text visible | ☐ |
-| 6 | Verify no issue cards or count badge | No accordion cards, count badge is absent | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com` / `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Verify "My Issues" visible in sidebar | Flag icon + "My Issues" nav item shown (roles: 'all') | ✅ |
+| 3 | Click "My Issues" in sidebar | Page navigates to `/issues` | ✅ |
+| 4 | Verify empty state message | "No issues reported yet" heading visible | ✅ |
+| 5 | Verify empty state subtitle | "You can report issues from any module page." text visible | ✅ |
+| 6 | Verify no issue cards or count badge | No accordion cards, count badge is absent | ✅ |
 
 **Notes/Learnings**:
 - Empty state renders when `issueService.issues().length === 0` and not loading
@@ -389,9 +389,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that issues reported by one tenant's learner are NOT visible to another tenant's learner. This proves RLS is actually filtering data, not just that no data exists. Mirrors CM-09 pattern.
 
@@ -405,16 +405,16 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Client learner (`learner@calypsoclient.com` / `TestUser123!`) | Dashboard loads | ☐ |
-| 2 | Navigate to My Issues page (`/issues`) | Page loads | ☐ |
-| 3 | Verify Calypso learner's issues are NOT visible | Empty state shown — no issues from other tenant appear | ☐ |
-| 4 | Navigate to a course → module viewer | Module loads (if client has course access) | ☐ |
-| 5 | Report an issue as Client learner | Select "Technical Problem", describe, submit → success | ☐ |
-| 6 | Navigate to My Issues page | Client learner sees own issue (1 issue) | ☐ |
-| 7 | Verify only Client learner's issue visible | "Technical Problem" issue visible, NOT any "Content Error" from Calypso learner | ☐ |
-| 8 | Log out and log in as Calypso learner (`learner@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 9 | Navigate to My Issues page | Calypso learner sees own issues (3+ from IR-01/IR-05) | ☐ |
-| 10 | Verify Client learner's issue is NOT visible | No "Technical Problem" issue from Client learner appears | ☐ |
+| 1 | Log in as Client learner (`learner@calypsoclient.com` / `TestUser123!`) | Dashboard loads | ✅ |
+| 2 | Navigate to My Issues page (`/issues`) | Page loads | ✅ |
+| 3 | Verify Calypso learner's issues are NOT visible | Empty state shown — no issues from other tenant appear | ✅ |
+| 4 | Navigate to a course → module viewer | Module loads (if client has course access) | ✅ |
+| 5 | Report an issue as Client learner | Select "Technical Problem", describe, submit → success | ✅ |
+| 6 | Navigate to My Issues page | Client learner sees own issue (1 issue) | ✅ |
+| 7 | Verify only Client learner's issue visible | "Technical Problem" issue visible, NOT any "Content Error" from Calypso learner | ✅ |
+| 8 | Log out and log in as Calypso learner (`learner@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 9 | Navigate to My Issues page | Calypso learner sees own issues (3+ from IR-01/IR-05) | ✅ |
+| 10 | Verify Client learner's issue is NOT visible | No "Technical Problem" issue from Client learner appears | ✅ |
 
 **Notes/Learnings**:
 - `issues_safe` view: learner sees `WHERE user_id = auth.uid()` — tenant isolation is per-user, not per-tenant for learners
@@ -428,9 +428,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that non-learner roles (Platform Admin) can also report issues from the module viewer. The `<app-report-issue>` renders for all roles, and `issues_insert_own` RLS should allow PA to insert.
 
@@ -444,15 +444,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com` / `TestUser123!`) | Dashboard loads with full sidebar | ☐ |
-| 2 | Navigate to a course → click a module | Module viewer loads | ☐ |
-| 3 | Scroll to "Report Issue" section | "Report Issue" button visible (same rose styling as for learners) | ☐ |
-| 4 | Click "Report Issue" | Form expands with type dropdown + description textarea | ☐ |
-| 5 | Select "Other" from dropdown | Type selected | ☐ |
-| 6 | Type "Admin test: reviewing module quality" in description | Text entered | ☐ |
-| 7 | Click "Submit Issue" | Spinner → success confirmation ("Your issue has been reported!") | ☐ |
-| 8 | Navigate to My Issues page (`/issues`) | PA's issue visible with "Other" type, "Open" badge | ☐ |
-| 9 | Verify only PA's own issue visible | PA does NOT see learner's issues (PA reads from `issues_safe` which filters by `user_id = auth.uid()`) | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com` / `TestUser123!`) | Dashboard loads with full sidebar | ✅ |
+| 2 | Navigate to a course → click a module | Module viewer loads | ✅ |
+| 3 | Scroll to "Report Issue" section | "Report Issue" button visible (same rose styling as for learners) | ✅ |
+| 4 | Click "Report Issue" | Form expands with type dropdown + description textarea | ✅ |
+| 5 | Select "Other" from dropdown | Type selected | ✅ |
+| 6 | Type "Admin test: reviewing module quality" in description | Text entered | ✅ |
+| 7 | Click "Submit Issue" | Spinner → success confirmation ("Your issue has been reported!") | ✅ |
+| 8 | Navigate to My Issues page (`/issues`) | PA's issue visible with "Other" type, "Open" badge | ✅ |
+| 9 | Verify only PA's own issue visible | PA does NOT see learner's issues (PA reads from `issues_safe` which filters by `user_id = auth.uid()`) | ✅ |
 
 **Notes/Learnings**:
 - `issues_insert_own` RLS: `user_id = auth.uid() AND tenant_id = jwt_claim('tenant_id')` — works for any role
@@ -466,9 +466,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that all 4 status badges render correctly on the My Issues page. Since Phase 7B (Issue Management) is not built, statuses are set directly in the database.
 
@@ -482,15 +482,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | In Supabase SQL Editor, update one issue to `investigating` | `UPDATE issues SET status = 'investigating' WHERE ...` | ☐ |
-| 2 | Update another issue to `resolved` with `resolved_at` | `UPDATE issues SET status = 'resolved', resolved_at = now() WHERE ...` | ☐ |
-| 3 | Update a third issue to `closed` (no `resolved_at`) | `UPDATE issues SET status = 'closed' WHERE ...` | ☐ |
-| 4 | Log in as Calypso learner | Dashboard loads | ☐ |
-| 5 | Navigate to My Issues page (`/issues`) | Page loads with issue cards | ☐ |
-| 6 | Verify "Open" badge | Amber badge (`bg-amber-100 text-amber-700`) with Clock icon on remaining open issue(s) | ☐ |
-| 7 | Verify "Investigating" badge | Blue badge (`bg-blue-100 text-blue-700`) with Search icon | ☐ |
-| 8 | Verify "Resolved" badge | Emerald badge (`bg-emerald-100 text-emerald-700`) with CheckCircle2 icon | ☐ |
-| 9 | Verify "Closed" badge | Slate badge (`bg-slate-100 text-slate-600`) with XCircle icon | ☐ |
+| 1 | In Supabase SQL Editor, update one issue to `investigating` | `UPDATE issues SET status = 'investigating' WHERE ...` | ✅ |
+| 2 | Update another issue to `resolved` with `resolved_at` | `UPDATE issues SET status = 'resolved', resolved_at = now() WHERE ...` | ✅ |
+| 3 | Update a third issue to `closed` (no `resolved_at`) | `UPDATE issues SET status = 'closed' WHERE ...` | ✅ |
+| 4 | Log in as Calypso learner | Dashboard loads | ✅ |
+| 5 | Navigate to My Issues page (`/issues`) | Page loads with issue cards | ✅ |
+| 6 | Verify "Open" badge | Amber badge (`bg-amber-100 text-amber-700`) with Clock icon on remaining open issue(s) | ✅ |
+| 7 | Verify "Investigating" badge | Blue badge (`bg-blue-100 text-blue-700`) with Search icon | ✅ |
+| 8 | Verify "Resolved" badge | Emerald badge (`bg-emerald-100 text-emerald-700`) with CheckCircle2 icon | ✅ |
+| 9 | Verify "Closed" badge | Slate badge (`bg-slate-100 text-slate-600`) with XCircle icon | ✅ |
 
 **Notes/Learnings**:
 - Status transitions normally happen via Phase 7B (lecturer/PA update) — for E2E we set via SQL
@@ -503,9 +503,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when an issue has `resolved_at` set, expanding it shows the emerald resolution info panel with "This issue has been resolved." Also verify that closed-without-resolution shows the "closed" message.
 
@@ -519,15 +519,15 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to My Issues page | Issue cards visible with mixed statuses | ☐ |
-| 2 | Click on the "Resolved" issue card | Card expands to show detail panel | ☐ |
-| 3 | Verify "Resolution" heading | "Resolution" label visible in expanded area | ☐ |
-| 4 | Verify resolution message | Emerald panel with "This issue has been resolved." text | ☐ |
-| 5 | Verify resolved date | Resolution date shown (formatted) | ☐ |
-| 6 | Click on the "Closed" issue card (no resolved_at) | Card expands | ☐ |
-| 7 | Verify closed message | "This issue has been closed." text visible (slate text, no emerald panel) | ☐ |
-| 8 | Click on an "Open" issue card | Card expands | ☐ |
-| 9 | Verify NO resolution panel | No "Resolution" heading, no "closed" message — just description and "Go to module" link | ☐ |
+| 1 | Navigate to My Issues page | Issue cards visible with mixed statuses | ✅ |
+| 2 | Click on the "Resolved" issue card | Card expands to show detail panel | ✅ |
+| 3 | Verify "Resolution" heading | "Resolution" label visible in expanded area | ✅ |
+| 4 | Verify resolution message | Emerald panel with "This issue has been resolved." text | ✅ |
+| 5 | Verify resolved date | Resolution date shown (formatted) | ✅ |
+| 6 | Click on the "Closed" issue card (no resolved_at) | Card expands | ✅ |
+| 7 | Verify closed message | "This issue has been closed." text visible (slate text, no emerald panel) | ✅ |
+| 8 | Click on an "Open" issue card | Card expands | ✅ |
+| 9 | Verify NO resolution panel | No "Resolution" heading, no "closed" message — just description and "Go to module" link | ✅ |
 
 **Notes/Learnings**:
 - Resolution panel: `@if (issue.resolved_at)` → emerald bg panel
@@ -541,9 +541,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the accordion allows only one issue to be expanded at a time. Clicking a second issue collapses the first.
 
@@ -556,14 +556,14 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to My Issues page | 3+ issue cards visible, all collapsed | ☐ |
-| 2 | Click on Issue A (first card) | Issue A expands — description, "Go to module" link visible | ☐ |
-| 3 | Verify Issue B and Issue C are collapsed | No expanded detail visible for B or C | ☐ |
-| 4 | Click on Issue B (second card) | Issue B expands, Issue A collapses simultaneously | ☐ |
-| 5 | Verify Issue A is collapsed | Issue A no longer shows description or detail panel | ☐ |
-| 6 | Verify Issue B is expanded | Issue B shows description and detail | ☐ |
-| 7 | Click on Issue B again (same card) | Issue B collapses — all cards are collapsed | ☐ |
-| 8 | Verify all cards collapsed | No expanded detail visible anywhere | ☐ |
+| 1 | Navigate to My Issues page | 3+ issue cards visible, all collapsed | ✅ |
+| 2 | Click on Issue A (first card) | Issue A expands — description, "Go to module" link visible | ✅ |
+| 3 | Verify Issue B and Issue C are collapsed | No expanded detail visible for B or C | ✅ |
+| 4 | Click on Issue B (second card) | Issue B expands, Issue A collapses simultaneously | ✅ |
+| 5 | Verify Issue A is collapsed | Issue A no longer shows description or detail panel | ✅ |
+| 6 | Verify Issue B is expanded | Issue B shows description and detail | ✅ |
+| 7 | Click on Issue B again (same card) | Issue B collapses — all cards are collapsed | ✅ |
+| 8 | Verify all cards collapsed | No expanded detail visible anywhere | ✅ |
 
 **Notes/Learnings**:
 - `expandedId` signal holds the currently expanded issue ID — only one at a time

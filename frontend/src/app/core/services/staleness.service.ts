@@ -1,5 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
+import { AuthService } from './auth.service';
 import { extractErrorMessage } from '../utils/error.utils';
 
 export interface StaleModule {
@@ -29,6 +30,7 @@ export interface StaleCourse {
 @Injectable({ providedIn: 'root' })
 export class StalenessService {
   #supabase = inject(SupabaseService);
+  #auth = inject(AuthService);
 
   #courses = signal<StaleCourse[]>([]);
   #loading = signal(false);
@@ -53,6 +55,14 @@ export class StalenessService {
       if (coursesRes.error) throw coursesRes.error;
       if (modulesRes.error) throw modulesRes.error;
 
+      // Filter to only assigned courses (PA sees all)
+      const claims = this.#auth.currentUser()?.claims;
+      const isPlatformAdmin = claims?.is_platform_admin === true;
+      const lecturerIds = new Set(claims?.lecturer_course_ids ?? []);
+      const visibleCourses = (coursesRes.data ?? []).filter(
+        (course: any) => isPlatformAdmin || lecturerIds.has(course.id),
+      );
+
       // Group modules by course_id into arrays
       const moduleMap = new Map<string, Array<{ id: string; title: string; module_type: string; updated_at: string; staleness_postponed_until: string | null }>>();
       for (const mod of modulesRes.data ?? []) {
@@ -64,7 +74,7 @@ export class StalenessService {
       const now = Date.now();
       const MS_PER_DAY = 86_400_000;
 
-      const courses: StaleCourse[] = (coursesRes.data ?? []).map((course: any) => {
+      const courses: StaleCourse[] = visibleCourses.map((course: any) => {
         const threshold = course.staleness_threshold_days ?? 180;
         const courseModules = moduleMap.get(course.id) ?? [];
 

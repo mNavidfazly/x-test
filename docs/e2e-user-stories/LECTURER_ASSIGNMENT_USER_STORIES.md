@@ -91,13 +91,13 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| LA-01 | Navigation + Page Load + JWT Warning | Platform Admin | ✅ | 2026-02-15 |
-| LA-02 | Summary Cards + Permission Badges | Platform Admin | ✅ | 2026-02-15 |
-| LA-03 | Search Filter | Platform Admin | ✅ | 2026-02-15 |
-| LA-04 | Expand Row Details | Platform Admin | ✅ | 2026-02-15 |
-| LA-05 | Toggle Permission | Platform Admin | ✅ | 2026-02-15 |
-| LA-06 | Add + Remove Assignment | Platform Admin | ✅ | 2026-02-15 |
-| LA-07 | Role Access Control | Multiple | ✅ | 2026-02-15 |
+| LA-01 | Navigation + Page Load + JWT Warning | Platform Admin | ✅ | 2026-02-16 |
+| LA-02 | Summary Cards + Permission Badges | Platform Admin | ✅ | 2026-02-16 |
+| LA-03 | Search Filter | Platform Admin | ✅ | 2026-02-16 |
+| LA-04 | Expand Row Details | Platform Admin | ✅ | 2026-02-16 |
+| LA-05 | Toggle Permission | Platform Admin | ✅ | 2026-02-16 |
+| LA-06 | Add + Remove Assignment | Platform Admin | ✅ | 2026-02-16 |
+| LA-07 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -144,9 +144,9 @@ SELECT id, title FROM courses ORDER BY title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Platform Admin can see "Lecturer Assignments" in the sidebar Platform section, navigate to `/platform/lecturer-assignments`, see the assignments table with header, JWT warning banner, filter bar, summary cards, and table with assignment rows.
 
@@ -197,9 +197,9 @@ ORDER BY p.email;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the 4 summary cards show correct counts derived from the assignments data, and that permission badges render correctly in table rows based on `can_edit` and `can_grade` flags.
 
@@ -248,9 +248,9 @@ FROM lecturer_course_assignments;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the search filter correctly filters assignments by lecturer name, email, or course title (case-insensitive). Summary cards should update to reflect filtered results.
 
@@ -286,9 +286,9 @@ FROM lecturer_course_assignments;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking an assignment row expands it to show permission checkboxes (`Can Edit Content`, `Can Grade Exams`), assignment metadata (assigned by, date), and a "Remove Assignment" button. Clicking again collapses the row.
 
@@ -328,9 +328,9 @@ FROM lecturer_course_assignments;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that toggling `can_edit` or `can_grade` checkboxes in the expanded row actually persists the change to the database (via `updatePermissions`), and the change survives a page reload. **This test is self-cleaning** — it toggles back to the original state.
 
@@ -384,9 +384,9 @@ WHERE p.email = 'lecturer-view@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full add-assignment workflow (open form, select lecturer, select course, submit) and the remove-assignment workflow. **This test is self-cleaning** — the added assignment is removed at the end.
 
@@ -453,9 +453,9 @@ WHERE p.email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that ONLY Platform Admin can access `/platform/lecturer-assignments`. Learners, Lecturers, CSMs, and Tenant Admins should all be blocked by the route guard. The "Lecturer Assignments" sidebar item should only be visible in the Platform section for PA.
 

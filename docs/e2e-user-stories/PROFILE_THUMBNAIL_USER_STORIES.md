@@ -98,17 +98,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PT-01 | Profile Page Load + Data Display | Platform Admin | ✅ | 2026-02-15 |
-| PT-02 | Inline Name Editing | Platform Admin | ✅ | 2026-02-15 |
-| PT-03 | Avatar Upload | Platform Admin | ✅ | 2026-02-15 |
-| PT-04 | Avatar Removal | Platform Admin | ✅ | 2026-02-15 |
-| PT-05 | Role Badges for Different Users | Multiple | ✅ | 2026-02-15 |
-| PT-06 | Create Course with Uploaded Thumbnail | Platform Admin | ✅ | 2026-02-15 |
-| PT-07 | Thumbnail Shows on Course Card | Platform Admin | ✅ | 2026-02-15 |
-| PT-08 | Edit Course — Thumbnail Preview + Replace | Platform Admin | ✅ | 2026-02-15 |
-| PT-09 | Profile Page — Role Access | Multiple | ✅ | 2026-02-15 |
-| PT-10 | Create Course with URL Thumbnail | Platform Admin | ✅ | 2026-02-15 |
-| PT-11 | Header Avatar Reflects Upload | Platform Admin | ✅ | 2026-02-15 |
+| PT-01 | Profile Page Load + Data Display | Platform Admin | ✅ | 2026-02-16 |
+| PT-02 | Inline Name Editing | Platform Admin | ✅ | 2026-02-16 |
+| PT-03 | Avatar Upload | Platform Admin | ✅ | 2026-02-16 |
+| PT-04 | Avatar Removal | Platform Admin | ✅ | 2026-02-16 |
+| PT-05 | Role Badges for Different Users | Multiple | ✅ | 2026-02-16 |
+| PT-06 | Create Course with Uploaded Thumbnail | Platform Admin | ✅ | 2026-02-16 |
+| PT-07 | Thumbnail Shows on Course Card | Platform Admin | ✅ | 2026-02-16 |
+| PT-08 | Edit Course — Thumbnail Preview + Replace | Platform Admin | ✅ | 2026-02-16 |
+| PT-09 | Profile Page — Role Access | Multiple | ✅ | 2026-02-16 |
+| PT-10 | Create Course with URL Thumbnail | Platform Admin | ✅ | 2026-02-16 |
+| PT-11 | Header Avatar Reflects Upload | Platform Admin | ✅ | 2026-02-16 |
 
 ---
 
@@ -147,9 +147,9 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that `/profile` loads full user data: name, email, organization, role badges, member-since date, and avatar (or initials fallback). This validates the `ProfileService.loadFullProfile()` round-trip including the tenant FK join.
 
@@ -159,16 +159,16 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Click avatar/name area in header (or navigate to `/profile`) | Navigates to `/profile` | ☐ |
-| 3 | Verify loading state briefly shown | "Loading profile..." text or spinner | ☐ |
-| 4 | Verify full name displayed | Name from `profiles.full_name` shown (e.g., "Eugen Tereschenko") | ☐ |
-| 5 | Verify email displayed | `et@calypso-commodities.com` shown in info row | ☐ |
-| 6 | Verify organization displayed | Tenant name shown (e.g., "Calypso") | ☐ |
-| 7 | Verify role badges | "Platform Admin" badge visible (teal). If also TA: "Tenant Admin" badge (amber) | ☐ |
-| 8 | Verify "Member Since" date | Formatted date from `profiles.created_at` | ☐ |
-| 9 | Verify avatar or initials | If `avatar_url` exists: avatar image shown. If null: initials circle shown | ☐ |
-| 10 | Verify pencil icon next to name | Edit name button (pencil icon) visible | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Click avatar/name area in header (or navigate to `/profile`) | Navigates to `/profile` | ✅ |
+| 3 | Verify loading state briefly shown | "Loading profile..." text or spinner | ✅ |
+| 4 | Verify full name displayed | Name from `profiles.full_name` shown (e.g., "Eugen Tereschenko") | ✅ |
+| 5 | Verify email displayed | `et@calypso-commodities.com` shown in info row | ✅ |
+| 6 | Verify organization displayed | Tenant name shown (e.g., "Calypso") | ✅ |
+| 7 | Verify role badges | "Platform Admin" badge visible (teal). If also TA: "Tenant Admin" badge (amber) | ✅ |
+| 8 | Verify "Member Since" date | Formatted date from `profiles.created_at` | ✅ |
+| 9 | Verify avatar or initials | If `avatar_url` exists: avatar image shown. If null: initials circle shown | ✅ |
+| 10 | Verify pencil icon next to name | Edit name button (pencil icon) visible | ✅ |
 
 ### Notes / Learnings
 - `loadFullProfile()` uses `.select('*, tenants!inner(name)')` to get tenant name in one query
@@ -182,9 +182,9 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the inline name editing flow: click pencil → input appears with current name → type new name → click checkmark → name updates → success toast. Also test cancel flow.
 
@@ -194,17 +194,17 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/profile` as PA | Profile page loads with current name | ☐ |
-| 2 | Note the current name displayed | e.g., "Eugen Tereschenko" | ☐ |
-| 3 | Click pencil icon next to name | Text input appears, pre-filled with current name. Check and X icons replace pencil | ☐ |
-| 4 | Clear input and type "Test Name PT-02" | Input shows new value | ☐ |
-| 5 | Click checkmark (save) icon | Brief loading state, then name updates to "Test Name PT-02" | ☐ |
-| 6 | Verify success toast | "Name updated" toast appears | ☐ |
-| 7 | Verify name persisted | Refresh the page (`/profile`) — name still shows "Test Name PT-02" | ☐ |
-| 8 | Click pencil again to edit | Input appears with "Test Name PT-02" | ☐ |
-| 9 | Type "Should Not Save" | Input shows new value | ☐ |
-| 10 | Click X (cancel) icon | Input disappears, name still shows "Test Name PT-02" (not "Should Not Save") | ☐ |
-| 11 | **Cleanup**: Edit name back to original | Restore original name (e.g., "Eugen Tereschenko") | ☐ |
+| 1 | Navigate to `/profile` as PA | Profile page loads with current name | ✅ |
+| 2 | Note the current name displayed | e.g., "Eugen Tereschenko" | ✅ |
+| 3 | Click pencil icon next to name | Text input appears, pre-filled with current name. Check and X icons replace pencil | ✅ |
+| 4 | Clear input and type "Test Name PT-02" | Input shows new value | ✅ |
+| 5 | Click checkmark (save) icon | Brief loading state, then name updates to "Test Name PT-02" | ✅ |
+| 6 | Verify success toast | "Name updated" toast appears | ✅ |
+| 7 | Verify name persisted | Refresh the page (`/profile`) — name still shows "Test Name PT-02" | ✅ |
+| 8 | Click pencil again to edit | Input appears with "Test Name PT-02" | ✅ |
+| 9 | Type "Should Not Save" | Input shows new value | ✅ |
+| 10 | Click X (cancel) icon | Input disappears, name still shows "Test Name PT-02" (not "Should Not Save") | ✅ |
+| 11 | **Cleanup**: Edit name back to original | Restore original name (e.g., "Eugen Tereschenko") | ✅ |
 
 ### Notes / Learnings
 - `updateName()` calls `.update({ full_name })` then `refreshProfile()` to update the header signal
@@ -218,9 +218,9 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify avatar upload: click camera overlay → select image file → instant preview → upload to `avatars/{userId}/avatar` → signed URL resolves → avatar image displayed. This is the most critical test — validates the full storage roundtrip with private bucket + signed URLs.
 
@@ -234,16 +234,16 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/profile` as PA | Profile page loads | ☐ |
-| 2 | Verify avatar area | Shows either current avatar image or initials circle with camera overlay | ☐ |
-| 3 | Click on avatar area (camera overlay) | File picker opens (hidden `<input type="file" accept="image/*">`) | ☐ |
-| 4 | Select a test image file (JPEG/PNG, <5MB) | File picker closes | ☐ |
-| 5 | Verify upload progress | Loading spinner/overlay on avatar area | ☐ |
-| 6 | Verify avatar updates to uploaded image | Image displays (via signed URL), no initials shown | ☐ |
-| 7 | Verify success toast | "Avatar updated" toast appears | ☐ |
-| 8 | Verify "Remove photo" link appears | Text link below avatar becomes visible | ☐ |
-| 9 | Refresh the page | Avatar still shows the uploaded image (re-fetched via signed URL) | ☐ |
-| 10 | Inspect the avatar `<img>` src | URL contains `token=` (signed URL) and `&v=` (cache-buster) | ☐ |
+| 1 | Navigate to `/profile` as PA | Profile page loads | ✅ |
+| 2 | Verify avatar area | Shows either current avatar image or initials circle with camera overlay | ✅ |
+| 3 | Click on avatar area (camera overlay) | File picker opens (hidden `<input type="file" accept="image/*">`) | ✅ |
+| 4 | Select a test image file (JPEG/PNG, <5MB) | File picker closes | ✅ |
+| 5 | Verify upload progress | Loading spinner/overlay on avatar area | ✅ |
+| 6 | Verify avatar updates to uploaded image | Image displays (via signed URL), no initials shown | ✅ |
+| 7 | Verify success toast | "Avatar updated" toast appears | ✅ |
+| 8 | Verify "Remove photo" link appears | Text link below avatar becomes visible | ✅ |
+| 9 | Refresh the page | Avatar still shows the uploaded image (re-fetched via signed URL) | ✅ |
+| 10 | Inspect the avatar `<img>` src | URL contains `token=` (signed URL) and `&v=` (cache-buster) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -269,9 +269,9 @@ AND name LIKE '%/avatar';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify avatar removal: click "Remove photo" → avatar deleted from storage → `avatar_url` set to null → initials fallback shown. Depends on PT-03 (avatar must exist first).
 
@@ -284,13 +284,13 @@ AND name LIKE '%/avatar';
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/profile` as PA | Profile page loads with avatar image visible | ☐ |
-| 2 | Verify "Remove photo" link is visible | Link below avatar area | ☐ |
-| 3 | Click "Remove photo" | Brief loading state | ☐ |
-| 4 | Verify avatar replaced with initials circle | Initials of full name shown (e.g., "ET") in colored circle | ☐ |
-| 5 | Verify "Remove photo" link disappears | No removal option when no avatar | ☐ |
-| 6 | Verify success toast | "Avatar removed" toast appears | ☐ |
-| 7 | Refresh the page | Initials still shown (avatar_url is null in DB) | ☐ |
+| 1 | Navigate to `/profile` as PA | Profile page loads with avatar image visible | ✅ |
+| 2 | Verify "Remove photo" link is visible | Link below avatar area | ✅ |
+| 3 | Click "Remove photo" | Brief loading state | ✅ |
+| 4 | Verify avatar replaced with initials circle | Initials of full name shown (e.g., "ET") in colored circle | ✅ |
+| 5 | Verify "Remove photo" link disappears | No removal option when no avatar | ✅ |
+| 6 | Verify success toast | "Avatar removed" toast appears | ✅ |
+| 7 | Refresh the page | Initials still shown (avatar_url is null in DB) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -316,9 +316,9 @@ AND name LIKE (SELECT id::text FROM profiles WHERE email = 'et@calypso-commoditi
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the profile page shows the correct role badges for different user types. Roles are computed from JWT claims (not the profile query). Each role gets a distinct color badge.
 
@@ -328,12 +328,12 @@ AND name LIKE (SELECT id::text FROM profiles WHERE email = 'et@calypso-commoditi
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) → `/profile` | "Platform Admin" badge shown (teal) | ☐ |
-| 2 | Verify Learner badge also shown | "Learner" badge (slate) — all users are implicitly learners | ☐ |
-| 3 | Log out, log in as Lecturer (`lecturer-edit@calypso-commodities.com`) → `/profile` | "Lecturer" badge shown (purple) + "Learner" badge | ☐ |
-| 4 | Log out, log in as Tenant Admin (`admin@calypsoclient.com`) → `/profile` | "Tenant Admin" badge shown (amber) + "Learner" badge | ☐ |
-| 5 | Verify org name for TA | Shows "Calypso Client" (not "Calypso") | ☐ |
-| 6 | Log out, log in as Learner (`learner@calypso-commodities.com`) → `/profile` | Only "Learner" badge shown (slate) | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) → `/profile` | "Platform Admin" badge shown (teal) | ✅ |
+| 2 | Verify Learner badge also shown | "Learner" badge (slate) — all users are implicitly learners | ✅ |
+| 3 | Log out, log in as Lecturer (`lecturer-edit@calypso-commodities.com`) → `/profile` | "Lecturer" badge shown (purple) + "Learner" badge | ✅ |
+| 4 | Log out, log in as Tenant Admin (`admin@calypsoclient.com`) → `/profile` | "Tenant Admin" badge shown (amber) + "Learner" badge | ✅ |
+| 5 | Verify org name for TA | Shows "Calypso Client" (not "Calypso") | ✅ |
+| 6 | Log out, log in as Learner (`learner@calypso-commodities.com`) → `/profile` | Only "Learner" badge shown (slate) | ✅ |
 
 ### Notes / Learnings
 - Role badge colors: Platform Admin = teal, Tenant Admin = amber, CSM = sky, Lecturer = purple, Learner = slate
@@ -347,9 +347,9 @@ AND name LIKE (SELECT id::text FROM profiles WHERE email = 'et@calypso-commoditi
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full course creation flow with an uploaded thumbnail image. This tests the two-step create: (1) create course, (2) upload thumbnail to `course-files/{courseId}/thumbnail-{timestamp}.ext`, (3) update course with storage path. The thumbnail should then be resolved to a signed URL on the course detail page.
 
@@ -362,20 +362,20 @@ AND name LIKE (SELECT id::text FROM profiles WHERE email = 'et@calypso-commoditi
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as PA, navigate to `/courses` | Course list loads | ☐ |
-| 2 | Click "Create Course" | Navigate to `/courses/new` | ☐ |
-| 3 | Enter title: "Thumbnail Test PT-06" | Title field filled | ☐ |
-| 4 | Enter description: "Course with uploaded thumbnail" | Description filled | ☐ |
-| 5 | Verify Thumbnail section shows "Upload" and "URL" tabs | Two mode buttons visible, "Upload" is default active | ☐ |
-| 6 | Verify Upload tab is active by default | FileUploadComponent (drag-and-drop area) visible | ☐ |
-| 7 | Click the drop zone or "browse" link | File picker opens | ☐ |
-| 8 | Select a test image file | File selected, preview image appears above the upload area | ☐ |
-| 9 | Verify preview image shows the selected file | Thumbnail preview with "Clear" (X) button visible | ☐ |
-| 10 | Click "Create Course" | Saving state, then navigate to course detail | ☐ |
-| 11 | Verify course detail page loads | "Thumbnail Test PT-06" title displayed | ☐ |
-| 12 | Navigate to `/courses` list | Course list loads | ☐ |
-| 13 | Find "Thumbnail Test PT-06" card | Course card visible with thumbnail image | ☐ |
-| 14 | Inspect thumbnail `<img>` src on card | Contains `token=` (signed URL from `course-files` bucket) | ☐ |
+| 1 | Log in as PA, navigate to `/courses` | Course list loads | ✅ |
+| 2 | Click "Create Course" | Navigate to `/courses/new` | ✅ |
+| 3 | Enter title: "Thumbnail Test PT-06" | Title field filled | ✅ |
+| 4 | Enter description: "Course with uploaded thumbnail" | Description filled | ✅ |
+| 5 | Verify Thumbnail section shows "Upload" and "URL" tabs | Two mode buttons visible, "Upload" is default active | ✅ |
+| 6 | Verify Upload tab is active by default | FileUploadComponent (drag-and-drop area) visible | ✅ |
+| 7 | Click the drop zone or "browse" link | File picker opens | ✅ |
+| 8 | Select a test image file | File selected, preview image appears above the upload area | ✅ |
+| 9 | Verify preview image shows the selected file | Thumbnail preview with "Clear" (X) button visible | ✅ |
+| 10 | Click "Create Course" | Saving state, then navigate to course detail | ✅ |
+| 11 | Verify course detail page loads | "Thumbnail Test PT-06" title displayed | ✅ |
+| 12 | Navigate to `/courses` list | Course list loads | ✅ |
+| 13 | Find "Thumbnail Test PT-06" card | Course card visible with thumbnail image | ✅ |
+| 14 | Inspect thumbnail `<img>` src on card | Contains `token=` (signed URL from `course-files` bucket) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -401,9 +401,9 @@ AND name LIKE '%/thumbnail-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that uploaded thumbnails are correctly resolved to signed URLs and displayed on course cards in the course list. This tests the batch `createSignedUrls()` flow in `CourseService.loadCourses()`.
 
@@ -416,12 +416,12 @@ AND name LIKE '%/thumbnail-%';
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/courses` as PA | Course list loads | ☐ |
-| 2 | Find "Thumbnail Test PT-06" card | Card visible in the grid | ☐ |
-| 3 | Verify thumbnail image is displayed | Image tag renders, shows the uploaded picture | ☐ |
-| 4 | Verify no broken image icon | Image loads successfully (signed URL is valid) | ☐ |
-| 5 | Check browser Network tab | Request to `storage/v1/object/sign/course-files/...` returns 200 | ☐ |
-| 6 | Verify other course cards without uploaded thumbnails | Either show external URL image or no image (depending on their `thumbnail_url`) | ☐ |
+| 1 | Navigate to `/courses` as PA | Course list loads | ✅ |
+| 2 | Find "Thumbnail Test PT-06" card | Card visible in the grid | ✅ |
+| 3 | Verify thumbnail image is displayed | Image tag renders, shows the uploaded picture | ✅ |
+| 4 | Verify no broken image icon | Image loads successfully (signed URL is valid) | ✅ |
+| 5 | Check browser Network tab | Request to `storage/v1/object/sign/course-files/...` returns 200 | ✅ |
+| 6 | Verify other course cards without uploaded thumbnails | Either show external URL image or no image (depending on their `thumbnail_url`) | ✅ |
 
 ### Notes / Learnings
 - `#resolveThumbnailUrls()` collects all storage-path thumbnails, calls `createSignedUrls()` once, then replaces paths with signed URLs
@@ -434,9 +434,9 @@ AND name LIKE '%/thumbnail-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that editing a course with an existing uploaded thumbnail: (1) shows the current thumbnail preview via signed URL, (2) allows replacing with a new upload, (3) cleans up the old storage file.
 
@@ -450,15 +450,15 @@ AND name LIKE '%/thumbnail-%';
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to "Thumbnail Test PT-06" course detail | Detail page loads | ☐ |
-| 2 | Click "Edit" button | Navigate to edit form | ☐ |
-| 3 | Verify thumbnail preview shows current image | Existing uploaded thumbnail displayed above the Upload/URL tabs | ☐ |
-| 4 | Verify "Upload" tab is active (storage path detected) | Upload mode is default for existing storage-path thumbnails | ☐ |
-| 5 | Click the file upload area | File picker opens | ☐ |
-| 6 | Select a different test image | New preview replaces old preview | ☐ |
-| 7 | Click "Save Changes" | Saving state, then navigate back to detail | ☐ |
-| 8 | Verify new thumbnail on detail page | New image displayed (not old one) | ☐ |
-| 9 | Navigate to course list | Course card shows new thumbnail | ☐ |
+| 1 | Navigate to "Thumbnail Test PT-06" course detail | Detail page loads | ✅ |
+| 2 | Click "Edit" button | Navigate to edit form | ✅ |
+| 3 | Verify thumbnail preview shows current image | Existing uploaded thumbnail displayed above the Upload/URL tabs | ✅ |
+| 4 | Verify "Upload" tab is active (storage path detected) | Upload mode is default for existing storage-path thumbnails | ✅ |
+| 5 | Click the file upload area | File picker opens | ✅ |
+| 6 | Select a different test image | New preview replaces old preview | ✅ |
+| 7 | Click "Save Changes" | Saving state, then navigate back to detail | ✅ |
+| 8 | Verify new thumbnail on detail page | New image displayed (not old one) | ✅ |
+| 9 | Navigate to course list | Course card shows new thumbnail | ✅ |
 
 ### SQL Verification
 ```sql
@@ -484,9 +484,9 @@ AND name LIKE (SELECT id::text FROM courses WHERE title = 'Thumbnail Test PT-06'
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that ALL authenticated users can access the profile page, regardless of role. The profile page is accessible to every logged-in user — there is no role guard on the `/profile` route.
 
@@ -496,10 +496,10 @@ AND name LIKE (SELECT id::text FROM courses WHERE title = 'Thumbnail Test PT-06'
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) → `/profile` | Profile page loads with PA data | ☐ |
-| 2 | Log out, log in as Lecturer (`lecturer-edit@calypso-commodities.com`) → `/profile` | Profile page loads with lecturer data | ☐ |
-| 3 | Log out, log in as Tenant Admin (`admin@calypsoclient.com`) → `/profile` | Profile page loads with TA data, org = "Calypso Client" | ☐ |
-| 4 | Log out, log in as Learner (`learner@calypso-commodities.com`) → `/profile` | Profile page loads with learner data, only "Learner" badge | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) → `/profile` | Profile page loads with PA data | ✅ |
+| 2 | Log out, log in as Lecturer (`lecturer-edit@calypso-commodities.com`) → `/profile` | Profile page loads with lecturer data | ✅ |
+| 3 | Log out, log in as Tenant Admin (`admin@calypsoclient.com`) → `/profile` | Profile page loads with TA data, org = "Calypso Client" | ✅ |
+| 4 | Log out, log in as Learner (`learner@calypso-commodities.com`) → `/profile` | Profile page loads with learner data, only "Learner" badge | ✅ |
 
 ### Notes / Learnings
 - The `/profile` route uses `authGuard` (must be logged in) but no `roleGuard` (any role can access)
@@ -513,9 +513,9 @@ AND name LIKE (SELECT id::text FROM courses WHERE title = 'Thumbnail Test PT-06'
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify backward compatibility — creating a course with an external URL thumbnail (not uploaded) still works. The URL tab provides a plain text input for external image URLs.
 
@@ -525,14 +525,14 @@ AND name LIKE (SELECT id::text FROM courses WHERE title = 'Thumbnail Test PT-06'
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as PA, navigate to `/courses/new` | Create course form loads | ☐ |
-| 2 | Enter title: "URL Thumbnail Test PT-10" | Title filled | ☐ |
-| 3 | Click "URL" tab in Thumbnail section | URL text input appears | ☐ |
-| 4 | Enter a valid image URL (e.g., `https://picsum.photos/400/300`) | URL field filled | ☐ |
-| 5 | Verify thumbnail preview shows the URL image | Preview image rendered from the external URL | ☐ |
-| 6 | Click "Create Course" | Course created, navigate to detail | ☐ |
-| 7 | Navigate to `/courses` list | Course card shows the external thumbnail image | ☐ |
-| 8 | Verify the image src is the original external URL | NOT a signed URL — direct external URL (starts with `https://`) | ☐ |
+| 1 | Log in as PA, navigate to `/courses/new` | Create course form loads | ✅ |
+| 2 | Enter title: "URL Thumbnail Test PT-10" | Title filled | ✅ |
+| 3 | Click "URL" tab in Thumbnail section | URL text input appears | ✅ |
+| 4 | Enter a valid image URL (e.g., `https://picsum.photos/400/300`) | URL field filled | ✅ |
+| 5 | Verify thumbnail preview shows the URL image | Preview image rendered from the external URL | ✅ |
+| 6 | Click "Create Course" | Course created, navigate to detail | ✅ |
+| 7 | Navigate to `/courses` list | Course card shows the external thumbnail image | ✅ |
+| 8 | Verify the image src is the original external URL | NOT a signed URL — direct external URL (starts with `https://`) | ✅ |
 
 ### SQL Verification
 ```sql
@@ -551,9 +551,9 @@ SELECT thumbnail_url FROM courses WHERE title = 'URL Thumbnail Test PT-10';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that uploading an avatar on the profile page immediately updates the avatar in the header navigation bar. This tests the signal reactivity: `ProfileService.profile()?.avatar_url` is used by the header component, and `refreshProfile()` after upload should propagate the signed URL.
 
@@ -566,12 +566,12 @@ SELECT thumbnail_url FROM courses WHERE title = 'URL Thumbnail Test PT-10';
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Navigate to `/profile` as PA | Profile page loads, initials circle shown (no avatar) | ☐ |
-| 2 | Look at header bar avatar area | Header shows initials or default avatar (no image) | ☐ |
-| 3 | Upload a test image via camera overlay on profile page | Avatar updates on profile page | ☐ |
-| 4 | **Without navigating away**, look at header | Header avatar should now show the uploaded image (same signed URL) | ☐ |
-| 5 | Navigate to `/courses` (different page) | Header still shows avatar image | ☐ |
-| 6 | Navigate back to `/profile` | Avatar image still shown (signed URL re-resolved on page load) | ☐ |
+| 1 | Navigate to `/profile` as PA | Profile page loads, initials circle shown (no avatar) | ✅ |
+| 2 | Look at header bar avatar area | Header shows initials or default avatar (no image) | ✅ |
+| 3 | Upload a test image via camera overlay on profile page | Avatar updates on profile page | ✅ |
+| 4 | **Without navigating away**, look at header | Header avatar should now show the uploaded image (same signed URL) | ✅ |
+| 5 | Navigate to `/courses` (different page) | Header still shows avatar image | ✅ |
+| 6 | Navigate back to `/profile` | Avatar image still shown (signed URL re-resolved on page load) | ✅ |
 
 ### Notes / Learnings
 - `uploadAvatar()` calls `refreshProfile()` which calls `#fetchProfile()` which re-fetches the profile and resolves the avatar URL

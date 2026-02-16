@@ -85,15 +85,15 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| AD-01 | Create Audio Module (TUS Upload) | Platform Admin | ✅ Passed | 2026-02-15 |
-| AD-02 | Audio Viewer — Waveform Player | Platform Admin | ✅ Passed | 2026-02-15 |
-| AD-03 | Create Audio Module as Lecturer | Lecturer (can_edit) | ✅ Passed | 2026-02-15 |
-| AD-04 | Create Download Module (TUS Upload) | Platform Admin | ✅ Passed | 2026-02-15 |
-| AD-05 | Download Viewer — Download Card | Platform Admin | ✅ Passed | 2026-02-15 |
-| AD-06 | Mark Complete — Audio & Download | Learner | ✅ Passed | 2026-02-15 |
-| AD-07 | Module Navigation with Audio & Download | Learner | ✅ Passed | 2026-02-15 |
-| AD-08 | Permission Denial | Learner / CSM / Lecturer (read-only) | ✅ Passed | 2026-02-15 |
-| AD-09 | Content Management Page Integration | Platform Admin | ✅ Passed | 2026-02-15 |
+| AD-01 | Create Audio Module (TUS Upload) | Platform Admin | ✅ Passed | 2026-02-16 |
+| AD-02 | Audio Viewer — Waveform Player | Platform Admin | ✅ Passed | 2026-02-16 |
+| AD-03 | Create Audio Module as Lecturer | Lecturer (can_edit) | ✅ Passed | 2026-02-16 |
+| AD-04 | Create Download Module (TUS Upload) | Platform Admin | ✅ Passed | 2026-02-16 |
+| AD-05 | Download Viewer — Download Card | Platform Admin | ✅ Passed | 2026-02-16 |
+| AD-06 | Mark Complete — Audio & Download | Learner | ✅ Passed | 2026-02-16 |
+| AD-07 | Module Navigation with Audio & Download | Learner | ✅ Passed | 2026-02-16 |
+| AD-08 | Permission Denial | Learner / CSM / Lecturer (read-only) | ✅ Passed | 2026-02-16 |
+| AD-09 | Content Management Page Integration | Platform Admin | ✅ Passed | 2026-02-16 |
 
 ---
 
@@ -101,7 +101,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -121,30 +121,30 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Expand a lecture and click "Add Module" | Navigated to `/courses/:courseId/modules/new?lectureId=<id>`, type selector shown | ☐ |
-| 2 | Verify type selector shows **8 type cards** | Video, PDF, Rich Text, Quiz, Exam, External Quiz, **Audio**, **Downloadable Files** — all with distinct icons and hints | ☐ |
-| 3 | Verify Audio type card | Headphones icon, label "Audio", hint "Upload an audio file" | ☐ |
-| 4 | Click "Audio" type card | AudioFormComponent renders with: Title input, Description textarea, audio file upload drop zone, Duration (minutes) field | ☐ |
-| 5 | Verify "Create Module" button is disabled | Title empty and no file selected | ☐ |
-| 6 | Enter Title: "E2E Audio Module" | Title accepted | ☐ |
-| 7 | Verify button still disabled (no file) | Both title AND audio file are required | ☐ |
-| 8 | Verify file upload drop zone | Dashed border area with Upload icon and "Click to select an audio file" text, accepted types hint "MP3, WAV (max 200 MB)" | ☐ |
-| 9 | Click the drop zone and select the MP3 test file | File name and size displayed (e.g., "They said I couldn't do it alone..mp3 — 5.2 MB") | ☐ |
-| 10 | Verify "Create Module" button is now enabled | Title + file both present | ☐ |
-| 11 | Optionally enter Duration: "3" (minutes) | Duration field accepts numeric input | ☐ |
-| 12 | Enter Description: "Audio lecture about persistence" | Description field accepts input | ☐ |
-| 13 | Set "Estimated Duration (minutes)": "5" (parent module form) | Number input accepts value | ☐ |
-| 14 | Click "Create Module" | TUS upload starts: progress bar fills (teal), percentage text updates in real-time | ☐ |
-| 15 | Wait for upload + save to complete | File uploaded to `course-files/{courseId}/{timestamp}-{filename}` via TUS, module + module_audio rows created, redirected to course detail | ☐ |
-| 16 | Verify module appears in lecture | **Headphones icon** + "E2E Audio Module" title shown in module list | ☐ |
+| 1 | Expand a lecture and click "Add Module" | Navigated to `/courses/:courseId/modules/new?lectureId=<id>`, type selector shown | ✅ |
+| 2 | Verify type selector shows **8 type cards** | Video, PDF, Rich Text, Quiz, Exam, External Quiz, **Audio**, **Downloadable Files** — all with distinct icons and hints | ✅ |
+| 3 | Verify Audio type card | Headphones icon, label "Audio", hint "Upload an audio file" | ✅ |
+| 4 | Click "Audio" type card | AudioFormComponent renders with: Title input, Description textarea, audio file upload drop zone, Duration (minutes) field | ✅ |
+| 5 | Verify "Create Module" button is disabled | Title empty and no file selected | ✅ |
+| 6 | Enter Title: "E2E Audio Module" | Title accepted | ✅ |
+| 7 | Verify button still disabled (no file) | Both title AND audio file are required | ✅ |
+| 8 | Verify file upload drop zone | Dashed border area with Upload icon and "Click to select an audio file" text, accepted types hint "MP3, WAV (max 200 MB)" | ✅ |
+| 9 | Click the drop zone and select the MP3 test file | File name and size displayed (e.g., "They said I couldn't do it alone..mp3 — 5.2 MB") | ✅ |
+| 10 | Verify "Create Module" button is now enabled | Title + file both present | ✅ |
+| 11 | Optionally enter Duration: "3" (minutes) | Duration field accepts numeric input | ✅ |
+| 12 | Enter Description: "Audio lecture about persistence" | Description field accepts input | ✅ |
+| 13 | Set "Estimated Duration (minutes)": "5" (parent module form) | Number input accepts value | ✅ |
+| 14 | Click "Create Module" | TUS upload starts: progress bar fills (teal), percentage text updates in real-time | ✅ |
+| 15 | Wait for upload + save to complete | File uploaded to `course-files/{courseId}/{timestamp}-{filename}` via TUS, module + module_audio rows created, redirected to course detail | ✅ |
+| 16 | Verify module appears in lecture | **Headphones icon** + "E2E Audio Module" title shown in module list | ✅ |
 
 **Negative Cases**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| N1 | Try to select a non-audio file (e.g., .pdf) via file picker | Validation error: invalid file type. File not accepted. | ☐ |
-| N2 | Select audio file, then click X to remove it | Drop zone returns to empty, "Create Module" disabled | ☐ |
-| N3 | Click "Cancel" at any point | Returns to course detail, no upload occurs, no module created | ☐ |
+| N1 | Try to select a non-audio file (e.g., .pdf) via file picker | Validation error: invalid file type. File not accepted. | ✅ |
+| N2 | Select audio file, then click X to remove it | Drop zone returns to empty, "Create Module" disabled | ✅ |
+| N3 | Click "Cancel" at any point | Returns to course detail, no upload occurs, no module created | ✅ |
 
 **Notes**:
 - TUS upload uses `SupabaseTusUploadService` with 6MB chunks, resumable on network failure
@@ -159,7 +159,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -178,33 +178,33 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Click on the audio module in the lecture list | Navigated to `/courses/:courseId/modules/:moduleId`, audio viewer page loads | ☐ |
-| 2 | Verify module header | Module title "E2E Audio Module" displayed, description text visible, back navigation link present | ☐ |
-| 3 | Verify audio file info | Headphones icon + file name displayed (e.g., "They said I couldn't do it alone..mp3"), file size shown (e.g., "5.2 MB") | ☐ |
-| 4 | Verify loading state | While waveform is loading: loading spinner or skeleton visible | ☐ |
-| 5 | Wait for waveform to load | Teal waveform visualization renders (bars, `waveColor: #99f6e4`, `progressColor: #0d9488`), loading state disappears | ☐ |
-| 6 | Verify playback controls visible | Play button, time display (0:00 / total), volume control, speed selector | ☐ |
-| 7 | Click Play button | Audio starts playing, waveform progress fills from left, play icon changes to pause, current time increments | ☐ |
-| 8 | Click Pause button | Audio pauses, waveform progress stops, pause icon changes back to play | ☐ |
-| 9 | Verify time display updates | Current time shows elapsed time in mm:ss format, total duration shown | ☐ |
-| 10 | Adjust volume slider | Volume changes (audio gets louder/quieter), slider position updates | ☐ |
-| 11 | Change playback speed to 1.5x | Speed selector updates, audio plays noticeably faster | ☐ |
-| 12 | Change playback speed to 0.5x | Audio plays noticeably slower | ☐ |
-| 13 | Reset speed to 1x | Normal playback speed | ☐ |
-| 14 | Click on waveform at a different position | Playback jumps to clicked position, time display updates accordingly | ☐ |
+| 1 | Click on the audio module in the lecture list | Navigated to `/courses/:courseId/modules/:moduleId`, audio viewer page loads | ✅ |
+| 2 | Verify module header | Module title "E2E Audio Module" displayed, description text visible, back navigation link present | ✅ |
+| 3 | Verify audio file info | Headphones icon + file name displayed (e.g., "They said I couldn't do it alone..mp3"), file size shown (e.g., "5.2 MB") | ✅ |
+| 4 | Verify loading state | While waveform is loading: loading spinner or skeleton visible | ✅ |
+| 5 | Wait for waveform to load | Teal waveform visualization renders (bars, `waveColor: #99f6e4`, `progressColor: #0d9488`), loading state disappears | ✅ |
+| 6 | Verify playback controls visible | Play button, time display (0:00 / total), volume control, speed selector | ✅ |
+| 7 | Click Play button | Audio starts playing, waveform progress fills from left, play icon changes to pause, current time increments | ✅ |
+| 8 | Click Pause button | Audio pauses, waveform progress stops, pause icon changes back to play | ✅ |
+| 9 | Verify time display updates | Current time shows elapsed time in mm:ss format, total duration shown | ✅ |
+| 10 | Adjust volume slider | Volume changes (audio gets louder/quieter), slider position updates | ✅ |
+| 11 | Change playback speed to 1.5x | Speed selector updates, audio plays noticeably faster | ✅ |
+| 12 | Change playback speed to 0.5x | Audio plays noticeably slower | ✅ |
+| 13 | Reset speed to 1x | Normal playback speed | ✅ |
+| 14 | Click on waveform at a different position | Playback jumps to clicked position, time display updates accordingly | ✅ |
 
 **Download Prevention**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| D1 | Right-click on the waveform area | Context menu is suppressed (prevented via `contextmenu` event) | ☐ |
-| D2 | Verify no download button exists | No download link or button visible in the audio viewer | ☐ |
+| D1 | Right-click on the waveform area | Context menu is suppressed (prevented via `contextmenu` event) | ✅ |
+| D2 | Verify no download button exists | No download link or button visible in the audio viewer | ✅ |
 
 **Error Handling**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| E1 | If audio file fails to load (e.g., expired signed URL — wait >1 hour) | Error alert shown with message (e.g., "Failed to load audio"), waveform area shows error state | ☐ |
+| E1 | If audio file fails to load (e.g., expired signed URL — wait >1 hour) | Error alert shown with message (e.g., "Failed to load audio"), waveform area shows error state | ✅ |
 
 **Notes**:
 - WaveSurfer.js initializes via Angular `effect()` watching `audio()` input + `viewChild` container — re-fires when navigating between audio modules
@@ -218,7 +218,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -257,7 +257,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -277,26 +277,26 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Expand a lecture and click "Add Module" | Module form page loads with 8-type selector | ☐ |
-| 2 | Verify "Downloadable Files" type card | FolderArchive icon, label "Downloadable Files", hint "ZIP archive for download" | ☐ |
-| 3 | Click "Downloadable Files" type card | DownloadFormComponent renders with: Title input, Description textarea, file upload drop zone | ☐ |
-| 4 | Verify "Create Module" button is disabled | Title empty and no file selected | ☐ |
-| 5 | Enter Title: "E2E Download Module" | Title accepted | ☐ |
-| 6 | Verify button still disabled (no file) | Both title AND ZIP file are required | ☐ |
-| 7 | Verify file upload drop zone | Accepted types hint "ZIP (max 500 MB)" | ☐ |
-| 8 | Click the drop zone and select a ZIP file | File name and size displayed (e.g., "resources.zip — 1.2 MB") | ☐ |
-| 9 | Enter Description: "Supplementary materials and templates" | Description accepted | ☐ |
-| 10 | Set "Estimated Duration (minutes)": "10" | Number input accepts value | ☐ |
-| 11 | Click "Create Module" | TUS upload starts: progress bar fills, percentage updates | ☐ |
-| 12 | Wait for upload + save to complete | File uploaded via TUS, module + module_downloads rows created, redirected to course detail | ☐ |
-| 13 | Verify module appears in lecture | **FolderArchive icon** + "E2E Download Module" title shown in module list | ☐ |
+| 1 | Expand a lecture and click "Add Module" | Module form page loads with 8-type selector | ✅ |
+| 2 | Verify "Downloadable Files" type card | FolderArchive icon, label "Downloadable Files", hint "ZIP archive for download" | ✅ |
+| 3 | Click "Downloadable Files" type card | DownloadFormComponent renders with: Title input, Description textarea, file upload drop zone | ✅ |
+| 4 | Verify "Create Module" button is disabled | Title empty and no file selected | ✅ |
+| 5 | Enter Title: "E2E Download Module" | Title accepted | ✅ |
+| 6 | Verify button still disabled (no file) | Both title AND ZIP file are required | ✅ |
+| 7 | Verify file upload drop zone | Accepted types hint "ZIP (max 500 MB)" | ✅ |
+| 8 | Click the drop zone and select a ZIP file | File name and size displayed (e.g., "resources.zip — 1.2 MB") | ✅ |
+| 9 | Enter Description: "Supplementary materials and templates" | Description accepted | ✅ |
+| 10 | Set "Estimated Duration (minutes)": "10" | Number input accepts value | ✅ |
+| 11 | Click "Create Module" | TUS upload starts: progress bar fills, percentage updates | ✅ |
+| 12 | Wait for upload + save to complete | File uploaded via TUS, module + module_downloads rows created, redirected to course detail | ✅ |
+| 13 | Verify module appears in lecture | **FolderArchive icon** + "E2E Download Module" title shown in module list | ✅ |
 
 **Negative Cases**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| N1 | Try to select a non-ZIP file (e.g., .mp3) | Validation error: invalid file type | ☐ |
-| N2 | Click "Cancel" | Returns to course detail, no upload, no module created | ☐ |
+| N1 | Try to select a non-ZIP file (e.g., .mp3) | Validation error: invalid file type | ✅ |
+| N2 | Click "Cancel" | Returns to course detail, no upload, no module created | ✅ |
 
 **Notes**:
 - ZIP MIME types accepted: `application/zip`, `application/x-zip-compressed`
@@ -310,7 +310,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -329,21 +329,21 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Click on the download module in the lecture list | Navigated to module viewer page, download viewer loads | ☐ |
-| 2 | Verify module header | Module title "E2E Download Module" displayed, description text "Supplementary materials and templates" visible | ☐ |
-| 3 | Verify download card | FolderArchive icon + file name displayed (e.g., "resources.zip"), file size shown (e.g., "1.2 MB") | ☐ |
-| 4 | Verify description visible in card | Module description text shown in the download card area | ☐ |
-| 5 | Verify "Download Resource" button | Download icon + teal button/link present | ☐ |
-| 6 | Click "Download Resource" | Browser initiates file download — ZIP file downloads correctly, opens in new tab (`target="_blank"`) | ☐ |
-| 7 | Verify downloaded file | ZIP file is valid, can be opened/extracted, matches the uploaded file | ☐ |
+| 1 | Click on the download module in the lecture list | Navigated to module viewer page, download viewer loads | ✅ |
+| 2 | Verify module header | Module title "E2E Download Module" displayed, description text "Supplementary materials and templates" visible | ✅ |
+| 3 | Verify download card | FolderArchive icon + file name displayed (e.g., "resources.zip"), file size shown (e.g., "1.2 MB") | ✅ |
+| 4 | Verify description visible in card | Module description text shown in the download card area | ✅ |
+| 5 | Verify "Download Resource" button | Download icon + teal button/link present | ✅ |
+| 6 | Click "Download Resource" | Browser initiates file download — ZIP file downloads correctly, opens in new tab (`target="_blank"`) | ✅ |
+| 7 | Verify downloaded file | ZIP file is valid, can be opened/extracted, matches the uploaded file | ✅ |
 
 **Signed URL Verification**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| S1 | Inspect the download link `href` | URL contains Supabase storage signed URL with `token=` parameter (not a raw storage path) | ☐ |
-| S2 | Copy the signed URL and open in incognito | URL works (valid for 1 hour) — file downloads | ☐ |
-| S3 | Wait >1 hour and retry the same URL | URL expired — returns 400 or 403 error | ☐ |
+| S1 | Inspect the download link `href` | URL contains Supabase storage signed URL with `token=` parameter (not a raw storage path) | ✅ |
+| S2 | Copy the signed URL and open in incognito | URL works (valid for 1 hour) — file downloads | ✅ |
+| S3 | Wait >1 hour and retry the same URL | URL expired — returns 400 or 403 error | ✅ |
 
 **Notes**:
 - Download uses `<a [href]="..." target="_blank" rel="noopener noreferrer">` — opens in new tab
@@ -357,7 +357,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -398,7 +398,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -436,7 +436,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -491,7 +491,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -509,21 +509,21 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to `/admin/content-management` | Content management page loads with course list | ☐ |
-| 2 | Expand a course that contains audio and download modules | Module list shown with type icons for each module | ☐ |
-| 3 | Verify audio module icon | Headphones icon next to audio module name | ☐ |
-| 4 | Verify download module icon | FolderArchive icon next to download module name | ☐ |
-| 5 | Open the module type filter dropdown | Dropdown shows all 8 types: Video, PDF, Rich Text, Quiz, Exam, External Quiz, **Audio**, **Downloadable Files** | ☐ |
-| 6 | Select "Audio" filter | Only audio modules shown in the list | ☐ |
-| 7 | Select "Downloadable Files" filter | Only download modules shown in the list | ☐ |
-| 8 | Clear filter | All module types shown again | ☐ |
+| 1 | Navigate to `/admin/content-management` | Content management page loads with course list | ✅ |
+| 2 | Expand a course that contains audio and download modules | Module list shown with type icons for each module | ✅ |
+| 3 | Verify audio module icon | Headphones icon next to audio module name | ✅ |
+| 4 | Verify download module icon | FolderArchive icon next to download module name | ✅ |
+| 5 | Open the module type filter dropdown | Dropdown shows all 8 types: Video, PDF, Rich Text, Quiz, Exam, External Quiz, **Audio**, **Downloadable Files** | ✅ |
+| 6 | Select "Audio" filter | Only audio modules shown in the list | ✅ |
+| 7 | Select "Downloadable Files" filter | Only download modules shown in the list | ✅ |
+| 8 | Clear filter | All module types shown again | ✅ |
 
 **Staleness Dashboard**:
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| S1 | Navigate to `/admin/staleness` (if course has stale threshold) | Staleness dashboard loads | ☐ |
-| S2 | Verify audio/download modules show correct icons | Headphones for audio, FolderArchive for download in the module type column | ☐ |
+| S1 | Navigate to `/admin/staleness` (if course has stale threshold) | Staleness dashboard loads | ✅ |
+| S2 | Verify audio/download modules show correct icons | Headphones for audio, FolderArchive for download in the module type column | ✅ |
 
 **Notes**:
 - `MODULE_TYPE_OPTIONS` includes `{ value: 'audio', label: 'Audio' }` and `{ value: 'download', label: 'Downloadable Files' }`
@@ -540,24 +540,24 @@ These are supplementary checks that can be performed after the main test sequenc
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to audio module, click "Edit" (pencil icon) | Module form loads in edit mode, Title pre-populated, existing audio file shown in drop zone | ☐ |
-| 2 | Modify Title: "E2E Audio Module (Edited)" | Title updated | ☐ |
-| 3 | Change Duration to "5" minutes | Duration field updated | ☐ |
-| 4 | Click "Save Changes" (without re-uploading) | Module updated, title changed, audio file unchanged | ☐ |
-| 5 | Optionally: select a new audio file and save | New TUS upload, file replaced, old storage file becomes orphan (cleaned on module delete) | ☐ |
+| 1 | Navigate to audio module, click "Edit" (pencil icon) | Module form loads in edit mode, Title pre-populated, existing audio file shown in drop zone | ✅ |
+| 2 | Modify Title: "E2E Audio Module (Edited)" | Title updated | ✅ |
+| 3 | Change Duration to "5" minutes | Duration field updated | ✅ |
+| 4 | Click "Save Changes" (without re-uploading) | Module updated, title changed, audio file unchanged | ✅ |
+| 5 | Optionally: select a new audio file and save | New TUS upload, file replaced, old storage file becomes orphan (cleaned on module delete) | ✅ |
 
 ### Edit Download Module
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to download module, click "Edit" | Module form loads in edit mode, Title pre-populated, existing file shown | ☐ |
-| 2 | Modify Title and Description | Fields updated | ☐ |
-| 3 | Click "Save Changes" | Module updated without re-upload | ☐ |
+| 1 | Navigate to download module, click "Edit" | Module form loads in edit mode, Title pre-populated, existing file shown | ✅ |
+| 2 | Modify Title and Description | Fields updated | ✅ |
+| 3 | Click "Save Changes" | Module updated without re-upload | ✅ |
 
 ### Delete Audio/Download Module
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | On course detail, click trash icon on audio module | Confirmation dialog appears | ☐ |
-| 2 | Click "Yes, Delete" | Module removed from lecture list. DB cascade: `module_audio` row deleted, `user_progress` entries cleaned | ☐ |
-| 3 | Verify storage cleanup | `#collectModuleStoragePaths()` collected `file_url` before delete — orphaned file in `course-files` bucket (Supabase Storage delete called) | ☐ |
+| 1 | On course detail, click trash icon on audio module | Confirmation dialog appears | ✅ |
+| 2 | Click "Yes, Delete" | Module removed from lecture list. DB cascade: `module_audio` row deleted, `user_progress` entries cleaned | ✅ |
+| 3 | Verify storage cleanup | `#collectModuleStoragePaths()` collected `file_url` before delete — orphaned file in `course-files` bucket (Supabase Storage delete called) | ✅ |

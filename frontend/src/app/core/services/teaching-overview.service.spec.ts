@@ -368,6 +368,25 @@ describe('TeachingOverviewService', () => {
     expect(c2.canGrade).toBe(true);
   });
 
+  it('should filter out courses not in lecturer_course_ids', async () => {
+    mockResponses(
+      [
+        { id: 'c1', title: 'Assigned A', staleness_threshold_days: 180 },
+        { id: 'c2', title: 'Assigned B', staleness_threshold_days: 180 },
+        { id: 'c3', title: 'Not Assigned', staleness_threshold_days: 180 },
+      ],
+      [], [], [], [], [],
+    );
+
+    await service.loadOverview();
+
+    const ids = service.courses().map(c => c.id);
+    expect(ids).toContain('c1');
+    expect(ids).toContain('c2');
+    expect(ids).not.toContain('c3');
+    expect(service.courses().length).toBe(2);
+  });
+
   it('should handle courses with no associated data', async () => {
     mockResponses(
       [{ id: 'c1', title: 'Lonely Course', staleness_threshold_days: 180 }],

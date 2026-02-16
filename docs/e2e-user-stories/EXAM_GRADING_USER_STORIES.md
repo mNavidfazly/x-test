@@ -86,18 +86,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| EG-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-15 |
-| EG-02 | Platform Admin Sees All Submissions | Platform Admin | ✅ | 2026-02-15 |
-| EG-03 | Filter by Search | Lecturer | ✅ | 2026-02-15 |
-| EG-04 | Filter by Course + Status | Lecturer | ✅ | 2026-02-15 |
-| EG-05 | Download Submission File | Lecturer / PA | ✅ | 2026-02-15 |
-| EG-06 | Grade a Pending Submission | Lecturer | ✅ | 2026-02-15 |
-| EG-07 | Auto-Mark Progress on Pass (PT-13) | Lecturer + Learner | ✅ | 2026-02-15 |
-| EG-08 | Reset Submission + Learner Resubmit | Lecturer + Learner | ✅ | 2026-02-15 |
-| EG-09 | Re-Grade with Different Score | Platform Admin | ✅ | 2026-02-15 |
-| EG-10 | Grade with Failing Score | Lecturer | ✅ | 2026-02-15 |
-| EG-11 | Summary Stats + Pass/Fail Badges | Lecturer | ✅ | 2026-02-15 |
-| EG-12 | Role Access Control | Multiple | ✅ | 2026-02-15 |
+| EG-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-16 |
+| EG-02 | Platform Admin Sees All Submissions | Platform Admin | ✅ | 2026-02-16 |
+| EG-03 | Filter by Search | Lecturer | ✅ | 2026-02-16 |
+| EG-04 | Filter by Course + Status | Lecturer | ✅ | 2026-02-16 |
+| EG-05 | Download Submission File | Lecturer / PA | ✅ | 2026-02-16 |
+| EG-06 | Grade a Pending Submission | Lecturer | ✅ | 2026-02-16 |
+| EG-07 | Auto-Mark Progress on Pass (PT-13) | Lecturer + Learner | ✅ | 2026-02-16 |
+| EG-08 | Reset Submission + Learner Resubmit | Lecturer + Learner | ✅ | 2026-02-16 |
+| EG-09 | Re-Grade with Different Score | Platform Admin | ✅ | 2026-02-16 |
+| EG-10 | Grade with Failing Score | Lecturer | ✅ | 2026-02-16 |
+| EG-11 | Summary Stats + Pass/Fail Badges | Lecturer | ✅ | 2026-02-16 |
+| EG-12 | Role Access Control | Multiple | ✅ | 2026-02-16 |
 
 ---
 
@@ -144,9 +144,9 @@ AND module_id = '<EXAM_MODULE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a lecturer with `can_grade=true` can see "Exam Grading" in the sidebar, navigate to `/teaching/grading`, and see the submissions table with summary cards.
 
@@ -198,9 +198,9 @@ WHERE es.course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that Platform Admin sees ALL exam submissions across all courses and tenants (no RLS scoping limitation).
 
@@ -240,9 +240,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the search filter correctly filters submissions by learner email, learner name, or exam title.
 
@@ -269,9 +269,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that course dropdown and status dropdown correctly filter submissions, and that filters can be combined.
 
@@ -302,9 +302,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking the download icon on a submission opens the file in a new tab via signed URL.
 
@@ -338,9 +338,9 @@ SELECT id, file_url FROM exam_submissions WHERE id = '<SUBMISSION_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the full grading workflow: expand row, enter score + feedback, submit grade, verify UI updates.
 
@@ -390,9 +390,9 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that when an exam is graded with a passing score, the `auto_mark_exam_completed` trigger automatically creates a `user_progress` row with `status='completed'` and `marked_by='system'`. Also verify the learner sees the "Completed" state in their module viewer.
 
@@ -457,9 +457,9 @@ WHERE tgname = 'on_exam_passed_auto_mark';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the 2-step reset confirmation flow, that reset deletes the submission, fires `notify_exam_reset` trigger, and that the learner can resubmit.
 
@@ -521,9 +521,9 @@ ORDER BY submitted_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that an already-graded submission can be re-graded with a different score and feedback. Verify the form pre-fills with existing values and button text changes to "Update Grade".
 
@@ -572,9 +572,9 @@ AND created_at > NOW() - INTERVAL '1 minute';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that grading with a score below the passing threshold shows "Failed" badge and does NOT auto-mark progress.
 
@@ -634,9 +634,9 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that summary stat cards are accurate and that pass/fail/pending badges display correctly across multiple submissions.
 
@@ -684,9 +684,9 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-14 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code (Playwright MCP) |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that only lecturers (with can_grade) and platform admins can access `/teaching/grading`. Learners, Tenant Admins, and CSMs should be blocked by the route guard.
 

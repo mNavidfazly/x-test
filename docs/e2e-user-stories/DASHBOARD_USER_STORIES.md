@@ -116,14 +116,14 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| DB-01 | PA Full Dashboard + Count Accuracy | Platform Admin | ✅ | 2026-02-15 |
-| DB-02 | TA Scoped Dashboard | Tenant Admin | ✅ | 2026-02-15 |
-| DB-03 | Lecturer Teaching Dashboard | Lecturer | ✅ | 2026-02-15 |
-| DB-04 | CSM Overview Dashboard | CSM | ✅ | 2026-02-15 |
-| DB-05 | Learner Minimal Dashboard | Learner | ✅ | 2026-02-15 |
-| DB-06 | Action Card Navigation | Platform Admin | ✅ | 2026-02-15 |
-| DB-07 | Enrolled Course Cards + Progress | Learner | ✅ | 2026-02-15 |
-| DB-08 | Empty Enrolled Courses State | Platform Admin | ✅ | 2026-02-15 |
+| DB-01 | PA Full Dashboard + Count Accuracy | Platform Admin | ✅ | 2026-02-16 |
+| DB-02 | TA Scoped Dashboard | Tenant Admin | ✅ | 2026-02-16 |
+| DB-03 | Lecturer Teaching Dashboard | Lecturer | ✅ | 2026-02-16 |
+| DB-04 | CSM Overview Dashboard | CSM | ✅ | 2026-02-16 |
+| DB-05 | Learner Minimal Dashboard | Learner | ✅ | 2026-02-16 |
+| DB-06 | Action Card Navigation | Platform Admin | ✅ | 2026-02-16 |
+| DB-07 | Enrolled Course Cards + Progress | Learner | ✅ | 2026-02-16 |
+| DB-08 | Empty Enrolled Courses State | Platform Admin | ✅ | 2026-02-16 |
 
 ---
 
@@ -195,9 +195,9 @@ WHERE cta.user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodit
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the Platform Admin sees the complete dashboard with all 4 sections, and that the displayed counts match the actual database state. This is the "golden path" test — PA sees the most complete view of the dashboard.
 
@@ -207,21 +207,21 @@ WHERE cta.user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodit
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Redirected to `/dashboard` automatically | ☐ |
-| 2 | Verify page header | LayoutDashboard icon (teal) + "Good morning/afternoon/evening, Eugen" (or full_name from profile) | ☐ |
-| 3 | Verify role badges | "Learner" (teal/primary) and "Platform Admin" (rose/error) badges visible | ☐ |
-| 4 | Verify "Needs Your Attention" section exists | Section heading visible with action card grid below | ☐ |
-| 5 | Verify "Pending Requests" action card | Amber icon bg, count matches `SELECT COUNT(*) FROM access_requests WHERE status='pending'`, links to `/admin/access-requests` | ☐ |
-| 6 | Verify "Open Issues" action card | Rose icon bg, count matches `SELECT COUNT(*) FROM issues WHERE status IN ('open','investigating')`, links to `/teaching/issues` | ☐ |
-| 7 | Verify "Unanswered Questions" action card | Purple icon bg, count matches `SELECT COUNT(*) FROM expert_questions WHERE status='pending'`, links to `/teaching/questions` | ☐ |
-| 8 | Verify "Ungraded Exams" action card | Blue icon bg, count matches `SELECT COUNT(*) FROM exam_submissions WHERE score IS NULL`, links to `/teaching/grading` | ☐ |
-| 9 | Verify "Overview" section exists | Section heading with StatCard grid below | ☐ |
-| 10 | Verify "Total Users" stat card | Value matches `SELECT COUNT(*) FROM profiles` | ☐ |
-| 11 | Verify "Total Courses" stat card | Value matches `SELECT COUNT(*) FROM courses` (teal text) | ☐ |
-| 12 | Verify "Total Tenants" stat card | Value matches `SELECT COUNT(*) FROM tenants` (blue text) | ☐ |
-| 13 | Verify "My Courses" section exists | Section heading with course card grid or empty state | ☐ |
-| 14 | If PA has enrolled courses: verify course cards render | Course titles visible, progress bars shown for enrolled courses | ☐ |
-| 15 | If PA has enrolled courses: verify "View all courses" link | Teal link with ArrowRight icon, points to `/courses` | ☐ |
+| 1 | Log in as Platform Admin (`et@calypso-commodities.com`) | Redirected to `/dashboard` automatically | ✅ |
+| 2 | Verify page header | LayoutDashboard icon (teal) + "Good morning/afternoon/evening, Eugen" (or full_name from profile) | ✅ |
+| 3 | Verify role badges | "Learner" (teal/primary) and "Platform Admin" (rose/error) badges visible | ✅ |
+| 4 | Verify "Needs Your Attention" section exists | Section heading visible with action card grid below | ✅ |
+| 5 | Verify "Pending Requests" action card | Amber icon bg, count matches `SELECT COUNT(*) FROM access_requests WHERE status='pending'`, links to `/admin/access-requests` | ✅ |
+| 6 | Verify "Open Issues" action card | Rose icon bg, count matches `SELECT COUNT(*) FROM issues WHERE status IN ('open','investigating')`, links to `/teaching/issues` | ✅ |
+| 7 | Verify "Unanswered Questions" action card | Purple icon bg, count matches `SELECT COUNT(*) FROM expert_questions WHERE status='pending'`, links to `/teaching/questions` | ✅ |
+| 8 | Verify "Ungraded Exams" action card | Blue icon bg, count matches `SELECT COUNT(*) FROM exam_submissions WHERE score IS NULL`, links to `/teaching/grading` | ✅ |
+| 9 | Verify "Overview" section exists | Section heading with StatCard grid below | ✅ |
+| 10 | Verify "Total Users" stat card | Value matches `SELECT COUNT(*) FROM profiles` | ✅ |
+| 11 | Verify "Total Courses" stat card | Value matches `SELECT COUNT(*) FROM courses` (teal text) | ✅ |
+| 12 | Verify "Total Tenants" stat card | Value matches `SELECT COUNT(*) FROM tenants` (blue text) | ✅ |
+| 13 | Verify "My Courses" section exists | Section heading with course card grid or empty state | ✅ |
+| 14 | If PA has enrolled courses: verify course cards render | Course titles visible, progress bars shown for enrolled courses | ✅ |
+| 15 | If PA has enrolled courses: verify "View all courses" link | Teal link with ArrowRight icon, points to `/courses` | ✅ |
 
 ### SQL Verification
 ```sql
@@ -249,9 +249,9 @@ UNION ALL SELECT 'Total Tenants', COUNT(*) FROM tenants;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the Tenant Admin sees a scoped dashboard — only the action items and stats relevant to their role (pending access requests + total users), scoped to their own tenant by RLS. Teaching items (issues, questions, exams) must NOT appear.
 
@@ -261,21 +261,21 @@ UNION ALL SELECT 'Total Tenants', COUNT(*) FROM tenants;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads at `/dashboard` | ☐ |
-| 2 | Verify greeting | "Good morning/afternoon/evening, Test Tenant Admin (Client)" or full_name | ☐ |
-| 3 | Verify role badges | "Learner" (teal) and "Tenant Admin" (amber/warning) badges | ☐ |
-| 4 | Verify "Needs Your Attention" section exists | Section heading visible | ☐ |
-| 5 | Verify "Pending Requests" action card present | Amber card with count, links to `/admin/access-requests` | ☐ |
-| 6 | Verify "Open Issues" is NOT present | No rose-colored "Open Issues" card visible | ☐ |
-| 7 | Verify "Unanswered Questions" is NOT present | No purple card visible | ☐ |
-| 8 | Verify "Ungraded Exams" is NOT present | No blue "Ungraded Exams" card visible | ☐ |
-| 9 | Verify "Overview" section exists | Section heading with stat card(s) | ☐ |
-| 10 | Verify "Total Users" stat card | Value = number of users in TA's tenant (Calypso Client) — NOT all users system-wide | ☐ |
-| 11 | Verify "Total Courses" is NOT present | PA-only stat, should not appear for TA | ☐ |
-| 12 | Verify "Total Tenants" is NOT present | PA-only stat, should not appear for TA | ☐ |
-| 13 | Verify "Assigned Courses" is NOT present | Lecturer-only stat | ☐ |
-| 14 | Verify "Assigned Tenants" is NOT present | CSM-only stat | ☐ |
-| 15 | Verify "My Courses" section | Course cards or empty state for TA's enrolled courses | ☐ |
+| 1 | Log in as Tenant Admin (`admin@calypsoclient.com`) | Dashboard loads at `/dashboard` | ✅ |
+| 2 | Verify greeting | "Good morning/afternoon/evening, Test Tenant Admin (Client)" or full_name | ✅ |
+| 3 | Verify role badges | "Learner" (teal) and "Tenant Admin" (amber/warning) badges | ✅ |
+| 4 | Verify "Needs Your Attention" section exists | Section heading visible | ✅ |
+| 5 | Verify "Pending Requests" action card present | Amber card with count, links to `/admin/access-requests` | ✅ |
+| 6 | Verify "Open Issues" is NOT present | No rose-colored "Open Issues" card visible | ✅ |
+| 7 | Verify "Unanswered Questions" is NOT present | No purple card visible | ✅ |
+| 8 | Verify "Ungraded Exams" is NOT present | No blue "Ungraded Exams" card visible | ✅ |
+| 9 | Verify "Overview" section exists | Section heading with stat card(s) | ✅ |
+| 10 | Verify "Total Users" stat card | Value = number of users in TA's tenant (Calypso Client) — NOT all users system-wide | ✅ |
+| 11 | Verify "Total Courses" is NOT present | PA-only stat, should not appear for TA | ✅ |
+| 12 | Verify "Total Tenants" is NOT present | PA-only stat, should not appear for TA | ✅ |
+| 13 | Verify "Assigned Courses" is NOT present | Lecturer-only stat | ✅ |
+| 14 | Verify "Assigned Tenants" is NOT present | CSM-only stat | ✅ |
+| 15 | Verify "My Courses" section | Course cards or empty state for TA's enrolled courses | ✅ |
 
 ### SQL Verification
 ```sql
@@ -310,9 +310,9 @@ WHERE tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com');
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a Lecturer sees teaching-related action items (Open Issues, Unanswered Questions, Ungraded Exams if can_grade) and an "Assigned Courses" stat derived from JWT claims. Verify that admin-only items (Pending Requests, Total Users/Courses/Tenants) do NOT appear.
 
@@ -325,21 +325,21 @@ WHERE tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com');
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ☐ |
-| 2 | Verify greeting | "Good morning/afternoon/evening, Test Lecturer (Edit)" or full_name | ☐ |
-| 3 | Verify role badges | "Learner" (teal) and "Lecturer" (blue/info) badges | ☐ |
-| 4 | Verify "Needs Your Attention" section exists | Section heading visible with action card grid | ☐ |
-| 5 | Verify "Open Issues" action card present | Rose card with count, links to `/teaching/issues` | ☐ |
-| 6 | Verify "Unanswered Questions" action card present | Purple card with count, links to `/teaching/questions` | ☐ |
-| 7 | Verify "Ungraded Exams" action card present | Blue card with count (lecturer has can_grade), links to `/teaching/grading` | ☐ |
-| 8 | Verify "Pending Requests" is NOT present | Admin-only action item — no amber card | ☐ |
-| 9 | Verify "Overview" section exists | Section heading with stat card(s) | ☐ |
-| 10 | Verify "Assigned Courses" stat card | Value = number of courses lecturer is assigned to (from JWT `lecturer_course_ids.length`) | ☐ |
-| 11 | Verify "Total Users" is NOT present | Admin-only stat | ☐ |
-| 12 | Verify "Total Courses" is NOT present | PA-only stat | ☐ |
-| 13 | Verify "Total Tenants" is NOT present | PA-only stat | ☐ |
-| 14 | Verify "Assigned Tenants" is NOT present | CSM-only stat | ☐ |
-| 15 | Verify "My Courses" section | Course cards or empty state | ☐ |
+| 1 | Log in as Lecturer (`lecturer-edit@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ✅ |
+| 2 | Verify greeting | "Good morning/afternoon/evening, Test Lecturer (Edit)" or full_name | ✅ |
+| 3 | Verify role badges | "Learner" (teal) and "Lecturer" (blue/info) badges | ✅ |
+| 4 | Verify "Needs Your Attention" section exists | Section heading visible with action card grid | ✅ |
+| 5 | Verify "Open Issues" action card present | Rose card with count, links to `/teaching/issues` | ✅ |
+| 6 | Verify "Unanswered Questions" action card present | Purple card with count, links to `/teaching/questions` | ✅ |
+| 7 | Verify "Ungraded Exams" action card present | Blue card with count (lecturer has can_grade), links to `/teaching/grading` | ✅ |
+| 8 | Verify "Pending Requests" is NOT present | Admin-only action item — no amber card | ✅ |
+| 9 | Verify "Overview" section exists | Section heading with stat card(s) | ✅ |
+| 10 | Verify "Assigned Courses" stat card | Value = number of courses lecturer is assigned to (from JWT `lecturer_course_ids.length`) | ✅ |
+| 11 | Verify "Total Users" is NOT present | Admin-only stat | ✅ |
+| 12 | Verify "Total Courses" is NOT present | PA-only stat | ✅ |
+| 13 | Verify "Total Tenants" is NOT present | PA-only stat | ✅ |
+| 14 | Verify "Assigned Tenants" is NOT present | CSM-only stat | ✅ |
+| 15 | Verify "My Courses" section | Course cards or empty state | ✅ |
 
 ### SQL Verification
 ```sql
@@ -377,9 +377,9 @@ WHERE status IN ('open', 'investigating')
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a CSM sees only the Overview section with an "Assigned Tenants" stat (derived from JWT claims) and enrolled courses. No "Needs Your Attention" section should appear — CSMs have no action items on the dashboard.
 
@@ -389,17 +389,17 @@ WHERE status IN ('open', 'investigating')
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ☐ |
-| 2 | Verify greeting | "Good morning/afternoon/evening, Test CSM" or full_name | ☐ |
-| 3 | Verify role badges | "Learner" (teal) and "CSM" (purple) badges | ☐ |
-| 4 | Verify "Needs Your Attention" section is NOT present | No "Needs Your Attention" heading visible (CSM has no action items) | ☐ |
-| 5 | Verify "Overview" section exists | Section heading with stat card(s) | ☐ |
-| 6 | Verify "Assigned Tenants" stat card | Value = number of tenants CSM is assigned to (from JWT `csm_tenant_ids.length`), purple text | ☐ |
-| 7 | Verify "Total Users" is NOT present | Admin-only stat | ☐ |
-| 8 | Verify "Total Courses" is NOT present | PA-only stat | ☐ |
-| 9 | Verify "Total Tenants" is NOT present | PA-only stat (CSM sees "Assigned Tenants" instead) | ☐ |
-| 10 | Verify "Assigned Courses" is NOT present | Lecturer-only stat | ☐ |
-| 11 | Verify "My Courses" section | Course cards or empty state | ☐ |
+| 1 | Log in as CSM (`csm@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ✅ |
+| 2 | Verify greeting | "Good morning/afternoon/evening, Test CSM" or full_name | ✅ |
+| 3 | Verify role badges | "Learner" (teal) and "CSM" (purple) badges | ✅ |
+| 4 | Verify "Needs Your Attention" section is NOT present | No "Needs Your Attention" heading visible (CSM has no action items) | ✅ |
+| 5 | Verify "Overview" section exists | Section heading with stat card(s) | ✅ |
+| 6 | Verify "Assigned Tenants" stat card | Value = number of tenants CSM is assigned to (from JWT `csm_tenant_ids.length`), purple text | ✅ |
+| 7 | Verify "Total Users" is NOT present | Admin-only stat | ✅ |
+| 8 | Verify "Total Courses" is NOT present | PA-only stat | ✅ |
+| 9 | Verify "Total Tenants" is NOT present | PA-only stat (CSM sees "Assigned Tenants" instead) | ✅ |
+| 10 | Verify "Assigned Courses" is NOT present | Lecturer-only stat | ✅ |
+| 11 | Verify "My Courses" section | Course cards or empty state | ✅ |
 
 ### SQL Verification
 ```sql
@@ -428,9 +428,9 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a pure Learner (no admin/teaching/CSM roles) sees only the Welcome Header and My Courses sections. The "Needs Your Attention" and "Overview" sections must be completely absent — not empty, but not rendered at all.
 
@@ -440,16 +440,16 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ☐ |
-| 2 | Verify greeting | "Good morning/afternoon/evening, Test Learner (Calypso)" or full_name | ☐ |
-| 3 | Verify role badges | Only "Learner" (teal/primary) badge — no other badges | ☐ |
-| 4 | Verify "Needs Your Attention" section is NOT present | No "Needs Your Attention" heading in the page at all | ☐ |
-| 5 | Verify "Overview" section is NOT present | No "Overview" heading in the page at all | ☐ |
-| 6 | Verify "My Courses" section exists | "My Courses" heading always present for all users | ☐ |
-| 7 | If learner has enrolled courses: verify course cards | Course titles, progress bars, enrollment data visible | ☐ |
-| 8 | If learner has no enrolled courses: verify empty state | "No enrolled courses yet. Browse available courses to get started." with BookOpen icon | ☐ |
-| 9 | Verify NO stat cards anywhere on page | No `StatCardComponent` instances rendered | ☐ |
-| 10 | Verify NO action item cards anywhere | No `DashboardActionCardComponent` instances rendered | ☐ |
+| 1 | Log in as Learner (`learner@calypso-commodities.com`) | Dashboard loads at `/dashboard` | ✅ |
+| 2 | Verify greeting | "Good morning/afternoon/evening, Test Learner (Calypso)" or full_name | ✅ |
+| 3 | Verify role badges | Only "Learner" (teal/primary) badge — no other badges | ✅ |
+| 4 | Verify "Needs Your Attention" section is NOT present | No "Needs Your Attention" heading in the page at all | ✅ |
+| 5 | Verify "Overview" section is NOT present | No "Overview" heading in the page at all | ✅ |
+| 6 | Verify "My Courses" section exists | "My Courses" heading always present for all users | ✅ |
+| 7 | If learner has enrolled courses: verify course cards | Course titles, progress bars, enrollment data visible | ✅ |
+| 8 | If learner has no enrolled courses: verify empty state | "No enrolled courses yet. Browse available courses to get started." with BookOpen icon | ✅ |
+| 9 | Verify NO stat cards anywhere on page | No `StatCardComponent` instances rendered | ✅ |
+| 10 | Verify NO action item cards anywhere | No `DashboardActionCardComponent` instances rendered | ✅ |
 
 ### Notes / Learnings
 - Pure learner = `is_tenant_admin: false`, `is_platform_admin: false`, `lecturer_course_ids: []`, `csm_tenant_ids: []`
@@ -474,9 +474,9 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that clicking each action item card navigates to the correct destination page. This is critical because the dashboard is a hub — users land here and navigate to their most relevant page. A broken link means users can't reach their work queue.
 
@@ -489,15 +489,15 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as PA (`et@calypso-commodities.com`) | Dashboard with all 4 action cards visible | ☐ |
-| 2 | Click "Pending Requests" card | Navigates to `/admin/access-requests` — Access Requests page loads with page heading | ☐ |
-| 3 | Navigate back to `/dashboard` | Dashboard reloads | ☐ |
-| 4 | Click "Open Issues" card | Navigates to `/teaching/issues` — Issue Management page loads with page heading | ☐ |
-| 5 | Navigate back to `/dashboard` | Dashboard reloads | ☐ |
-| 6 | Click "Unanswered Questions" card | Navigates to `/teaching/questions` — Questions Board page loads with page heading | ☐ |
-| 7 | Navigate back to `/dashboard` | Dashboard reloads | ☐ |
-| 8 | Click "Ungraded Exams" card | Navigates to `/teaching/grading` — Exam Grading page loads with page heading | ☐ |
-| 9 | Navigate back to `/dashboard` | Dashboard reloads, all data intact | ☐ |
+| 1 | Log in as PA (`et@calypso-commodities.com`) | Dashboard with all 4 action cards visible | ✅ |
+| 2 | Click "Pending Requests" card | Navigates to `/admin/access-requests` — Access Requests page loads with page heading | ✅ |
+| 3 | Navigate back to `/dashboard` | Dashboard reloads | ✅ |
+| 4 | Click "Open Issues" card | Navigates to `/teaching/issues` — Issue Management page loads with page heading | ✅ |
+| 5 | Navigate back to `/dashboard` | Dashboard reloads | ✅ |
+| 6 | Click "Unanswered Questions" card | Navigates to `/teaching/questions` — Questions Board page loads with page heading | ✅ |
+| 7 | Navigate back to `/dashboard` | Dashboard reloads | ✅ |
+| 8 | Click "Ungraded Exams" card | Navigates to `/teaching/grading` — Exam Grading page loads with page heading | ✅ |
+| 9 | Navigate back to `/dashboard` | Dashboard reloads, all data intact | ✅ |
 
 ### Notes / Learnings
 - Each `DashboardActionCardComponent` renders an `<a [routerLink]="route()">` — standard Angular navigation, no programmatic routing
@@ -520,9 +520,9 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that the "My Courses" section renders enrolled course cards with correct progress data, sorts them by recent activity, limits to 6 cards, and shows the "View all courses" navigation link. This tests the integration of `CourseService.loadCourses()` with `CourseCardComponent`.
 
@@ -536,18 +536,18 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as PA (`et@calypso-commodities.com`) | Dashboard loads | ☐ |
-| 2 | Scroll to "My Courses" section | Course card grid visible (1-3 columns responsive) | ☐ |
-| 3 | Verify course card content | Each card shows: thumbnail/gradient, title, enrollment badge (Open/Invite/Password), progress bar (X/Y modules, N%) | ☐ |
-| 4 | Verify progress bar accuracy | `completedModules / moduleCount` fraction and percentage match actual progress data | ☐ |
-| 5 | Verify module count in footer | "N modules" with BookOpen icon matches actual module count | ☐ |
-| 6 | Verify duration in footer (if > 0) | Clock icon + formatted duration (e.g., "2h 30m") from `totalDurationMinutes` | ☐ |
-| 7 | Verify action label | "Start" (0 progress), "Continue" (partial), "Review" (100%), or "View" (not enrolled) | ☐ |
-| 8 | Verify sort order | Courses with more recent `lastActivity` appear first (most recently active on top/left) | ☐ |
-| 9 | Verify max 6 cards | If PA has more than 6 enrolled courses, only the 6 most recent appear | ☐ |
-| 10 | Verify "View all courses" link | Teal link visible with ArrowRight icon at top-right of section | ☐ |
-| 11 | Click "View all courses" | Navigates to `/courses` — full course list page loads | ☐ |
-| 12 | Click a course card | Navigates to `/courses/<course-id>` — course detail page loads | ☐ |
+| 1 | Log in as PA (`et@calypso-commodities.com`) | Dashboard loads | ✅ |
+| 2 | Scroll to "My Courses" section | Course card grid visible (1-3 columns responsive) | ✅ |
+| 3 | Verify course card content | Each card shows: thumbnail/gradient, title, enrollment badge (Open/Invite/Password), progress bar (X/Y modules, N%) | ✅ |
+| 4 | Verify progress bar accuracy | `completedModules / moduleCount` fraction and percentage match actual progress data | ✅ |
+| 5 | Verify module count in footer | "N modules" with BookOpen icon matches actual module count | ✅ |
+| 6 | Verify duration in footer (if > 0) | Clock icon + formatted duration (e.g., "2h 30m") from `totalDurationMinutes` | ✅ |
+| 7 | Verify action label | "Start" (0 progress), "Continue" (partial), "Review" (100%), or "View" (not enrolled) | ✅ |
+| 8 | Verify sort order | Courses with more recent `lastActivity` appear first (most recently active on top/left) | ✅ |
+| 9 | Verify max 6 cards | If PA has more than 6 enrolled courses, only the 6 most recent appear | ✅ |
+| 10 | Verify "View all courses" link | Teal link visible with ArrowRight icon at top-right of section | ✅ |
+| 11 | Click "View all courses" | Navigates to `/courses` — full course list page loads | ✅ |
+| 12 | Click a course card | Navigates to `/courses/<course-id>` — course detail page loads | ✅ |
 
 ### SQL Verification
 ```sql
@@ -581,9 +581,9 @@ ORDER BY ce.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-15 |
+| **Last Checked** | 2026-02-16 |
 | **Status** | ✅ |
-| **Tester** | Claude Code |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify the empty state when a user has no enrolled courses. The "My Courses" section should show an `EmptyStateComponent` with a helpful message and BookOpen icon, and the "View all courses" link should NOT appear.
 
@@ -597,11 +597,11 @@ ORDER BY ce.created_at DESC;
 
 | # | Action | Expected Result | ✓ |
 |---|--------|-----------------|---|
-| 1 | Log in as a user with no enrolled courses | Dashboard loads at `/dashboard` | ☐ |
-| 2 | Scroll to "My Courses" section | "My Courses" heading visible | ☐ |
-| 3 | Verify empty state component | EmptyState with BookOpen icon: "No enrolled courses yet. Browse available courses to get started." | ☐ |
-| 4 | Verify "View all courses" link is NOT present | No teal link with "View all courses" text visible | ☐ |
-| 5 | Verify no course cards rendered | No `CourseCardComponent` instances in the DOM | ☐ |
+| 1 | Log in as a user with no enrolled courses | Dashboard loads at `/dashboard` | ✅ |
+| 2 | Scroll to "My Courses" section | "My Courses" heading visible | ✅ |
+| 3 | Verify empty state component | EmptyState with BookOpen icon: "No enrolled courses yet. Browse available courses to get started." | ✅ |
+| 4 | Verify "View all courses" link is NOT present | No teal link with "View all courses" text visible | ✅ |
+| 5 | Verify no course cards rendered | No `CourseCardComponent` instances in the DOM | ✅ |
 
 ### SQL Verification
 ```sql
