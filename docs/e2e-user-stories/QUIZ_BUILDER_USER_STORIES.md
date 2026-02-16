@@ -4,7 +4,7 @@
 
 ## Overview
 
-E2E testing scenarios for the Quiz Builder (Phase 3D) and External Quiz Reference (Phase 3E). These stories verify the complete quiz authoring flow: creating quiz modules with all 6 question types (single choice, multiple choice, true/false, fill in the blank, matching, short answer), configuring quiz settings, editing/reordering/deleting questions, validation enforcement, round-trip data persistence (create → edit → verify data), JSON import/export (template download, file import with validation, export of existing quizzes), and external quiz module creation/viewing. **This is the builder only** — quiz taking/attempts are Phase 4-5. Quiz modules show "Coming soon" in the module viewer. External quiz modules link to an external platform and allow manual completion marking.
+E2E testing scenarios for the Quiz Builder (Phase 3D) and External Quiz Reference (Phase 3E). These stories verify the complete quiz authoring flow: creating quiz modules with all 6 question types (single choice, multiple choice, true/false, fill in the blank, matching, short answer), configuring quiz settings, editing/reordering/deleting questions, validation enforcement, round-trip data persistence (create → edit → verify data), JSON import/export (template download, file import with validation, export of existing quizzes), and external quiz module creation/viewing. **This is the builder only** — quiz taking/attempts are Phase 4-5. Quiz modules show "Coming soon" in the module viewer. External quiz modules link to an external platform and allow manual completion marking. **Phase 12C** added optional per-question `explanation` textarea (Lightbulb icon, stored as nullable TEXT).
 
 ## Test Environment
 
@@ -206,11 +206,14 @@ All test users use password: `TestUser123!`
 | 13 | Click remove (trash) button on Option C | Option C removed, 2 options remain (A and B) | ✅ |
 | 14 | Verify minimum 2 options enforced | With 2 options, trash buttons are still visible (but cannot go below 2 if validation blocks save) | ✅ |
 | 15 | Set Points: "2" | Points value updated to 2 | ✅ |
+| 16 | Verify "Explanation (optional)" textarea below options | Textarea with Lightbulb icon label, placeholder "Explain why the correct answer is correct..." | ⏳ |
+| 17 | Enter explanation: "Paris has been the capital of France since the 10th century." | Text accepted — explanation is optional (nullable) | ⏳ |
 
 **Notes/Learnings**:
 - Single choice uses `setCorrectOption(qIdx, oIdx)` — sets one option's `is_correct=true` and all others to `false`
 - The correct toggle is rendered as a styled button (`title="Mark as correct"`) with a circle icon that fills with teal when correct
 - Default new question: single_choice type, 1 point, 2 empty options, no correct answer set
+- **Phase 12C**: Each question has an optional "Explanation" textarea below options/answers — visible for all 6 question types
 
 ---
 
@@ -470,8 +473,8 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 11 | Set up a complete quiz: Title "E2E Quiz Test", Time limit 15 min, Passing score 80%, Max attempts 3, Estimated Duration 20 min, 2 questions (1 single_choice + 1 fill_blank) | All fields populated, including estimated duration on parent form | ✅ |
-| 12 | Click "Create Module" | Module created via two-step process: INSERT module → INSERT quiz (with settings) → INSERT quiz_questions → INSERT quiz_question_options | ✅ |
+| 11 | Set up a complete quiz: Title "E2E Quiz Test", Time limit 15 min, Passing score 80%, Max attempts 3, Estimated Duration 20 min, 2 questions (1 single_choice + 1 fill_blank), add explanation to Q1 | All fields populated, including estimated duration on parent form and optional explanation | ✅ |
+| 12 | Click "Create Module" | Module created via two-step process: INSERT module → INSERT quiz (with settings) → INSERT quiz_questions (with explanation) → INSERT quiz_question_options | ✅ |
 | 13 | Verify redirect to course detail | Navigated to `/courses/:courseId` | ✅ |
 | 14 | Verify module appears in lecture | HelpCircle icon + "E2E Quiz Test" title shown in the lecture accordion | ✅ |
 
@@ -486,6 +489,7 @@ All test users use password: `TestUser123!`
 - On save, `time_limit` is multiplied by 60 (minutes → seconds), module title is synced to quiz title
 - Two-step insert with rollback: if quiz/questions insert fails, the module row is deleted (same as other module types)
 - `quiz_question_options` FK references `quiz_questions` with `ON DELETE CASCADE` — deleting questions auto-deletes their options
+- **Phase 12C**: `explanation` field is saved per question (nullable TEXT) — included in `#insertQuizQuestions` INSERT payload
 
 ---
 
@@ -520,6 +524,7 @@ All test users use password: `TestUser123!`
 | 9 | Verify "Estimated Duration (minutes)" pre-populated | Shows the saved value (e.g., "20" from creation) | ✅ |
 | 10 | Verify questions pre-populated | All questions from creation visible with correct text, types, options, and correct answers | ✅ |
 | 11 | Verify single_choice question: options and correct answer | Option texts match, correct option highlighted | ✅ |
+| 11a | Verify explanation pre-populated on Q1 (if set in QB-09) | Explanation textarea shows saved text | ⏳ |
 | 12 | Verify fill_blank question: correct answer | Correct answer text input pre-populated | ✅ |
 | 13 | Verify "Save Changes" button (not "Create Module") | Edit mode shows "Save Changes" | ✅ |
 
@@ -553,6 +558,7 @@ All test users use password: `TestUser123!`
 - `#fetchModuleContent` uses `maybeSingle()` for the quiz row (handles legacy stubs with no quiz row)
 - Time limit round-trip: UI minutes → DB seconds (× 60 on save) → UI minutes (÷ 60 on load)
 - Module files editor section ("Attached Files") is visible below the quiz form in edit mode
+- **Phase 12C**: `explanation` persists through create → edit round-trip (stored in `quiz_questions.explanation` TEXT column)
 
 ---
 
@@ -645,10 +651,12 @@ All test users use password: `TestUser123!`
 | 8 | Verify question types present | `single_choice`, `multiple_choice`, `true_false`, `fill_blank`, `short_answer`, `matching` — in that order | ✅ |
 | 9 | Verify single_choice question | Has `options` array with `option_text`, `is_correct`, `sort_order` fields | ✅ |
 | 10 | Verify matching question | Has `correct_answer` as JSON string of `[{left, right}]` pairs | ✅ |
-| 11 | Verify each question has required fields | `question_text`, `question_type`, `points`, `sort_order`, `correct_answer`, `options` | ✅ |
+| 11 | Verify each question has required fields | `question_text`, `question_type`, `points`, `sort_order`, `correct_answer`, `explanation`, `options` | ⏳ |
+| 12 | Verify `explanation` field present on questions | Q1 (single_choice) and Q4 (fill_blank) have non-null explanation text; other questions have `null` explanation | ⏳ |
 
 **Notes/Learnings**:
 - Template JSON matches `QuizFormData` shape exactly — zero transformation between import and internal model
+- **Phase 12C**: Template now includes `explanation` field on all 6 questions (2 with real text, 4 with `null`)
 - `time_limit` is in seconds (900 = 15 minutes)
 - `QUIZ_JSON_TEMPLATE` is generated via `JSON.stringify(TEMPLATE_DATA, null, 2)` at build time
 - Download uses `Blob` + `URL.createObjectURL` + `<a>.click()` + `URL.revokeObjectURL` pattern
@@ -687,8 +695,8 @@ All test users use password: `TestUser123!`
 | 8 | Verify max attempts | "3" in max attempts input | ✅ |
 | 9 | Verify checkboxes | "Show correct answers" checked, both "Randomize" unchecked | ✅ |
 | 10 | Verify 6 questions rendered | Q1 through Q6 visible with correct question types | ✅ |
-| 11 | Verify Q1 (single_choice) | Type dropdown shows "Single Choice", question text "What is the capital of France?", 3 options, "Paris" marked correct | ✅ |
-| 12 | Verify Q2 (multiple_choice) | Checkboxes for correct answers, "Python" and "JavaScript" checked | ✅ |
+| 11 | Verify Q1 (single_choice) | Type dropdown shows "Single Choice", question text "What is the capital of France?", 3 options, "Paris" marked correct, explanation textarea populated | ⏳ |
+| 12 | Verify Q2 (multiple_choice) | Checkboxes for correct answers, "Python" and "JavaScript" checked, explanation empty (null in template) | ✅ |
 | 13 | Verify Q3 (true_false) | "True" and "False" labels, "True" marked correct | ✅ |
 | 14 | Verify Q4 (fill_blank) | Correct answer input with "H2O" | ✅ |
 | 15 | Verify Q5 (short_answer) | Correct answer input populated | ✅ |

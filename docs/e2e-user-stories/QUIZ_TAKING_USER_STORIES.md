@@ -4,7 +4,7 @@
 
 ## Overview
 
-E2E testing scenarios for the Quiz Taking system (Phase 5A). These stories verify the full learner quiz-taking experience: navigating to quiz modules, viewing quiz metadata, starting attempts, answering all 6 question types (single choice, multiple choice, true/false, fill in the blank, short answer, matching), countdown timer behavior, submit confirmation flow, grade card display (pass/fail), per-question results review, retake flow, auto-mark progress on pass, max attempts enforcement, continue unsubmitted attempt, and viewing past attempt results. Frontend: 3 new components + 4 CourseService methods + module viewer integration. **Migration 00028** fixes `protect_quiz_attempt_score` trigger conflict with `grade_quiz_attempt` SECURITY DEFINER function (QT-BUG-02).
+E2E testing scenarios for the Quiz Taking system (Phase 5A). These stories verify the full learner quiz-taking experience: navigating to quiz modules, viewing quiz metadata, starting attempts, answering all 6 question types (single choice, multiple choice, true/false, fill in the blank, short answer, matching), countdown timer behavior, submit confirmation flow, grade card display (pass/fail), per-question results review, retake flow, auto-mark progress on pass, max attempts enforcement, continue unsubmitted attempt, and viewing past attempt results. Frontend: 3 new components + 4 CourseService methods + module viewer integration. **Migration 00028** fixes `protect_quiz_attempt_score` trigger conflict with `grade_quiz_attempt` SECURITY DEFINER function (QT-BUG-02). **Phase 12C** added per-question explanations visible in results (amber Lightbulb card, only when `show_correct_answers=true`).
 
 **Cross-references:**
 - **QB-12** ("Coming Soon") from `QUIZ_BUILDER_USER_STORIES.md` is **superseded** by QT-01 — quiz modules now render QuizTakerComponent instead of a placeholder.
@@ -327,11 +327,12 @@ AND module_id IN (
 
 **Purpose**: Verify the per-question results section shows correct/incorrect indicators, user's answer, and correct answer (when `show_correct_answers=true`) for each question.
 
-**Covers**: QuizResultItemComponent (`result` input, `is_correct` display logic, `correct_answer` conditional display), `get_quiz_results` RPC, `show_correct_answers` flag
+**Covers**: QuizResultItemComponent (`result` input, `is_correct` display logic, `correct_answer` conditional display, `explanation` display), `get_quiz_results` RPC (now returns `explanation` column), `show_correct_answers` flag
 
 **Preconditions**:
 - On results phase after QT-05 submission
 - Quiz has `show_correct_answers = true`
+- At least one question has a non-null `explanation` (set by lecturer in quiz builder)
 
 **Steps**:
 
@@ -344,11 +345,14 @@ AND module_id IN (
 | 5 | Verify incorrect answer card (if any) | Red card: `bg-rose-50 border-rose-200` with XCircle icon in rose | ✅ |
 | 6 | Verify correct answer revealed for wrong answers | "Correct answer: ..." text in `text-emerald-700` below the user's incorrect answer | ✅ |
 | 7 | Verify unanswered question (if any) | Shows "No answer provided" in `text-slate-400 italic` | ✅ |
+| 8 | Verify explanation shown for questions that have one | Amber card: `bg-amber-50 border-amber-200` with Lightbulb icon (`text-amber-500`) and explanation text in `text-slate-700` | ⏳ |
+| 9 | Verify explanation NOT shown for questions without one | No amber card visible for questions where `explanation` is null | ⏳ |
 
 **Notes/Learnings**:
 - If `show_correct_answers=false`, steps 6-7 about correct answer display should show "—" instead
-- The `get_quiz_results` RPC conditionally includes `correct_answer` based on the quiz flag
+- The `get_quiz_results` RPC conditionally includes `correct_answer` and `explanation` based on the quiz flag — when `show_correct_answers=false`, both are returned as NULL
 - Result cards use rounded-lg border styling with left-side colored indicators
+- **Phase 12C**: Explanation display uses `@if (result().explanation)` — falsy check hides null/empty. Amber styling distinct from correct (emerald) and incorrect (rose)
 
 ---
 
