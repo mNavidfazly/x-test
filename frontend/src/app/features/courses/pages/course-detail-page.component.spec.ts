@@ -133,8 +133,8 @@ describe('CourseDetailPageComponent', () => {
           {
             id: 'l1', title: 'L1', description: null, sort_order: 0,
             modules: [
-              { id: 'm1', title: 'M1', module_type: 'video', sort_order: 0 },
-              { id: 'm2', title: 'M2', module_type: 'pdf', sort_order: 1 },
+              { id: 'm1', title: 'M1', description: null, module_type: 'video', sort_order: 0 },
+              { id: 'm2', title: 'M2', description: null, module_type: 'pdf', sort_order: 1 },
             ],
           },
         ],

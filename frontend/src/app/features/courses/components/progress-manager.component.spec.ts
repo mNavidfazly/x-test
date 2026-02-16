@@ -22,8 +22,8 @@ class TestHostComponent {
     {
       id: 'l1', title: 'Lecture 1', description: null, sort_order: 0,
       modules: [
-        { id: 'mod-1', title: 'Video Module', module_type: 'video', sort_order: 0 },
-        { id: 'mod-2', title: 'PDF Module', module_type: 'pdf', sort_order: 1 },
+        { id: 'mod-1', title: 'Video Module', description: null, module_type: 'video', sort_order: 0 },
+        { id: 'mod-2', title: 'PDF Module', description: null, module_type: 'pdf', sort_order: 1 },
       ],
     },
   ]);

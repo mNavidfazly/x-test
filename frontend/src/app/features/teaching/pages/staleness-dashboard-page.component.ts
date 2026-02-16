@@ -4,8 +4,8 @@ import {
   LucideAngularModule, LucideIconData, Clock, Search, Loader2,
   AlertTriangle, CheckCircle2, Package, ExternalLink,
   ChevronDown, ChevronRight, CalendarClock,
-  Video, FileText, Type, HelpCircle, ClipboardCheck, Headphones, FolderArchive,
 } from 'lucide-angular';
+import { getModuleTypeMeta } from '../../../core/utils/module-type.utils';
 import { StalenessService } from '../../../core/services/staleness.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { formatDate } from '../../../core/utils/date.utils';
@@ -186,8 +186,11 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
                         <tbody>
                           @for (mod of course.modules; track mod.id) {
                             <tr class="border-t border-slate-100 first:border-t-0">
-                              <td class="py-2 text-slate-400">
-                                <lucide-icon [img]="moduleTypeIcon(mod.moduleType)" [size]="14"></lucide-icon>
+                              <td class="py-2">
+                                <span class="inline-flex items-center justify-center w-6 h-6 rounded-md"
+                                      [class]="moduleTypeMeta(mod.moduleType).colorClass">
+                                  <lucide-icon [img]="moduleTypeMeta(mod.moduleType).icon" [size]="12"></lucide-icon>
+                                </span>
                               </td>
                               <td class="py-2 text-slate-700">{{ mod.title }}</td>
                               <td class="py-2 text-slate-600">{{ formatDate(mod.updatedAt) }}</td>
@@ -255,11 +258,6 @@ export class StalenessDashboardPageComponent implements OnInit {
   };
   readonly formatDate = formatDate;
 
-  readonly #moduleTypeIcons: Record<string, LucideIconData> = {
-    video: Video, pdf: FileText, markdown: Type,
-    quiz: HelpCircle, exam: ClipboardCheck, external_quiz: ExternalLink,
-    audio: Headphones, download: FolderArchive,
-  };
 
   readonly statusOptions: SelectOption[] = [
     { value: 'all', label: 'All Status' },
@@ -305,8 +303,8 @@ export class StalenessDashboardPageComponent implements OnInit {
     this.service.loadStalenessData();
   }
 
-  moduleTypeIcon(type: string): LucideIconData {
-    return this.#moduleTypeIcons[type] ?? FileText;
+  moduleTypeMeta(type: string) {
+    return getModuleTypeMeta(type);
   }
 
   toggleCourse(courseId: string) {

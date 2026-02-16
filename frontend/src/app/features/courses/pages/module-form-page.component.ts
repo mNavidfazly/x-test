@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowLeft, Loader2, Clock, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, Headphones, FolderArchive, LucideIconData } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Loader2, Clock, LucideIconData } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -16,12 +16,14 @@ import { AudioFormComponent } from '../components/audio-form.component';
 import { DownloadFormComponent } from '../components/download-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
 import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, QuizFormData, ExternalQuizFormData, AudioFormData, DownloadFormData, ModuleSavePayload } from '../../../core/models/course.model';
+import { getModuleTypeMeta } from '../../../core/utils/module-type.utils';
 
 interface TypeOption {
   value: ModuleType;
   label: string;
   hint: string;
   icon: LucideIconData;
+  colorClass: string;
 }
 
 @Component({
@@ -61,7 +63,9 @@ interface TypeOption {
                   (click)="selectType(opt.value)"
                   class="flex items-center gap-3 p-4 rounded-xl border border-slate-200 bg-white hover:border-teal-400 hover:bg-teal-50/30 transition-[background-color,border-color] duration-200 text-left"
                 >
-                  <lucide-icon [img]="opt.icon" [size]="20" class="text-slate-500 shrink-0"></lucide-icon>
+                  <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg shrink-0" [class]="opt.colorClass">
+                    <lucide-icon [img]="opt.icon" [size]="18"></lucide-icon>
+                  </span>
                   <div>
                     <div class="text-sm font-semibold text-slate-900">{{ opt.label }}</div>
                     <div class="text-xs text-slate-500">{{ opt.hint }}</div>
@@ -274,16 +278,15 @@ export class ModuleFormPageComponent implements OnInit {
     file_url: '', file_name: '', file_size: null,
   });
 
-  readonly availableTypes: TypeOption[] = [
-    { value: 'video', label: 'Video', hint: 'Upload a video', icon: Video },
-    { value: 'pdf', label: 'PDF', hint: 'Upload a PDF document', icon: FileText },
-    { value: 'markdown', label: 'Rich Text', hint: 'Write with a rich text editor', icon: Type },
-    { value: 'quiz', label: 'Quiz', hint: 'Interactive quiz', icon: HelpCircle },
-    { value: 'exam', label: 'Exam', hint: 'Graded exam submission', icon: ClipboardCheck },
-    { value: 'external_quiz', label: 'External Quiz', hint: 'Link to an external quiz', icon: ExternalLink },
-    { value: 'audio', label: 'Audio', hint: 'Upload an audio file', icon: Headphones },
-    { value: 'download', label: 'Downloadable Files', hint: 'ZIP archive for download', icon: FolderArchive },
-  ];
+  readonly availableTypes: TypeOption[] = (['video', 'pdf', 'markdown', 'quiz', 'exam', 'external_quiz', 'audio', 'download'] as ModuleType[]).map(value => {
+    const meta = getModuleTypeMeta(value);
+    const hints: Record<string, string> = {
+      video: 'Upload a video', pdf: 'Upload a PDF document', markdown: 'Write with a rich text editor',
+      quiz: 'Interactive quiz', exam: 'Graded exam submission', external_quiz: 'Link to an external quiz',
+      audio: 'Upload an audio file', download: 'ZIP archive for download',
+    };
+    return { value, label: meta.label, hint: hints[value] ?? '', icon: meta.icon, colorClass: meta.colorClass };
+  });
 
   async ngOnInit() {
     if (!this.canEdit()) {

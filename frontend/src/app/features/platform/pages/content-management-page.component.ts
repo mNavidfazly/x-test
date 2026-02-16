@@ -2,10 +2,10 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } 
 import { Router } from '@angular/router';
 import {
   LucideAngularModule, FolderOpen, Search, ChevronDown, ChevronUp, ChevronRight,
-  Plus, X, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink,
-  Headphones, FolderArchive, AlertTriangle, Loader2,
+  Plus, X, AlertTriangle, Loader2,
 } from 'lucide-angular';
 import type { LucideIconData } from 'lucide-angular';
+import { getModuleTypeMeta, getModuleTypeIcon, getModuleTypeLabel } from '../../../core/utils/module-type.utils';
 import { ContentManagementService } from '../../../core/services/content-management.service';
 import { CourseService } from '../../../core/services/course.service';
 import { TenantManagementService } from '../../../core/services/tenant-management.service';
@@ -21,28 +21,6 @@ import { EmptyStateComponent } from '../../../shared/components/empty-state.comp
 import { StatCardComponent } from '../../../shared/components/stat-card.component';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge.component';
 import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
-
-const MODULE_TYPE_ICONS: Record<string, LucideIconData> = {
-  video: Video,
-  pdf: FileText,
-  markdown: Type,
-  quiz: HelpCircle,
-  exam: ClipboardCheck,
-  external_quiz: ExternalLink,
-  audio: Headphones,
-  download: FolderArchive,
-};
-
-const MODULE_TYPE_LABELS: Record<string, string> = {
-  video: 'Video',
-  pdf: 'PDF',
-  markdown: 'Markdown',
-  quiz: 'Quiz',
-  exam: 'Exam',
-  external_quiz: 'External Quiz',
-  audio: 'Audio',
-  download: 'Downloadable Files',
-};
 
 const ENROLLMENT_LABELS: Record<string, string> = {
   open: 'Open',
@@ -229,7 +207,10 @@ const MODULE_TYPE_OPTIONS: SelectOption[] = [
                                   <div class="ml-6 border-l border-slate-200 pl-3">
                                     @for (mod of lecture.modules; track mod.id) {
                                       <div class="flex items-center gap-2 py-1 text-sm">
-                                        <lucide-icon [img]="getModuleTypeIcon(mod.module_type)" [size]="14" class="text-slate-400"></lucide-icon>
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded-md"
+                                              [class]="getModuleTypeColorClass(mod.module_type)">
+                                          <lucide-icon [img]="getModuleTypeIcon(mod.module_type)" [size]="12"></lucide-icon>
+                                        </span>
                                         <span class="text-slate-700">{{ mod.title }}</span>
                                         @if (mod.isStale) {
                                           <app-status-badge variant="error">Stale</app-status-badge>
@@ -435,12 +416,16 @@ export class ContentManagementPageComponent implements OnInit {
       .map(([type, count]) => ({
         type,
         count: count!,
-        label: MODULE_TYPE_LABELS[type] ?? type,
+        label: getModuleTypeLabel(type),
       }));
   }
 
   getModuleTypeIcon(type: string): LucideIconData {
-    return MODULE_TYPE_ICONS[type] ?? FileText;
+    return getModuleTypeIcon(type);
+  }
+
+  getModuleTypeColorClass(type: string): string {
+    return getModuleTypeMeta(type).colorClass;
   }
 
   // --- Expand/Collapse ---

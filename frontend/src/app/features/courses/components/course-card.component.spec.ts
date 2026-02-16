@@ -5,10 +5,11 @@ import { CourseCardComponent } from './course-card.component';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { createMockCourseWithProgress, createMockCourseLecturer } from '../../../__mocks__/course.mock';
 import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
+import { ProgressRingComponent } from '../../../shared/components/progress-ring.component';
 
 async function renderCard(overrides?: Parameters<typeof createMockCourseWithProgress>[0]) {
-  await render(CourseCardComponent, {
-    componentImports: [MockLucideIconComponent, RouterLink, UserAvatarComponent],
+  return render(CourseCardComponent, {
+    componentImports: [MockLucideIconComponent, RouterLink, UserAvatarComponent, ProgressRingComponent],
     componentInputs: { course: createMockCourseWithProgress(overrides) },
     providers: [provideRouter([])],
   });
@@ -25,15 +26,17 @@ describe('CourseCardComponent', () => {
     expect(screen.getByText('Learn the basics of Angular')).toBeTruthy();
   });
 
-  it('should show progress bar for enrolled courses', async () => {
-    await renderCard({ isEnrolled: true, moduleCount: 10, completedModules: 3, progressPercent: 30 });
+  it('should show progress ring for enrolled courses', async () => {
+    const { container } = await renderCard({ isEnrolled: true, moduleCount: 10, completedModules: 3, progressPercent: 30 });
     expect(screen.getByText('3/10 modules')).toBeTruthy();
-    expect(screen.getByText('30%')).toBeTruthy();
+    // Percent label is inside SVG <text> in ProgressRingComponent
+    const svgText = container.querySelector('svg text');
+    expect(svgText?.textContent?.trim()).toContain('30%');
   });
 
-  it('should not show progress bar for unenrolled courses', async () => {
-    await renderCard({ isEnrolled: false, moduleCount: 10 });
-    expect(screen.queryByText(/\d+%/)).toBeNull();
+  it('should not show progress ring for unenrolled courses', async () => {
+    const { container } = await renderCard({ isEnrolled: false, moduleCount: 10 });
+    expect(container.querySelector('app-progress-ring')).toBeNull();
   });
 
   it('should show "Continue" for in-progress courses', async () => {

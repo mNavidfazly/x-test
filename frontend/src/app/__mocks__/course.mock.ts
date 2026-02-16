@@ -132,8 +132,8 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
         description: null,
         sort_order: 0,
         modules: [
-          { id: 'mod-1', title: 'Module 1', module_type: 'video', sort_order: 0, estimated_duration_minutes: 30 },
-          { id: 'mod-2', title: 'Module 2', module_type: 'pdf', sort_order: 1, estimated_duration_minutes: 15 },
+          { id: 'mod-1', title: 'Module 1', description: null, module_type: 'video', sort_order: 0, estimated_duration_minutes: 30 },
+          { id: 'mod-2', title: 'Module 2', description: null, module_type: 'pdf', sort_order: 1, estimated_duration_minutes: 15 },
         ],
       },
       {
@@ -142,7 +142,7 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
         description: 'Second lecture',
         sort_order: 1,
         modules: [
-          { id: 'mod-3', title: 'Module 3', module_type: 'quiz', sort_order: 0, estimated_duration_minutes: 20 },
+          { id: 'mod-3', title: 'Module 3', description: null, module_type: 'quiz', sort_order: 0, estimated_duration_minutes: 20 },
         ],
       },
     ],

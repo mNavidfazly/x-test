@@ -35,6 +35,7 @@ export interface LectureWithModules {
 export interface ModuleSummary {
   id: string;
   title: string;
+  description: string | null;
   module_type: ModuleType;
   sort_order: number;
   estimated_duration_minutes: number;

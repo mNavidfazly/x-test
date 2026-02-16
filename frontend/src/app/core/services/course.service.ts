@@ -149,7 +149,7 @@ export class CourseService {
       const [courseRes, progressRes, enrollmentRes, lecturerRes] = await Promise.all([
         client
           .from('courses')
-          .select('id, title, description, thumbnail_url, enrollment_type, lectures(id, title, description, sort_order, modules(id, title, module_type, sort_order, estimated_duration_minutes))')
+          .select('id, title, description, thumbnail_url, enrollment_type, lectures(id, title, description, sort_order, modules(id, title, description, module_type, sort_order, estimated_duration_minutes))')
           .eq('id', courseId)
           .order('sort_order', { referencedTable: 'lectures' })
           .order('sort_order', { referencedTable: 'lectures.modules' })
@@ -216,7 +216,14 @@ export class CourseService {
         isEnrolled: !!enrollmentRes.data,
         lectures: (course.lectures ?? []).map(l => ({
           ...l,
-          modules: l.modules.map(m => ({ ...m, module_type: m.module_type as ModuleType })),
+          modules: l.modules.map((m: any) => ({
+            id: m.id as string,
+            title: m.title as string,
+            description: (m.description as string | null) ?? null,
+            module_type: m.module_type as ModuleType,
+            sort_order: m.sort_order as number,
+            estimated_duration_minutes: m.estimated_duration_minutes as number,
+          })),
         })),
         progressMap,
         lecturers,

@@ -4,6 +4,7 @@ import { LucideAngularModule, BookOpen, Clock, ArrowRight } from 'lucide-angular
 import { CourseWithProgress } from '../../../core/models/course.model';
 import { formatDuration } from '../../../core/utils/date.utils';
 import { UserAvatarComponent } from '../../../shared/components/user-avatar.component';
+import { ProgressRingComponent } from '../../../shared/components/progress-ring.component';
 
 const BADGE_STYLES: Record<string, string> = {
   open: 'bg-emerald-100 text-emerald-700',
@@ -20,7 +21,7 @@ const BADGE_LABELS: Record<string, string> = {
 @Component({
   selector: 'app-course-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, UserAvatarComponent],
+  imports: [RouterLink, LucideAngularModule, UserAvatarComponent, ProgressRingComponent],
   host: { class: 'block' },
   template: `
     <a [routerLink]="['/courses', course().id]"
@@ -69,16 +70,17 @@ const BADGE_LABELS: Record<string, string> = {
           </div>
         }
 
-        <!-- Progress Bar -->
+        <!-- Progress Ring -->
         @if (course().isEnrolled && course().moduleCount > 0) {
-          <div class="mb-3">
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-xs text-slate-500">{{ course().completedModules }}/{{ course().moduleCount }} modules</span>
-              <span class="text-xs font-semibold text-slate-700 tabular-nums">{{ course().progressPercent }}%</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill"
-                   [style.width.%]="course().progressPercent"></div>
+          <div class="flex items-center gap-3 mb-3">
+            <app-progress-ring [percent]="course().progressPercent" size="md" />
+            <div class="flex-1 min-w-0">
+              <span class="text-xs font-semibold text-slate-700 tabular-nums block">
+                {{ course().completedModules }}/{{ course().moduleCount }} modules
+              </span>
+              <span class="text-[11px] text-slate-400">
+                {{ course().progressPercent === 100 ? 'Complete' : 'In progress' }}
+              </span>
             </div>
           </div>
         }

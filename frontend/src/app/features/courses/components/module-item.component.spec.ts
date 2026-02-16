@@ -15,7 +15,7 @@ describe('ModuleItemComponent', () => {
 
   it('should render module title as link for video', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Introduction Video', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Introduction Video', description: null, module_type: 'video', sort_order: 0 },
     });
 
     expect(screen.getByText(/Introduction Video/)).toBeTruthy();
@@ -25,7 +25,7 @@ describe('ModuleItemComponent', () => {
 
   it('should render as link for pdf type', async () => {
     await renderItem({
-      module: { id: 'm2', title: 'Setup Guide', module_type: 'pdf', sort_order: 0 },
+      module: { id: 'm2', title: 'Setup Guide', description: null, module_type: 'pdf', sort_order: 0 },
     });
 
     const link = document.querySelector('a[href="/courses/c1/modules/m2"]');
@@ -34,7 +34,7 @@ describe('ModuleItemComponent', () => {
 
   it('should render as link for markdown type', async () => {
     await renderItem({
-      module: { id: 'm3', title: 'Notes', module_type: 'markdown', sort_order: 0 },
+      module: { id: 'm3', title: 'Notes', description: null, module_type: 'markdown', sort_order: 0 },
     });
 
     const link = document.querySelector('a[href="/courses/c1/modules/m3"]');
@@ -43,7 +43,7 @@ describe('ModuleItemComponent', () => {
 
   it('should render as link for quiz type', async () => {
     await renderItem({
-      module: { id: 'm4', title: 'Knowledge Check', module_type: 'quiz', sort_order: 0 },
+      module: { id: 'm4', title: 'Knowledge Check', description: null, module_type: 'quiz', sort_order: 0 },
     });
 
     const link = document.querySelector('a[href="/courses/c1/modules/m4"]');
@@ -52,7 +52,7 @@ describe('ModuleItemComponent', () => {
 
   it('should render as link for exam type', async () => {
     await renderItem({
-      module: { id: 'm5', title: 'Final Exam', module_type: 'exam', sort_order: 0 },
+      module: { id: 'm5', title: 'Final Exam', description: null, module_type: 'exam', sort_order: 0 },
     });
 
     const link = document.querySelector('a[href="/courses/c1/modules/m5"]');
@@ -62,7 +62,7 @@ describe('ModuleItemComponent', () => {
 
   it('should show "Not started" status via aria-label when no progress', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       progress: null,
     });
 
@@ -71,7 +71,7 @@ describe('ModuleItemComponent', () => {
 
   it('should show "Completed" status via aria-label for completed modules', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       progress: { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
     });
 
@@ -80,7 +80,7 @@ describe('ModuleItemComponent', () => {
 
   it('should show "In progress" status via aria-label for in-progress modules', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'pdf', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'pdf', sort_order: 0 },
       progress: { status: 'in_progress', completed_at: null },
     });
 
@@ -91,7 +91,7 @@ describe('ModuleItemComponent', () => {
 
   it('should hide action buttons when canEdit is false', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: false,
     });
 
@@ -103,7 +103,7 @@ describe('ModuleItemComponent', () => {
 
   it('should show action buttons when canEdit is true', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
     });
 
@@ -113,7 +113,7 @@ describe('ModuleItemComponent', () => {
 
   it('should hide Move up when isFirst', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
       isFirst: true,
       isLast: false,
@@ -125,7 +125,7 @@ describe('ModuleItemComponent', () => {
 
   it('should hide Move down when isLast', async () => {
     await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
       isFirst: false,
       isLast: true,
@@ -139,7 +139,7 @@ describe('ModuleItemComponent', () => {
 
   it('should emit edit on edit button click', async () => {
     const { fixture } = await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
     });
 
@@ -153,7 +153,7 @@ describe('ModuleItemComponent', () => {
 
   it('should emit moveUp on move up click', async () => {
     const { fixture } = await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
       isFirst: false,
     });
@@ -168,7 +168,7 @@ describe('ModuleItemComponent', () => {
 
   it('should emit moveDown on move down click', async () => {
     const { fixture } = await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
       isLast: false,
     });
@@ -185,7 +185,7 @@ describe('ModuleItemComponent', () => {
 
   it('should show delete confirmation on delete click', async () => {
     const { fixture } = await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
     });
 
@@ -199,7 +199,7 @@ describe('ModuleItemComponent', () => {
 
   it('should emit deleteConfirmed on confirm delete', async () => {
     const { fixture } = await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
     });
 
@@ -216,7 +216,7 @@ describe('ModuleItemComponent', () => {
 
   it('should cancel delete confirmation', async () => {
     const { fixture } = await renderItem({
-      module: { id: 'm1', title: 'Module A', module_type: 'video', sort_order: 0 },
+      module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
       canEdit: true,
     });
 

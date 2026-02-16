@@ -12,9 +12,9 @@ const mockLecture = {
   description: null,
   sort_order: 0,
   modules: [
-    { id: 'm1', title: 'Welcome Video', module_type: 'video', sort_order: 0 },
-    { id: 'm2', title: 'Setup Guide', module_type: 'pdf', sort_order: 1 },
-    { id: 'm3', title: 'Knowledge Check', module_type: 'quiz', sort_order: 2 },
+    { id: 'm1', title: 'Welcome Video', description: null, module_type: 'video', sort_order: 0 },
+    { id: 'm2', title: 'Setup Guide', description: null, module_type: 'pdf', sort_order: 1 },
+    { id: 'm3', title: 'Knowledge Check', description: null, module_type: 'quiz', sort_order: 2 },
   ],
 };
 

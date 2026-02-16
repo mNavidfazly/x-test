@@ -1,19 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, LucideIconData, Video, FileText, Type, HelpCircle, ClipboardCheck, ExternalLink, Headphones, FolderArchive, CheckCircle2, Circle, PlayCircle, Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-angular';
+import { LucideAngularModule, CheckCircle2, Circle, PlayCircle, Pencil, ChevronUp, ChevronDown, Trash2 } from 'lucide-angular';
 import { ModuleSummary, ModuleProgress } from '../../../core/models/course.model';
 import { formatDuration } from '../../../core/utils/date.utils';
-
-const TYPE_ICONS: Record<string, LucideIconData> = {
-  video: Video,
-  pdf: FileText,
-  markdown: Type,
-  quiz: HelpCircle,
-  exam: ClipboardCheck,
-  external_quiz: ExternalLink,
-  audio: Headphones,
-  download: FolderArchive,
-};
+import { getModuleTypeMeta } from '../../../core/utils/module-type.utils';
 
 const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'quiz', 'exam', 'audio', 'download']);
 
@@ -48,13 +38,21 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             </span>
 
             <!-- Module type icon -->
-            <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg shrink-0"
+                  [class]="typeMeta().colorClass">
+              <lucide-icon [img]="typeMeta().icon" [size]="14"></lucide-icon>
+            </span>
 
             <!-- Title -->
-            <span class="text-sm flex-1 truncate"
-                  [class]="statusClass() === 'completed' ? 'text-slate-500' : statusClass() === 'in_progress' ? 'text-slate-900 font-medium' : 'text-slate-700'">
-              {{ moduleNumber() }}. {{ module().title }}
-            </span>
+            <div class="flex-1 min-w-0">
+              <span class="text-sm block truncate"
+                    [class]="statusClass() === 'completed' ? 'text-slate-500' : statusClass() === 'in_progress' ? 'text-slate-900 font-medium' : 'text-slate-700'">
+                {{ moduleNumber() }}. {{ module().title }}
+              </span>
+              @if (module().description) {
+                <span class="text-sm text-slate-400 block truncate">{{ module().description }}</span>
+              }
+            </div>
 
             <!-- Duration -->
             @if (formattedDuration() !== '0 min') {
@@ -66,7 +64,9 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             <span class="shrink-0 flex items-center justify-center w-5">
               <lucide-icon [img]="icons.Circle" [size]="20" class="text-slate-200"></lucide-icon>
             </span>
-            <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-300 shrink-0"></lucide-icon>
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg shrink-0 bg-slate-100">
+              <lucide-icon [img]="typeMeta().icon" [size]="14" class="text-slate-300"></lucide-icon>
+            </span>
             <span class="text-sm text-slate-400 flex-1 truncate">{{ moduleNumber() }}. {{ module().title }}</span>
             <span class="badge-neutral text-[10px]">Coming soon</span>
           </div>
@@ -155,9 +155,7 @@ export class ModuleItemComponent {
 
   readonly formattedDuration = computed(() => formatDuration(this.module().estimated_duration_minutes));
 
-  readonly typeIcon = computed(() => {
-    return TYPE_ICONS[this.module().module_type] ?? FileText;
-  });
+  readonly typeMeta = computed(() => getModuleTypeMeta(this.module().module_type));
 
   readonly isLinkable = computed(() => {
     return LINKABLE_TYPES.has(this.module().module_type);
