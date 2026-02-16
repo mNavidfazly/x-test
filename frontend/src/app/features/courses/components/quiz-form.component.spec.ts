@@ -296,6 +296,30 @@ describe('QuizFormComponent', () => {
     expect(comp.questions[0].correct_answer).toBe('');
   });
 
+  // --- Explanation ---
+
+  it('should render explanation label for each question', async () => {
+    await renderComponent();
+
+    expect(screen.getByText('Explanation (optional)')).toBeTruthy();
+  });
+
+  it('should include explanation in save payload', async () => {
+    const user = userEvent.setup();
+    const { save, fixture } = await renderComponent();
+
+    // Set explanation on the question
+    const comp = fixture.componentInstance as QuizFormComponent;
+    comp.questions[0].explanation = 'Because 2 + 2 equals 4.';
+    fixture.detectChanges();
+
+    await user.click(screen.getByText('Create Module'));
+    fixture.detectChanges();
+
+    const payload = save.mock.calls[0][0];
+    expect(payload.content.data.questions[0].explanation).toBe('Because 2 + 2 equals 4.');
+  });
+
   // --- Import/Export UI ---
 
   it('should render Template and Import buttons', async () => {

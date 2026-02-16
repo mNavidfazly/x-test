@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Plus, Trash2, ChevronUp, ChevronDown, Download, Upload } from 'lucide-angular';
+import { LucideAngularModule, Plus, Trash2, ChevronUp, ChevronDown, Download, Upload, Lightbulb } from 'lucide-angular';
 import {
   ModuleFormData, QuizFormData, QuizQuestionFormData, QuizOptionFormData,
   QuizQuestionType, ModuleSavePayload,
@@ -371,6 +371,20 @@ interface MatchingPair {
                 </div>
               }
             }
+
+            <!-- Explanation (optional) -->
+            <div class="mt-3 pt-3 border-t border-slate-100">
+              <label class="form-label flex items-center gap-1.5">
+                <lucide-icon [img]="icons.Lightbulb" [size]="14" class="text-amber-500"></lucide-icon>
+                Explanation (optional)
+              </label>
+              <textarea
+                class="input-field text-sm"
+                rows="2"
+                placeholder="Explain why the correct answer is correct..."
+                [(ngModel)]="question.explanation"
+              ></textarea>
+            </div>
           </div>
         }
       </div>
@@ -405,7 +419,7 @@ export class QuizFormComponent implements OnInit {
   readonly save = output<ModuleSavePayload>();
   readonly cancel = output<void>();
 
-  readonly icons = { Plus, Trash2, ChevronUp, ChevronDown, Download, Upload };
+  readonly icons = { Plus, Trash2, ChevronUp, ChevronDown, Download, Upload, Lightbulb };
 
   form: { title: string; description: string | null } = { title: '', description: null };
   importError = '';
@@ -464,6 +478,7 @@ export class QuizFormComponent implements OnInit {
         { option_text: '', is_correct: false, sort_order: 1 },
       ],
       correct_answer: null,
+      explanation: null,
     });
   }
 

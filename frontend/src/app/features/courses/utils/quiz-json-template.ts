@@ -16,6 +16,7 @@ const TEMPLATE_DATA: QuizFormData = {
       points: 2,
       sort_order: 0,
       correct_answer: null,
+      explanation: 'Paris has been the capital of France since the 10th century.',
       options: [
         { option_text: 'London', is_correct: false, sort_order: 0 },
         { option_text: 'Paris', is_correct: true, sort_order: 1 },
@@ -28,6 +29,7 @@ const TEMPLATE_DATA: QuizFormData = {
       points: 1,
       sort_order: 1,
       correct_answer: null,
+      explanation: null,
       options: [
         { option_text: 'Python', is_correct: true, sort_order: 0 },
         { option_text: 'HTML', is_correct: false, sort_order: 1 },
@@ -41,6 +43,7 @@ const TEMPLATE_DATA: QuizFormData = {
       points: 1,
       sort_order: 2,
       correct_answer: null,
+      explanation: null,
       options: [
         { option_text: 'True', is_correct: true, sort_order: 0 },
         { option_text: 'False', is_correct: false, sort_order: 1 },
@@ -52,6 +55,7 @@ const TEMPLATE_DATA: QuizFormData = {
       points: 1,
       sort_order: 3,
       correct_answer: 'H2O',
+      explanation: 'H2O is the chemical formula — two hydrogen atoms bonded to one oxygen atom.',
       options: [],
     },
     {
@@ -60,6 +64,7 @@ const TEMPLATE_DATA: QuizFormData = {
       points: 2,
       sort_order: 4,
       correct_answer: 'The process by which green plants convert sunlight, carbon dioxide, and water into glucose and oxygen.',
+      explanation: null,
       options: [],
     },
     {
@@ -67,6 +72,7 @@ const TEMPLATE_DATA: QuizFormData = {
       question_type: 'matching',
       points: 3,
       sort_order: 5,
+      explanation: null,
       correct_answer: JSON.stringify([
         { left: 'France', right: 'Paris' },
         { left: 'Germany', right: 'Berlin' },

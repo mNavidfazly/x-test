@@ -363,6 +363,7 @@ export function createMockQuizFormData(overrides?: Partial<QuizFormData>): QuizF
         points: 1,
         sort_order: 0,
         correct_answer: null,
+        explanation: null,
         options: [
           { option_text: '3', is_correct: false, sort_order: 0 },
           { option_text: '4', is_correct: true, sort_order: 1 },
@@ -393,6 +394,7 @@ export function createMockQuizContent(overrides?: Partial<QuizContent>): QuizCon
         points: 1,
         sort_order: 0,
         correct_answer: null,
+        explanation: null,
         options: [
           { id: 'o-1', option_text: '3', is_correct: false, sort_order: 0 },
           { id: 'o-2', option_text: '4', is_correct: true, sort_order: 1 },
@@ -580,6 +582,7 @@ export function createMockQuizQuestionResult(overrides?: Partial<QuizQuestionRes
       { id: 'o-2', option_text: '4', is_correct: true },
       { id: 'o-3', option_text: '5', is_correct: false },
     ],
+    explanation: null,
     ...overrides,
   };
 }

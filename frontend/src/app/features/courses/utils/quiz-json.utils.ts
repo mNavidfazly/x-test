@@ -134,12 +134,15 @@ export function validateQuizJson(raw: unknown): QuizValidationResult {
       }
     }
 
+    const explanation: string | null = typeof qObj['explanation'] === 'string' ? qObj['explanation'].trim() || null : null;
+
     questions.push({
       question_text: questionText,
       question_type: type,
       points,
       sort_order: sortOrder,
       correct_answer: correctAnswer,
+      explanation,
       options,
     });
   }

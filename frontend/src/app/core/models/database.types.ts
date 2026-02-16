@@ -1377,6 +1377,7 @@ export type Database = {
       quiz_questions: {
         Row: {
           correct_answer: string | null
+          explanation: string | null
           id: string
           points: number
           question_text: string
@@ -1386,6 +1387,7 @@ export type Database = {
         }
         Insert: {
           correct_answer?: string | null
+          explanation?: string | null
           id?: string
           points?: number
           question_text: string
@@ -1395,6 +1397,7 @@ export type Database = {
         }
         Update: {
           correct_answer?: string | null
+          explanation?: string | null
           id?: string
           points?: number
           question_text?: string
@@ -1861,6 +1864,7 @@ export type Database = {
         Args: { p_attempt_id: string }
         Returns: {
           correct_answer: string
+          explanation: string
           options: Json
           points: number
           question_id: string

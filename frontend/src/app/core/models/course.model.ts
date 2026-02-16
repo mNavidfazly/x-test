@@ -238,6 +238,7 @@ export interface QuizContent {
     points: number;
     sort_order: number;
     correct_answer: string | null;
+    explanation: string | null;
     options: {
       id: string;
       option_text: string;
@@ -304,6 +305,7 @@ export interface QuizQuestionResult {
   correct_answer: string | null;
   user_answer: string | null;
   options: { id: string; option_text: string; is_correct: boolean | null }[] | null;
+  explanation: string | null;
 }
 
 export interface QuizResults {
@@ -460,6 +462,7 @@ export interface QuizQuestionFormData {
   sort_order: number;
   options: QuizOptionFormData[];
   correct_answer: string | null;
+  explanation: string | null;
 }
 
 export interface QuizFormData {

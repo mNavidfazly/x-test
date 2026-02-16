@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { LucideAngularModule, Check, X } from 'lucide-angular';
+import { LucideAngularModule, Check, X, Lightbulb } from 'lucide-angular';
 import { QuizQuestionResult } from '../../../core/models/course.model';
 
 @Component({
@@ -73,6 +73,14 @@ import { QuizQuestionResult } from '../../../core/models/course.model';
             }
           </div>
         }
+
+        <!-- Explanation -->
+        @if (result().explanation) {
+          <div class="flex gap-2 mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
+            <lucide-icon [img]="icons.Lightbulb" [size]="16" class="text-amber-500 flex-shrink-0 mt-0.5"></lucide-icon>
+            <p class="text-slate-700">{{ result().explanation }}</p>
+          </div>
+        }
       </div>
     </div>
   `,
@@ -81,7 +89,7 @@ export class QuizResultItemComponent {
   readonly result = input.required<QuizQuestionResult>();
   readonly questionNumber = input.required<number>();
 
-  readonly icons = { Check, X };
+  readonly icons = { Check, X, Lightbulb };
 
   readonly isCorrect = computed(() => {
     const r = this.result();

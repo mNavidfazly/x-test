@@ -263,6 +263,39 @@ describe('validateQuizJson', () => {
     expect(result.errors.some(e => e.includes('non-empty'))).toBe(true);
   });
 
+  // --- Explanation ---
+
+  it('should parse explanation field from JSON when present', () => {
+    const result = validateQuizJson({
+      title: 'Test',
+      questions: [{
+        question_text: 'Q',
+        question_type: 'fill_blank',
+        correct_answer: 'A',
+        explanation: 'Because A is correct.',
+      }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.questions[0].explanation).toBe('Because A is correct.');
+  });
+
+  it('should default explanation to null when absent', () => {
+    const result = validateQuizJson({
+      title: 'Test',
+      questions: [{
+        question_text: 'Q',
+        question_type: 'fill_blank',
+        correct_answer: 'A',
+      }],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.data.questions[0].explanation).toBeNull();
+  });
+
+  // --- Sort order ---
+
   it('should auto-assign option sort_order from index when missing', () => {
     const result = validateQuizJson({
       title: 'Test',

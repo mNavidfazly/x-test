@@ -1554,6 +1554,7 @@ export class CourseService {
               points: qn.points,
               sort_order: qn.sort_order,
               correct_answer: qn.correct_answer,
+              explanation: qn.explanation ?? null,
               options: qn.options.map(o => ({
                 option_text: o.option_text,
                 is_correct: o.is_correct,
@@ -1646,7 +1647,7 @@ export class CourseService {
         if (!quizRes.data) return { type: 'quiz', data: null };
 
         const questionsRes = await client.from('quiz_questions')
-          .select('id, question_text, question_type, points, sort_order, correct_answer, quiz_question_options(id, option_text, is_correct, sort_order)')
+          .select('id, question_text, question_type, points, sort_order, correct_answer, explanation, quiz_question_options(id, option_text, is_correct, sort_order)')
           .eq('quiz_id', quizRes.data.id)
           .order('sort_order');
         if (questionsRes.error) throw questionsRes.error;
@@ -1822,6 +1823,7 @@ export class CourseService {
           points: q.points,
           sort_order: q.sort_order,
           correct_answer: q.correct_answer,
+          explanation: q.explanation ?? null,
         })
         .select('id').single();
       if (qErr) throw new Error(extractErrorMessage(qErr, 'Failed to save question'));

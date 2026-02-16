@@ -172,4 +172,26 @@ describe('QuizResultItemComponent', () => {
     const badge = screen.getByText('1');
     expect(badge.className).toContain('bg-rose-100');
   });
+
+  // --- Explanation ---
+
+  it('shows explanation when provided', async () => {
+    await renderResult({ explanation: 'Because 2 + 2 equals 4.' });
+
+    expect(screen.getByText('Because 2 + 2 equals 4.')).toBeTruthy();
+  });
+
+  it('hides explanation when null', async () => {
+    await renderResult({ explanation: null });
+
+    expect(screen.queryByText('Because')).toBeNull();
+  });
+
+  it('hides explanation when empty string', async () => {
+    await renderResult({ explanation: '' });
+
+    // Empty string is falsy, so @if block should not render
+    const explanationBlocks = document.querySelectorAll('.bg-amber-50');
+    expect(explanationBlocks.length).toBe(0);
+  });
 });

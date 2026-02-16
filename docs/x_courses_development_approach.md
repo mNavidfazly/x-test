@@ -1433,36 +1433,33 @@ Private per-module notes that learners can write while studying. Uses the existi
 - [x] **Tests:** 23 new tests (8 module-notes component + 5 notes service + 10 my-notes page) + existing spec updates for `ModuleProgress.notes` compatibility. 1605 total frontend tests passing, build OK
 - [x] **E2E:** 6 stories — 5 passed, 1 partial (`MODULE_NOTES_USER_STORIES.md`)
 
-#### 12C - Per-Question Explanations
+#### 12C - Per-Question Explanations (Complete)
 
-Lecturers can add explanations to quiz questions that are revealed after submission, helping learners understand why an answer is correct or incorrect.
+Optional explanation text per quiz question — lecturers add via quiz builder, learners see after submission (only when `show_correct_answers = true`).
 
-- [ ] **Migration 00042** (`supabase/migrations/00042_quiz_question_explanations.sql`):
-  - [ ] `ALTER TABLE quiz_questions ADD COLUMN explanation TEXT;` — nullable, no default
-  - [ ] Update `quiz_questions_safe` view: include `explanation` column (safe — only shown post-submission via `get_quiz_results`)
-  - [ ] Update `get_quiz_results(p_attempt_id)` RPC: include `explanation` in returned question data (only visible after attempt is completed)
-  - [ ] No new RLS policies needed — existing policies on `quiz_questions` cover the new column
-- [ ] **Regenerate DB types:** `supabase gen types typescript --linked > frontend/src/app/core/models/database.types.ts`
-- [ ] **Model updates** (`core/models/course.model.ts`):
-  - [ ] Add `explanation?: string | null` to `QuizQuestionFormData` interface
-  - [ ] Add `explanation?: string | null` to `QuizQuestionResult` interface (post-submission display)
-- [ ] **Quiz Builder — explanation textarea** (`features/courses/components/quiz-form.component.ts`):
-  - [ ] Add collapsible "Explanation (optional)" textarea below each question's options section
-  - [ ] `form-label` + `input-field` styling, placeholder "Explain why the correct answer is correct..."
-  - [ ] Wire into form data model, include in INSERT/UPDATE queries
-- [ ] **Quiz Results — explanation display** (`features/courses/components/quiz-result-item.component.ts`):
-  - [ ] After submission, show explanation below the correct/incorrect indicator
-  - [ ] Style: `card-solid` background with `Lightbulb` icon, `text-slate-600` body text
-  - [ ] Only show when explanation is non-null and non-empty
-- [ ] **JSON import/export updates:**
-  - [ ] `quiz-json.utils.ts`: Add `explanation` to question export schema
-  - [ ] `quiz-json-template.ts`: Add `explanation` field to downloadable template example
-  - [ ] JSON upload validation: accept `explanation` as optional string field, map to INSERT
-- [ ] **CourseService updates** (`core/services/course.service.ts`):
-  - [ ] Quiz question INSERT: include `explanation` field
-  - [ ] Quiz question UPDATE: include `explanation` field
-  - [ ] Quiz results fetch: map `explanation` from RPC response
-- [ ] **Tests:** ~10 new frontend tests (quiz form explanation + result display + JSON round-trip), migration + RLS pass, build OK
+- [x] **Migration 00042** (`supabase/migrations/00042_quiz_question_explanations.sql`):
+  - [x] `ALTER TABLE quiz_questions ADD COLUMN explanation TEXT;` — nullable, no default
+  - [x] `quiz_questions_safe` view unchanged — deliberately excludes `explanation` (same as `correct_answer`)
+  - [x] `DROP FUNCTION` + `CREATE FUNCTION get_quiz_results` — added `explanation text` to `RETURNS TABLE`, `qq.explanation` in `show_correct_answers=true` branch, `NULL::text` in `false` branch
+  - [x] No new RLS policies needed — existing policies on `quiz_questions` cover the new column
+- [x] **Regenerate DB types:** `supabase gen types typescript --linked`
+- [x] **Model updates** (`core/models/course.model.ts`):
+  - [x] Added `explanation: string | null` to `QuizContent.questions[]` inline type, `QuizQuestionFormData`, and `QuizQuestionResult`
+- [x] **Quiz Builder** (`features/courses/components/quiz-form.component.ts`):
+  - [x] `Lightbulb` icon + "Explanation (optional)" label + `textarea` with `input-field text-sm`, separated by `border-t border-slate-100`
+  - [x] `addQuestion()` initializes `explanation: null`, preserved across type changes
+  - [x] Wired into `#insertQuizQuestions` INSERT payload and `#contentToFormData` mapping
+- [x] **Quiz Results** (`features/courses/components/quiz-result-item.component.ts`):
+  - [x] Amber card (`bg-amber-50 border-amber-200`) with `Lightbulb` icon, shown only when `result().explanation` is truthy
+  - [x] Positioned after option list, inside the `ml-10` content container
+- [x] **JSON import/export:**
+  - [x] `quiz-json.utils.ts`: Parses `explanation` as optional string, trims, defaults to null
+  - [x] `quiz-json-template.ts`: Added `explanation` to all 6 template questions (2 with real text, 4 null)
+- [x] **CourseService** (`core/services/course.service.ts`):
+  - [x] `#insertQuizQuestions`: includes `explanation: q.explanation ?? null`
+  - [x] `#fetchModuleContent` quiz SELECT: added `explanation` to column list
+  - [x] `#contentToFormData`: maps `explanation: qn.explanation ?? null`
+- [x] **Tests:** 7 new tests (2 quiz builder + 3 quiz result item + 2 JSON utils). 1612 total frontend tests passing, build OK
 
 #### 12D - Exportable Compliance Reports
 
