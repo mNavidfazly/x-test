@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { extractStoragePaths, resolveMarkdownStorageUrls } from './markdown-storage.utils';
+import { extractStoragePaths, resolveMarkdownStorageUrls, replaceSignedUrlsWithStorageUris } from './markdown-storage.utils';
 
 describe('extractStoragePaths', () => {
   it('should return empty array for empty string', () => {
@@ -118,5 +118,42 @@ describe('resolveMarkdownStorageUrls', () => {
 
     const result = await resolveMarkdownStorageUrls(client, md);
     expect(result).toBe('![ext](https://example.com/img.jpg) ![storage](https://signed/img)');
+  });
+});
+
+describe('replaceSignedUrlsWithStorageUris', () => {
+  it('should return empty/null input unchanged', () => {
+    expect(replaceSignedUrlsWithStorageUris('')).toBe('');
+    expect(replaceSignedUrlsWithStorageUris(null as unknown as string)).toBe(null);
+  });
+
+  it('should replace a single signed URL with storage URI', () => {
+    const md = '![photo](https://abc.supabase.co/storage/v1/object/sign/course-files/c1/markdown-images/123-photo.webp?token=eyJhbGciOiJIUzI1NiJ9.abc)';
+    const result = replaceSignedUrlsWithStorageUris(md);
+    expect(result).toBe('![photo](supabase-storage://c1/markdown-images/123-photo.webp)');
+  });
+
+  it('should replace multiple signed URLs', () => {
+    const md = '![a](https://x.supabase.co/storage/v1/object/sign/course-files/p/a.webp?token=t1) ![b](https://x.supabase.co/storage/v1/object/sign/course-files/p/b.webp?token=t2)';
+    const result = replaceSignedUrlsWithStorageUris(md);
+    expect(result).toBe('![a](supabase-storage://p/a.webp) ![b](supabase-storage://p/b.webp)');
+  });
+
+  it('should leave non-Supabase URLs untouched', () => {
+    const md = '![ext](https://example.com/img.jpg) text';
+    const result = replaceSignedUrlsWithStorageUris(md);
+    expect(result).toBe(md);
+  });
+
+  it('should handle mixed signed and external URLs', () => {
+    const md = '![ext](https://example.com/img.jpg) ![storage](https://proj.supabase.co/storage/v1/object/sign/course-files/p/img.webp?token=abc)';
+    const result = replaceSignedUrlsWithStorageUris(md);
+    expect(result).toBe('![ext](https://example.com/img.jpg) ![storage](supabase-storage://p/img.webp)');
+  });
+
+  it('should handle signed URLs without query params', () => {
+    const md = '![photo](https://abc.supabase.co/storage/v1/object/sign/course-files/p/photo.webp)';
+    const result = replaceSignedUrlsWithStorageUris(md);
+    expect(result).toBe('![photo](supabase-storage://p/photo.webp)');
   });
 });

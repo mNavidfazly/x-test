@@ -1,8 +1,8 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
-const STORAGE_URI_PREFIX = 'supabase-storage://';
 const STORAGE_URI_REGEX = /supabase-storage:\/\/([^\s)]+)/g;
-const SIGNED_URL_TTL = 3600; // 1 hour
+const SIGNED_URL_REGEX = /https:\/\/[^/]+\.supabase\.co\/storage\/v1\/object\/sign\/course-files\/([^\s?)]+)(?:\?[^\s)]*)?/g;
+export const SIGNED_URL_TTL = 3600; // 1 hour
 
 /**
  * Extract all `supabase-storage://` paths from markdown content.
@@ -46,5 +46,17 @@ export async function resolveMarkdownStorageUrls(
 
   return markdown.replace(STORAGE_URI_REGEX, (fullMatch, path: string) => {
     return urlMap.get(path) ?? fullMatch;
+  });
+}
+
+/**
+ * Replace Supabase signed URLs back to `supabase-storage://` URIs.
+ * Used to convert editor content (which displays signed URLs) back to
+ * permanent storage URIs before saving to the database.
+ */
+export function replaceSignedUrlsWithStorageUris(markdown: string): string {
+  if (!markdown) return markdown;
+  return markdown.replace(SIGNED_URL_REGEX, (_fullMatch, path: string) => {
+    return `supabase-storage://${path}`;
   });
 }

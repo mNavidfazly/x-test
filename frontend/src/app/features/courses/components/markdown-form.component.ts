@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TiptapEditorComponent } from '../../../shared/components/tiptap-editor.component';
 import { ModuleFormData, MarkdownFormData, ModuleSavePayload } from '../../../core/models/course.model';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { resolveMarkdownStorageUrls, replaceSignedUrlsWithStorageUris, SIGNED_URL_TTL } from '../../../core/utils/markdown-storage.utils';
 
 @Component({
   selector: 'app-markdown-form',
@@ -38,11 +39,18 @@ import { SupabaseService } from '../../../core/services/supabase.service';
       <!-- Markdown Editor -->
       <div>
         <label class="form-label">Content</label>
-        <app-tiptap-editor
-          [content]="markdownContent"
-          [uploadHandler]="handleImageUpload"
-          (contentChange)="markdownContent = $event"
-        />
+        @if (editorReady()) {
+          <app-tiptap-editor
+            [content]="markdownContent"
+            [uploadHandler]="handleImageUpload"
+            (contentChange)="markdownContent = $event"
+          />
+        } @else {
+          <div class="border border-slate-300 rounded-lg p-4 min-h-[200px]">
+            <div class="skeleton-bar h-4 w-3/4 mb-3"></div>
+            <div class="skeleton-bar h-4 w-1/2"></div>
+          </div>
+        }
       </div>
 
       <!-- Actions -->
@@ -76,13 +84,22 @@ export class MarkdownFormComponent {
 
   #supabase = inject(SupabaseService);
 
+  readonly editorReady = signal(false);
+
   form: { title: string; description: string | null } = { title: '', description: null };
   markdownContent = '';
 
-  ngOnInit() {
+  async ngOnInit() {
     const moduleData = this.initialModuleData();
     this.form = { title: moduleData.title, description: moduleData.description };
-    this.markdownContent = this.initialMarkdownData().content;
+
+    const rawContent = this.initialMarkdownData().content;
+    if (rawContent.includes('supabase-storage://')) {
+      this.markdownContent = await resolveMarkdownStorageUrls(this.#supabase.client, rawContent);
+    } else {
+      this.markdownContent = rawContent;
+    }
+    this.editorReady.set(true);
   }
 
   isValid(): boolean {
@@ -96,12 +113,20 @@ export class MarkdownFormComponent {
       .from('course-files')
       .upload(path, file, { contentType: file.type });
     if (error) throw error;
+
+    // Return signed URL for editor display — reversed to storage URI on save
+    const { data } = await this.#supabase.client.storage
+      .from('course-files')
+      .createSignedUrl(path, SIGNED_URL_TTL);
+    if (data?.signedUrl) return data.signedUrl;
     return `supabase-storage://${path}`;
   };
 
   onSave() {
     if (!this.isValid()) return;
     const moduleData = this.initialModuleData();
+    // Convert any signed URLs back to permanent storage URIs before saving
+    const contentToSave = replaceSignedUrlsWithStorageUris(this.markdownContent);
     this.save.emit({
       module: {
         title: this.form.title,
@@ -110,7 +135,7 @@ export class MarkdownFormComponent {
         lecture_id: moduleData.lecture_id,
         estimated_duration_minutes: this.initialModuleData().estimated_duration_minutes,
       },
-      content: { type: 'markdown', data: { content: this.markdownContent } },
+      content: { type: 'markdown', data: { content: contentToSave } },
     });
   }
 }

@@ -68,8 +68,8 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| MI-01 | Upload Image via Toolbar Button | Platform Admin / Lecturer (can_edit) | ⏳ Not Tested | — |
-| MI-02 | Upload Image via Drag-and-Drop / Paste | Platform Admin / Lecturer (can_edit) | ⏳ Not Tested | — |
+| MI-01 | Upload Image via Toolbar Button | Platform Admin / Lecturer (can_edit) | ✅ Passed | 2026-02-16 |
+| MI-02 | Upload Image via Drag-and-Drop / Paste | Platform Admin / Lecturer (can_edit) | ⚠️ Partial | 2026-02-16 |
 
 ---
 
@@ -77,9 +77,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ✅ Passed |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that a lecturer/admin can upload an image to a markdown module via the Tiptap toolbar Image button, and that the image renders correctly in the viewer with a signed URL.
 
@@ -94,13 +94,13 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to an existing markdown module's edit page (or create a new Rich Text module) | Markdown form loads with Title, Description, and Tiptap editor |  |
-| 2 | Verify the Tiptap toolbar shows an Image button (ImagePlus icon) | Image button is visible in the toolbar between Code Block and Undo |  |
-| 3 | Click the Image button | A native file picker dialog opens |  |
-| 4 | Select a JPEG/PNG image file (< 5 MB) | The file picker closes. A brief loading spinner appears on the Image button. The image URI `supabase-storage://...` is inserted into the editor content |  |
-| 5 | Save the module (click "Save Changes" or "Create Module") | Module saves successfully, navigates to course detail page |  |
-| 6 | Navigate to the module viewer page | Markdown content renders with the uploaded image visible as an `<img>` tag with a signed URL (`https://...supabase.co/storage/v1/object/sign/...`) |  |
-| 7 | Inspect the rendered HTML (View Page Source or DevTools) | No `supabase-storage://` URIs present in the rendered HTML — all replaced with signed URLs |  |
+| 1 | Navigate to an existing markdown module's edit page (or create a new Rich Text module) | Markdown form loads with Title, Description, and Tiptap editor | ✅ |
+| 2 | Verify the Tiptap toolbar shows an Image button (ImagePlus icon) | Image button is visible in the toolbar between Code Block and Undo | ✅ |
+| 3 | Click the Image button | A native file picker dialog opens | ✅ |
+| 4 | Select a JPEG/PNG image file (< 5 MB) | The file picker closes. A brief loading spinner appears on the Image button. The image URI `supabase-storage://...` is inserted into the editor content | ✅ |
+| 5 | Save the module (click "Save Changes" or "Create Module") | Module saves successfully, navigates to course detail page | ✅ |
+| 6 | Navigate to the module viewer page | Markdown content renders with the uploaded image visible as an `<img>` tag with a signed URL (`https://...supabase.co/storage/v1/object/sign/...`) | ✅ |
+| 7 | Inspect the rendered HTML (View Page Source or DevTools) | No `supabase-storage://` URIs present in the rendered HTML — all replaced with signed URLs | ✅ |
 
 **Negative Cases**:
 - Selecting a file > 5 MB should be silently ignored (no upload, no error)
@@ -112,9 +112,9 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | — |
-| **Status** | ⏳ Not Tested |
-| **Tester** | — |
+| **Last Checked** | 2026-02-16 |
+| **Status** | ⚠️ Partial |
+| **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
 **Purpose**: Verify that images can be uploaded by dragging a file onto the Tiptap editor area or by pasting a clipboard image, with the same upload and resolution flow as the toolbar button.
 
@@ -129,11 +129,11 @@ All test users use password: `TestUser123!`
 
 | # | Action | Expected Outcome | ✓ |
 |---|--------|------------------|---|
-| 1 | Navigate to the markdown module edit page | Tiptap editor loads with existing content |  |
-| 2 | Drag an image file from the desktop/filesystem and drop it onto the Tiptap editor area | The upload spinner appears on the Image toolbar button. After a moment, a `supabase-storage://` URI is inserted into the editor at the drop position |  |
-| 3 | Copy an image to the clipboard (e.g., screenshot or copy from browser), then paste (Ctrl/Cmd+V) into the editor | The upload spinner appears. After a moment, a `supabase-storage://` URI is inserted at the cursor position |  |
-| 4 | Save the module | Module saves successfully |  |
-| 5 | Navigate to the module viewer page | All uploaded images render correctly with signed URLs |  |
+| 1 | Navigate to the markdown module edit page | Tiptap editor loads with existing content | ✅ |
+| 2 | Drag an image file from the desktop/filesystem and drop it onto the Tiptap editor area | The upload spinner appears on the Image toolbar button. After a moment, a `supabase-storage://` URI is inserted into the editor at the drop position | ⚠️ Not testable via Playwright (manual only) |
+| 3 | Copy an image to the clipboard (e.g., screenshot or copy from browser), then paste (Ctrl/Cmd+V) into the editor | The upload spinner appears. After a moment, a `supabase-storage://` URI is inserted at the cursor position | ✅ (simulated via ClipboardEvent) |
+| 4 | Save the module | Module saves successfully | ✅ |
+| 5 | Navigate to the module viewer page | All uploaded images render correctly with signed URLs | ✅ (2 images, both with signed URLs, no storage URI leaks) |
 
 **Notes**:
 - Drag-and-drop testing may be limited in automated Playwright tests — this is primarily a manual verification story
@@ -145,13 +145,14 @@ All test users use password: `TestUser123!`
 
 | Timestamp | Tester | Stories Tested | Result |
 |-----------|--------|----------------|--------|
-| — | — | — | — |
+| 2026-02-16 | Claude Opus 4.6 (Playwright MCP) | MI-01 | ✅ Passed |
+| 2026-02-16 | Claude Opus 4.6 (Playwright MCP) | MI-02 | ⚠️ Partial (drag-drop not testable, paste verified) |
 
 ## Bugs Found During E2E Testing
 
 | Bug ID | Story | Description | Severity | Status |
 |--------|-------|-------------|----------|--------|
-| — | — | — | — | — |
+| MI-BUG-01 | MI-01, MI-02 | Images invisible in editor (height: 0) — `supabase-storage://` URIs are not renderable by the browser. Images exist in DOM but display as nothing. Viewer works correctly with signed URLs. | Medium | Open |
 
 ## References
 
