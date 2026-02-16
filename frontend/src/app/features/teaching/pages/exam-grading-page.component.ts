@@ -205,7 +205,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                             class="btn-primary"
                           >
                             @if (grading()) {
-                              <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                              <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                             }
                             {{ sub.score !== null ? 'Update Grade' : 'Grade Exam' }}
                           </button>
@@ -232,7 +232,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                               class="btn-danger"
                             >
                               @if (resetting()) {
-                                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                               }
                               Yes, Reset
                             </button>

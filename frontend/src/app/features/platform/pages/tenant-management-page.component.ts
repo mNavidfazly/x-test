@@ -99,7 +99,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
               class="btn-primary"
             >
               @if (creating()) {
-                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
               }
               Create
             </button>
@@ -280,7 +280,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                               class="btn-primary"
                             >
                               @if (saving()) {
-                                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                               } @else {
                                 <lucide-icon [img]="icons.Save" [size]="14"></lucide-icon>
                               }
@@ -295,7 +295,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                                   class="btn-danger"
                                 >
                                   @if (deleting()) {
-                                    <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                                    <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                                   } @else {
                                     <lucide-icon [img]="icons.AlertTriangle" [size]="14"></lucide-icon>
                                   }
@@ -328,7 +328,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                         <div class="max-w-xl">
                           @if (coursesLoading()) {
                             <div class="flex items-center py-4">
-                              <lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400 animate-spin mr-2"></lucide-icon>
+                              <span class="inline-flex animate-spin mr-2"><lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400"></lucide-icon></span>
                               <span class="text-sm text-slate-500">Loading courses...</span>
                             </div>
                           } @else {
@@ -388,7 +388,7 @@ const ALL_AUTH_METHODS: AuthMethod[] = ['email_password', 'magic_link', 'keycloa
                         <div class="max-w-xl">
                           @if (csmsLoading()) {
                             <div class="flex items-center py-4">
-                              <lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400 animate-spin mr-2"></lucide-icon>
+                              <span class="inline-flex animate-spin mr-2"><lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400"></lucide-icon></span>
                               <span class="text-sm text-slate-500">Loading CSMs...</span>
                             </div>
                           } @else {

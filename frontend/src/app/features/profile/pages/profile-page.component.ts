@@ -25,7 +25,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 
       @if (loading()) {
         <div class="flex items-center gap-2 text-sm text-slate-500">
-          <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+          <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
           Loading profile...
         </div>
       } @else if (errorMessage()) {
@@ -55,7 +55,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
               aria-label="Upload photo"
             >
               @if (avatarUploading()) {
-                <lucide-icon [img]="icons.Loader2" [size]="24" class="text-white animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="24" class="text-white"></lucide-icon></span>
               } @else {
                 <lucide-icon [img]="icons.Camera" [size]="24" class="text-white"></lucide-icon>
               }
@@ -115,7 +115,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
                   aria-label="Save name"
                 >
                   @if (savingName()) {
-                    <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                    <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
                   } @else {
                     <lucide-icon [img]="icons.Check" [size]="16"></lucide-icon>
                   }

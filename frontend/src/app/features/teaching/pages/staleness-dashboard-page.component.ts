@@ -158,7 +158,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
                           class="text-blue-600 hover:text-blue-700 text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
                         >
                           @if (postponingCourseId() === course.id) {
-                            <lucide-icon [img]="icons.Loader2" [size]="12" class="animate-spin"></lucide-icon>
+                            <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="12"></lucide-icon></span>
                           } @else {
                             <lucide-icon [img]="icons.CalendarClock" [size]="12"></lucide-icon>
                           }
@@ -216,7 +216,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
                                     class="text-blue-600 hover:text-blue-700 text-xs font-semibold inline-flex items-center gap-1 disabled:opacity-50"
                                   >
                                     @if (postponingId() === mod.id) {
-                                      <lucide-icon [img]="icons.Loader2" [size]="12" class="animate-spin"></lucide-icon>
+                                      <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="12"></lucide-icon></span>
                                     } @else {
                                       <lucide-icon [img]="icons.CalendarClock" [size]="12"></lucide-icon>
                                     }

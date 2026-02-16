@@ -56,7 +56,7 @@ type Step = 'email' | 'code' | 'done';
               class="auth-btn-primary"
             >
               @if (loading()) {
-                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
               }
               Send reset code
             </button>
@@ -116,7 +116,7 @@ type Step = 'email' | 'code' | 'done';
               class="auth-btn-primary"
             >
               @if (loading()) {
-                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
               }
               Set new password
             </button>

@@ -51,7 +51,7 @@ import { formatDate } from '../../../core/utils/date.utils';
 
       @if (loadingUsers()) {
         <div class="flex items-center gap-2 py-4">
-          <lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400 animate-spin"></lucide-icon>
+          <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400"></lucide-icon></span>
           <span class="text-sm text-slate-500">Loading enrolled users...</span>
         </div>
       } @else if (enrolledUsers().length === 0) {

@@ -61,7 +61,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
             class="btn-primary"
           >
             @if (submitting()) {
-              <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+              <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
             } @else {
               <lucide-icon [img]="icons.Send" [size]="14"></lucide-icon>
             }

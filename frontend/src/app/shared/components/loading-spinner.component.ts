@@ -8,7 +8,7 @@ import { LucideAngularModule, Loader2 } from 'lucide-angular';
   host: { class: 'block' },
   template: `
     <div class="flex items-center justify-center py-12">
-      <lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400 animate-spin mr-2"></lucide-icon>
+      <span class="inline-flex animate-spin mr-2"><lucide-icon [img]="icons.Loader2" [size]="24" class="text-slate-400"></lucide-icon></span>
       <span class="text-sm text-slate-500">{{ message() }}</span>
     </div>
   `,

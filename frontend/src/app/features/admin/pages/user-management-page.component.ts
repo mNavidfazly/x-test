@@ -82,7 +82,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
               class="btn-primary"
             >
               @if (inviting()) {
-                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
               } @else {
                 <lucide-icon [img]="icons.Mail" [size]="14"></lucide-icon>
               }
@@ -228,7 +228,7 @@ type RoleFilter = 'all' | 'tenant_admin' | 'platform_admin' | 'regular';
                               class="btn-primary"
                             >
                               @if (saving()) {
-                                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                               } @else {
                                 <lucide-icon [img]="icons.Save" [size]="14"></lucide-icon>
                               }

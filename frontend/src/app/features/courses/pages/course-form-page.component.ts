@@ -28,7 +28,7 @@ import { isStoragePath } from '../../../core/utils/storage.utils';
 
       @if (loading()) {
         <div class="flex items-center gap-2 text-sm text-slate-500">
-          <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+          <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
           Loading...
         </div>
       } @else if (errorMessage()) {

@@ -178,7 +178,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                                 class="btn-primary"
                               >
                                 @if (responding()) {
-                                  <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                                  <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                                 } @else {
                                   <lucide-icon [img]="icons.Send" [size]="14"></lucide-icon>
                                 }
@@ -211,7 +211,7 @@ import { UserAvatarComponent } from '../../../shared/components/user-avatar.comp
                                 class="btn-primary"
                               >
                                 @if (responding()) {
-                                  <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                                  <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                                 } @else {
                                   <lucide-icon [img]="icons.Send" [size]="14"></lucide-icon>
                                 }

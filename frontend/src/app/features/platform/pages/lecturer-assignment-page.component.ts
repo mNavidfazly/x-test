@@ -102,7 +102,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
               class="btn-primary"
             >
               @if (adding()) {
-                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
               } @else {
                 <lucide-icon [img]="icons.Plus" [size]="14"></lucide-icon>
               }
@@ -255,7 +255,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
                             class="btn-danger"
                           >
                             @if (removing()) {
-                              <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                              <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                             } @else {
                               <lucide-icon [img]="icons.Trash2" [size]="14"></lucide-icon>
                             }

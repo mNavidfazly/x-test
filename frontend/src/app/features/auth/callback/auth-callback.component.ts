@@ -14,7 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
         <h1 class="text-5xl font-bold mb-8">
           <span class="italic text-teal-400">X</span><span class="text-white">-Courses</span>
         </h1>
-        <lucide-icon [img]="icons.Loader2" [size]="32" class="animate-spin text-teal-400 mx-auto mb-4"></lucide-icon>
+        <span class="inline-flex animate-spin mx-auto mb-4"><lucide-icon [img]="icons.Loader2" [size]="32" class="text-teal-400"></lucide-icon></span>
         <p class="text-sm text-slate-400">Completing sign in...</p>
       </div>
     </div>

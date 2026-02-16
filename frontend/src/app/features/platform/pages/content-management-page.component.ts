@@ -256,7 +256,7 @@ const MODULE_TYPE_OPTIONS: SelectOption[] = [
                           <h3 class="section-label mb-3">Tenant Assignments</h3>
                           @if (tenantsLoading()) {
                             <div class="flex items-center py-4">
-                              <lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400 animate-spin mr-2"></lucide-icon>
+                              <span class="inline-flex animate-spin mr-2"><lucide-icon [img]="icons.Loader2" [size]="16" class="text-slate-400"></lucide-icon></span>
                               <span class="text-sm text-slate-500">Loading...</span>
                             </div>
                           } @else {

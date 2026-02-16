@@ -198,7 +198,7 @@ type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
                               class="btn-primary"
                             >
                               @if (reviewing()) {
-                                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
                               } @else {
                                 <lucide-icon [img]="icons.Check" [size]="14"></lucide-icon>
                               }

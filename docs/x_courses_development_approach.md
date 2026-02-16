@@ -1611,6 +1611,17 @@ All in `frontend/src/app/shared/components/`. All use `ChangeDetectionStrategy.O
 - **Usage:** `<app-loading-spinner message="Loading tenants..." />`
 - **Replaces:** `<div class="flex items-center justify-center py-12"><lucide-icon [img]="icons.Loader2" ...>...` pattern
 
+> **Spinning Icons — Important Pattern:**
+> Never put `animate-spin` directly on a `<lucide-icon>` element. The `lucide-angular` library has an `@Input('class')` that copies all host classes onto the inner `<svg>`, causing both the host AND the SVG to spin independently (double rotation bug). Instead, wrap the icon in a `<span>`:
+> ```html
+> <!-- WRONG — causes double spin: -->
+> <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+>
+> <!-- CORRECT — only the span spins: -->
+> <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
+> ```
+> Move `animate-spin` and spacing classes (`mr-2`, `mx-auto`) to the `<span>`. Keep color/size classes (`text-slate-400`, `w-8 h-8`) on the `<lucide-icon>`.
+
 #### `<app-error-alert>`
 - **Inputs:** `message` (required string)
 - **Renders:** `<div class="alert-error" role="alert">{{ message() }}</div>`

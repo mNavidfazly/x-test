@@ -55,7 +55,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               class="auth-btn-primary"
             >
               @if (resolving()) {
-                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
               }
               Continue
             </button>
@@ -148,7 +148,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
                 class="auth-btn-primary mb-2"
               >
                 @if (loading() && !magicLinkLoading()) {
-                  <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                  <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
                 }
                 Sign in
               </button>
@@ -179,7 +179,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
                 class="btn-secondary w-full flex items-center justify-center gap-2"
               >
                 @if (magicLinkLoading()) {
-                  <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                  <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
                 } @else {
                   <lucide-icon [img]="icons.Mail" [size]="16"></lucide-icon>
                 }
@@ -242,7 +242,7 @@ import { TenantResolution } from '../../../core/models/tenant.model';
               class="auth-btn-primary mb-4"
             >
               @if (otpLoading()) {
-                <lucide-icon [img]="icons.Loader2" [size]="16" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
               }
               Verify
             </button>

@@ -66,7 +66,7 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
               class="btn-primary"
             >
               @if (reminderSending()) {
-                <lucide-icon [img]="icons.Loader2" [size]="14" class="animate-spin"></lucide-icon>
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="14"></lucide-icon></span>
               }
               Send
             </button>

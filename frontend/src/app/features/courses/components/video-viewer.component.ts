@@ -16,7 +16,7 @@ const POLL_INTERVAL_MS = 10_000;
       @switch (viewState()) {
         @case ('processing') {
           <div class="flex flex-col items-center justify-center gap-4 aspect-video rounded-lg bg-slate-100 border border-slate-200">
-            <lucide-icon [img]="Loader2" class="w-8 h-8 text-slate-400 animate-spin"></lucide-icon>
+            <span class="inline-flex animate-spin"><lucide-icon [img]="Loader2" class="w-8 h-8 text-slate-400"></lucide-icon></span>
             <div class="text-center">
               <p class="text-sm font-medium text-slate-600">Video is being processed</p>
               <p class="text-xs text-slate-500 mt-1">This may take a few minutes.</p>
@@ -56,7 +56,7 @@ const POLL_INTERVAL_MS = 10_000;
             </div>
           } @else {
             <div class="flex flex-col items-center justify-center gap-3 aspect-video rounded-lg bg-slate-100 border border-slate-200">
-              <lucide-icon [img]="Loader2" class="w-8 h-8 text-slate-400 animate-spin"></lucide-icon>
+              <span class="inline-flex animate-spin"><lucide-icon [img]="Loader2" class="w-8 h-8 text-slate-400"></lucide-icon></span>
               <p class="text-sm text-slate-600">Loading video...</p>
             </div>
           }

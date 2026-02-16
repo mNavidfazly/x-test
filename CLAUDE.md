@@ -105,6 +105,7 @@ Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-l
 
 - **Font:** Inter (`font-sans`). Numbers: always `tabular-nums`.
 - **Icons:** Lucide (`lucide-angular`) — `w-4 h-4` (inline), `w-5 h-5` (buttons), `w-6 h-6` (titles). **Never use emojis** in UI — always use Lucide icons instead. For status indicators, use icons like `Check`, `X`, `AlertTriangle`, `Clock`, `Info` etc. rather than emoji characters.
+- **Spinning icons (CRITICAL):** **NEVER put `animate-spin` directly on `<lucide-icon>`** — lucide-angular's `@Input('class')` copies host classes to the inner SVG, causing double rotation. Always wrap in a `<span>`: `<span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>`. Move `animate-spin` + spacing classes to the span, keep color/size classes on the icon.
 - **Layout:** `flex h-screen`, sidebar `w-64 bg-white border-r`, main `flex-1 bg-slate-50`.
 - **Corners:** `rounded-lg` (buttons/inputs), `rounded-xl`/`rounded-2xl` (cards), `rounded-full` (badges/avatars).
 - **Transitions:** Use explicit `transition-[props] duration-200` (e.g., `transition-[background-color,border-color,box-shadow]`). **Never use `transition-all`** — it causes unnecessary repaints and interferes with `will-change` optimization.
