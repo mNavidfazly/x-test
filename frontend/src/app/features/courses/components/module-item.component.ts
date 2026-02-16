@@ -53,7 +53,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
             <!-- Title -->
             <span class="text-sm flex-1 truncate"
                   [class]="statusClass() === 'completed' ? 'text-slate-500' : statusClass() === 'in_progress' ? 'text-slate-900 font-medium' : 'text-slate-700'">
-              {{ module().title }}
+              {{ moduleNumber() }}. {{ module().title }}
             </span>
 
             <!-- Duration -->
@@ -67,7 +67,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
               <lucide-icon [img]="icons.Circle" [size]="20" class="text-slate-200"></lucide-icon>
             </span>
             <lucide-icon [img]="typeIcon()" [size]="16" class="text-slate-300 shrink-0"></lucide-icon>
-            <span class="text-sm text-slate-400 flex-1 truncate">{{ module().title }}</span>
+            <span class="text-sm text-slate-400 flex-1 truncate">{{ moduleNumber() }}. {{ module().title }}</span>
             <span class="badge-neutral text-[10px]">Coming soon</span>
           </div>
         }
@@ -139,6 +139,7 @@ const LINKABLE_TYPES = new Set(['video', 'pdf', 'markdown', 'external_quiz', 'qu
 export class ModuleItemComponent {
   readonly module = input.required<ModuleSummary>();
   readonly courseId = input.required<string>();
+  readonly moduleNumber = input(1);
   readonly progress = input<ModuleProgress | null>(null);
   readonly canEdit = input(false);
   readonly isFirst = input(false);

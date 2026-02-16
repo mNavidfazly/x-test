@@ -18,7 +18,7 @@ describe('ModuleItemComponent', () => {
       module: { id: 'm1', title: 'Introduction Video', module_type: 'video', sort_order: 0 },
     });
 
-    expect(screen.getByText('Introduction Video')).toBeTruthy();
+    expect(screen.getByText(/Introduction Video/)).toBeTruthy();
     const link = document.querySelector('a[href="/courses/c1/modules/m1"]');
     expect(link).toBeTruthy();
   });

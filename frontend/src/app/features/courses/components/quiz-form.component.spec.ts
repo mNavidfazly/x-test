@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, fireEvent } from '@testing-library/angular';
 import userEvent from '@testing-library/user-event';
 import { FormsModule } from '@angular/forms';
 import { QuizFormComponent } from './quiz-form.component';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 import {
   createMockModuleFormData,
   createMockQuizFormData,
@@ -23,7 +24,7 @@ describe('QuizFormComponent', () => {
     const cancel = vi.fn();
 
     const { fixture } = await render(QuizFormComponent, {
-      componentImports: [MockLucideIconComponent, FormsModule],
+      componentImports: [MockLucideIconComponent, FormsModule, CustomSelectComponent],
       componentInputs: {
         initialModuleData: overrides?.moduleData ?? createMockModuleFormData({ module_type: 'quiz' }),
         initialQuizData: overrides?.quizData ?? createMockQuizFormData(),
@@ -281,12 +282,13 @@ describe('QuizFormComponent', () => {
   });
 
   it('should reset options when changing question type', async () => {
-    const user = userEvent.setup();
     const { fixture } = await renderComponent();
 
-    // Change type from single_choice to fill_blank
-    const select = screen.getByRole('combobox') as HTMLSelectElement;
-    await user.selectOptions(select, 'fill_blank');
+    // Change type from single_choice to fill_blank via custom select
+    const combobox = screen.getByRole('combobox');
+    fireEvent.click(combobox);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('Fill in the Blank'));
     fixture.detectChanges();
 
     const comp = fixture.componentInstance as QuizFormComponent;

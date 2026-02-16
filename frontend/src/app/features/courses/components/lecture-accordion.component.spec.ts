@@ -30,7 +30,7 @@ describe('LectureAccordionComponent', () => {
   it('should render lecture title and module count', async () => {
     await renderAccordion();
 
-    expect(screen.getByText('Getting Started')).toBeTruthy();
+    expect(screen.getByText(/Getting Started/)).toBeTruthy();
     expect(screen.getByText('0/3')).toBeTruthy();
   });
 
@@ -48,24 +48,24 @@ describe('LectureAccordionComponent', () => {
   it('should render all modules when open', async () => {
     await renderAccordion();
 
-    expect(screen.getByText('Welcome Video')).toBeTruthy();
-    expect(screen.getByText('Setup Guide')).toBeTruthy();
-    expect(screen.getByText('Knowledge Check')).toBeTruthy();
+    expect(screen.getByText(/Welcome Video/)).toBeTruthy();
+    expect(screen.getByText(/Setup Guide/)).toBeTruthy();
+    expect(screen.getByText(/Knowledge Check/)).toBeTruthy();
   });
 
   it('should collapse/expand on toggle click', async () => {
     await renderAccordion();
 
     const user = userEvent.setup();
-    const toggleButton = screen.getByRole('button', { name: /Getting Started/ });
+    const toggleButton = screen.getByRole('button', { name: /1\. Getting Started/ });
 
-    expect(screen.getByText('Welcome Video')).toBeTruthy();
-
-    await user.click(toggleButton);
-    expect(screen.queryByText('Welcome Video')).toBeNull();
+    expect(screen.getByText(/Welcome Video/)).toBeTruthy();
 
     await user.click(toggleButton);
-    expect(screen.getByText('Welcome Video')).toBeTruthy();
+    expect(screen.queryByText(/Welcome Video/)).toBeNull();
+
+    await user.click(toggleButton);
+    expect(screen.getByText(/Welcome Video/)).toBeTruthy();
   });
 
   it('should pass courseId to module items', async () => {

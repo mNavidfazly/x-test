@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/angular';
 import { QuizQuestionComponent } from './quiz-question.component';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
+import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { QuizTakingQuestion } from '../../../core/models/course.model';
 
 describe('QuizQuestionComponent', () => {
@@ -23,6 +25,7 @@ describe('QuizQuestionComponent', () => {
   ) => {
     const answerChange = vi.fn();
     const result = await render(QuizQuestionComponent, {
+      componentImports: [CustomSelectComponent, MockLucideIconComponent],
       componentInputs: {
         question,
         questionNumber: opts?.questionNumber ?? 1,
@@ -175,7 +178,7 @@ describe('QuizQuestionComponent', () => {
   });
 
   it('should render select dropdowns for matching questions', async () => {
-    await renderQuestion(createQuestion({
+    const { fixture } = await renderQuestion(createQuestion({
       question_type: 'matching',
       options: [],
       matchingLeft: ['Capital of France', 'Capital of Germany'],
@@ -188,17 +191,18 @@ describe('QuizQuestionComponent', () => {
     const selects = screen.getAllByRole('combobox');
     expect(selects).toHaveLength(2);
 
-    // Each select should contain the right-side options plus a placeholder
-    const firstSelect = selects[0] as HTMLSelectElement;
-    const optionElements = firstSelect.querySelectorAll('option');
-    expect(optionElements).toHaveLength(4); // "Select a match..." + 3 right options
-    expect(optionElements[1].textContent).toContain('Paris');
-    expect(optionElements[2].textContent).toContain('Berlin');
-    expect(optionElements[3].textContent).toContain('Madrid');
+    // Open first dropdown and verify options
+    fireEvent.click(selects[0]);
+    fixture.detectChanges();
+    const options = screen.getAllByRole('option');
+    expect(options).toHaveLength(3);
+    expect(options[0].textContent).toContain('Paris');
+    expect(options[1].textContent).toContain('Berlin');
+    expect(options[2].textContent).toContain('Madrid');
   });
 
   it('should emit JSON pairs when a matching dropdown is changed', async () => {
-    const { answerChange } = await renderQuestion(createQuestion({
+    const { answerChange, fixture } = await renderQuestion(createQuestion({
       question_type: 'matching',
       options: [],
       matchingLeft: ['A', 'B'],
@@ -206,7 +210,10 @@ describe('QuizQuestionComponent', () => {
     }));
 
     const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[0], { target: { value: 'X' } });
+    fireEvent.click(selects[0]);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByText('X'));
+    fixture.detectChanges();
 
     expect(answerChange).toHaveBeenCalledWith(
       JSON.stringify([
@@ -275,7 +282,7 @@ describe('QuizQuestionComponent', () => {
 
     const selects = screen.getAllByRole('combobox');
     selects.forEach(sel => {
-      expect((sel as HTMLSelectElement).disabled).toBe(true);
+      expect((sel as HTMLButtonElement).disabled).toBe(true);
     });
   });
 });

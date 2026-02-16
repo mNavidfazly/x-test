@@ -9,7 +9,7 @@ import { formatFileSize } from '../../../core/utils/file.utils';
   imports: [LucideAngularModule],
   host: { class: 'block' },
   template: `
-    <div class="card space-y-4">
+    <div class="card p-6 space-y-4">
       <div class="flex items-center gap-3">
         <lucide-icon [img]="icons.FolderArchive" [size]="24" class="text-teal-600"></lucide-icon>
         <div class="min-w-0 flex-1">

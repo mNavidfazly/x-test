@@ -8,6 +8,7 @@ import {
 import { QUIZ_JSON_TEMPLATE } from '../utils/quiz-json-template';
 import { validateQuizJson } from '../utils/quiz-json.utils';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 interface MatchingPair {
   left: string;
@@ -17,7 +18,7 @@ interface MatchingPair {
 @Component({
   selector: 'app-quiz-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, LucideAngularModule],
+  imports: [FormsModule, LucideAngularModule, CustomSelectComponent],
   host: { class: 'block' },
   template: `
     <div class="space-y-5">
@@ -168,15 +169,13 @@ interface MatchingPair {
             <div class="flex items-center gap-3 mb-3">
               <span class="section-label">Q{{ i + 1 }}</span>
 
-              <select
-                [(ngModel)]="question.question_type"
-                (ngModelChange)="onTypeChange(i, $event)"
-                class="rounded-lg border border-slate-300 px-2 py-1 text-xs focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none"
-              >
-                @for (t of questionTypes; track t.value) {
-                  <option [value]="t.value">{{ t.label }}</option>
-                }
-              </select>
+              <div class="relative">
+                <app-custom-select
+                  [options]="questionTypes"
+                  [value]="question.question_type"
+                  (valueChange)="onTypeChange(i, $any($event))"
+                />
+              </div>
 
               <div class="flex items-center gap-1 ml-auto">
                 <label class="text-xs text-slate-500 mr-1">Points:</label>
@@ -421,7 +420,7 @@ export class QuizFormComponent implements OnInit {
   questions: QuizQuestionFormData[] = [];
   matchingPairs: Record<number, MatchingPair[]> = {};
 
-  readonly questionTypes: { value: QuizQuestionType; label: string }[] = [
+  readonly questionTypes: SelectOption[] = [
     { value: 'single_choice', label: 'Single Choice' },
     { value: 'multiple_choice', label: 'Multiple Choice' },
     { value: 'true_false', label: 'True / False' },

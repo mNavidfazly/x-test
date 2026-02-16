@@ -21,7 +21,7 @@ import { ModuleItemComponent } from './module-item.component';
         >
           <lucide-icon [img]="isOpen() ? icons.ChevronDown : icons.ChevronRight" [size]="16" class="text-slate-400 shrink-0"></lucide-icon>
           <div class="flex-1 min-w-0">
-            <span class="text-sm font-semibold text-slate-900 block truncate">{{ lecture().title }}</span>
+            <span class="text-sm font-semibold text-slate-900 block truncate">{{ lectureNumber() }}. {{ lecture().title }}</span>
             @if (totalCount() > 0) {
               <div class="lecture-progress-bar">
                 <div class="lecture-progress-fill" [style.width.%]="lectureProgressPercent()"></div>
@@ -100,10 +100,11 @@ import { ModuleItemComponent } from './module-item.component';
       <!-- Module list -->
       @if (isOpen()) {
         <div class="border-t border-slate-100 bg-slate-50/50 px-2 py-1">
-          @for (mod of lecture().modules; track mod.id; let first = $first; let last = $last) {
+          @for (mod of lecture().modules; track mod.id; let i = $index; let first = $first; let last = $last) {
             <app-module-item
               [module]="mod"
               [courseId]="courseId()"
+              [moduleNumber]="i + 1"
               [progress]="progressMap()[mod.id] || null"
               [canEdit]="canEdit()"
               [isFirst]="first"
@@ -135,6 +136,7 @@ export class LectureAccordionComponent {
   readonly lecture = input.required<LectureWithModules>();
   readonly progressMap = input.required<Record<string, ModuleProgress>>();
   readonly courseId = input.required<string>();
+  readonly lectureNumber = input(1);
   readonly canEdit = input(false);
   readonly isFirst = input(false);
   readonly isLast = input(false);

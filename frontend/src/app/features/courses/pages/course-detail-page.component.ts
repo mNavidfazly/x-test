@@ -164,7 +164,7 @@ const BADGE_LABELS: Record<string, string> = {
           </div>
         } @else {
           <div class="space-y-4">
-            @for (lecture of courseService.courseDetail()!.lectures; track lecture.id; let first = $first; let last = $last) {
+            @for (lecture of courseService.courseDetail()!.lectures; track lecture.id; let i = $index; let first = $first; let last = $last) {
               @if (editingLectureId() === lecture.id) {
                 <app-lecture-form
                   [initialData]="editingLectureData()"
@@ -177,6 +177,7 @@ const BADGE_LABELS: Record<string, string> = {
                   [lecture]="lecture"
                   [courseId]="courseService.courseDetail()!.id"
                   [progressMap]="courseService.courseDetail()!.progressMap"
+                  [lectureNumber]="i + 1"
                   [canEdit]="canEdit()"
                   [isFirst]="first"
                   [isLast]="last"

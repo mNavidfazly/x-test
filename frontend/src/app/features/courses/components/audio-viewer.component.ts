@@ -15,16 +15,17 @@ import { LucideAngularModule, Headphones, Play, Pause, Volume2, VolumeX, Downloa
 import WaveSurfer from 'wavesurfer.js';
 import { ModuleAudio } from '../../../core/models/course.model';
 import { formatFileSize } from '../../../core/utils/file.utils';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 
 @Component({
   selector: 'app-audio-viewer',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent],
+  imports: [LucideAngularModule, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent, CustomSelectComponent],
   host: { class: 'block' },
   template: `
-    <div class="card space-y-4">
+    <div class="card p-6 space-y-4">
       <!-- File info header -->
       <div class="flex items-center gap-3">
         <lucide-icon [img]="icons.Headphones" [size]="24" class="text-teal-600"></lucide-icon>
@@ -93,16 +94,14 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
           </div>
 
           <!-- Speed selector -->
-          <select
-            [ngModel]="playbackRate()"
-            (ngModelChange)="onSpeedChange($event)"
-            class="text-sm text-slate-600 bg-slate-100 rounded-md px-2 py-1 border border-slate-200 cursor-pointer"
-            aria-label="Playback speed"
-          >
-            @for (speed of speeds; track speed) {
-              <option [value]="speed">{{ speed }}x</option>
-            }
-          </select>
+          <div class="relative">
+            <app-custom-select
+              [options]="speedOptions"
+              [value]="playbackRate().toString()"
+              (valueChange)="onSpeedChange($any($event))"
+              ariaLabel="Playback speed"
+            />
+          </div>
         </div>
       }
     </div>
@@ -114,7 +113,14 @@ export class AudioViewerComponent {
   readonly waveformContainer = viewChild<ElementRef>('waveformContainer');
 
   readonly icons = { Headphones, Play, Pause, Volume2, VolumeX, Download };
-  readonly speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
+  readonly speedOptions: SelectOption[] = [
+    { value: '0.5', label: '0.5x' },
+    { value: '0.75', label: '0.75x' },
+    { value: '1', label: '1x' },
+    { value: '1.25', label: '1.25x' },
+    { value: '1.5', label: '1.5x' },
+    { value: '2', label: '2x' },
+  ];
   readonly formatFileSize = formatFileSize;
 
   readonly isPlaying = signal(false);

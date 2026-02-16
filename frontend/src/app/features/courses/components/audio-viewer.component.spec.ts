@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/angular';
+import { render, screen, fireEvent } from '@testing-library/angular';
 import { FormsModule } from '@angular/forms';
 import { AudioViewerComponent } from './audio-viewer.component';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
+import { CustomSelectComponent } from '../../../shared/components/custom-select.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { ModuleAudio } from '../../../core/models/course.model';
@@ -37,7 +38,7 @@ function createMockAudio(overrides: Partial<ModuleAudio> = {}): ModuleAudio {
 async function renderAudioViewer(audio: ModuleAudio) {
   const result = await render(AudioViewerComponent, {
     componentInputs: { audio },
-    componentImports: [MockLucideIconComponent, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent],
+    componentImports: [MockLucideIconComponent, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent, CustomSelectComponent],
   });
 
   // Allow effect to run
@@ -121,5 +122,24 @@ describe('AudioViewerComponent', () => {
         url: 'https://cdn.example.com/track.mp3',
       }),
     );
+  });
+
+  it('should render speed selector and change playback rate', async () => {
+    const audio = createMockAudio();
+    const { fixture } = await renderAudioViewer(audio);
+    const mockWs = await triggerWaveSurferReady(fixture);
+
+    const speedSelect = screen.getByRole('combobox', { name: 'Playback speed' });
+    expect(speedSelect).toBeTruthy();
+    // Default shows 1x
+    expect(speedSelect.textContent).toContain('1x');
+
+    // Open dropdown and select 1.5x
+    fireEvent.click(speedSelect);
+    fixture.detectChanges();
+    fireEvent.click(screen.getByRole('option', { name: '1.5x' }));
+    fixture.detectChanges();
+
+    expect(mockWs.setPlaybackRate).toHaveBeenCalledWith(1.5);
   });
 });

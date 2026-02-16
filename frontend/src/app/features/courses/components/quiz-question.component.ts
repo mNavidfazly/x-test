@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { QuizTakingQuestion } from '../../../core/models/course.model';
+import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 
 @Component({
   selector: 'app-quiz-question',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule],
+  imports: [FormsModule, CustomSelectComponent],
   host: { class: 'block' },
   template: `
     <div class="card p-5">
@@ -99,16 +100,15 @@ import { QuizTakingQuestion } from '../../../core/models/course.model';
               <div class="flex items-center gap-3">
                 <span class="text-sm font-medium text-slate-700 min-w-[120px]">{{ left }}</span>
                 <span class="text-slate-400">→</span>
-                <select
-                  [disabled]="disabled()"
-                  [value]="getMatchingValue(i)"
-                  (change)="onMatchingChange(i, $any($event.target).value)"
-                  class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-500 transition-[border-color,box-shadow] duration-200">
-                  <option value="">Select a match...</option>
-                  @for (right of question().matchingRight ?? []; track right) {
-                    <option [value]="right">{{ right }}</option>
-                  }
-                </select>
+                <div class="flex-1 relative">
+                  <app-custom-select
+                    [options]="matchingOptions()"
+                    [value]="getMatchingValue(i)"
+                    (valueChange)="onMatchingChange(i, $event)"
+                    [disabled]="disabled()"
+                    placeholder="Select a match..."
+                  />
+                </div>
               </div>
             }
           </div>
@@ -124,6 +124,10 @@ export class QuizQuestionComponent {
   readonly disabled = input(false);
 
   readonly answerChange = output<string>();
+
+  readonly matchingOptions = computed<SelectOption[]>(() =>
+    (this.question().matchingRight ?? []).map(r => ({ value: r, label: r })),
+  );
 
   readonly #selectedIds = computed(() => {
     const a = this.answer();

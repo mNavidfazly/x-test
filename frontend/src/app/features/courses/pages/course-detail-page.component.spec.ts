@@ -176,8 +176,8 @@ describe('CourseDetailPageComponent', () => {
       ],
     });
 
-    expect(screen.getByText('Lecture 1')).toBeTruthy();
-    expect(screen.getByText('Lecture 2')).toBeTruthy();
+    expect(screen.getByText(/Lecture 1/)).toBeTruthy();
+    expect(screen.getByText(/Lecture 2/)).toBeTruthy();
   });
 
   it('should show Edit button for platform admin', async () => {
