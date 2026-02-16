@@ -14,7 +14,6 @@ describe('TiptapEditorComponent', () => {
     const { fixture } = await render(TiptapEditorComponent, {
       componentInputs: { content: '' },
     });
-    // Wait for ngOnInit
     await new Promise(r => setTimeout(r));
     expect(fixture.componentInstance.editor).toBeTruthy();
   });
@@ -26,7 +25,6 @@ describe('TiptapEditorComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    // Check that toolbar buttons are present
     expect(screen.getByTitle('Bold')).toBeTruthy();
     expect(screen.getByTitle('Italic')).toBeTruthy();
     expect(screen.getByTitle('Heading 2')).toBeTruthy();
@@ -61,5 +59,25 @@ describe('TiptapEditorComponent', () => {
     });
     await new Promise(r => setTimeout(r));
     expect(fixture.componentInstance.editor?.isEditable).toBe(false);
+  });
+
+  it('should not show image button when no uploadHandler', async () => {
+    await render(TiptapEditorComponent, {
+      componentInputs: { content: '' },
+    });
+    await new Promise(r => setTimeout(r));
+
+    expect(screen.queryByTitle('Insert Image')).toBeNull();
+  });
+
+  it('should show image button when uploadHandler is provided', async () => {
+    const handler = async (_file: File) => 'supabase-storage://path';
+    const { fixture } = await render(TiptapEditorComponent, {
+      componentInputs: { content: '', uploadHandler: handler },
+    });
+    await new Promise(r => setTimeout(r));
+    fixture.detectChanges();
+
+    expect(screen.getByTitle('Insert Image')).toBeTruthy();
   });
 });

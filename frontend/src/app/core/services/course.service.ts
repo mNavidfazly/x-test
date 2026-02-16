@@ -7,6 +7,7 @@ import { extractErrorMessage } from '../utils/error.utils';
 import { isStoragePath } from '../utils/storage.utils';
 import { compressImage } from '../utils/image.utils';
 import { resolveAvatarUrls } from '../utils/avatar.utils';
+import { extractStoragePaths } from '../utils/markdown-storage.utils';
 import {
   CourseWithProgress, CourseDetail, CourseLecturer, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem, ModuleVideo,
@@ -1655,12 +1656,13 @@ export class CourseService {
     const client = this.#supabase.client;
     const paths: string[] = [];
 
-    const [pdfRes, filesRes, examRes, audioRes, downloadRes] = await Promise.all([
+    const [pdfRes, filesRes, examRes, audioRes, downloadRes, markdownRes] = await Promise.all([
       client.from('module_pdfs').select('file_url').eq('module_id', moduleId).maybeSingle(),
       client.from('module_files').select('file_url').eq('module_id', moduleId),
       client.from('exams').select('exam_file_url').eq('module_id', moduleId).maybeSingle(),
       client.from('module_audio').select('file_url').eq('module_id', moduleId).maybeSingle(),
       client.from('module_downloads').select('file_url').eq('module_id', moduleId).maybeSingle(),
+      client.from('module_markdown').select('content').eq('module_id', moduleId).maybeSingle(),
     ]);
 
     if (pdfRes.data?.file_url) paths.push(pdfRes.data.file_url as string);
@@ -1672,6 +1674,9 @@ export class CourseService {
     if (examRes.data?.exam_file_url) paths.push(examRes.data.exam_file_url as string);
     if (audioRes.data?.file_url) paths.push(audioRes.data.file_url as string);
     if (downloadRes.data?.file_url) paths.push(downloadRes.data.file_url as string);
+    if (markdownRes.data?.content) {
+      paths.push(...extractStoragePaths(markdownRes.data.content as string));
+    }
 
     return paths;
   }

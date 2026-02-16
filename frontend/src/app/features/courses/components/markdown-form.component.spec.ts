@@ -3,18 +3,28 @@ import { render, screen, fireEvent } from '@testing-library/angular';
 import { MarkdownFormComponent } from './markdown-form.component';
 import { MockTiptapEditorComponent } from '../../../__mocks__/tiptap.mock';
 import { createMockModuleFormData, createMockMarkdownFormData } from '../../../__mocks__/course.mock';
+import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
+import { SupabaseService } from '../../../core/services/supabase.service';
 import { FormsModule } from '@angular/forms';
 import { ModuleSavePayload } from '../../../core/models/course.model';
 
 const defaultImports = [MockTiptapEditorComponent, FormsModule];
 
+function defaultProviders() {
+  return [
+    { provide: SupabaseService, useValue: createMockSupabaseService() },
+  ];
+}
+
 describe('MarkdownFormComponent', () => {
   it('should render title, description, and editor', async () => {
     await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ module_type: 'markdown' }),
         initialMarkdownData: createMockMarkdownFormData(),
+        courseId: 'course-1',
       },
     });
 
@@ -27,10 +37,12 @@ describe('MarkdownFormComponent', () => {
   it('should pre-populate fields in edit mode', async () => {
     await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ title: 'Existing MD', description: 'Some desc', module_type: 'markdown' }),
         initialMarkdownData: createMockMarkdownFormData({ content: '# Existing Content' }),
         isEditMode: true,
+        courseId: 'course-1',
       },
     });
 
@@ -42,9 +54,11 @@ describe('MarkdownFormComponent', () => {
   it('should show "Create Module" button text in create mode', async () => {
     await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ module_type: 'markdown' }),
         initialMarkdownData: createMockMarkdownFormData(),
+        courseId: 'course-1',
       },
     });
     expect(screen.getByText('Create Module')).toBeTruthy();
@@ -53,10 +67,12 @@ describe('MarkdownFormComponent', () => {
   it('should show "Save Changes" button text in edit mode', async () => {
     await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ module_type: 'markdown' }),
         initialMarkdownData: createMockMarkdownFormData(),
         isEditMode: true,
+        courseId: 'course-1',
       },
     });
     expect(screen.getByText('Save Changes')).toBeTruthy();
@@ -65,9 +81,11 @@ describe('MarkdownFormComponent', () => {
   it('should disable save when title is empty', async () => {
     await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ title: '', module_type: 'markdown' }),
         initialMarkdownData: createMockMarkdownFormData(),
+        courseId: 'course-1',
       },
     });
     const saveButton = screen.getByText('Create Module') as HTMLButtonElement;
@@ -77,9 +95,11 @@ describe('MarkdownFormComponent', () => {
   it('should allow save with empty markdown content', async () => {
     await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ title: 'Module Title', module_type: 'markdown' }),
         initialMarkdownData: createMockMarkdownFormData({ content: '' }),
+        courseId: 'course-1',
       },
     });
     const saveButton = screen.getByText('Create Module') as HTMLButtonElement;
@@ -89,9 +109,11 @@ describe('MarkdownFormComponent', () => {
   it('should emit save payload with markdown content', async () => {
     const { fixture } = await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ title: 'My Article', description: 'An article', module_type: 'markdown', lecture_id: 'l1' }),
         initialMarkdownData: createMockMarkdownFormData({ content: '# Hello World' }),
+        courseId: 'course-1',
       },
     });
 
@@ -113,9 +135,11 @@ describe('MarkdownFormComponent', () => {
   it('should emit cancel on cancel click', async () => {
     const { fixture } = await render(MarkdownFormComponent, {
       componentImports: defaultImports,
+      providers: defaultProviders(),
       componentInputs: {
         initialModuleData: createMockModuleFormData({ module_type: 'markdown' }),
         initialMarkdownData: createMockMarkdownFormData(),
+        courseId: 'course-1',
       },
     });
 
@@ -124,5 +148,19 @@ describe('MarkdownFormComponent', () => {
 
     fireEvent.click(screen.getByText('Cancel'));
     expect(cancelled).toBe(true);
+  });
+
+  it('should have handleImageUpload function', async () => {
+    const { fixture } = await render(MarkdownFormComponent, {
+      componentImports: defaultImports,
+      providers: defaultProviders(),
+      componentInputs: {
+        initialModuleData: createMockModuleFormData({ module_type: 'markdown' }),
+        initialMarkdownData: createMockMarkdownFormData(),
+        courseId: 'course-1',
+      },
+    });
+
+    expect(typeof fixture.componentInstance.handleImageUpload).toBe('function');
   });
 });

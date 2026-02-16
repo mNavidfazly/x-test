@@ -14,6 +14,7 @@ export class MockTiptapEditorComponent {
   readonly content = input('');
   readonly placeholder = input('Start writing...');
   readonly editable = input(true);
+  readonly uploadHandler = input<((file: File) => Promise<string>) | null>(null);
   readonly contentChange = output<string>();
 
   onInput(event: Event) {

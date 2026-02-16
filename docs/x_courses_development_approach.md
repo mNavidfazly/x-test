@@ -1349,6 +1349,18 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 - [x] **MockAudioViewerComponent** (`__mocks__/audio-viewer.mock.ts`): jsdom-safe mock (WaveSurfer.js can't run in jsdom).
 - [x] **Tests:** 58 new frontend tests (9 TUS service + 10 audio form + 6 audio viewer + 8 download form + 6 download viewer + 5 module-form-page + 4 module-viewer-page + 6 file utils + 4 existing spec updates), 1455 total. 26 new RLS tests (13 module_audio + 13 module_downloads — SELECT/INSERT/UPDATE/DELETE per role). Build OK.
 
+#### 11F - Markdown Image Upload (Complete)
+- [x] **No new migration needed** — existing `course-files` RLS policies already cover the `markdown-images` subfolder path. Lecturers with `can_edit` can upload; learners in the tenant can read via signed URLs.
+- [x] **Custom URI scheme** `supabase-storage://{storagePath}` — stored in DB markdown content, resolved to signed URLs at render time. Never exposed in rendered HTML.
+- [x] **`markdown-storage.utils.ts`** (`core/utils/markdown-storage.utils.ts`): Two functions — `extractStoragePaths(markdown)` extracts and deduplicates all `supabase-storage://` paths; `resolveMarkdownStorageUrls(client, markdown)` batch-resolves paths via `createSignedUrls()` (1hr TTL) and replaces URIs in markdown string.
+- [x] **TiptapEditorComponent** (`shared/components/tiptap-editor.component.ts`): Added `@tiptap/extension-image` (v2.27.2, inline: false, allowBase64: false). New optional `uploadHandler` input — Image toolbar button (Lucide `ImagePlus`) only shown when handler provided. Hidden file input with 5MB/image-type validation, `compressImage(file, 1200)` for WebP compression. Drag-and-drop (`editorProps.handleDrop`) and paste (`editorProps.handlePaste`) support reuse same `#processImageFile()` method. Spinner follows project pattern (`<span class="inline-flex animate-spin">`).
+- [x] **MarkdownFormComponent** (`features/courses/components/markdown-form.component.ts`): Added `courseId` required input, injected `SupabaseService`. Arrow function property `handleImageUpload` uploads compressed image to `course-files/{courseId}/markdown-images/{timestamp}-{name}.webp` and returns `supabase-storage://` URI. Passed as `[uploadHandler]` to tiptap editor.
+- [x] **ModuleFormPageComponent** (`features/courses/pages/module-form-page.component.ts`): One-line addition — `[courseId]="courseId()"` binding on `<app-markdown-form>`.
+- [x] **MarkdownViewerComponent** (`features/courses/components/markdown-viewer.component.ts`): Injected `SupabaseService`, added `effect()` on `content()` input. Fast path skips resolution when no `supabase-storage://` URIs present. Loading skeleton during async resolution. Falls back to raw markdown on error.
+- [x] **CourseService cleanup** (`core/services/course.service.ts`): Extended `#collectModuleStoragePaths()` to query `module_markdown.content` and extract embedded image paths via `extractStoragePaths()` for deletion cleanup.
+- [x] **Mock + test updates**: `tiptap.mock.ts` (added `uploadHandler` input), `module-viewer-page.component.spec.ts` (added `SupabaseService` provider for `MarkdownViewerComponent` DI). All existing tests updated for new required inputs.
+- [x] **Tests:** 15 new tests (12 markdown-storage utils + 2 tiptap image button + 1 markdown-form handleImageUpload), 1540 total frontend tests. Build OK.
+
 ---
 
 ## 4. FastAPI Endpoints Summary

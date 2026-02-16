@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TiptapEditorComponent } from '../../../shared/components/tiptap-editor.component';
 import { ModuleFormData, MarkdownFormData, ModuleSavePayload } from '../../../core/models/course.model';
+import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Component({
   selector: 'app-markdown-form',
@@ -39,6 +40,7 @@ import { ModuleFormData, MarkdownFormData, ModuleSavePayload } from '../../../co
         <label class="form-label">Content</label>
         <app-tiptap-editor
           [content]="markdownContent"
+          [uploadHandler]="handleImageUpload"
           (contentChange)="markdownContent = $event"
         />
       </div>
@@ -68,8 +70,11 @@ export class MarkdownFormComponent {
   readonly initialModuleData = input.required<ModuleFormData>();
   readonly initialMarkdownData = input.required<MarkdownFormData>();
   readonly isEditMode = input(false);
+  readonly courseId = input.required<string>();
   readonly save = output<ModuleSavePayload>();
   readonly cancel = output<void>();
+
+  #supabase = inject(SupabaseService);
 
   form: { title: string; description: string | null } = { title: '', description: null };
   markdownContent = '';
@@ -83,6 +88,16 @@ export class MarkdownFormComponent {
   isValid(): boolean {
     return !!this.form.title.trim();
   }
+
+  handleImageUpload = async (file: File): Promise<string> => {
+    const sanitized = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const path = `${this.courseId()}/markdown-images/${Date.now()}-${sanitized}`;
+    const { error } = await this.#supabase.client.storage
+      .from('course-files')
+      .upload(path, file, { contentType: file.type });
+    if (error) throw error;
+    return `supabase-storage://${path}`;
+  };
 
   onSave() {
     if (!this.isValid()) return;

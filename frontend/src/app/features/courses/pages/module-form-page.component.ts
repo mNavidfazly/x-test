@@ -150,6 +150,7 @@ interface TypeOption {
             [initialModuleData]="moduleFormData()"
             [initialMarkdownData]="markdownFormData()"
             [isEditMode]="isEditMode()"
+            [courseId]="courseId()"
             (save)="onSave($event)"
             (cancel)="onCancel()"
           />
