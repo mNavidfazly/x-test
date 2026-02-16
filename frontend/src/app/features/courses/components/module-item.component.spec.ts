@@ -72,7 +72,7 @@ describe('ModuleItemComponent', () => {
   it('should show "Completed" status via aria-label for completed modules', async () => {
     await renderItem({
       module: { id: 'm1', title: 'Module A', description: null, module_type: 'video', sort_order: 0 },
-      progress: { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
+      progress: { status: 'completed', completed_at: '2026-01-15T10:00:00Z', notes: null },
     });
 
     expect(screen.getByRole('link', { name: /Completed/ })).toBeTruthy();
@@ -81,7 +81,7 @@ describe('ModuleItemComponent', () => {
   it('should show "In progress" status via aria-label for in-progress modules', async () => {
     await renderItem({
       module: { id: 'm1', title: 'Module A', description: null, module_type: 'pdf', sort_order: 0 },
-      progress: { status: 'in_progress', completed_at: null },
+      progress: { status: 'in_progress', completed_at: null, notes: null },
     });
 
     expect(screen.getByRole('link', { name: /In progress/ })).toBeTruthy();

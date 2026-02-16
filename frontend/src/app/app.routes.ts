@@ -118,6 +118,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'notes',
+        loadComponent: () =>
+          import('./features/notes/pages/my-notes-page.component').then(
+            (m) => m.MyNotesPageComponent,
+          ),
+      },
+      {
         path: 'notifications',
         loadComponent: () =>
           import('./features/notifications/pages/notification-list-page.component').then(

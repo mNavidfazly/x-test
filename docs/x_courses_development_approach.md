@@ -1367,57 +1367,71 @@ All 13 trigger functions verified via integration tests (`tests/rls/notification
 
 **Goal:** Six high-impact features that differentiate the platform from generic LMS tools — personalized learning continuity, note-taking, richer quiz feedback, compliance reporting, collaborative knowledge sharing, and inline knowledge checks.
 
-#### 12A - Continue Where You Left Off
+#### 12A - Continue Where You Left Off (Complete)
 
 Smart resume functionality that identifies each learner's next incomplete module and surfaces it prominently on the dashboard and course cards, enabling one-click continuation.
 
-- [ ] **No migration needed** — uses existing `user_progress` (status column) and `modules` (order_index) data
-- [ ] **Model updates** (`core/models/course.model.ts`):
-  - [ ] Add `nextModuleId?: string` and `nextModuleTitle?: string` to `CourseWithProgress` interface
-  - [ ] Add `nextLectureTitle?: string` for breadcrumb context
-- [ ] **CourseService updates** (`core/services/course.service.ts`):
-  - [ ] In `loadCourses()`: after fetching courses + progress, compute next incomplete module per course
-  - [ ] Query logic: join `modules` → `lectures` → `user_progress`, find first module (by `lectures.order_index` then `modules.order_index`) where progress status ≠ `completed`, populate `nextModuleId`/`nextModuleTitle`/`nextLectureTitle`
-  - [ ] Handle edge cases: no enrollment (no next module), all completed (no next module), no progress rows yet (first module is next)
-- [ ] **Dashboard "Continue Learning" hero** (`features/dashboard/dashboard.component.ts`):
-  - [ ] New section at top of learner dashboard (above existing course list)
-  - [ ] Show up to 3 in-progress courses with course title, next module title, progress percentage, "Continue" button
-  - [ ] Link "Continue" button directly to `/courses/:courseId/modules/:moduleId`
-  - [ ] Hide section when no in-progress courses exist
-  - [ ] Use `card` class with teal accent border-left for visual prominence
-- [ ] **CourseCard enhancement** (`features/courses/components/course-card.component.ts`):
-  - [ ] Add `nextModuleId` / `nextModuleTitle` inputs (from `CourseWithProgress`)
-  - [ ] When next module exists: show "Continue: {moduleTitle}" link below progress bar
-  - [ ] `cardLink` computed: if next module → `/courses/:courseId/modules/:moduleId`, else `/courses/:courseId`
-  - [ ] Truncate module title to ~40 chars with ellipsis
-- [ ] **Tests:** ~12 new frontend tests (service computation + dashboard hero + course card continue link), build OK
+- [x] **No migration needed** — uses existing `user_progress` (status column) and `modules` (sort_order) data
+- [x] **Model updates** (`core/models/course.model.ts`):
+  - [x] Added `nextModuleId`, `nextModuleTitle`, `nextModuleType`, `nextLectureTitle` (all nullable) to `CourseWithProgress`
+- [x] **CourseService updates** (`core/services/course.service.ts`):
+  - [x] `loadCourses()` fetches lectures in parallel (6th query), builds `lectureInfo` map, groups modules by course sorted by `lecture.sort_order` then `module.sort_order`
+  - [x] Computes next incomplete module per enrolled course using `completedModuleIds` map
+  - [x] Handles all edge cases: no enrollment, all completed, no progress rows (first module is next)
+- [x] **Dashboard "Continue Learning" hero** (`features/dashboard/dashboard.component.ts`):
+  - [x] `continueLearningCourses` computed signal: in-progress courses with `nextModuleId`, sorted by activity, capped at 3
+  - [x] Hero section with `card-solid` cards, teal left border, `ProgressRingComponent`, course/module titles, progress counter
+  - [x] Cards link directly to `/courses/:courseId/modules/:nextModuleId`
+  - [x] Hidden when no in-progress courses exist
+- [x] **CourseCard enhancement** (`features/courses/components/course-card.component.ts`):
+  - [x] `cardLink` computed: routes to next module when available, else course detail
+  - [x] `actionLabel` computed: "Continue" / "Start" / "Review" / "View" based on progress state
+  - [x] Shows "Continue: {nextModuleTitle}" subtitle below progress bar
+  - [x] Added `ProgressRingComponent` alongside text progress bar
+- [x] **Tests:** ~12 new frontend tests across dashboard, course card, and course service specs. Build OK
+- [x] **E2E:** 5 stories — 4 passed, 1 partial (`CONTINUE_LEARNING_USER_STORIES.md`)
 
-#### 12B - Learner Module Notes
+#### 12B - Learner Module Notes (Complete)
 
-Private per-module notes that learners can write while studying. Uses the existing `user_progress.notes` TEXT column (already in schema, currently unused).
+Private per-module notes that learners can write while studying. Uses the existing `user_progress.notes` TEXT column (already in schema, previously unused). Includes a dedicated "My Notes" page listing all notes across courses.
 
-- [ ] **No migration needed** — `user_progress.notes` column already exists (TEXT, nullable)
-- [ ] **CourseService updates** (`core/services/course.service.ts`):
-  - [ ] `saveModuleNotes(moduleId: string, notes: string)` — `.update({ notes }).eq('module_id', moduleId).eq('user_id', userId).eq('tenant_id', tenantId)`. Throws on error.
-  - [ ] Ensure `loadModuleViewer()` already returns `notes` field from `user_progress` (verify SELECT includes it)
-- [ ] **Notes panel in ModuleViewerPage** (`features/courses/pages/module-viewer-page.component.ts`):
-  - [ ] Collapsible panel below module content (above comments/questions), toggle via `NotebookPen` icon button
-  - [ ] `<textarea>` with `input-field` class, placeholder "Write your notes for this module..."
-  - [ ] Auto-save: `effect()` watching notes signal, debounced 1500ms via `debouncedSignal()`, calls `saveModuleNotes()`
-  - [ ] Save indicator: "Saving..." / "Saved" / "Error saving" text next to toggle button
-  - [ ] Initialize from `user_progress.notes` on load (may be null → empty string)
-  - [ ] Character count display (optional soft limit indicator)
-- [ ] **My Notes page** (`features/notes/pages/my-notes-page.component.ts`):
-  - [ ] Route: `/notes` with sidebar "My Notes" (NotebookPen icon, roles: `'all'`)
-  - [ ] Query: `user_progress` where `notes IS NOT NULL AND notes != ''`, join `modules(title, module_type)` + `lectures(title)` + `courses(title)` via FK
-  - [ ] Group by course → lecture → module hierarchy
-  - [ ] Each note card: course/lecture/module breadcrumb, note preview (first 200 chars), "Go to module" link
-  - [ ] Search filter: search across note content (client-side filter)
-  - [ ] Empty state: "No notes yet. Start taking notes while studying your modules."
-- [ ] **MyNotesService** (`core/services/my-notes.service.ts`):
-  - [ ] `loadMyNotes()` — query `user_progress` with FK joins, filter non-empty notes, signal-based state
-  - [ ] `deleteNote(moduleId)` — `.update({ notes: null })`, reload
-- [ ] **Tests:** ~18 new frontend tests (save notes + auto-save debounce + My Notes page + service), build OK
+- [x] **No migration needed** — `user_progress.notes` column already exists (TEXT, nullable, since migration 00002)
+- [x] **Model updates** (`core/models/course.model.ts`):
+  - [x] Added `notes: string | null` to `ModuleProgress` interface
+- [x] **CourseService updates** (`core/services/course.service.ts`):
+  - [x] `loadModuleViewer()` and `loadCourseDetail()` SELECT now includes `notes` from `user_progress`
+  - [x] `saveModuleNotes(moduleId, notes)` — UPDATE `user_progress.notes`, updates local `moduleViewer` signal state
+  - [x] `markModuleComplete()` preserves existing `notes` value in local state update
+  - [x] `#autoTrackInProgress()` initializes `notes: null` on new progress rows
+- [x] **New utility** (`core/utils/debounce.utils.ts`):
+  - [x] `debouncedSignal(source, delayMs)` — creates debounced read-only signal using `effect()` + `onCleanup`. Used for 1500ms auto-save debounce
+- [x] **ModuleNotesComponent** (`features/courses/components/module-notes.component.ts`):
+  - [x] Collapsible accordion panel with `StickyNote` icon header
+  - [x] `textarea` with `input-field` class, resizable, 120px min height
+  - [x] Auto-save: `debouncedSignal()` (1500ms) + `effect()` calling `saveModuleNotes()`
+  - [x] Save status indicators: "Saving..." / "Saved" (with Check icon, clears after 3s)
+  - [x] "Has notes" badge when collapsed with existing content
+  - [x] `#userHasTyped` flag prevents spurious saves on initial load
+- [x] **ModuleViewerPage integration** (`features/courses/pages/module-viewer-page.component.ts`):
+  - [x] `isEnrolled` computed signal gates notes panel visibility
+  - [x] Notes panel rendered between files section and ask-expert `@defer`, enrolled users only
+- [x] **NotesService** (`core/services/notes.service.ts`):
+  - [x] `NoteWithContext` interface with module/lecture/course context
+  - [x] `loadMyNotes()` — `user_progress` query with FK joins to `modules`, `lectures`, `courses`; filters `notes IS NOT NULL`; ordered by `updated_at DESC`
+  - [x] `deleteNote(moduleId)` — sets `notes: null`, removes from local signal
+- [x] **MyNotesPageComponent** (`features/notes/pages/my-notes-page.component.ts`):
+  - [x] Route: `/notes`, sidebar "My Notes" (`StickyNote` icon, roles: `'all'`)
+  - [x] Amber StickyNote icon header with count badge
+  - [x] Search input with client-side filtering on notes text, module title, course title
+  - [x] Expandable note cards: course/lecture/module breadcrumb, relative timestamp, truncated preview
+  - [x] Expanded state: full note text, "Go to module" link, "Delete note" button with `ConfirmDialogService`
+  - [x] Loading skeleton, error alert, empty state patterns
+- [x] **Routing & navigation:**
+  - [x] `/notes` route in `app.routes.ts` (lazy-loaded, auth-guarded)
+  - [x] "My Notes" nav item in sidebar (after "My Issues", before "Notifications")
+  - [x] `['/notes', 'My Notes']` breadcrumb in header `ROUTE_NAME_MAP`
+- [x] **Tests:** 23 new tests (8 module-notes component + 5 notes service + 10 my-notes page) + existing spec updates for `ModuleProgress.notes` compatibility. 1605 total frontend tests passing, build OK
+- [x] **E2E:** 6 stories — 5 passed, 1 partial (`MODULE_NOTES_USER_STORIES.md`)
 
 #### 12C - Per-Question Explanations
 

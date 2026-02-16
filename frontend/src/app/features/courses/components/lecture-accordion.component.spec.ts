@@ -37,8 +37,8 @@ describe('LectureAccordionComponent', () => {
   it('should show completed count', async () => {
     await renderAccordion({
       progressMap: {
-        'm1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
-        'm2': { status: 'completed', completed_at: '2026-01-16T10:00:00Z' },
+        'm1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z', notes: null },
+        'm2': { status: 'completed', completed_at: '2026-01-16T10:00:00Z', notes: null },
       },
     });
 

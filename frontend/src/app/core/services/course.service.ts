@@ -208,7 +208,7 @@ export class CourseService {
           .single(),
         client
           .from('user_progress')
-          .select('module_id, status, completed_at')
+          .select('module_id, status, completed_at, notes')
           .eq('course_id', courseId)
           .eq('user_id', userId),
         client
@@ -246,7 +246,7 @@ export class CourseService {
       const progressMap: Record<string, ModuleProgress> = {};
       for (const p of (progressRes.data ?? [])) {
         const rec = p as { module_id: string; status: string; completed_at: string | null };
-        progressMap[rec.module_id] = { status: rec.status as ModuleProgress['status'], completed_at: rec.completed_at };
+        progressMap[rec.module_id] = { status: rec.status as ModuleProgress['status'], completed_at: rec.completed_at, notes: (rec as any).notes ?? null };
       }
 
       const resolvedThumbnail = isStoragePath(course.thumbnail_url)
@@ -320,7 +320,7 @@ export class CourseService {
       const contentPromise = this.#fetchModuleContent(client, moduleId, mod.module_type);
       const [filesRes, progressRes] = await Promise.all([
         client.from('module_files').select('id, file_url, file_name, file_size').eq('module_id', moduleId),
-        client.from('user_progress').select('status, completed_at').eq('module_id', moduleId).eq('user_id', userId).maybeSingle(),
+        client.from('user_progress').select('status, completed_at, notes').eq('module_id', moduleId).eq('user_id', userId).maybeSingle(),
       ]);
       const content = await contentPromise;
 
@@ -352,7 +352,7 @@ export class CourseService {
       );
 
       const progress: ModuleProgress | null = progressRes.data
-        ? { status: (progressRes.data as { status: string }).status as ModuleProgress['status'], completed_at: (progressRes.data as { completed_at: string | null }).completed_at }
+        ? { status: (progressRes.data as { status: string }).status as ModuleProgress['status'], completed_at: (progressRes.data as { completed_at: string | null }).completed_at, notes: (progressRes.data as any).notes ?? null }
         : null;
 
       this.#moduleViewer.set({ module, content, files, progress, navigation });
@@ -384,7 +384,7 @@ export class CourseService {
     const detail = this.#courseDetail();
     if (!detail?.isEnrolled) return; // not enrolled
 
-    const inProgress: ModuleProgress = { status: 'in_progress', completed_at: null };
+    const inProgress: ModuleProgress = { status: 'in_progress', completed_at: null, notes: null };
 
     // Update local state immediately
     this.#moduleViewer.update(v => v ? { ...v, progress: inProgress } : v);
@@ -437,8 +437,27 @@ export class CourseService {
     // Update local state
     this.#moduleViewer.set({
       ...viewer,
-      progress: { status: 'completed', completed_at: new Date().toISOString() },
+      progress: { status: 'completed', completed_at: new Date().toISOString(), notes: viewer.progress?.notes ?? null },
     });
+  }
+
+  async saveModuleNotes(moduleId: string, notes: string): Promise<void> {
+    const userId = this.#auth.currentUser()?.id;
+    if (!userId) return;
+
+    const { error } = await this.#supabase.client
+      .from('user_progress')
+      .update({ notes: notes || null })
+      .eq('module_id', moduleId)
+      .eq('user_id', userId);
+
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to save notes'));
+
+    // Update local state
+    const viewer = this.#moduleViewer();
+    if (viewer?.progress) {
+      this.#moduleViewer.set({ ...viewer, progress: { ...viewer.progress, notes: notes || null } });
+    }
   }
 
   // --- Phase 4A: Enrollment methods ---

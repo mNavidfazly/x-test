@@ -32,6 +32,7 @@ const ROUTE_NAME_MAP: readonly [string, string][] = [
   ['/courses', 'Courses'],
   ['/questions', 'My Questions'],
   ['/issues', 'My Issues'],
+  ['/notes', 'My Notes'],
   ['/notifications', 'Notifications'],
   ['/profile', 'Profile'],
 ];

@@ -39,6 +39,7 @@ export function createMockCourseService(options?: {
     loadCourseDetail: vi.fn().mockResolvedValue(undefined),
     loadModuleViewer: vi.fn().mockResolvedValue(undefined),
     markModuleComplete: vi.fn().mockResolvedValue(undefined),
+    saveModuleNotes: vi.fn().mockResolvedValue(undefined),
     createCourse: vi.fn().mockResolvedValue({ id: 'new-course-id' }),
     updateCourse: vi.fn().mockResolvedValue(undefined),
     deleteCourse: vi.fn().mockResolvedValue(undefined),
@@ -151,8 +152,8 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
       },
     ],
     progressMap: {
-      'mod-1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z' },
-      'mod-2': { status: 'in_progress', completed_at: null },
+      'mod-1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z', notes: null },
+      'mod-2': { status: 'in_progress', completed_at: null, notes: null },
     },
     lecturers: [],
     ...overrides,
@@ -1257,3 +1258,45 @@ export function createMockStalenessService(options?: {
 }
 
 export type MockStalenessService = ReturnType<typeof createMockStalenessService>;
+
+// ---------------------------------------------------------------------------
+// Notes mocks
+// ---------------------------------------------------------------------------
+
+import { NoteWithContext } from '../core/services/notes.service';
+
+export function createMockNoteWithContext(overrides?: Partial<NoteWithContext>): NoteWithContext {
+  return {
+    module_id: 'mod-1',
+    course_id: 'course-1',
+    notes: 'My study notes for this module',
+    updated_at: '2026-02-16T10:00:00Z',
+    module_title: 'Test Module',
+    course_title: 'Test Course',
+    lecture_title: 'Lecture 1',
+    ...overrides,
+  };
+}
+
+export function createMockNotesService(options?: {
+  notes?: NoteWithContext[];
+  loading?: boolean;
+  error?: string;
+}) {
+  const notes = signal<NoteWithContext[]>(options?.notes ?? []);
+  const loading = signal(options?.loading ?? false);
+  const error = signal(options?.error ?? '');
+
+  return {
+    notes: notes.asReadonly(),
+    loading: loading.asReadonly(),
+    error: error.asReadonly(),
+    loadMyNotes: vi.fn().mockResolvedValue(undefined),
+    deleteNote: vi.fn().mockResolvedValue(undefined),
+    _setNotes: notes.set.bind(notes),
+    _setLoading: loading.set.bind(loading),
+    _setError: error.set.bind(error),
+  };
+}
+
+export type MockNotesService = ReturnType<typeof createMockNotesService>;

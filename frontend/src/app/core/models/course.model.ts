@@ -70,6 +70,7 @@ export type MarkedByType = 'user' | 'system' | 'admin';
 export interface ModuleProgress {
   status: ProgressStatus;
   completed_at: string | null;
+  notes: string | null;
 }
 
 export interface UserProgressRecord {

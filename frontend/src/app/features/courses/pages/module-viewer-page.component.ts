@@ -16,11 +16,12 @@ import { DownloadViewerComponent } from '../components/download-viewer.component
 import { CommentSectionComponent } from '../components/comment-section.component';
 import { AskExpertComponent } from '../components/ask-expert.component';
 import { ReportIssueComponent } from '../components/report-issue.component';
+import { ModuleNotesComponent } from '../components/module-notes.component';
 
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, AudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, AudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent],
   // Note: CommentSectionComponent, AskExpertComponent, ReportIssueComponent are kept in imports
   // for type checking but automatically deferred by @defer blocks in the template.
   host: { class: 'block page-enter' },
@@ -151,6 +152,16 @@ import { ReportIssueComponent } from '../components/report-issue.component';
           </div>
         }
 
+        <!-- Notes (only for enrolled users) -->
+        @if (isEnrolled()) {
+          <div class="mb-6">
+            <app-module-notes
+              [moduleId]="courseService.moduleViewer()!.module.id"
+              [initialNotes]="courseService.moduleViewer()!.progress?.notes ?? null"
+            />
+          </div>
+        }
+
         <!-- Ask Expert (deferred — below the fold) -->
         @defer (on viewport) {
           <div class="mt-6 mb-6">
@@ -221,6 +232,8 @@ export class ModuleViewerPageComponent {
   readonly isCompleted = computed(() => {
     return this.courseService.moduleViewer()?.progress?.status === 'completed';
   });
+
+  readonly isEnrolled = computed(() => this.courseService.courseDetail()?.isEnrolled ?? false);
 
   constructor() {
     // Effect re-runs whenever courseId or moduleId signals change,

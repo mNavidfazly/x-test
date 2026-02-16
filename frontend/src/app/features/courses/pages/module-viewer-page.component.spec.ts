@@ -23,6 +23,7 @@ import { DownloadViewerComponent } from '../components/download-viewer.component
 import { CommentSectionComponent } from '../components/comment-section.component';
 import { AskExpertComponent } from '../components/ask-expert.component';
 import { ReportIssueComponent } from '../components/report-issue.component';
+import { ModuleNotesComponent } from '../components/module-notes.component';
 import { CommentService } from '../../../core/services/comment.service';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
 import { IssueService } from '../../../core/services/issue.service';
@@ -70,7 +71,7 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, MockAudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, MockAudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
@@ -193,7 +194,7 @@ describe('ModuleViewerPageComponent', () => {
 
   it('should show completed state when already done', async () => {
     const viewer = createMockModuleViewerData({
-      progress: { status: 'completed', completed_at: '2026-02-01T00:00:00Z' },
+      progress: { status: 'completed', completed_at: '2026-02-01T00:00:00Z', notes: null },
     });
     await renderPage({ viewer });
 
@@ -398,5 +399,32 @@ describe('ModuleViewerPageComponent', () => {
     await renderPage({ viewer });
 
     expect(screen.getByText('Mark as complete')).toBeTruthy();
+  });
+
+  // --- Module Notes integration ---
+
+  it('should show notes panel when enrolled', async () => {
+    const viewer = createMockModuleViewerData();
+    await renderPage({ viewer, isEnrolled: true });
+
+    expect(screen.getByText('My Notes')).toBeTruthy();
+  });
+
+  it('should hide notes panel when not enrolled', async () => {
+    const viewer = createMockModuleViewerData();
+    await renderPage({ viewer, isEnrolled: false });
+
+    expect(screen.queryByText('My Notes')).toBeNull();
+  });
+
+  it('should pass initial notes to notes component', async () => {
+    const viewer = createMockModuleViewerData({
+      progress: { status: 'in_progress', completed_at: null, notes: 'Test note content' },
+    });
+    await renderPage({ viewer, isEnrolled: true });
+
+    expect(screen.getByText('My Notes')).toBeTruthy();
+    // The "Has notes" badge should appear since there are notes and panel starts collapsed
+    expect(screen.getByText('Has notes')).toBeTruthy();
   });
 });

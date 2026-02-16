@@ -229,7 +229,7 @@ describe('CourseService', () => {
       expect(detail!.id).toBe('c1');
       expect(detail!.lectures).toHaveLength(1);
       expect(detail!.lectures[0].modules).toHaveLength(2);
-      expect(detail!.progressMap['m1']).toEqual({ status: 'completed', completed_at: '2026-01-15T10:00:00Z' });
+      expect(detail!.progressMap['m1']).toEqual({ status: 'completed', completed_at: '2026-01-15T10:00:00Z', notes: null });
       expect(detail!.progressMap['m2']).toBeUndefined();
     });
 
@@ -343,7 +343,7 @@ describe('CourseService', () => {
 
       await service.loadModuleViewer('c1', 'mod-1');
 
-      expect(service.moduleViewer()!.progress).toEqual({ status: 'completed', completed_at: '2026-02-01T10:00:00Z' });
+      expect(service.moduleViewer()!.progress).toEqual({ status: 'completed', completed_at: '2026-02-01T10:00:00Z', notes: null });
     });
 
     it('should handle module load error', async () => {
