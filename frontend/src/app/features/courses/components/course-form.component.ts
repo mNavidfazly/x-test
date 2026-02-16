@@ -92,7 +92,7 @@ export interface CourseFormSaveEvent {
         @if (thumbnailMode() === 'upload') {
           <app-file-upload
             accept="image/jpeg,image/png,image/webp"
-            [maxSizeMB]="5"
+            [maxSizeMB]="10"
             (fileSelected)="onThumbnailFileSelected($event)"
           />
         }

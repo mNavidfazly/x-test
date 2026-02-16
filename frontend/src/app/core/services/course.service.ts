@@ -5,6 +5,7 @@ import { AuthService } from './auth.service';
 import { BunnyUploadService } from './bunny-upload.service';
 import { extractErrorMessage } from '../utils/error.utils';
 import { isStoragePath } from '../utils/storage.utils';
+import { compressImage } from '../utils/image.utils';
 import { resolveAvatarUrls } from '../utils/avatar.utils';
 import {
   CourseWithProgress, CourseDetail, CourseLecturer, ModuleProgress, EnrollmentType, ModuleType,
@@ -1714,11 +1715,11 @@ export class CourseService {
   // --- Thumbnail upload methods ---
 
   async uploadThumbnail(courseId: string, file: File): Promise<string> {
-    const ext = file.name.split('.').pop() ?? 'jpg';
-    const path = `${courseId}/thumbnail-${Date.now()}.${ext}`;
+    const compressed = await compressImage(file, 800);
+    const path = `${courseId}/thumbnail-${Date.now()}.webp`;
     const { data, error } = await this.#supabase.client.storage
       .from('course-files')
-      .upload(path, file, { upsert: false, contentType: file.type });
+      .upload(path, compressed, { upsert: false, contentType: compressed.type });
 
     if (error) throw new Error(`Failed to upload thumbnail: ${error.message}`);
     return data.path;
