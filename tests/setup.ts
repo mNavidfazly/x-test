@@ -125,6 +125,7 @@ export async function cleanupTestData(tracker: TestDataTracker): Promise<void> {
   for (const table of [
     'notifications',
     'reminder_history',
+    'knowledge_check_responses',
     'quiz_attempt_answers',
     'quiz_attempts',
     'exam_submissions',
@@ -149,6 +150,8 @@ export async function cleanupTestData(tracker: TestDataTracker): Promise<void> {
 
   // Phase 3: content subtables (for future phases)
   for (const table of [
+    'knowledge_check_responses',
+    'knowledge_check_questions',
     'quiz_question_options',
     'quiz_questions',
     'quizzes',
@@ -668,6 +671,63 @@ export async function createModuleDownload(
     .single();
 
   if (error) throw new Error(`Failed to create module_download: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createKnowledgeCheckQuestion(
+  tracker: TestDataTracker,
+  moduleId: string,
+  overrides: {
+    questionText?: string;
+    questionType?: string;
+    options?: { text: string; isCorrect: boolean }[];
+    explanation?: string | null;
+    orderIndex?: number;
+  } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('knowledge_check_questions')
+    .insert({
+      module_id: moduleId,
+      question_text: overrides.questionText ?? 'What is 2+2?',
+      question_type: overrides.questionType ?? 'single_choice',
+      options: (overrides.options ?? [
+        { text: 'Four', isCorrect: true },
+        { text: 'Five', isCorrect: false },
+      ]) as unknown as Record<string, unknown>,
+      explanation: overrides.explanation ?? null,
+      order_index: overrides.orderIndex ?? 0,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create knowledge_check_question: ${error.message}`);
+  return { id: data.id };
+}
+
+export async function createKnowledgeCheckResponse(
+  tracker: TestDataTracker,
+  questionId: string,
+  userId: string,
+  tenantId: string,
+  overrides: {
+    selectedOptionIndex?: number;
+    isCorrect?: boolean;
+  } = {},
+): Promise<{ id: string }> {
+  const { data, error } = await adminClient
+    .from('knowledge_check_responses')
+    .insert({
+      question_id: questionId,
+      user_id: userId,
+      tenant_id: tenantId,
+      selected_option_index: overrides.selectedOptionIndex ?? 0,
+      is_correct: overrides.isCorrect ?? true,
+    })
+    .select()
+    .single();
+
+  if (error) throw new Error(`Failed to create knowledge_check_response: ${error.message}`);
   return { id: data.id };
 }
 

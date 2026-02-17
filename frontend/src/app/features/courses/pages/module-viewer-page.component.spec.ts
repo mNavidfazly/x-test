@@ -24,6 +24,9 @@ import { CommentSectionComponent } from '../components/comment-section.component
 import { AskExpertComponent } from '../components/ask-expert.component';
 import { ReportIssueComponent } from '../components/report-issue.component';
 import { ModuleNotesComponent } from '../components/module-notes.component';
+import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-section.component';
+import { KnowledgeCheckService } from '../../../core/services/knowledge-check.service';
+import { createMockKnowledgeCheckService } from '../../../__mocks__/knowledge-check.mock';
 import { CommentService } from '../../../core/services/comment.service';
 import { ExpertQuestionService } from '../../../core/services/expert-question.service';
 import { IssueService } from '../../../core/services/issue.service';
@@ -71,7 +74,7 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, MockAudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, MockAudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent, KnowledgeCheckSectionComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
@@ -81,6 +84,7 @@ describe('ModuleViewerPageComponent', () => {
         { provide: IssueService, useValue: createMockIssueService() },
         { provide: AuthService, useValue: createMockAuthService() },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
+        { provide: KnowledgeCheckService, useValue: createMockKnowledgeCheckService() },
         // Provide paramMap as an observable — the component uses toSignal(route.paramMap)
         // to reactively respond to route param changes (e.g. Next/Previous navigation).
         { provide: ActivatedRoute, useValue: { paramMap: paramMap$ } },

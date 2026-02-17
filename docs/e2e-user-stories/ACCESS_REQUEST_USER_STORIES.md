@@ -104,17 +104,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| AR-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
-| AR-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 2026-02-16 |
-| AR-03 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
-| AR-04 | Filter by Search | Platform Admin | ✅ | 2026-02-16 |
-| AR-05 | Filter by Status | Platform Admin | ✅ | 2026-02-16 |
-| AR-06 | Expand Pending Request | Platform Admin | ✅ | 2026-02-16 |
-| AR-07 | PA — Unknown Domain + Tenant Picker | Platform Admin | ✅ | 2026-02-16 |
-| AR-08 | Approve & Invite | Platform Admin | ✅ | 2026-02-16 |
-| AR-09 | Reject Request | Platform Admin | ✅ | 2026-02-16 |
-| AR-10 | Already-Reviewed Read-Only | Platform Admin | ✅ | 2026-02-16 |
-| AR-11 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| AR-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 2026-02-17 |
+| AR-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 2026-02-17 |
+| AR-03 | Summary Cards | Platform Admin | ✅ | 2026-02-17 |
+| AR-04 | Filter by Search | Platform Admin | ✅ | 2026-02-17 |
+| AR-05 | Filter by Status | Platform Admin | ✅ | 2026-02-17 |
+| AR-06 | Expand Pending Request | Platform Admin | ✅ | 2026-02-17 |
+| AR-07 | PA — Unknown Domain + Tenant Picker | Platform Admin | ✅ | 2026-02-17 |
+| AR-08 | Approve & Invite | Platform Admin | ✅ | 2026-02-17 |
+| AR-09 | Reject Request | Platform Admin | ✅ | 2026-02-17 |
+| AR-10 | Already-Reviewed Read-Only | Platform Admin | ✅ | 2026-02-17 |
+| AR-11 | Role Access Control | Multiple | ✅ | 2026-02-17 |
 
 ---
 
@@ -189,7 +189,7 @@ ORDER BY status, email;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -238,7 +238,7 @@ ORDER BY ar.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -285,7 +285,7 @@ ORDER BY ar.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -331,7 +331,7 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -363,7 +363,7 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -397,7 +397,7 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -434,7 +434,7 @@ WHERE email LIKE 'e2e-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -482,7 +482,7 @@ WHERE email = 'e2e-unknown@unknowndomain.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -559,7 +559,7 @@ WHERE email = 'e2e-pending@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -615,7 +615,7 @@ WHERE email = 'e2e-unknown@unknowndomain.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -650,7 +650,7 @@ WHERE email = 'e2e-unknown@unknowndomain.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -770,6 +770,12 @@ DELETE FROM auth.users WHERE email = 'e2e-pending@calypsoclient.com';
 |------|--------|-----------------|------|------|-------|
 | 14 Feb 2026 | Claude (Playwright MCP) | AR-01 to AR-11 | 11/11 | 0 | Local dev (localhost:4200). AR-08 approve step works (status changes, notification fires), invite step 404 because local FastAPI not running — expected for local E2E. 5 roles tested for access control. 0 bugs found. |
 | 15 Feb 2026 | Claude (Playwright MCP) | AR-01 to AR-11 | 11 | 0 | Full regression run. PA board: 4 requests (all Pending), stats cards, search+status filters, "Unknown domain" badge on unknowndomain.com. No regressions. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

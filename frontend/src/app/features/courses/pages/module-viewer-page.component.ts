@@ -17,11 +17,12 @@ import { CommentSectionComponent } from '../components/comment-section.component
 import { AskExpertComponent } from '../components/ask-expert.component';
 import { ReportIssueComponent } from '../components/report-issue.component';
 import { ModuleNotesComponent } from '../components/module-notes.component';
+import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-section.component';
 
 @Component({
   selector: 'app-module-viewer-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, AudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent],
+  imports: [RouterLink, LucideAngularModule, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, AudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent, KnowledgeCheckSectionComponent],
   // Note: CommentSectionComponent, AskExpertComponent, ReportIssueComponent are kept in imports
   // for type checking but automatically deferred by @defer blocks in the template.
   host: { class: 'block page-enter' },
@@ -150,6 +151,19 @@ import { ModuleNotesComponent } from '../components/module-notes.component';
           <div class="mb-6">
             <app-module-files-list [files]="courseService.moduleViewer()!.files" />
           </div>
+        }
+
+        <!-- Knowledge Check (only for enrolled users, deferred) -->
+        @if (isEnrolled()) {
+          @defer (on viewport) {
+            <div class="mb-6">
+              <app-knowledge-check-section
+                [moduleId]="courseService.moduleViewer()!.module.id"
+              />
+            </div>
+          } @placeholder {
+            <div class="mb-6 h-10"></div>
+          }
         }
 
         <!-- Notes (only for enrolled users) -->

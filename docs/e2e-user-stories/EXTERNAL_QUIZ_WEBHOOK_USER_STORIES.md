@@ -110,12 +110,12 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| EQW-01 | External Quiz Viewer Rendering | Learner | ✅ | 2026-02-16 |
-| EQW-02 | Manual Mark Complete (Fallback) | Learner | ✅ | 2026-02-16 |
-| EQW-03 | Webhook Auto-Marks Progress on Pass | Learner + API | ✅ | 2026-02-16 |
-| EQW-04 | Webhook Fail Does NOT Auto-Mark | Learner + API | ✅ | 2026-02-16 |
-| EQW-05 | Webhook API Key Validation | API only | ✅ | 2026-02-16 |
-| EQW-06 | Progress Visible After Webhook (Course Detail) | Learner + Admin | ✅ | 2026-02-16 |
+| EQW-01 | External Quiz Viewer Rendering | Learner | ✅ | 2026-02-17 |
+| EQW-02 | Manual Mark Complete (Fallback) | Learner | ✅ | 2026-02-17 |
+| EQW-03 | Webhook Auto-Marks Progress on Pass | Learner + API | ✅ | 2026-02-17 |
+| EQW-04 | Webhook Fail Does NOT Auto-Mark | Learner + API | ✅ | 2026-02-17 |
+| EQW-05 | Webhook API Key Validation | API only | ✅ | 2026-02-17 |
+| EQW-06 | Progress Visible After Webhook (Course Detail) | Learner + Admin | ✅ | 2026-02-17 |
 
 ---
 
@@ -123,7 +123,7 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -163,7 +163,7 @@ AND external_quiz_id = 'EXT-QUIZ-E2E-001';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -218,7 +218,7 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -293,7 +293,7 @@ AND m.course_id = '<COURSE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -368,7 +368,7 @@ AND module_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -436,7 +436,7 @@ curl -s -X POST <BACKEND_URL>/api/quiz-results/external \
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -491,6 +491,7 @@ curl -s -X POST <BACKEND_URL>/api/quiz-results/external \
 | 2026-02-13 | Claude Code | EQW-01 to EQW-06 | 6 | 0 | All stories pass. Tested against local dev (localhost:4200 + localhost:8000). Zero bugs found. |
 | 2026-02-14 | Claude (Playwright MCP) | EQW-01 through EQW-06 (regression) | 6 | 0 | Full regression — all 6 PASS. EQW-01/02 verified via browser (external quiz viewer with quiz ID EXT-QUIZ-E2E-001, passing score 75%, Take External Quiz link, Mark as complete button). EQW-03–06 are backend webhook tests — previously verified, not browser-testable. No regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | EQW-01 through EQW-06 (regression) | 6 | 0 | Full regression run. EQW-01/02 verified as learner: External Quiz heading, Quiz ID EXT-QUIZ-E2E-001, passing 75%, Take External Quiz link, Mark as complete button. EQW-03–06 backend-only. No regressions. |
+| 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | EQW-01 through EQW-06 (full regression) | 6 | 0 | Full re-test of all stories. All stories pass. No bugs found. |
 
 ---
 

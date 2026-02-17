@@ -91,18 +91,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| IM-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-16 |
-| IM-02 | Platform Admin Sees All Issues | Platform Admin | ✅ | 2026-02-16 |
-| IM-03 | Filter by Search | PA (as Lecturer) | ✅ | 2026-02-16 |
-| IM-04 | Filter by Course, Status, and Type | PA (as Lecturer) | ✅ | 2026-02-16 |
-| IM-05 | Summary Cards | PA (as Lecturer) | ✅ | 2026-02-16 |
-| IM-06 | Investigate Open Issue + Add Internal Notes | Platform Admin | ✅ | 2026-02-16 |
-| IM-07 | Verify Internal Notes Persist | Platform Admin | ✅ | 2026-02-16 |
-| IM-08 | Resolve Issue with Auto-Resolution Fields | Platform Admin | ✅ | 2026-02-16 |
-| IM-09 | Learner Sees Status Change on My Issues | Learner | ✅ | 2026-02-16 |
-| IM-10 | Close Issue | Lecturer | ✅ | 2026-02-16 |
-| IM-11 | Clear Filters | Lecturer | ✅ | 2026-02-16 |
-| IM-12 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| IM-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-17 |
+| IM-02 | Platform Admin Sees All Issues | Platform Admin | ✅ | 2026-02-17 |
+| IM-03 | Filter by Search | PA (as Lecturer) | ✅ | 2026-02-17 |
+| IM-04 | Filter by Course, Status, and Type | PA (as Lecturer) | ✅ | 2026-02-17 |
+| IM-05 | Summary Cards | PA (as Lecturer) | ✅ | 2026-02-17 |
+| IM-06 | Investigate Open Issue + Add Internal Notes | Platform Admin | ✅ | 2026-02-17 |
+| IM-07 | Verify Internal Notes Persist | Platform Admin | ✅ | 2026-02-17 |
+| IM-08 | Resolve Issue with Auto-Resolution Fields | Platform Admin | ✅ | 2026-02-17 |
+| IM-09 | Learner Sees Status Change on My Issues | Learner | ✅ | 2026-02-17 |
+| IM-10 | Close Issue | Lecturer | ✅ | 2026-02-17 |
+| IM-11 | Clear Filters | Lecturer | ✅ | 2026-02-17 |
+| IM-12 | Role Access Control | Multiple | ✅ | 2026-02-17 |
 
 ---
 
@@ -173,7 +173,7 @@ DELETE FROM notifications WHERE type = 'issue_resolved';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -228,7 +228,7 @@ ORDER BY i.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -270,7 +270,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -304,7 +304,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -344,7 +344,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -395,7 +395,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -444,7 +444,7 @@ FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -478,7 +478,7 @@ FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -532,7 +532,7 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -587,7 +587,7 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -631,7 +631,7 @@ SELECT id, status, resolved_by, resolved_at FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -664,7 +664,7 @@ SELECT id, status, resolved_by, resolved_at FROM issues WHERE id = '<ISSUE_ID>';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -769,6 +769,12 @@ DELETE FROM issues;
 | 2026-02-13 | Claude (Playwright MCP) | IM-01 to IM-12 | 12 | 0 | 4 roles tested (Lecturer, PA, Learner, CSM), 0 bugs found |
 | 2026-02-14 | Claude (Playwright MCP) | IM-01 through IM-12 (regression) | 12 | 0 | Full regression — all 12 PASS. Verified as Lecturer: board loads with 6 issues (Total:6, Open:1, Investigating:0, Resolved:3, Closed:2), 4 filters (search/course/status/type), 5 summary cards, cross-tenant visibility (both Calypso+Client reporters). No regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | IM-01 through IM-12 (regression) | 12 | 0 | Full regression run. PA board: "1 open" badge, 6 issues (Total:6, Open:1, Investigating:0, Resolved:3, Closed:2), 4 filters (search/course/status/type), cross-tenant reporters visible. No regressions. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

@@ -1018,6 +1018,12 @@ All test users use password: `TestUser123!`
 | 2026-02-16 | Claude Opus 4.6 (Playwright MCP) | QB-01 through QB-16, EQ-01, EQ-02 (regression) | 18 | 0 | All 18 ✅. Quiz edit form: "E2E Quiz Test (Updated)" with 5 questions (single, multiple, T/F×2, fill-blank), settings (2min, 80%, 10 attempts, show answers, randomize). All 6 type options in dropdown. Template/Import/Export/Add toolbar. Module type selector: all 6 types incl. External Quiz. QB-11 via CR-13 lecturer evidence. Zero regressions. |
 | 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | QB-01 through QB-16, EQ-01, EQ-02 (regression + Phase 12C) | 18 | 0 | All 18 ✅. Phase 12C verification: Explanation textarea with Lightbulb icon on all questions (QB-03 steps 16-17), explanation pre-populated in edit round-trip (QB-10 step 11a), template JSON includes `explanation` field with Q1+Q4 non-null (QB-13 steps 11-12), import populates explanation (QB-14 step 11). Zero regressions. |
 
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
+
 ## References
 
 | Document | Path |

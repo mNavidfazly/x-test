@@ -77,20 +77,20 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CM-01 | Post First Comment | Learner | ✅ | 2026-02-16 |
-| CM-02 | Expert Badge — Lecturer | Lecturer | ✅ | 2026-02-16 |
-| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ✅ | 2026-02-16 |
-| CM-04 | Reply to a Comment | Learner | ✅ | 2026-02-16 |
-| CM-05 | Edit Own Comment | Learner | ✅ | 2026-02-16 |
-| CM-06 | Delete Own Comment | Learner | ✅ | 2026-02-16 |
-| CM-07 | Tenant Admin Moderation | Tenant Admin | ✅ | 2026-02-16 |
-| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ✅ | 2026-02-16 |
-| CM-09 | Tenant Isolation | Learner (both tenants) | ✅ | 2026-02-16 |
-| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ✅ | 2026-02-16 |
-| CM-11 | Module Navigation Reloads Comments | Learner | ✅ | 2026-02-16 |
-| CM-12 | Edit and Delete Own Reply | Learner | ✅ | 2026-02-16 |
-| CM-13 | Permission Boundaries | Learner + CSM | ✅ | 2026-02-16 |
-| CM-14 | Calypso Badge — CSM | CSM | ✅ | 2026-02-16 |
+| CM-01 | Post First Comment | Learner | ✅ | 2026-02-17 |
+| CM-02 | Expert Badge — Lecturer | Lecturer | ✅ | 2026-02-17 |
+| CM-03 | Calypso Badge — Platform Admin | Platform Admin | ✅ | 2026-02-17 |
+| CM-04 | Reply to a Comment | Learner | ✅ | 2026-02-17 |
+| CM-05 | Edit Own Comment | Learner | ✅ | 2026-02-17 |
+| CM-06 | Delete Own Comment | Learner | ✅ | 2026-02-17 |
+| CM-07 | Tenant Admin Moderation | Tenant Admin | ✅ | 2026-02-17 |
+| CM-08 | Platform Admin Cross-Tenant Delete | Platform Admin | ✅ | 2026-02-17 |
+| CM-09 | Tenant Isolation | Learner (both tenants) | ✅ | 2026-02-17 |
+| CM-10 | Lecturer Cross-Tenant Visibility | Lecturer | ✅ | 2026-02-17 |
+| CM-11 | Module Navigation Reloads Comments | Learner | ✅ | 2026-02-17 |
+| CM-12 | Edit and Delete Own Reply | Learner | ✅ | 2026-02-17 |
+| CM-13 | Permission Boundaries | Learner + CSM | ✅ | 2026-02-17 |
+| CM-14 | Calypso Badge — CSM | CSM | ✅ | 2026-02-17 |
 
 ---
 
@@ -98,7 +98,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -143,7 +143,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -182,7 +182,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -219,7 +219,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -261,7 +261,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -300,7 +300,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -336,7 +336,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -388,7 +388,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -428,7 +428,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -483,7 +483,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -520,7 +520,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -561,7 +561,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -610,7 +610,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -660,7 +660,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -816,6 +816,12 @@ LIMIT 10;
 | 2026-02-13 | Claude (Run 2) | 14/14 | 14 | 0 | Clean re-run after bug fix. All stories pass. 0 new bugs. |
 | 2026-02-14 | Claude (Playwright MCP) | CM-01 through CM-14 (regression) | 14 | 0 | Full regression — all 14 PASS. Verified: Discussion section loads (4 comments), post comment+reply, delete reply+comment, Expert badge (lecturer), Calypso badge (PA+CSM), Edit/Delete on own only, Reply on others. No regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | CM-01 through CM-14 (Phase 10C regression) | 14 | 0 | Post-10C regression. `@defer (on viewport)` verified: comment-section, ask-expert, report-issue all render on module viewer. Discussion (4) on Market Participants: badges (Expert amber, Calypso teal x2, NULL learner), PA Edit only on own + Delete on all, Learner Edit+Delete own only + Reply on all others. Module nav: Next→Discussion(0) empty state, Previous→Discussion(4) restores. No regressions from @defer changes. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

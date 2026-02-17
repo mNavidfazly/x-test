@@ -116,14 +116,14 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| DB-01 | PA Full Dashboard + Count Accuracy | Platform Admin | ✅ | 2026-02-16 |
-| DB-02 | TA Scoped Dashboard | Tenant Admin | ✅ | 2026-02-16 |
-| DB-03 | Lecturer Teaching Dashboard | Lecturer | ✅ | 2026-02-16 |
-| DB-04 | CSM Overview Dashboard | CSM | ✅ | 2026-02-16 |
-| DB-05 | Learner Minimal Dashboard | Learner | ✅ | 2026-02-16 |
-| DB-06 | Action Card Navigation | Platform Admin | ✅ | 2026-02-16 |
-| DB-07 | Enrolled Course Cards + Progress | Learner | ✅ | 2026-02-16 |
-| DB-08 | Empty Enrolled Courses State | Platform Admin | ✅ | 2026-02-16 |
+| DB-01 | PA Full Dashboard + Count Accuracy | Platform Admin | ✅ | 2026-02-17 |
+| DB-02 | TA Scoped Dashboard | Tenant Admin | ✅ | 2026-02-17 |
+| DB-03 | Lecturer Teaching Dashboard | Lecturer | ✅ | 2026-02-17 |
+| DB-04 | CSM Overview Dashboard | CSM | ✅ | 2026-02-17 |
+| DB-05 | Learner Minimal Dashboard | Learner | ✅ | 2026-02-17 |
+| DB-06 | Action Card Navigation | Platform Admin | ✅ | 2026-02-17 |
+| DB-07 | Enrolled Course Cards + Progress | Learner | ✅ | 2026-02-17 |
+| DB-08 | Empty Enrolled Courses State | Platform Admin | ✅ | 2026-02-17 |
 
 ---
 
@@ -195,7 +195,7 @@ WHERE cta.user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodit
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -249,7 +249,7 @@ UNION ALL SELECT 'Total Tenants', COUNT(*) FROM tenants;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -310,7 +310,7 @@ WHERE tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com');
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -377,7 +377,7 @@ WHERE status IN ('open', 'investigating')
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -428,7 +428,7 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -474,7 +474,7 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -520,7 +520,7 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'csm@calypso-commodities.
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -581,7 +581,7 @@ ORDER BY ce.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -680,6 +680,12 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodit
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-15 | Claude Code | DB-01 to DB-08 | 8 | 0 | All stories pass on localhost:4200. DB-07 verified via Learner (2 enrolled courses with progress). DB-08 verified via PA/TA/Lecturer/CSM (all show empty state). All DB counts verified against Supabase REST API. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

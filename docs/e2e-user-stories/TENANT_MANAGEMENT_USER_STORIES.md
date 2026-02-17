@@ -94,16 +94,16 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| TM-01 | Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
-| TM-02 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
-| TM-03 | Filter by Search | Platform Admin | ✅ | 2026-02-16 |
-| TM-04 | Create New Tenant | Platform Admin | ✅ | 2026-02-16 |
-| TM-05 | Edit Tenant Details | Platform Admin | ✅ | 2026-02-16 |
-| TM-06 | Master Tenant Protection | Platform Admin | ✅ | 2026-02-16 |
-| TM-07 | Manage Course Assignments | Platform Admin | ✅ | 2026-02-16 |
-| TM-08 | Manage CSM Assignments | Platform Admin | ✅ | 2026-02-16 |
-| TM-09 | Delete Tenant | Platform Admin | ✅ | 2026-02-16 |
-| TM-10 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| TM-01 | Navigation + Page Load | Platform Admin | ✅ | 2026-02-17 |
+| TM-02 | Summary Cards | Platform Admin | ✅ | 2026-02-17 |
+| TM-03 | Filter by Search | Platform Admin | ✅ | 2026-02-17 |
+| TM-04 | Create New Tenant | Platform Admin | ✅ | 2026-02-17 |
+| TM-05 | Edit Tenant Details | Platform Admin | ✅ | 2026-02-17 |
+| TM-06 | Master Tenant Protection | Platform Admin | ✅ | 2026-02-17 |
+| TM-07 | Manage Course Assignments | Platform Admin | ✅ | 2026-02-17 |
+| TM-08 | Manage CSM Assignments | Platform Admin | ✅ | 2026-02-17 |
+| TM-09 | Delete Tenant | Platform Admin | ✅ | 2026-02-17 |
+| TM-10 | Role Access Control | Multiple | ✅ | 2026-02-17 |
 
 ---
 
@@ -164,7 +164,7 @@ SELECT id, name, domain, is_master FROM tenants ORDER BY is_master DESC, name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -213,7 +213,7 @@ ORDER BY t.is_master DESC, t.name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -256,7 +256,7 @@ FROM tenants;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -291,7 +291,7 @@ FROM tenants;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -340,7 +340,7 @@ FROM tenants WHERE domain = 'e2etest.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -393,7 +393,7 @@ FROM tenants WHERE domain = 'e2etest.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -434,7 +434,7 @@ SELECT id, name, domain, is_master FROM tenants WHERE is_master = true;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -496,7 +496,7 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -560,7 +560,7 @@ ORDER BY p.email;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -613,7 +613,7 @@ SELECT COUNT(*) FROM csm_tenant_assignments WHERE tenant_id = '<DELETED_TENANT_I
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -718,6 +718,12 @@ WHERE cta.tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com'
 |------|--------|-----------------|------|------|-------|
 | 2026-02-14 | Claude (Playwright MCP) | TM-01 to TM-10 | 10 | 0 | Local dev (localhost:4200). All CRUD, assignment management, role guards verified. 0 bugs found. |
 | 2026-02-15 | Claude (Playwright MCP) | TM-01 to TM-10 | 10 | 0 | Full regression run. PA board: 3 tenants (Total:3, Master:1, Course Assignments:6, CSM:1), Master badge on Calypso, Add Tenant button. No regressions. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

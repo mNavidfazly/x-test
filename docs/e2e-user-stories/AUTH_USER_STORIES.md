@@ -66,10 +66,10 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Status | Last Checked |
 |----|-------|--------|--------------|
-| AUTH-01 | Tenant-Aware Email/Password Login | ✅ Passed | 2026-02-16 |
-| AUTH-02 | Magic Link Login | ⚠️ Partial | 2026-02-16 |
-| AUTH-03 | Password Reset Flow | ⚠️ Partial | 2026-02-16 |
-| AUTH-04 | Access Request Submission | ✅ Passed | 2026-02-16 |
+| AUTH-01 | Tenant-Aware Email/Password Login | ✅ Passed | 2026-02-17 |
+| AUTH-02 | Magic Link Login | ⚠️ Partial | 2026-02-17 |
+| AUTH-03 | Password Reset Flow | ⚠️ Partial | 2026-02-17 |
+| AUTH-04 | Access Request Submission | ✅ Passed | 2026-02-17 |
 
 ---
 
@@ -77,11 +77,11 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
-> **PASSED (2026-02-16)**: All 12 steps + 4 negative cases pass on localhost:4200. Two-step login flow: email → tenant resolution → "Sign in to Calypso" with SSO/password/magic-link. Login as PA redirects to dashboard with full sidebar. Session persists after reload. Unknown domain shows "No account found". Wrong password shows "Invalid login credentials". Empty email shows validation error. Zero regressions.
+> **PASSED (2026-02-17)**: All 12 steps + 4 negative cases pass on production (x-courses-v2.vercel.app). Two-step login flow: email → tenant resolution → "Sign in to Calypso" with SSO/password/magic-link. Login as PA redirects to dashboard with full sidebar. Session persists after reload. Unknown domain shows "No account found". Wrong password shows "Invalid login credentials". Empty email shows "Please enter your email address." Zero regressions.
 
 **Purpose**: Verify the complete two-step login flow: email entry, tenant resolution, auth method display, and successful password authentication with redirect to dashboard.
 
@@ -129,11 +129,11 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ⚠️ Partial (UI flow verified, no inbox access for full E2E) |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
-> **PARTIAL (2026-02-16)**: OTP code entry screen verified on localhost:4200. Button is "Send sign-in code". After clicking: "Verify your identity" heading, "We sent a 6-digit code to et@calypso-commodities.com", "The code expires in 15 minutes", 6-digit code input (placeholder "000000"), "Verify" button (disabled until code entered), "Resend code in 59s" countdown. Steps 6-10 blocked — no inbox access for OTP verification. No regressions.
+> **PARTIAL (2026-02-17)**: OTP code entry screen verified on production (x-courses-v2.vercel.app). Button is "Send sign-in code". After clicking: "Verify your identity" heading, "We sent a 6-digit code to et@calypso-commodities.com", "The code expires in 15 minutes", 6-digit code input (placeholder "000000"), "Verify" button (disabled until code entered), "Resend code in 59s" countdown. Steps 6-10 blocked — no inbox access for OTP verification. No regressions.
 
 **Purpose**: Verify magic link (OTP) authentication flow — from requesting the link to the email being sent. Full end-to-end requires checking the user's inbox for the OTP email.
 
@@ -179,11 +179,11 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ⚠️ Partial (UI validation + anti-enumeration verified, no inbox access for full E2E) |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
-> **PARTIAL (2026-02-16)**: All UI validations pass on localhost:4200. Step 1→2 flow works. Back arrow returns to Step 1. Short code → "Please enter the 6-digit code from your email." Short password → "Password must be at least 6 characters." Mismatch → "Passwords do not match." Anti-enumeration: unknown email advances to Step 2 identically. Direct `/reset-password` (no query param) works with empty email field. Steps E1-E7 blocked — no inbox access for OTP code. No regressions.
+> **PARTIAL (2026-02-17)**: All UI validations pass on production (x-courses-v2.vercel.app). Step 1→2 flow works. Back arrow returns to Step 1. Short code → "Please enter the 6-digit code from your email." Short password → "Password must be at least 6 characters." Mismatch → "Passwords do not match." Anti-enumeration: unknown email advances to Step 2 identically. Direct `/reset-password` (no query param) works with empty email field. Steps E1-E7 blocked — no inbox access for OTP code. No regressions.
 
 **Purpose**: Verify the complete 2-step password reset journey — requesting a reset code via FastAPI proxy, entering the 6-digit OTP code, and setting a new password. The reset is proxied through FastAPI (never calls `resetPasswordForEmail()` directly) to enforce tenant auth method validation.
 
@@ -277,11 +277,11 @@ curl -s -X POST https://x-courses-v2-production.up.railway.app/api/auth/reset-pa
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
-> **PASSED (2026-02-16)**: Full flow verified on localhost:4200. Login unknown domain → "No account found" → "Request access" → `/request-access`. Form validation blocks empty fields ("Please fill in all fields."). Submit with "Test User E2E 0216" / "e2etest-0216@calypso-commodities.com" → success message. "Back to sign in" returns to `/login`. Direct navigation to `/request-access` works. No regressions.
+> **PASSED (2026-02-17)**: Full flow verified on production (x-courses-v2.vercel.app). Login unknown domain → "No account found" → "Request access" → `/request-access`. Form validation blocks empty fields ("Please fill in all fields."). Submit with "Test User E2E 0217" / "e2etest-0217@calypso-commodities.com" → success message. "Back to sign in" returns to `/login`. Direct navigation to `/request-access` works. No regressions.
 
 **Purpose**: Verify that unauthenticated users can submit access requests. The form inserts directly into Supabase `access_requests` table via anon client (RLS policy `access_requests_insert_anon` allows anonymous INSERT). This also verifies the navigation flow from login "no account found" to access request.
 
@@ -355,6 +355,7 @@ Expected: `status = 'pending'`, `domain = 'calypso-commodities.com'` (extracted 
 | 2026-02-14 | Claude (Playwright MCP) | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | 2 full, 2 partial | 0 | Full regression. AUTH-01 all 12 steps + 4 negative cases pass. AUTH-02 OTP code entry screen verified (button is "Send sign-in code"). AUTH-03 all validations + anti-enumeration pass. AUTH-04 full submit flow + direct navigation pass. No regressions. |
 | 2026-02-15 | Claude Code | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | 2 full, 2 partial | 0 | Full regression on localhost:4200. AUTH-01: all 12 steps + 4 negative cases pass. AUTH-02: OTP code entry screen verified (partial — no inbox). AUTH-03: all validations + anti-enumeration pass (partial — no inbox). AUTH-04: submit with unique email pass. No regressions. |
 | 2026-02-16 | Claude Opus 4.6 | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | 2 full, 2 partial | 0 | Full regression on localhost:4200. AUTH-01: all 12+4 pass. AUTH-02: OTP code entry + "Verify" screen verified (partial — no inbox). AUTH-03: all 3 validations + 2 anti-enumeration pass (partial — no inbox). AUTH-04: submit "e2etest-0216@calypso-commodities.com" + direct nav pass. Zero regressions. |
+| 2026-02-17 | Claude Opus 4.6 | AUTH-01, AUTH-02, AUTH-03, AUTH-04 | 2 full, 2 partial | 0 | Full regression on production (x-courses-v2.vercel.app). AUTH-01: all 12+4 pass. AUTH-02: OTP code entry + "Verify" screen verified (partial — no inbox). AUTH-03: all 3 validations + 2 anti-enumeration pass (partial — no inbox). AUTH-04: submit "e2etest-0217@calypso-commodities.com" + direct nav pass. Zero regressions. |
 
 ---
 

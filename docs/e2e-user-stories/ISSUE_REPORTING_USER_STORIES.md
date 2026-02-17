@@ -74,19 +74,19 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| IR-01 | Report an Issue from Module Viewer | Learner | ✅ | 2026-02-16 |
-| IR-02 | View My Issues Page | Learner | ✅ | 2026-02-16 |
-| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ✅ | 2026-02-16 |
-| IR-04 | Form Validation and Cancel | Learner | ✅ | 2026-02-16 |
-| IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-16 |
-| IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-16 |
-| IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-16 |
-| IR-08 | Empty State on My Issues Page | Lecturer | ✅ | 2026-02-16 |
-| IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | Learner (both tenants) | ✅ | 2026-02-16 |
-| IR-10 | Platform Admin Can Report Issue | Platform Admin | ✅ | 2026-02-16 |
-| IR-11 | Status Badges — Investigating, Resolved, Closed | Learner | ✅ | 2026-02-16 |
-| IR-12 | Resolved Issue — Resolution Info Panel | Learner | ✅ | 2026-02-16 |
-| IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | Learner | ✅ | 2026-02-16 |
+| IR-01 | Report an Issue from Module Viewer | Learner | ✅ | 2026-02-17 |
+| IR-02 | View My Issues Page | Learner | ✅ | 2026-02-17 |
+| IR-03 | Expand Issue Detail and Navigate to Module | Learner | ✅ | 2026-02-17 |
+| IR-04 | Form Validation and Cancel | Learner | ✅ | 2026-02-17 |
+| IR-05 | Report Another Issue (Reset Flow) | Learner | ✅ | 2026-02-17 |
+| IR-06 | All Issue Type Labels Render Correctly | Learner | ✅ | 2026-02-17 |
+| IR-07 | Sidebar Navigation to My Issues | Learner | ✅ | 2026-02-17 |
+| IR-08 | Empty State on My Issues Page | Lecturer | ✅ | 2026-02-17 |
+| IR-09 | Tenant Isolation — Cross-Tenant Issues Not Visible | Learner (both tenants) | ✅ | 2026-02-17 |
+| IR-10 | Platform Admin Can Report Issue | Platform Admin | ✅ | 2026-02-17 |
+| IR-11 | Status Badges — Investigating, Resolved, Closed | Learner | ✅ | 2026-02-17 |
+| IR-12 | Resolved Issue — Resolution Info Panel | Learner | ✅ | 2026-02-17 |
+| IR-13 | Accordion Mutual Exclusion — One Expanded at a Time | Learner | ✅ | 2026-02-17 |
 
 ---
 
@@ -94,7 +94,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -136,7 +136,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -174,7 +174,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -213,7 +213,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -252,7 +252,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -291,7 +291,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -323,7 +323,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -356,7 +356,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -389,7 +389,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -428,7 +428,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -466,7 +466,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -503,7 +503,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -541,7 +541,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -624,6 +624,12 @@ LIMIT 10;
 | 2026-02-13 | Claude (Playwright MCP) | IR-08 to IR-13 | 6 | 0 | Extended run: 5 new stories + IR-08 re-tested with Lecturer. 4 roles tested (Learner, Lecturer, PA, Client Learner). Tenant isolation verified bidirectionally. All 4 status badges + resolution panel confirmed. |
 | 2026-02-14 | Claude (Playwright MCP) | IR-01 through IR-13 (regression) | 13 | 0 | Full regression — all 13 PASS. Verified: My Issues page (4 issues, Resolved/Closed badges, type labels), expand issue detail (description + Go to module link + resolution panel), Report Issue button visible on module viewer, sidebar navigation. No regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | IR-01 through IR-13 (regression) | 13 | 0 | Full regression run. Report Issue button on module viewer, My Issues page (PA's 1 issue: Open/Other), sidebar navigation works. Module viewer Ask Expert + Report Issue buttons present. No regressions. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

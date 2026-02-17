@@ -15,6 +15,7 @@ import { ExternalQuizFormComponent } from '../components/external-quiz-form.comp
 import { AudioFormComponent } from '../components/audio-form.component';
 import { DownloadFormComponent } from '../components/download-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
+import { KnowledgeCheckEditorComponent } from '../components/knowledge-check-editor.component';
 import { ModuleType, ModuleFormData, VideoFormData, PdfFormData, ExamFormData, MarkdownFormData, QuizFormData, ExternalQuizFormData, AudioFormData, DownloadFormData, ModuleSavePayload } from '../../../core/models/course.model';
 import { getModuleTypeMeta } from '../../../core/utils/module-type.utils';
 
@@ -29,7 +30,7 @@ interface TypeOption {
 @Component({
   selector: 'app-module-form-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, FormsModule, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent],
+  imports: [RouterLink, FormsModule, LucideAngularModule, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent, KnowledgeCheckEditorComponent],
   host: { class: 'block page-enter' },
   template: `
     <div class="max-w-2xl">
@@ -204,6 +205,13 @@ interface TypeOption {
             (save)="onSave($event)"
             (cancel)="onCancel()"
           />
+        }
+
+        <!-- Knowledge check editor (edit mode only, excludes quiz/exam types) -->
+        @if (isEditMode() && moduleId() && selectedType() !== 'quiz' && selectedType() !== 'exam') {
+          <div class="mt-6">
+            <app-knowledge-check-editor [moduleId]="moduleId()" />
+          </div>
         }
 
         <!-- Module files editor (edit mode only, all types) -->

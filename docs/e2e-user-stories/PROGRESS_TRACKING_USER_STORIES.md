@@ -75,19 +75,19 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PT-01 | Progress Manager Visible — Platform Admin | Platform Admin | ✅ | 2026-02-16 |
-| PT-02 | Progress Manager Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-16 |
-| PT-03 | Progress Manager Hidden — Unauthorized | Learner + Lecturer | ✅ | 2026-02-16 |
-| PT-04 | Empty State — No Enrolled Users | Platform Admin | ✅ | 2026-02-16 |
-| PT-05 | User List with Progress Bars | Platform Admin | ✅ | 2026-02-16 |
-| PT-06 | Expand User — Module Details | Platform Admin | ✅ | 2026-02-16 |
-| PT-07 | Admin Mark Module Complete | Platform Admin | ✅ | 2026-02-16 |
-| PT-08 | Admin Reset Module Progress | Platform Admin | ✅ | 2026-02-16 |
-| PT-09 | Significant Update Checkbox — Edit Mode Only | PA + Lecturer | ✅ | 2026-02-16 |
-| PT-10 | Significant Update Resets Completed Progress | Platform Admin | ✅ | 2026-02-16 |
-| PT-11 | TA Cross-Tenant Progress Isolation | Tenant Admin | ✅ | 2026-02-16 |
-| PT-12 | Auto-Mark on Quiz Pass (Deferred) | Learner | ✅ (via QT-08) | 2026-02-16 |
-| PT-13 | Auto-Mark on Exam Grade (Deferred) | Learner + PA | ✅ (via EG-07) | 2026-02-16 |
+| PT-01 | Progress Manager Visible — Platform Admin | Platform Admin | ✅ | 2026-02-17 |
+| PT-02 | Progress Manager Visible — Tenant Admin | Tenant Admin | ✅ | 2026-02-17 |
+| PT-03 | Progress Manager Hidden — Unauthorized | Learner + Lecturer | ✅ | 2026-02-17 |
+| PT-04 | Empty State — No Enrolled Users | Platform Admin | ✅ | 2026-02-17 |
+| PT-05 | User List with Progress Bars | Platform Admin | ✅ | 2026-02-17 |
+| PT-06 | Expand User — Module Details | Platform Admin | ✅ | 2026-02-17 |
+| PT-07 | Admin Mark Module Complete | Platform Admin | ✅ | 2026-02-17 |
+| PT-08 | Admin Reset Module Progress | Platform Admin | ✅ | 2026-02-17 |
+| PT-09 | Significant Update Checkbox — Edit Mode Only | PA + Lecturer | ✅ | 2026-02-17 |
+| PT-10 | Significant Update Resets Completed Progress | Platform Admin | ✅ | 2026-02-17 |
+| PT-11 | TA Cross-Tenant Progress Isolation | Tenant Admin | ✅ | 2026-02-17 |
+| PT-12 | Auto-Mark on Quiz Pass (Deferred) | Learner | ✅ (via QT-08) | 2026-02-17 |
+| PT-13 | Auto-Mark on Exam Grade (Deferred) | Learner + PA | ✅ (via EG-07) | 2026-02-17 |
 
 ---
 
@@ -95,7 +95,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -129,7 +129,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -163,7 +163,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -203,7 +203,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -235,7 +235,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -273,7 +273,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -315,7 +315,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -361,7 +361,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -404,7 +404,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -460,7 +460,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -508,7 +508,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -568,7 +568,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Covered by **QT-08** in `QUIZ_TAKING_USER_STORIES.md` |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -592,7 +592,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ PASS (via EG-07) |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -681,6 +681,7 @@ ON CONFLICT DO NOTHING;
 | 2026-02-13 | Claude Code (Playwright MCP) | PT-13 (via EG-07) | 1 | 0 | PT-13 tested via Exam Grading EG-07: `auto_mark_exam_completed` trigger verified. Lecturer graded with passing score 85 >= 70, learner confirmed Passed badge + score on module viewer. All 13 PT stories now complete. |
 | 2026-02-14 | Claude (Playwright MCP) | PT-01 through PT-13 (regression) | 13 | 0 | Full regression — all 13 PASS. Verified: PA progress manager (3 users, expand/mark/reset), TA progress manager (1 user, tenant-scoped), progress bars + counts update correctly. No regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | PT-01 through PT-13 (regression) | 13 | 0 | Full regression run. Verified: User Progress section (3 users: 7/9, 0/9, 1/9), expanded row shows module-level status grouped by lecture (Market Fundamentals + Trading Strategies), Mark Complete/Reset buttons present. No regressions. |
+| 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | PT-01 through PT-13 (full regression) | 13 | 0 | Full re-test of all stories. All stories pass. No bugs found. |
 
 ---
 

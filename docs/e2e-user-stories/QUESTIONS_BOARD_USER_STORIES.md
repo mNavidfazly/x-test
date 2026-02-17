@@ -91,18 +91,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| QB-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-16 |
-| QB-02 | Platform Admin Sees All Questions | Platform Admin | ✅ | 2026-02-16 |
-| QB-03 | Filter by Search | Lecturer | ✅ | 2026-02-16 |
-| QB-04 | Filter by Course + Status | Lecturer | ✅ | 2026-02-16 |
-| QB-05 | Summary Stats | Lecturer | ✅ | 2026-02-16 |
-| QB-06 | Respond to Pending Question | Lecturer | ✅ | 2026-02-16 |
-| QB-07 | Learner Sees Response + Notification | Lecturer + Learner | ✅ | 2026-02-16 |
-| QB-08 | Update Existing Response | Lecturer | ✅ | 2026-02-16 |
-| QB-09 | Close Question | Lecturer | ✅ | 2026-02-16 |
-| QB-10 | Closed Question Read-Only | Lecturer | ✅ | 2026-02-16 |
-| QB-11 | Clear Filters | Lecturer | ✅ | 2026-02-16 |
-| QB-12 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| QB-01 | Navigation + Page Load | Lecturer | ✅ | 2026-02-17 |
+| QB-02 | Platform Admin Sees All Questions | Platform Admin | ✅ | 2026-02-17 |
+| QB-03 | Filter by Search | Lecturer | ✅ | 2026-02-17 |
+| QB-04 | Filter by Course + Status | Lecturer | ✅ | 2026-02-17 |
+| QB-05 | Summary Stats | Lecturer | ✅ | 2026-02-17 |
+| QB-06 | Respond to Pending Question | Lecturer | ✅ | 2026-02-17 |
+| QB-07 | Learner Sees Response + Notification | Lecturer + Learner | ✅ | 2026-02-17 |
+| QB-08 | Update Existing Response | Lecturer | ✅ | 2026-02-17 |
+| QB-09 | Close Question | Lecturer | ✅ | 2026-02-17 |
+| QB-10 | Closed Question Read-Only | Lecturer | ✅ | 2026-02-17 |
+| QB-11 | Clear Filters | Lecturer | ✅ | 2026-02-17 |
+| QB-12 | Role Access Control | Multiple | ✅ | 2026-02-17 |
 
 ---
 
@@ -169,7 +169,7 @@ DELETE FROM notifications WHERE type = 'question_answered';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -223,7 +223,7 @@ ORDER BY eq.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -265,7 +265,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -299,7 +299,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -335,7 +335,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -384,7 +384,7 @@ WHERE course_id IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -440,7 +440,7 @@ ORDER BY created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -493,7 +493,7 @@ ORDER BY eq.created_at DESC LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -547,7 +547,7 @@ AND created_at > NOW() - INTERVAL '1 minute';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -588,7 +588,7 @@ SELECT id, status, response_text FROM expert_questions WHERE id = '<QUESTION_ID>
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -621,7 +621,7 @@ SELECT id, status, response_text FROM expert_questions WHERE id = '<QUESTION_ID>
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -652,7 +652,7 @@ SELECT id, status, response_text FROM expert_questions WHERE id = '<QUESTION_ID>
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -760,6 +760,12 @@ WHERE user_id = (SELECT id FROM profiles WHERE email = 'learner@calypso-commodit
 | 2026-02-13 | Claude (Playwright MCP) | QB-01 to QB-12 | 12 | 0 | 1 bug found+fixed (QB-BUG-01). Local dev (localhost:4200). Notification page stub — can't verify notification UI. |
 | 2026-02-14 | Claude (Playwright MCP) | QB-01 through QB-12 (regression) | 12 | 0 | Full regression — all 12 PASS. Verified: board loads with 4 questions (Total:4, Pending:2, Answered:1, Closed:1), filters (search/course/status), summary cards, table rows. Learner My Questions page shows expert responses on both answered+closed questions (QB-BUG-01 fix confirmed). No regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | QB-01 through QB-12 (regression) | 12 | 0 | Full regression run. Board: "2 pending" badge, 4 questions (Total:4, Pending:2, Answered:1, Closed:1), course+status filters, table with learner/course/module/question/date/status. No regressions. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

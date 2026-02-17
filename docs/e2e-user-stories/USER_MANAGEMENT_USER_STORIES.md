@@ -107,18 +107,18 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| UM-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
-| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 2026-02-16 |
-| UM-03 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
-| UM-04 | Filter by Search | Tenant Admin | ✅ | 2026-02-16 |
-| UM-05 | Filter by Role | Platform Admin | ✅ | 2026-02-16 |
-| UM-06 | Expand Row + Edit Profile | Platform Admin | ✅ | 2026-02-16 |
-| UM-07 | Toggle Tenant Admin Role | Platform Admin | ✅ | 2026-02-16 |
-| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ✅ | 2026-02-16 |
-| UM-09 | Self-Role Protection | Platform Admin | ✅ | 2026-02-16 |
-| UM-10 | Invite User (TA Flow) | Tenant Admin | ✅ | 2026-02-16 |
-| UM-11 | Invite User (PA Flow) | Platform Admin | ✅ | 2026-02-16 |
-| UM-12 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| UM-01 | PA — Navigation + Page Load | Platform Admin | ✅ | 2026-02-17 |
+| UM-02 | TA — Navigation + Scoped View | Tenant Admin | ✅ | 2026-02-17 |
+| UM-03 | Summary Cards | Platform Admin | ✅ | 2026-02-17 |
+| UM-04 | Filter by Search | Tenant Admin | ✅ | 2026-02-17 |
+| UM-05 | Filter by Role | Platform Admin | ✅ | 2026-02-17 |
+| UM-06 | Expand Row + Edit Profile | Platform Admin | ✅ | 2026-02-17 |
+| UM-07 | Toggle Tenant Admin Role | Platform Admin | ✅ | 2026-02-17 |
+| UM-08 | Toggle Platform Admin Role (PA Only) | Platform Admin | ✅ | 2026-02-17 |
+| UM-09 | Self-Role Protection | Platform Admin | ✅ | 2026-02-17 |
+| UM-10 | Invite User (TA Flow) | Tenant Admin | ✅ | 2026-02-17 |
+| UM-11 | Invite User (PA Flow) | Platform Admin | ✅ | 2026-02-17 |
+| UM-12 | Role Access Control | Multiple | ✅ | 2026-02-17 |
 
 ---
 
@@ -175,7 +175,7 @@ WHERE p.email IN (
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -228,7 +228,7 @@ ORDER BY p.created_at DESC;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -279,7 +279,7 @@ WHERE tenant_id = (SELECT id FROM tenants WHERE domain = 'calypsoclient.com');
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -322,7 +322,7 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -352,7 +352,7 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -385,7 +385,7 @@ FROM profiles;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -431,7 +431,7 @@ FROM profiles WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -477,7 +477,7 @@ FROM profiles WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -523,7 +523,7 @@ WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -555,7 +555,7 @@ WHERE email = 'learner@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -617,7 +617,7 @@ DELETE FROM auth.users WHERE email = 'e2e-invite-ta@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -679,7 +679,7 @@ DELETE FROM auth.users WHERE email = 'e2e-invite-pa@calypsoclient.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -783,6 +783,12 @@ ALTER TABLE profiles ENABLE TRIGGER protect_role_fields;
 | 14 Feb 2026 | Claude E2E | UM-01 to UM-12 | 12 | 0 | 1 bug found+fixed (UM-BUG-01: maybe_single returns None). All 12 stories pass after fix. 5 roles tested (PA, TA, Learner, Lecturer, CSM). |
 | 15 Feb 2026 | Claude (Playwright MCP) | UM-01 to UM-12 | 12 | 0 | Full regression run. PA board: 9 users (Total:9, TA:1, PA:1, Regular:7), role filter dropdown, Invite User button, cross-tenant view with Tenant column. No regressions. |
 | 15 Feb 2026 | Claude Opus 4.6 (Playwright MCP) | UM-01 to UM-12 (Phase 10C regression) | 12 | 0 | Post-10C regression. PA: 9 users, 4 cards (9/1/1/7), Tenant col, search debounce ("admin"→1 user), role filter ("Platform Admins"→1), expand row (name+role checkboxes), self-protection (both checkboxes disabled+"Cannot modify own role"), invite form (email+tenant picker, 3 tenants). TA: 2 users, 3 cards (no PA), no Tenant col, invite form (email only, no tenant picker), expand shows only TA checkbox. Learner blocked→/dashboard. No regressions from pagination/debounce. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

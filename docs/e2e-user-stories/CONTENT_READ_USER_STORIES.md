@@ -91,20 +91,20 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CR-01 | Course List Page — Cards, Progress, and Badges | Learner | ✅ Passed | 2026-02-16 |
-| CR-02 | Course Detail Page — Lecture Accordions and Module List | Learner | ✅ Passed | 2026-02-16 |
-| CR-03 | Video Module Viewer | Learner | ✅ Passed | 2026-02-16 |
-| CR-04 | PDF Module Viewer | Learner | ✅ Passed | 2026-02-16 |
-| CR-05 | Markdown Module Viewer | Learner | ✅ Passed | 2026-02-16 |
-| CR-06 | Module Files Download | Learner | ✅ Passed | 2026-02-16 |
-| CR-07 | Module Navigation — Previous/Next | Learner | ✅ Passed | 2026-02-16 |
-| CR-08 | Mark as Complete and Progress Tracking | Learner | ✅ Passed | 2026-02-16 |
-| CR-09 | Tenant Isolation — Calypso Client Learner View | Learner (client) | ✅ Passed | 2026-02-16 |
-| CR-10 | Empty and Error States | Learner | ✅ Passed | 2026-02-16 |
-| CR-11 | CSM Content Read Experience | CSM | ✅ Passed | 2026-02-16 |
-| CR-12 | Tenant Admin Content Read Experience | Tenant Admin | ✅ Passed | 2026-02-16 |
-| CR-13 | Lecturer Cross-Tenant Read Access | Lecturer (can_edit) | ✅ Passed | 2026-02-16 |
-| CR-14 | Cross-Tenant Course Isolation — Two Learners, Two Tenants | Learner (Calypso) + Learner (Client) | ✅ Passed | 2026-02-16 |
+| CR-01 | Course List Page — Cards, Progress, and Badges | Learner | ✅ Passed | 2026-02-17 |
+| CR-02 | Course Detail Page — Lecture Accordions and Module List | Learner | ✅ Passed | 2026-02-17 |
+| CR-03 | Video Module Viewer | Learner | ✅ Passed | 2026-02-17 |
+| CR-04 | PDF Module Viewer | Learner | ✅ Passed | 2026-02-17 |
+| CR-05 | Markdown Module Viewer | Learner | ✅ Passed | 2026-02-17 |
+| CR-06 | Module Files Download | Learner | ✅ Passed | 2026-02-17 |
+| CR-07 | Module Navigation — Previous/Next | Learner | ✅ Passed | 2026-02-17 |
+| CR-08 | Mark as Complete and Progress Tracking | Learner | ✅ Passed | 2026-02-17 |
+| CR-09 | Tenant Isolation — Calypso Client Learner View | Learner (client) | ✅ Passed | 2026-02-17 |
+| CR-10 | Empty and Error States | Learner | ✅ Passed | 2026-02-17 |
+| CR-11 | CSM Content Read Experience | CSM | ✅ Passed | 2026-02-17 |
+| CR-12 | Tenant Admin Content Read Experience | Tenant Admin | ✅ Passed | 2026-02-17 |
+| CR-13 | Lecturer Cross-Tenant Read Access | Lecturer (can_edit) | ✅ Passed | 2026-02-17 |
+| CR-14 | Cross-Tenant Course Isolation — Two Learners, Two Tenants | Learner (Calypso) + Learner (Client) | ✅ Passed | 2026-02-17 |
 
 ---
 
@@ -112,7 +112,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -165,7 +165,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -234,7 +234,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -280,7 +280,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -329,7 +329,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -375,7 +375,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -422,7 +422,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -470,7 +470,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -542,7 +542,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -585,7 +585,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -652,7 +652,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -709,7 +709,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -765,7 +765,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -820,7 +820,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ Passed |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -903,6 +903,7 @@ These stories assume content has already been created (via CW-01 through CW-09 o
 | 2026-02-14 | Claude (Playwright MCP) | CR-01 through CR-14 (all 14) | 12 | 0 | Full regression. CR-14 UPGRADED from Partial to Pass — CW-01 course is now Calypso-exclusive, confirming course-level isolation + direct URL denial. CR-03 DOWNGRADED to Partial — module_videos subtable data deleted during previous E2E cleanup (PGRST116 error, not a code bug). CR-06 remains Partial (no file attachments). All 6 roles tested. Mark-as-complete verified (6/9→7/9). No code regressions. |
 | 2026-02-15 | Claude Opus 4.6 (Playwright MCP) | CR-01 through CR-14 (all 14) | 12 | 0 | Full regression run. 12 ✅, 2 ⚠️ Partial (CR-03: no module_videos data — PGRST116, CR-06: no file attachments). CR-08: mark complete persists to detail+list. CR-09: Client 2 courses, Calypso-only absent. CR-13: Lecturer 4 courses, Edit on assigned, no Edit on non-assigned. CR-14: 4 vs 2 courses, cross-tenant URL blocked. Zero code regressions. |
 | 2026-02-16 | Claude Opus 4.6 (Playwright MCP) | CR-02, CR-08 (UX redesign re-test) | 2 | 0 | UX redesign verification on localhost:4200. CR-02: all 3 module states (Completed/In progress/Not started) verified with correct icons, colors, title styling. Lecture mini progress bar proportional. aria-labels confirmed. CR-08: Auto-track in_progress fires on first view, doesn't overwrite completed. Mark-as-complete updates progress 1/10→3/10. AT8/AT9 skipped (no test data). |
+| 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | CR-01 through CR-14 (all 14) | 14 | 0 | Full regression on production. Verified: course list with progress rings, course detail with lecture accordions (11 modules), video viewer (Bunny Stream iframe), markdown viewer (rich content), PDF viewer (iframe + download), download module (signed URL), module navigation (prev/next), mark-as-complete button. All module types functional. Zero regressions. |
 
 ---
 

@@ -308,6 +308,12 @@ WHERE quiz_id = (SELECT id FROM quizzes LIMIT 1)
 |------|--------|-------------|--------|
 | 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | QE-01, QE-02, QE-03 | All 3 PASS |
 
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
+
 ## Bugs Found
 
 | ID | Story | Description | Severity | Status |

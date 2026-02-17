@@ -745,6 +745,99 @@ export type Database = {
           },
         ]
       }
+      knowledge_check_questions: {
+        Row: {
+          created_at: string | null
+          explanation: string | null
+          id: string
+          module_id: string
+          options: Json
+          order_index: number
+          question_text: string
+          question_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          module_id: string
+          options: Json
+          order_index?: number
+          question_text: string
+          question_type?: string
+        }
+        Update: {
+          created_at?: string | null
+          explanation?: string | null
+          id?: string
+          module_id?: string
+          options?: Json
+          order_index?: number
+          question_text?: string
+          question_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_check_questions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_check_responses: {
+        Row: {
+          answered_at: string | null
+          id: string
+          is_correct: boolean
+          question_id: string
+          selected_option_index: number
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          answered_at?: string | null
+          id?: string
+          is_correct: boolean
+          question_id: string
+          selected_option_index: number
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          answered_at?: string | null
+          id?: string
+          is_correct?: boolean
+          question_id?: string
+          selected_option_index?: number
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_check_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_check_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_check_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_check_questions_safe"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "knowledge_check_responses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lecturer_course_assignments: {
         Row: {
           assigned_at: string
@@ -1771,6 +1864,44 @@ export type Database = {
           },
         ]
       }
+      knowledge_check_questions_safe: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          module_id: string | null
+          options: Json | null
+          order_index: number | null
+          question_text: string | null
+          question_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          module_id?: string | null
+          options?: never
+          order_index?: number | null
+          question_text?: string | null
+          question_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          module_id?: string | null
+          options?: never
+          order_index?: number | null
+          question_text?: string | null
+          question_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_check_questions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quiz_question_options_safe: {
         Row: {
           id: string | null
@@ -1850,6 +1981,10 @@ export type Database = {
       }
     }
     Functions: {
+      check_knowledge_answer: {
+        Args: { p_question_id: string; p_selected_index: number }
+        Returns: Json
+      }
       cleanup_orphaned_auth_users: { Args: never; Returns: number }
       custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       enroll_with_password: {

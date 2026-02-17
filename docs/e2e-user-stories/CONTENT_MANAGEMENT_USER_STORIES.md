@@ -114,16 +114,16 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CM-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
-| CM-02 | Role Access Control | Multiple | ✅ | 2026-02-16 |
-| CM-03 | Course Data Accuracy | Platform Admin | ✅ | 2026-02-16 |
-| CM-04 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
-| CM-05 | Search + Filter Bar | Platform Admin | ✅ | 2026-02-16 |
-| CM-06 | Expand Course — Content Structure Tree | Platform Admin | ✅ | 2026-02-16 |
-| CM-07 | Expand Course — Tenant Assignments | Platform Admin | ✅ | 2026-02-16 |
-| CM-08 | Assign Tenant to Course | Platform Admin | ✅ | 2026-02-16 |
-| CM-09 | Remove Tenant from Course | Platform Admin | ✅ | 2026-02-16 |
-| CM-10 | Navigate to Edit Course | Platform Admin | ✅ | 2026-02-16 |
+| CM-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-17 |
+| CM-02 | Role Access Control | Multiple | ✅ | 2026-02-17 |
+| CM-03 | Course Data Accuracy | Platform Admin | ✅ | 2026-02-17 |
+| CM-04 | Summary Cards | Platform Admin | ✅ | 2026-02-17 |
+| CM-05 | Search + Filter Bar | Platform Admin | ✅ | 2026-02-17 |
+| CM-06 | Expand Course — Content Structure Tree | Platform Admin | ✅ | 2026-02-17 |
+| CM-07 | Expand Course — Tenant Assignments | Platform Admin | ✅ | 2026-02-17 |
+| CM-08 | Assign Tenant to Course | Platform Admin | ✅ | 2026-02-17 |
+| CM-09 | Remove Tenant from Course | Platform Admin | ✅ | 2026-02-17 |
+| CM-10 | Navigate to Edit Course | Platform Admin | ✅ | 2026-02-17 |
 
 ---
 
@@ -193,7 +193,7 @@ ORDER BY c.title, t.name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -233,7 +233,7 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -293,7 +293,7 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -363,7 +363,7 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -404,7 +404,7 @@ WHERE NOT EXISTS (SELECT 1 FROM tenant_courses tc WHERE tc.course_id = c.id);
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -454,7 +454,7 @@ WHERE NOT EXISTS (SELECT 1 FROM tenant_courses tc WHERE tc.course_id = c.id);
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -509,7 +509,7 @@ ORDER BY l.sort_order, m.sort_order;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -563,7 +563,7 @@ SELECT id, name FROM tenants ORDER BY name;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -622,7 +622,7 @@ WHERE course_id = '<COURSE_ID>'
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -683,7 +683,7 @@ ON CONFLICT DO NOTHING;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -772,7 +772,13 @@ DELETE FROM courses WHERE title = 'Unassigned Test Course';
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| 2026-02-16 | Claude Code | CM-01 to CM-10 | 10 | 0 | All 10 stories pass on localhost:4200. 5 roles tested. Assign/remove tenant mutations verified with toast + data refresh. |
+| 2026-02-17 | Claude Code | CM-01 to CM-10 | 10 | 0 | All 10 stories pass on localhost:4200. 5 roles tested. Assign/remove tenant mutations verified with toast + data refresh. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

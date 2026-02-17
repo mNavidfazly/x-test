@@ -98,17 +98,17 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| PT-01 | Profile Page Load + Data Display | Platform Admin | ✅ | 2026-02-16 |
-| PT-02 | Inline Name Editing | Platform Admin | ✅ | 2026-02-16 |
-| PT-03 | Avatar Upload | Platform Admin | ✅ | 2026-02-16 |
-| PT-04 | Avatar Removal | Platform Admin | ✅ | 2026-02-16 |
-| PT-05 | Role Badges for Different Users | Multiple | ✅ | 2026-02-16 |
-| PT-06 | Create Course with Uploaded Thumbnail | Platform Admin | ✅ | 2026-02-16 |
-| PT-07 | Thumbnail Shows on Course Card | Platform Admin | ✅ | 2026-02-16 |
-| PT-08 | Edit Course — Thumbnail Preview + Replace | Platform Admin | ✅ | 2026-02-16 |
-| PT-09 | Profile Page — Role Access | Multiple | ✅ | 2026-02-16 |
-| PT-10 | Create Course with URL Thumbnail | Platform Admin | ✅ | 2026-02-16 |
-| PT-11 | Header Avatar Reflects Upload | Platform Admin | ✅ | 2026-02-16 |
+| PT-01 | Profile Page Load + Data Display | Platform Admin | ✅ | 2026-02-17 |
+| PT-02 | Inline Name Editing | Platform Admin | ✅ | 2026-02-17 |
+| PT-03 | Avatar Upload | Platform Admin | ✅ | 2026-02-17 |
+| PT-04 | Avatar Removal | Platform Admin | ✅ | 2026-02-17 |
+| PT-05 | Role Badges for Different Users | Multiple | ✅ | 2026-02-17 |
+| PT-06 | Create Course with Uploaded Thumbnail | Platform Admin | ✅ | 2026-02-17 |
+| PT-07 | Thumbnail Shows on Course Card | Platform Admin | ✅ | 2026-02-17 |
+| PT-08 | Edit Course — Thumbnail Preview + Replace | Platform Admin | ✅ | 2026-02-17 |
+| PT-09 | Profile Page — Role Access | Multiple | ✅ | 2026-02-17 |
+| PT-10 | Create Course with URL Thumbnail | Platform Admin | ✅ | 2026-02-17 |
+| PT-11 | Header Avatar Reflects Upload | Platform Admin | ✅ | 2026-02-17 |
 
 ---
 
@@ -147,7 +147,7 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -182,7 +182,7 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -218,7 +218,7 @@ WHERE p.email = 'et@calypso-commodities.com';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -269,7 +269,7 @@ AND name LIKE '%/avatar';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -316,7 +316,7 @@ AND name LIKE (SELECT id::text FROM profiles WHERE email = 'et@calypso-commoditi
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -347,7 +347,7 @@ AND name LIKE (SELECT id::text FROM profiles WHERE email = 'et@calypso-commoditi
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -401,7 +401,7 @@ AND name LIKE '%/thumbnail-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -434,7 +434,7 @@ AND name LIKE '%/thumbnail-%';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -484,7 +484,7 @@ AND name LIKE (SELECT id::text FROM courses WHERE title = 'Thumbnail Test PT-06'
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -513,7 +513,7 @@ AND name LIKE (SELECT id::text FROM courses WHERE title = 'Thumbnail Test PT-06'
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -551,7 +551,7 @@ SELECT thumbnail_url FROM courses WHERE title = 'URL Thumbnail Test PT-10';
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -578,6 +578,16 @@ SELECT thumbnail_url FROM courses WHERE title = 'URL Thumbnail Test PT-10';
 - The header component reads `this.#profile.profile()?.avatar_url` — when the signal updates, the header reactively re-renders
 - Signed URL in the header stays valid for ~1 hour; `#fetchProfile` re-runs on token refresh to keep it fresh
 - The `&v={Date.now()}` cache-buster on the signed URL prevents the browser from showing a cached old image
+
+---
+
+## Test Execution Log
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

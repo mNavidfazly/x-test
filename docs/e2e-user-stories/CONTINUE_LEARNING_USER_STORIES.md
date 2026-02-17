@@ -88,11 +88,11 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| CL-01 | Continue Learning Hero — Learner with Progress | Learner | ✅ | 2026-02-16 |
-| CL-02 | Hero Card Navigates to Module Viewer | Learner | ✅ | 2026-02-16 |
-| CL-03 | Course Card Links to Next Module | Learner | ✅ | 2026-02-16 |
-| CL-04 | Continue Learning Hidden — No Applicable Courses | Tenant Admin | ✅ | 2026-02-16 |
-| CL-05 | Completed Course Excluded from Hero | Learner | ⚠️ | 2026-02-16 |
+| CL-01 | Continue Learning Hero — Learner with Progress | Learner | ✅ | 2026-02-17 |
+| CL-02 | Hero Card Navigates to Module Viewer | Learner | ✅ | 2026-02-17 |
+| CL-03 | Course Card Links to Next Module | Learner | ✅ | 2026-02-17 |
+| CL-04 | Continue Learning Hidden — No Applicable Courses | Tenant Admin | ✅ | 2026-02-17 |
+| CL-05 | Completed Course Excluded from Hero | Learner | ⚠️ | 2026-02-17 |
 
 ---
 
@@ -156,7 +156,7 @@ LIMIT 1;  -- Remove LIMIT to see all incomplete modules
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -210,7 +210,7 @@ LIMIT 3;
 - `ProgressRingComponent` at `size="md"` (40x40 SVG with stroke-dasharray)
 - Module count uses `tabular-nums` for proper number alignment
 
-**E2E Observations (2026-02-16):**
+**E2E Observations (2026-02-17):**
 - Greeting: "Good evening, Test Learner (Calypso)" — full_name resolved correctly
 - Badge: "Learner" — single badge, no admin/teaching roles
 - "Continue Learning" section: 1 hero card visible (1 in-progress course)
@@ -225,7 +225,7 @@ LIMIT 3;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -259,7 +259,7 @@ LIMIT 3;
 - If the module type is `quiz` or `exam`, the viewer shows quiz/exam-specific UI (not a generic content viewer)
 - After navigating back, `ngOnInit` fires again and reloads both `DashboardService.loadCounts()` and `CourseService.loadCourses()`
 
-**E2E Observations (2026-02-16):**
+**E2E Observations (2026-02-17):**
 - Hero card: "Introduction to Commodity Trading" → clicked → navigated to `/courses/94079979-.../modules/ec82490a-...`
 - Module viewer loaded: title "This is a test" (markdown module), "3 of 11 modules", prev/next navigation, "Mark as complete" button
 - Breadcrumb: X-Courses / Courses / Introduction to Commodity Trading / This is a test
@@ -271,7 +271,7 @@ LIMIT 3;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -324,7 +324,7 @@ LIMIT 1;
 - `CourseCardComponent` is reused on both `/dashboard` (My Courses section) and `/courses` (full list) — behavior should be identical
 - The entire card is wrapped in a single `<a>` tag — the whole card surface area is clickable
 
-**E2E Observations (2026-02-16):**
+**E2E Observations (2026-02-17):**
 - Dashboard "My Courses": card shows "Continue: This is a test" subtitle, action label "Continue"
 - Card URL on dashboard: `/courses/94079979-.../modules/ec82490a-...` — links to module, not course detail
 - Clicked card → module viewer loaded with title "This is a test" — matches subtitle
@@ -337,7 +337,7 @@ LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -376,7 +376,7 @@ LIMIT 1;
 - Steps 5-8 may be hard to verify depending on current test data — the SQL queries in Preconditions can identify current state
 - If no test user currently has a 0% or 100% course, these steps can be marked as "data-dependent" and verified when data allows
 
-**E2E Observations (2026-02-16):**
+**E2E Observations (2026-02-17):**
 - TA dashboard: "Good evening, Test Tenant Admin (Client)" with "Learner" + "Tenant Admin" badges
 - **"Continue Learning" section completely absent** from the page — not rendered in DOM at all
 - Dashboard shows: "Needs Your Attention" (0 Pending Requests), "Overview" (2 Total Users), "My Courses" (empty state)
@@ -389,7 +389,7 @@ LIMIT 1;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ⚠️ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -438,7 +438,7 @@ HAVING COUNT(DISTINCT CASE WHEN up.status = 'completed' THEN up.module_id END) =
 - A completed course still appears in "My Courses" (it's enrolled) — it's just not in "Continue Learning"
 - If the learner has no in-progress courses at all, "Continue Learning" section won't render
 
-**E2E Observations (2026-02-16):**
+**E2E Observations (2026-02-17):**
 - **Data-dependent**: No test user currently has a 100% completed course. The learner's only enrolled course is at 18%.
 - All steps marked ⚠️ (partial) — cannot verify without a fully completed course in test data.
 - The 100% exclusion logic and "Review" label are comprehensively tested by 6 unit tests in `dashboard.component.spec.ts` and 5 tests in `course-card.component.spec.ts`.
@@ -514,7 +514,13 @@ DO UPDATE SET status = 'completed', marked_by = 'admin', completed_at = NOW();
 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
-| 2026-02-16 | Claude Opus 4.6 (Playwright MCP) | CL-01 to CL-05 | 4 | 0 | CL-01 to CL-04 pass on localhost:4200. CL-05 partial (no 100% completed course in test data). 0 bugs found. Hero section, card navigation, and subtitle all verified. |
+| 2026-02-17 | Claude Opus 4.6 (Playwright MCP) | CL-01 to CL-05 | 4 | 0 | CL-01 to CL-04 pass on localhost:4200. CL-05 partial (no 100% completed course in test data). 0 bugs found. Hero section, card navigation, and subtitle all verified. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 

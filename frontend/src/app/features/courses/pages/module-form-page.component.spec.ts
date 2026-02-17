@@ -18,6 +18,7 @@ import { ExternalQuizFormComponent } from '../components/external-quiz-form.comp
 import { AudioFormComponent } from '../components/audio-form.component';
 import { DownloadFormComponent } from '../components/download-form.component';
 import { ModuleFilesEditorComponent } from '../components/module-files-editor.component';
+import { KnowledgeCheckEditorComponent } from '../components/knowledge-check-editor.component';
 import { FileUploadComponent } from '../../../shared/components/file-upload.component';
 import { SupabaseTusUploadService } from '../../../core/services/supabase-tus-upload.service';
 import { createMockCourseService } from '../../../__mocks__/course.mock';
@@ -26,6 +27,8 @@ import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { ToastService } from '../../../core/services/toast.service';
 import { createMockToastService } from '../../../__mocks__/toast.mock';
+import { KnowledgeCheckService } from '../../../core/services/knowledge-check.service';
+import { createMockKnowledgeCheckService } from '../../../__mocks__/knowledge-check.mock';
 
 function createMockTusUploadService() {
   return {
@@ -68,7 +71,7 @@ function mockActivatedRoute(
   };
 }
 
-const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent, FileUploadComponent, FormsModule, RouterLink];
+const defaultImports = [MockLucideIconComponent, VideoFormComponent, PdfFormComponent, ExamFormComponent, MarkdownFormComponent, QuizFormComponent, ExternalQuizFormComponent, AudioFormComponent, DownloadFormComponent, ModuleFilesEditorComponent, KnowledgeCheckEditorComponent, FileUploadComponent, FormsModule, RouterLink];
 
 /** Helper: render in create mode (no moduleId, with courseId + lectureId) */
 async function renderCreateMode(overrides?: {
@@ -95,6 +98,7 @@ async function renderCreateMode(overrides?: {
       { provide: SupabaseService, useValue: createMockSupabaseService() },
       { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
       { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
+      { provide: KnowledgeCheckService, useValue: createMockKnowledgeCheckService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute(
@@ -137,6 +141,7 @@ async function renderEditMode(overrides?: {
       { provide: SupabaseService, useValue: createMockSupabaseService() },
       { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
       { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
+      { provide: KnowledgeCheckService, useValue: createMockKnowledgeCheckService() },
       {
         provide: ActivatedRoute,
         useValue: mockActivatedRoute({ courseId, moduleId }),
@@ -236,6 +241,7 @@ describe('ModuleFormPageComponent', () => {
         { provide: SupabaseService, useValue: createMockSupabaseService() },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
+        { provide: KnowledgeCheckService, useValue: createMockKnowledgeCheckService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(
@@ -365,6 +371,7 @@ describe('ModuleFormPageComponent', () => {
         { provide: SupabaseService, useValue: createMockSupabaseService() },
         { provide: BunnyUploadService, useValue: createMockBunnyUploadService() },
         { provide: SupabaseTusUploadService, useValue: createMockTusUploadService() },
+        { provide: KnowledgeCheckService, useValue: createMockKnowledgeCheckService() },
         {
           provide: ActivatedRoute,
           useValue: mockActivatedRoute(

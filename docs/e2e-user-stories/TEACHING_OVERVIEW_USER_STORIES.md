@@ -99,16 +99,16 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| TO-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-16 |
-| TO-02 | Per-Course Count Accuracy | Platform Admin | ✅ | 2026-02-16 |
-| TO-03 | Summary Cards | Platform Admin | ✅ | 2026-02-16 |
-| TO-04 | Search Filter | Platform Admin | ✅ | 2026-02-16 |
-| TO-05 | Status Filter (Needs Attention / All Clear) | Platform Admin | ✅ | 2026-02-16 |
-| TO-06 | Permission Badges | Platform Admin | ✅ | 2026-02-16 |
-| TO-07 | Expand Course Row — Quick Actions | Platform Admin | ✅ | 2026-02-16 |
-| TO-08 | Deep-Link to Board Pages with Course Pre-Filtering | Platform Admin | ✅ | 2026-02-16 |
-| TO-09 | Lecturer Scoped View | Lecturer | ✅ | 2026-02-16 |
-| TO-10 | Role Access Control | Multiple | ✅ | 2026-02-16 |
+| TO-01 | PA Navigation + Page Load | Platform Admin | ✅ | 2026-02-17 |
+| TO-02 | Per-Course Count Accuracy | Platform Admin | ✅ | 2026-02-17 |
+| TO-03 | Summary Cards | Platform Admin | ✅ | 2026-02-17 |
+| TO-04 | Search Filter | Platform Admin | ✅ | 2026-02-17 |
+| TO-05 | Status Filter (Needs Attention / All Clear) | Platform Admin | ✅ | 2026-02-17 |
+| TO-06 | Permission Badges | Platform Admin | ✅ | 2026-02-17 |
+| TO-07 | Expand Course Row — Quick Actions | Platform Admin | ✅ | 2026-02-17 |
+| TO-08 | Deep-Link to Board Pages with Course Pre-Filtering | Platform Admin | ✅ | 2026-02-17 |
+| TO-09 | Lecturer Scoped View | Lecturer | ✅ | 2026-02-17 |
+| TO-10 | Role Access Control | Multiple | ✅ | 2026-02-17 |
 
 ---
 
@@ -164,7 +164,7 @@ WHERE lca.lecturer_id = (SELECT id FROM profiles WHERE email = 'lecturer-view@ca
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -205,7 +205,7 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -266,7 +266,7 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -299,7 +299,7 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -337,7 +337,7 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -378,7 +378,7 @@ ORDER BY c.title;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -438,7 +438,7 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -483,7 +483,7 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -543,7 +543,7 @@ WHERE p.email IN ('lecturer-edit@calypso-commodities.com', 'lecturer-view@calyps
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -596,7 +596,7 @@ SELECT COUNT(*) FROM courses;
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-16 |
+| **Last Checked** | 2026-02-17 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 
@@ -751,6 +751,12 @@ No persistent mutations from the Teaching Overview page — it is read-only. No 
 | Date | Tester | Stories Executed | Pass | Fail | Notes |
 |------|--------|-----------------|------|------|-------|
 | 2026-02-15 | Claude Code | TO-01 to TO-10 | 10 | 0 | 2 bugs found + fixed (PA permissions, dropdown pre-selection). 5 roles tested: PA, Lecturer (edit), Lecturer (view), Learner, Tenant Admin. |
+
+### 2026-02-17 — Full Regression (Playwright MCP)
+- **Tester:** Claude Opus 4.6 (Playwright MCP)
+- **Scope:** Full re-test of all stories
+- **Result:** All stories pass ✅
+- **Bugs found:** None
 
 ---
 
