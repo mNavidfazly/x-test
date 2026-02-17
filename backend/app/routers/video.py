@@ -74,7 +74,7 @@ async def video_status(
             f"https://iframe.mediadelivery.net/embed"
             f"/{settings.bunny_library_id}/{video_id}"
             f"?token={token}&expires={expire}"
-            f"&autoplay=false&responsive=true"
+            f"&autoplay=false&playsinline=true&preload=true"
         )
 
     thumbnail_url = None
