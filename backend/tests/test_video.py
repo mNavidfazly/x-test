@@ -145,7 +145,7 @@ class TestVideoStatus:
         assert data["encode_progress"] == 100
         assert data["duration"] == 120
         assert data["embed_url"] is not None
-        assert "iframe.mediadelivery.net/embed" in data["embed_url"]
+        assert "player.mediadelivery.net/embed" in data["embed_url"]
         assert "token=" in data["embed_url"]
         assert "expires=" in data["embed_url"]
         app.dependency_overrides.pop(get_current_user, None)
