@@ -49,6 +49,7 @@ const POLL_INTERVAL_MS = 10_000;
             <div class="relative w-full" style="padding-top: 56.25%">
               <iframe
                 [src]="trustedEmbedUrl()"
+                loading="lazy"
                 class="absolute inset-0 w-full h-full rounded-lg"
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen
