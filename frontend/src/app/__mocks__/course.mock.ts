@@ -128,6 +128,7 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
     title: 'Test Course',
     description: 'A test course description',
     thumbnail_url: null,
+    rawThumbnailUrl: null,
     enrollment_type: 'open',
     isEnrolled: true,
     lectures: [

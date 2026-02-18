@@ -166,14 +166,14 @@ export class CourseFormPageComponent implements OnInit {
         return;
       }
 
-      // detail.thumbnail_url is already resolved by loadCourseDetail (signed URL if storage path)
-      // We pass the resolved URL for preview, but keep the raw value for the form
+      // detail.thumbnail_url is the resolved signed URL (for preview display)
+      // detail.rawThumbnailUrl is the raw DB value (storage path or external URL — safe to save back)
       this.currentThumbnailSignedUrl.set(detail.thumbnail_url);
 
       this.formData.set({
         title: detail.title,
         description: detail.description,
-        thumbnail_url: detail.thumbnail_url,
+        thumbnail_url: detail.rawThumbnailUrl,
         enrollment_type: detail.enrollment_type,
         password_hash: null, // never expose existing hash
         staleness_threshold_days: null, // loaded from course detail would require extended select

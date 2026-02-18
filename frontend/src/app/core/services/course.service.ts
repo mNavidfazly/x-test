@@ -264,6 +264,7 @@ export class CourseService {
         title: course.title,
         description: course.description,
         thumbnail_url: resolvedThumbnail,
+        rawThumbnailUrl: course.thumbnail_url,
         enrollment_type: course.enrollment_type as EnrollmentType,
         isEnrolled: !!enrollmentRes.data,
         lectures: (course.lectures ?? []).map(l => ({

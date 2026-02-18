@@ -50,6 +50,8 @@ export interface CourseDetail {
   title: string;
   description: string | null;
   thumbnail_url: string | null;
+  /** Raw DB value before signed-URL resolution — use for form data to avoid saving expired signed URLs */
+  rawThumbnailUrl: string | null;
   enrollment_type: EnrollmentType;
   isEnrolled: boolean;
   lectures: LectureWithModules[];
