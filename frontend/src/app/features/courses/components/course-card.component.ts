@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, BookOpen, Clock, ArrowRight } from 'lucide-angular';
 import { CourseWithProgress } from '../../../core/models/course.model';
@@ -24,16 +24,31 @@ const BADGE_LABELS: Record<string, string> = {
   imports: [RouterLink, LucideAngularModule, UserAvatarComponent, ProgressRingComponent],
   host: { class: 'block' },
   template: `
+    <!-- Skeleton placeholder (visible while image loads) -->
+    @if (course().thumbnail_url && !imageReady()) {
+      <div class="card-solid overflow-hidden">
+        <div class="aspect-video bg-slate-200 animate-pulse"></div>
+        <div class="p-4 space-y-3">
+          <div class="h-4 bg-slate-200 rounded w-2/3 animate-pulse"></div>
+          <div class="h-3 bg-slate-200 rounded w-full animate-pulse"></div>
+          <div class="h-3 bg-slate-200 rounded w-1/2 animate-pulse"></div>
+        </div>
+      </div>
+      <!-- Hidden img to trigger load -->
+      <img [src]="course().thumbnail_url" class="hidden"
+           (load)="imageReady.set(true)" (error)="imageReady.set(true)" />
+    }
+
+    <!-- Actual card (shown immediately if no thumbnail, or after image loads) -->
     <a [routerLink]="cardLink()"
+       [class.hidden]="course().thumbnail_url && !imageReady()"
        class="block card-solid overflow-hidden group">
 
       <!-- Thumbnail -->
       @if (course().thumbnail_url) {
-        <div class="aspect-video bg-slate-200 overflow-hidden animate-pulse">
-          <img [src]="course().thumbnail_url" [alt]="course().title" loading="lazy"
-               class="w-full h-full object-cover group-hover:scale-105 transition-[transform,opacity] duration-300 opacity-0"
-               (load)="$any($event.target).classList.remove('opacity-0'); $any($event.target).parentElement.classList.remove('animate-pulse')"
-               (error)="$any($event.target).parentElement.classList.remove('animate-pulse')" />
+        <div class="aspect-video bg-slate-200 overflow-hidden">
+          <img [src]="course().thumbnail_url" [alt]="course().title"
+               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         </div>
       } @else {
         <div class="aspect-video bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
@@ -126,6 +141,7 @@ const BADGE_LABELS: Record<string, string> = {
 export class CourseCardComponent {
   readonly course = input.required<CourseWithProgress>();
   readonly icons = { BookOpen, Clock, ArrowRight };
+  readonly imageReady = signal(false);
 
   readonly cardLink = computed(() => {
     const c = this.course();
