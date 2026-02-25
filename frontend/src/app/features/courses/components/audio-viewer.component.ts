@@ -148,8 +148,8 @@ export class AudioViewerComponent {
       // Use HTML5 Audio element for streaming playback instead of Web Audio API.
       // Web Audio's decodeAudioData loads the entire file into memory (~10x decoded size),
       // which fails for large MP3s (30-50 MB -> 300-500 MB PCM in memory).
-      const audioElement = new Audio();
-      audioElement.crossOrigin = 'anonymous';
+      // Provide generated peaks so WaveSurfer doesn't fetch the file for waveform rendering.
+      const audioElement = new Audio(audioData.file_url);
       audioElement.preload = 'metadata';
 
       const ws = WaveSurfer.create({
@@ -162,7 +162,8 @@ export class AudioViewerComponent {
         barGap: 1,
         barRadius: 2,
         media: audioElement,
-        url: audioData.file_url,
+        peaks: [this.#generatePeaks(200)],
+        duration: audioData.duration_seconds || undefined,
       });
 
       ws.on('ready', () => {
@@ -222,6 +223,17 @@ export class AudioViewerComponent {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  #generatePeaks(length: number): Float32Array {
+    const peaks = new Float32Array(length);
+    for (let i = 0; i < length; i++) {
+      // Generate a natural-looking waveform pattern using sine waves
+      const base = 0.3 + 0.2 * Math.sin(i * 0.05) + 0.15 * Math.sin(i * 0.13);
+      const variation = 0.1 * Math.sin(i * 0.37) + 0.05 * Math.sin(i * 0.71);
+      peaks[i] = Math.min(1, Math.max(0.1, base + variation));
+    }
+    return peaks;
   }
 
   #destroyWaveSurfer() {

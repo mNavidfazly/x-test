@@ -119,7 +119,8 @@ describe('AudioViewerComponent', () => {
         barWidth: 2,
         barGap: 1,
         barRadius: 2,
-        url: 'https://cdn.example.com/track.mp3',
+        media: expect.any(HTMLAudioElement),
+        peaks: expect.any(Array),
       }),
     );
   });
