@@ -12,7 +12,7 @@ import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { RouterLink } from '@angular/router';
 import { provideMarkdown } from 'ngx-markdown';
 import { VideoViewerComponent } from '../components/video-viewer.component';
-import { PdfViewerComponent } from '../components/pdf-viewer.component';
+import { MockPdfViewerComponent } from '../../../__mocks__/pdf-viewer.mock';
 import { MarkdownViewerComponent } from '../components/markdown-viewer.component';
 import { ModuleFilesListComponent } from '../components/module-files-list.component';
 import { ExternalQuizViewerComponent } from '../components/external-quiz-viewer.component';
@@ -74,7 +74,7 @@ describe('ModuleViewerPageComponent', () => {
       mockCourseService._setCourseDetail(createMockCourseDetail({ isEnrolled: options?.isEnrolled ?? true }));
     }
     return render(ModuleViewerPageComponent, {
-      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, PdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, MockAudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent, KnowledgeCheckSectionComponent],
+      componentImports: [MockLucideIconComponent, RouterLink, VideoViewerComponent, MockPdfViewerComponent, MarkdownViewerComponent, ExternalQuizViewerComponent, ModuleFilesListComponent, QuizTakerComponent, ExamTakerComponent, MockAudioViewerComponent, DownloadViewerComponent, CommentSectionComponent, AskExpertComponent, ReportIssueComponent, ModuleNotesComponent, KnowledgeCheckSectionComponent],
       providers: [
         provideRouter([]),
         { provide: CourseService, useValue: mockCourseService },
@@ -124,7 +124,7 @@ describe('ModuleViewerPageComponent', () => {
     await renderPage({ viewer });
 
     expect(screen.getByText('PDF Module')).toBeTruthy();
-    expect(document.querySelector('iframe')).toBeTruthy();
+    expect(screen.getByTestId('mock-pdf-viewer')).toBeTruthy();
   });
 
   it('should render markdown viewer for markdown module', async () => {

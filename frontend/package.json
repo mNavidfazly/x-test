@@ -31,6 +31,7 @@
     "highlight.js": "^11.11.1",
     "lowlight": "^3.3.0",
     "lucide-angular": "^0.563.0",
+    "ngx-extended-pdf-viewer": "^25.6.4",
     "ngx-markdown": "^19.1.1",
     "ngx-tiptap": "^12.0.0",
     "prismjs": "^1.30.0",

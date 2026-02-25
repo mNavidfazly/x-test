@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, viewChild, ElementRef } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { LucideAngularModule, FileDown, Maximize } from 'lucide-angular';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { LucideAngularModule, FileDown } from 'lucide-angular';
+import { NgxExtendedPdfViewerModule, pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
 import { ModulePdf } from '../../../core/models/course.model';
 
 @Component({
   selector: 'app-pdf-viewer',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideAngularModule],
+  imports: [LucideAngularModule, NgxExtendedPdfViewerModule],
   host: { class: 'block' },
   template: `
     <div class="space-y-3">
@@ -14,46 +14,43 @@ import { ModulePdf } from '../../../core/models/course.model';
         @if (pdf().page_count) {
           <span class="text-xs text-slate-500">{{ pdf().page_count }} pages</span>
         }
-        <div class="flex items-center gap-3">
-          <button
-            (click)="enterFullscreen()"
-            class="btn-ghost text-sm"
-          >
-            <lucide-icon [img]="icons.Maximize" [size]="16"></lucide-icon>
-            Fullscreen
-          </button>
-          <a
-            [href]="pdf().file_url"
-            download
-            class="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors"
-          >
-            <lucide-icon [img]="icons.FileDown" [size]="16"></lucide-icon>
-            Download PDF
-          </a>
-        </div>
+        <a
+          [href]="pdf().file_url"
+          download
+          class="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-600 hover:text-teal-700 transition-colors"
+        >
+          <lucide-icon [img]="icons.FileDown" [size]="16"></lucide-icon>
+          Download PDF
+        </a>
       </div>
-      <iframe
-        #pdfFrame
-        [src]="trustedUrl()"
-        class="w-full h-[80vh] rounded-lg border border-slate-200"
-        title="PDF Viewer"
-      ></iframe>
+      <ngx-extended-pdf-viewer
+        [src]="pdf().file_url"
+        [height]="'80vh'"
+        [showToolbar]="true"
+        [showSidebarButton]="true"
+        [showFindButton]="true"
+        [showPagingButtons]="true"
+        [showZoomButtons]="true"
+        [showPresentationModeButton]="true"
+        [showDownloadButton]="false"
+        [showPrintButton]="true"
+        [showOpenFileButton]="false"
+        [showSecondaryToolbarButton]="true"
+        [showTextEditor]="false"
+        [showDrawEditor]="false"
+        [showHighlightEditor]="false"
+        [showStampEditor]="false"
+        [textLayer]="true"
+      ></ngx-extended-pdf-viewer>
     </div>
   `,
 })
 export class PdfViewerComponent {
   readonly pdf = input.required<ModulePdf>();
-  readonly icons = { FileDown, Maximize };
+  readonly icons = { FileDown };
 
-  private pdfFrame = viewChild<ElementRef<HTMLIFrameElement>>('pdfFrame');
-
-  #sanitizer = inject(DomSanitizer);
-
-  readonly trustedUrl = computed(() =>
-    this.#sanitizer.bypassSecurityTrustResourceUrl(this.pdf().file_url + '#pagemode=none'),
-  );
-
-  enterFullscreen() {
-    this.pdfFrame()?.nativeElement.requestFullscreen();
+  constructor() {
+    pdfDefaultOptions.disableRange = true;
+    pdfDefaultOptions.disableStream = true;
   }
 }
