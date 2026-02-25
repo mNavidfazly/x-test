@@ -1846,7 +1846,7 @@ export class CourseService {
   // --- Thumbnail upload methods ---
 
   async uploadThumbnail(courseId: string, file: File): Promise<string> {
-    const compressed = await compressImage(file, 800);
+    const compressed = await compressImage(file, 1280);
     const path = `${courseId}/thumbnail-${Date.now()}.webp`;
     const { data, error } = await this.#supabase.client.storage
       .from('course-files')
