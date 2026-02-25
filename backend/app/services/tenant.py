@@ -63,7 +63,7 @@ def lookup_idp_hint(supabase: Client, email: str) -> Optional[str]:
     result = (
         supabase.table("profiles")
         .select("keycloak_idp_alias")
-        .eq("email", email)
+        .eq("email", email.lower())
         .limit(1)
         .execute()
     )

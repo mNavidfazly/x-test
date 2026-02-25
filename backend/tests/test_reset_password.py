@@ -103,6 +103,20 @@ class TestResetPassword:
         assert resp.status_code == 200
         mock_supabase.auth.reset_password_for_email.assert_not_called()
 
+    def test_redirect_to_passed_through(self, client, mock_supabase):
+        _mock_tenant_lookup(mock_supabase, [{
+            "id": "tid-1",
+            "name": "Acme",
+            "settings": {"auth_methods": ["email_password"]},
+        }])
+        resp = client.post("/api/auth/reset-password", json={
+            "email": "user@acme.com",
+            "redirect_to": "https://app.example.com/auth/callback",
+        })
+        assert resp.status_code == 200
+        call_args = mock_supabase.auth.reset_password_for_email.call_args
+        assert call_args[1]["options"]["redirect_to"] == "https://app.example.com/auth/callback"
+
     def test_null_settings_allows_reset(self, client, mock_supabase):
         _mock_tenant_lookup(mock_supabase, [{
             "id": "tid-1",
