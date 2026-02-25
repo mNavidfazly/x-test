@@ -52,8 +52,8 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
           }
         </div>
 
-        <!-- Sticky action bar -->
-        <div class="sticky top-0 z-10 bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2.5 flex items-center justify-between mb-6">
+        <!-- Action bar -->
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2.5 flex items-center justify-between mb-6">
           <!-- Previous -->
           <div class="min-w-[100px]">
             @if (courseService.moduleViewer()!.navigation.prev; as prev) {

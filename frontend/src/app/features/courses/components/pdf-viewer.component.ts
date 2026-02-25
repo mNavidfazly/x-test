@@ -38,6 +38,6 @@ export class PdfViewerComponent {
   #sanitizer = inject(DomSanitizer);
 
   readonly trustedUrl = computed(() =>
-    this.#sanitizer.bypassSecurityTrustResourceUrl(this.pdf().file_url),
+    this.#sanitizer.bypassSecurityTrustResourceUrl(this.pdf().file_url + '#pagemode=none'),
   );
 }
