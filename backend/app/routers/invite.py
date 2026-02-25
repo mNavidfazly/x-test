@@ -4,6 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from supabase import Client
 
+from app.config import Settings, get_settings
 from app.dependencies import get_current_user, get_supabase
 from app.models.schemas import InviteUserRequest, InviteUserResponse, UserClaims
 
@@ -17,6 +18,7 @@ async def invite_user(
     body: InviteUserRequest,
     user: Annotated[UserClaims, Depends(get_current_user)],
     supabase: Annotated[Client, Depends(get_supabase)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> InviteUserResponse:
     """Invite a new user by email. Creates auth user + sends invite email."""
     # Authorization: Platform Admin or Tenant Admin only
@@ -69,7 +71,10 @@ async def invite_user(
     try:
         result = supabase.auth.admin.invite_user_by_email(
             body.email,
-            options={"data": {"tenant_id": tenant_id}},
+            options={
+                "data": {"tenant_id": tenant_id},
+                "redirect_to": f"{settings.frontend_url}/auth/callback",
+            },
         )
         user_id = result.user.id if result.user else None
     except Exception as e:

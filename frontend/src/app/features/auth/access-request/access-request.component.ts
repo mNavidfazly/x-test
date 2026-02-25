@@ -104,26 +104,45 @@ export class AccessRequestComponent {
       return;
     }
 
-    const domain = this.email.split('@')[1].toLowerCase();
+    const email = this.email.trim().toLowerCase();
+    const domain = email.split('@')[1];
 
     this.errorMessage.set('');
     this.loading.set(true);
 
-    const { error } = await this.#supabase.client
-      .from('access_requests')
-      .insert({
-        email: this.email,
-        full_name: this.fullName,
-        domain,
-        status: 'pending',
-      });
+    try {
+      // Check for existing pending request with same email
+      const { data: existing } = await this.#supabase.client
+        .from('access_requests')
+        .select('id')
+        .eq('email', email)
+        .eq('status', 'pending')
+        .limit(1);
 
-    this.loading.set(false);
+      if (existing && existing.length > 0) {
+        this.errorMessage.set('An access request for this email is already pending.');
+        this.loading.set(false);
+        return;
+      }
 
-    if (error) {
-      this.errorMessage.set(error.message);
-    } else {
-      this.success.set(true);
+      const { error } = await this.#supabase.client
+        .from('access_requests')
+        .insert({
+          email,
+          full_name: this.fullName.trim(),
+          domain,
+          status: 'pending',
+        });
+
+      if (error) {
+        this.errorMessage.set(error.message);
+      } else {
+        this.success.set(true);
+      }
+    } catch {
+      this.errorMessage.set('Something went wrong. Please try again.');
+    } finally {
+      this.loading.set(false);
     }
   }
 }

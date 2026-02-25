@@ -13,7 +13,13 @@ from app.models.schemas import (
     ResolveEmailRequest,
     ResolveEmailResponse,
 )
-from app.services.tenant import extract_domain, lookup_idp_hint, lookup_tenant, resolve_auth_methods
+from app.services.tenant import (
+    extract_domain,
+    lookup_idp_hint,
+    lookup_tenant,
+    lookup_tenant_by_profile_email,
+    resolve_auth_methods,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +43,8 @@ async def resolve_tenant(
         return ResolveEmailResponse(tenant_name=None, auth_methods=[])
 
     tenant = lookup_tenant(supabase, domain)
+    if tenant is None:
+        tenant = lookup_tenant_by_profile_email(supabase, body.email)
     methods = resolve_auth_methods(tenant)
     tenant_name = tenant["name"] if tenant else None
 

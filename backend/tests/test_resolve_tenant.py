@@ -118,3 +118,30 @@ class TestResolveTenant:
         assert resp.status_code == 200
         data = resp.json()
         assert data["idp_hint"] is None
+
+    def test_fallback_to_profile_when_domain_not_found(self, client, mock_supabase):
+        """User with public email (web.de) but existing profile should resolve via profile fallback."""
+        _mock_tenant_lookup(mock_supabase, [])  # domain lookup fails
+        _mock_profile_lookup(mock_supabase, [{
+            "tenant_id": "tid-1",
+            "tenants": {
+                "id": "tid-1",
+                "name": "Calypso",
+                "settings": {"auth_methods": ["email_password", "magic_link"]},
+            },
+        }])
+        resp = client.post("/api/auth/resolve-tenant", json={"email": "user@web.de"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["tenant_name"] == "Calypso"
+        assert data["auth_methods"] == ["email_password", "magic_link"]
+
+    def test_no_fallback_when_no_profile_either(self, client, mock_supabase):
+        """Unknown domain + no profile = empty response."""
+        _mock_tenant_lookup(mock_supabase, [])
+        _mock_profile_lookup(mock_supabase, [])  # no profile either
+        resp = client.post("/api/auth/resolve-tenant", json={"email": "nobody@gmail.com"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["tenant_name"] is None
+        assert data["auth_methods"] == []

@@ -43,12 +43,24 @@ describe('AccessRequestComponent', () => {
     });
   });
 
-  it('should call Supabase insert on submit', async () => {
+  it('should call Supabase insert on submit after duplicate check', async () => {
     const supabase = createMockSupabaseService();
-    // Mock the from().insert() chain to return success
+    const mockSelect = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue({ data: [], error: null }),
+        }),
+      }),
+    });
     const mockInsert = vi.fn().mockResolvedValue({ data: {}, error: null });
-    supabase.client.from = vi.fn().mockReturnValue({
-      insert: mockInsert,
+    supabase.client.from = vi.fn().mockImplementation((table: string) => {
+      if (table === 'access_requests') {
+        return {
+          select: mockSelect,
+          insert: mockInsert,
+        };
+      }
+      return { select: mockSelect, insert: mockInsert };
     });
 
     await renderComponent({ supabase });
@@ -62,12 +74,36 @@ describe('AccessRequestComponent', () => {
       expect(screen.getByText(/your request has been submitted/i)).toBeTruthy();
     });
 
-    expect(supabase.client.from).toHaveBeenCalledWith('access_requests');
     expect(mockInsert).toHaveBeenCalledWith({
       email: 'john@acme.com',
       full_name: 'John Doe',
       domain: 'acme.com',
       status: 'pending',
+    });
+  });
+
+  it('should show error when duplicate pending request exists', async () => {
+    const supabase = createMockSupabaseService();
+    const mockSelect = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue({ data: [{ id: 'existing-1' }], error: null }),
+        }),
+      }),
+    });
+    supabase.client.from = vi.fn().mockReturnValue({
+      select: mockSelect,
+    });
+
+    await renderComponent({ supabase });
+    const user = userEvent.setup();
+
+    await user.type(screen.getByLabelText('Full Name'), 'John Doe');
+    await user.type(screen.getByLabelText('Email'), 'john@acme.com');
+    await user.click(screen.getByRole('button', { name: /submit request/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/already pending/i)).toBeTruthy();
     });
   });
 

@@ -78,15 +78,15 @@ All test users use password: `TestUser123!`
 
 | ID | Story | Actor | Status | Last Checked |
 |----|-------|-------|--------|--------------|
-| QB-01 | Quiz Type Selector | Platform Admin | ✅ | 2026-02-17 |
-| QB-02 | Quiz Form — Settings & Layout | Platform Admin | ✅ | 2026-02-17 |
-| QB-03 | Single Choice Question | Platform Admin | ✅ | 2026-02-17 |
-| QB-04 | Multiple Choice Question | Platform Admin | ✅ | 2026-02-17 |
-| QB-05 | True/False Question | Platform Admin | ✅ | 2026-02-17 |
-| QB-06 | Fill in the Blank & Short Answer | Platform Admin | ✅ | 2026-02-17 |
-| QB-07 | Matching Question | Platform Admin | ✅ | 2026-02-17 |
-| QB-08 | Question Management (Add/Reorder/Delete) | Platform Admin | ✅ | 2026-02-17 |
-| QB-09 | Validation & Save | Platform Admin | ✅ | 2026-02-17 |
+| QB-01 | Quiz Type Selector | Platform Admin | ✅ | 2026-02-23 |
+| QB-02 | Quiz Form — Settings & Layout | Platform Admin | ✅ | 2026-02-23 |
+| QB-03 | Single Choice Question | Platform Admin | ✅ | 2026-02-23 |
+| QB-04 | Multiple Choice Question | Platform Admin | ✅ | 2026-02-23 |
+| QB-05 | True/False Question | Platform Admin | ✅ | 2026-02-23 |
+| QB-06 | Fill in the Blank & Short Answer | Platform Admin | ✅ | 2026-02-23 |
+| QB-07 | Matching Question | Platform Admin | ✅ | 2026-02-23 |
+| QB-08 | Question Management (Add/Reorder/Delete) | Platform Admin | ✅ | 2026-02-23 |
+| QB-09 | Validation & Save | Platform Admin | ✅ | 2026-02-23 |
 | QB-10 | Create-to-Edit Round-Trip | Platform Admin | ✅ | 2026-02-17 |
 | QB-11 | Lecturer (can_edit) Quiz CRUD | Lecturer (can_edit) | ✅ | 2026-02-17 |
 | QB-12 | Quiz Viewer "Coming Soon" | Platform Admin | ✅ | 2026-02-17 |
@@ -103,7 +103,7 @@ All test users use password: `TestUser123!`
 
 | Field | Value |
 |-------|-------|
-| **Last Checked** | 2026-02-17 |
+| **Last Checked** | 2026-02-23 |
 | **Status** | ✅ |
 | **Tester** | Claude Opus 4.6 (Playwright MCP) |
 

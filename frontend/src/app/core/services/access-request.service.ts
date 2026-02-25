@@ -71,18 +71,25 @@ export class AccessRequestService {
     id: string,
     data: ReviewAccessRequestData,
     userId: string,
+    tenantId?: string,
   ): Promise<void> {
     const user = this.#auth.currentUser();
     if (!user) throw new Error('Not authenticated');
 
+    const updatePayload: Record<string, unknown> = {
+      status: data.status,
+      review_notes: data.review_notes ?? null,
+      reviewed_by: userId,
+      reviewed_at: new Date().toISOString(),
+    };
+
+    if (tenantId) {
+      updatePayload['tenant_id'] = tenantId;
+    }
+
     const { error } = await this.#supabase.client
       .from('access_requests')
-      .update({
-        status: data.status,
-        review_notes: data.review_notes ?? null,
-        reviewed_by: userId,
-        reviewed_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', id);
 
     if (error) throw new Error(extractErrorMessage(error, 'Failed to review request'));
@@ -97,8 +104,7 @@ export class AccessRequestService {
     const user = this.#auth.currentUser();
     if (!user) throw new Error('Not authenticated');
 
-    await this.reviewRequest(id, { status: 'approved' }, userId);
-
+    // Send invite FIRST — only mark approved if invite succeeds
     const response = await firstValueFrom(
       this.#api.post<{ message: string }>('/invite', {
         email,
@@ -107,5 +113,8 @@ export class AccessRequestService {
     );
 
     if (!response) throw new Error('Failed to send invitation');
+
+    // Invite succeeded — now mark as approved and save assigned tenant_id
+    await this.reviewRequest(id, { status: 'approved' }, userId, tenantId);
   }
 }

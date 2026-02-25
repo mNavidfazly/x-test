@@ -184,6 +184,29 @@ describe('AccessRequestService', () => {
       );
     });
 
+    it('should include tenant_id in update when provided', async () => {
+      supabase._mockQueryResponse(null);
+
+      await service.reviewRequest('r1', { status: 'approved' }, 'pa-user-1', 'tenant-123');
+
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'approved',
+          reviewed_by: 'pa-user-1',
+          tenant_id: 'tenant-123',
+        }),
+      );
+    });
+
+    it('should not include tenant_id when not provided', async () => {
+      supabase._mockQueryResponse(null);
+
+      await service.reviewRequest('r1', { status: 'rejected' }, 'pa-user-1');
+
+      const updateArg = supabase._mockQueryBuilder.update.mock.calls[0][0];
+      expect(updateArg).not.toHaveProperty('tenant_id');
+    });
+
     it('should throw on error', async () => {
       supabase._mockQueryResponse(null, { message: 'Update denied' });
 
@@ -212,24 +235,29 @@ describe('AccessRequestService', () => {
   });
 
   describe('approveAndInvite', () => {
-    it('should call reviewRequest then ApiService.post', async () => {
-      supabase._mockQueryResponse(null);
+    it('should call invite FIRST then reviewRequest with tenant_id', async () => {
       api.post.mockReturnValue(of({ message: 'Invitation sent' }));
+      supabase._mockQueryResponse(null);
 
       await service.approveAndInvite('r1', 'alice@client.com', 't1', 'pa-user-1');
 
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
-        expect.objectContaining({ status: 'approved' }),
-      );
+      // Invite called first
       expect(api.post).toHaveBeenCalledWith('/invite', {
         email: 'alice@client.com',
         tenant_id: 't1',
       });
+      // Then review with tenant_id saved
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'approved',
+          tenant_id: 't1',
+        }),
+      );
     });
 
     it('should send email and tenant_id to invite endpoint', async () => {
-      supabase._mockQueryResponse(null);
       api.post.mockReturnValue(of({ message: 'Sent' }));
+      supabase._mockQueryResponse(null);
 
       await service.approveAndInvite('r1', 'bob@test.com', 'tenant-2', 'pa-user-1');
 
@@ -239,26 +267,27 @@ describe('AccessRequestService', () => {
       });
     });
 
-    it('should throw if invite step fails (request already marked approved)', async () => {
-      supabase._mockQueryResponse(null);
+    it('should NOT mark approved if invite fails', async () => {
       api.post.mockReturnValue(throwError(() => new Error('409 Conflict')));
 
       await expect(
         service.approveAndInvite('r1', 'dup@test.com', 't1', 'pa-user-1'),
       ).rejects.toThrow();
 
-      // Review step was still called
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalled();
+      // Review step should NOT have been called since invite failed
+      expect(supabase._mockQueryBuilder.update).not.toHaveBeenCalled();
     });
 
-    it('should throw if review step fails (invite not called)', async () => {
+    it('should throw if review step fails after successful invite', async () => {
+      api.post.mockReturnValue(of({ message: 'Sent' }));
       supabase._mockQueryResponse(null, { message: 'RLS denied' });
 
       await expect(
         service.approveAndInvite('r1', 'alice@client.com', 't1', 'pa-user-1'),
       ).rejects.toThrow('RLS denied');
 
-      expect(api.post).not.toHaveBeenCalled();
+      // Invite was called (it succeeded)
+      expect(api.post).toHaveBeenCalled();
     });
 
     it('should throw if not authenticated', async () => {

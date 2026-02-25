@@ -161,6 +161,24 @@ class TestInviteUser:
         mock_supabase.auth.admin.invite_user_by_email.assert_not_called()
         app.dependency_overrides.pop(get_current_user, None)
 
+    def test_invite_includes_redirect_to(self, client, mock_supabase):
+        app.dependency_overrides[get_current_user] = _pa_user
+
+        mock_supabase.table.return_value.select.return_value.eq.return_value.maybe_single.return_value.execute.side_effect = [
+            MagicMock(data={"id": "tenant-1"}),  # tenant lookup
+            None,  # no duplicate
+        ]
+        _mock_invite_success(mock_supabase)
+
+        resp = client.post("/api/invite", json=INVITE_PAYLOAD)
+
+        assert resp.status_code == 200
+        call_args = mock_supabase.auth.admin.invite_user_by_email.call_args
+        options = call_args[1]["options"]
+        assert "redirect_to" in options
+        assert options["redirect_to"].endswith("/auth/callback")
+        app.dependency_overrides.pop(get_current_user, None)
+
     def test_nonexistent_tenant_returns_404(self, client, mock_supabase):
         app.dependency_overrides[get_current_user] = _pa_user
 

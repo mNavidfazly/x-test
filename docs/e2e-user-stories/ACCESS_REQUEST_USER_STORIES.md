@@ -97,6 +97,9 @@ All test users use password: `TestUser123!`
 | 9 | AR-09 | Reject Request | AR-01 (pending request exists after AR-08 consumed one) |
 | 10 | AR-10 | Already-Reviewed Read-Only | AR-08 or AR-09 (reviewed request exists) |
 | 11 | AR-11 | Role Access Control | Multiple role logins |
+| 12 | AR-12 | Duplicate Access Request Prevention | Own seed data (independent) |
+| 13 | AR-13 | PA — Tenant Assignment Persisted on Approval | Own seed data (independent), SMTP configured |
+| 14 | AR-14 | Invite Failure Does Not Falsely Mark Approved | Existing user `admin@calypsoclient.com` |
 
 ---
 
@@ -115,6 +118,9 @@ All test users use password: `TestUser123!`
 | AR-09 | Reject Request | Platform Admin | ✅ | 2026-02-17 |
 | AR-10 | Already-Reviewed Read-Only | Platform Admin | ✅ | 2026-02-17 |
 | AR-11 | Role Access Control | Multiple | ✅ | 2026-02-17 |
+| AR-12 | Duplicate Access Request Prevention | Anonymous | ⏳ | — |
+| AR-13 | PA — Tenant Assignment Persisted on Approval | Platform Admin | ⏳ | — |
+| AR-14 | Invite Failure Does Not Falsely Mark Approved | Platform Admin | ⏳ | — |
 
 ---
 
@@ -546,8 +552,8 @@ WHERE email = 'e2e-pending@calypsoclient.com';
 ```
 
 ### Notes / Learnings
-- `approveAndInvite()` is two-step: (1) `reviewRequest()` UPDATE status to 'approved', (2) `ApiService.post('/invite', { email, tenant_id })`
-- If step 2 fails (e.g., 409 user already exists), the request is STILL marked as 'approved' — show error but status was already changed
+- `approveAndInvite()` is two-step: (1) `ApiService.post('/invite', { email, tenant_id })`, (2) `reviewRequest()` UPDATE status to 'approved' + save `tenant_id`
+- If step 1 (invite) fails (e.g., 409 user already exists), the request stays 'pending' — admin sees error and can retry or reject
 - The invite endpoint creates an auth user + sends invitation email. `handle_new_user()` trigger auto-creates the profile.
 - On local dev, check Supabase's Inbucket at `http://localhost:54324` for the invite email
 - For known-domain requests, `req.tenant_id` is already set — no tenant picker needed
@@ -687,11 +693,221 @@ WHERE email = 'e2e-unknown@unknowndomain.com';
 
 ---
 
+## AR-12: Duplicate Access Request Prevention
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | ⏳ |
+| **Status** | ⏳ |
+| **Tester** | — |
+
+**Purpose**: Verify that submitting an access request for an email that already has a pending request shows a user-friendly error message instead of silently creating a duplicate row. This was a bug — the form had no duplicate check before insert.
+
+**Covers**: Frontend duplicate check in `AccessRequestComponent.onSubmit()`, `select('id').eq('email').eq('status','pending').limit(1)` guard, user-friendly error message
+
+**Bug context**: Before the fix, the same email could submit unlimited access requests. The DB has a unique partial index `idx_access_requests_email_pending` that blocks duplicate pending rows, but the error message was a raw Postgres constraint violation — not user-friendly. The fix adds a pre-INSERT check and shows "An access request for this email is already pending."
+
+### Data Setup
+
+```sql
+-- Ensure a pending request exists for the test email
+DELETE FROM access_requests WHERE email = 'e2e-dup-test@unknowndomain.com';
+INSERT INTO access_requests (email, full_name, domain, status)
+VALUES ('e2e-dup-test@unknowndomain.com', 'Dup Test User', 'unknowndomain.com', 'pending');
+```
+
+### Steps
+
+| # | Action | Expected Result |
+|---|--------|-----------------|
+| 1 | Navigate to `/request-access` (no login required) | Access request form visible: "Request Access" heading, Full Name + Email inputs, Submit button |
+| 2 | Enter "Dup Test User" in Full Name, "e2e-dup-test@unknowndomain.com" in Email | Fields populated |
+| 3 | Click "Submit Request" | Loading spinner appears briefly, then **error message** appears |
+| 4 | Verify error message text | Red alert: "An access request for this email is already pending." |
+| 5 | Verify form is still visible | Success message is NOT shown — form fields remain editable (user can correct email) |
+| 6 | Change email to "e2e-dup-test-new@unknowndomain.com" (no pending request) | Email field updated |
+| 7 | Click "Submit Request" | Loading spinner, then **success message**: "Your request has been submitted." |
+| 8 | Navigate back to `/request-access`, enter same new email, submit again | Should show "already pending" error (the request from step 7 is now pending) |
+
+### SQL Verification
+
+```sql
+-- Only 1 pending request should exist for the original email
+SELECT COUNT(*) FROM access_requests
+WHERE email = 'e2e-dup-test@unknowndomain.com' AND status = 'pending';
+-- Should be 1 (not 2+)
+
+-- The new email should have exactly 1 pending request
+SELECT COUNT(*) FROM access_requests
+WHERE email = 'e2e-dup-test-new@unknowndomain.com' AND status = 'pending';
+-- Should be 1
+```
+
+### Cleanup
+
+```sql
+DELETE FROM access_requests WHERE email IN (
+  'e2e-dup-test@unknowndomain.com',
+  'e2e-dup-test-new@unknowndomain.com'
+);
+```
+
+### Notes / Learnings
+- The form normalizes email to lowercase + trimmed before checking — "Test@Domain.COM" matches "test@domain.com"
+- The check only looks for `status = 'pending'` — if a previous request was approved/rejected, a new request IS allowed (user may legitimately re-request after rejection)
+- The anon INSERT RLS policy allows insertion with `status = 'pending'` only
+- The DB unique partial index `idx_access_requests_email_pending` is a safety net but produces an unfriendly error — the frontend check provides the UX
+
+---
+
+## AR-13: PA — Tenant Assignment Persisted on Approval
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | ⏳ |
+| **Status** | ⏳ |
+| **Tester** | — |
+
+**Purpose**: Verify that when a Platform Admin approves an unknown-domain request and selects a tenant from the dropdown, the chosen `tenant_id` is saved to the `access_requests` row. After reload, the request should show the assigned tenant name in the Tenant column instead of "Unknown domain".
+
+**Covers**: `reviewRequest()` with `tenantId` parameter, `access_requests.tenant_id` UPDATE, UI reflecting saved tenant after reload
+
+**Bug context**: Before the fix, `reviewRequest()` only updated `status`, `reviewed_by`, `reviewed_at`, `review_notes` — it never wrote the admin's selected `tenant_id` to the row. The `access_requests` row stayed with `tenant_id = NULL` forever, even after successful approval.
+
+### Data Setup
+
+```sql
+-- Clean previous test data
+DELETE FROM access_requests WHERE email = 'e2e-tenant-persist@foreigndomain.com';
+DELETE FROM auth.users WHERE email = 'e2e-tenant-persist@foreigndomain.com';
+
+-- Insert unknown-domain pending request (tenant_id stays NULL because foreigndomain.com is not a tenant domain)
+INSERT INTO access_requests (email, full_name, domain, status)
+VALUES ('e2e-tenant-persist@foreigndomain.com', 'Tenant Persist Test', 'foreigndomain.com', 'pending');
+
+-- Verify tenant_id is NULL
+SELECT email, tenant_id, status FROM access_requests WHERE email = 'e2e-tenant-persist@foreigndomain.com';
+```
+
+### Steps
+
+| # | Action | Expected Result |
+|---|--------|-----------------|
+| 1 | Login as PA (`et@calypso-commodities.com`), navigate to `/admin/access-requests` | Requests table loaded |
+| 2 | Find `e2e-tenant-persist@foreigndomain.com` row | Tenant column shows amber "Unknown domain" badge |
+| 3 | Click row to expand | Review section visible with tenant picker dropdown ("Assign Tenant (required for approval)") |
+| 4 | Select "Calypso Client" from tenant picker | Dropdown value set |
+| 5 | Click "Approve & Invite" | Spinner, then success toast "Request approved and invitation sent" |
+| 6 | Wait for data to reload (row collapses) | Table refreshes |
+| 7 | Verify the request now shows "Calypso Client" in the Tenant column | **No longer "Unknown domain"** — tenant name is visible |
+| 8 | Verify status badge is emerald "Approved" | Correct |
+| 9 | Click the now-approved row to expand | Read-only reviewer info (PA name, date) — no action buttons |
+
+### SQL Verification (critical)
+
+```sql
+-- The access_requests row should now have tenant_id set
+SELECT email, tenant_id, status,
+       (SELECT name FROM tenants WHERE id = ar.tenant_id) as assigned_tenant
+FROM access_requests ar
+WHERE email = 'e2e-tenant-persist@foreigndomain.com';
+-- tenant_id should be Calypso Client's UUID (NOT NULL)
+-- status should be 'approved'
+
+-- Verify auth user + profile were created by the invite
+SELECT p.email, p.tenant_id, t.name as tenant_name
+FROM profiles p JOIN tenants t ON t.id = p.tenant_id
+WHERE p.email = 'e2e-tenant-persist@foreigndomain.com';
+-- Should show Calypso Client as tenant
+```
+
+### Cleanup
+
+```sql
+DELETE FROM auth.users WHERE email = 'e2e-tenant-persist@foreigndomain.com';
+DELETE FROM access_requests WHERE email = 'e2e-tenant-persist@foreigndomain.com';
+```
+
+### Notes / Learnings
+- Before the fix, the Tenant column would still show "Unknown domain" after approval — now it correctly shows the assigned tenant
+- The `tenant_id` is saved by `reviewRequest()` which now accepts an optional `tenantId` parameter
+- In `approveAndInvite()`, `tenant_id` is passed to both the invite endpoint AND the review update
+- TA approvals always have `req.tenant_id` set (auto-resolved by trigger) so the tenant_id persistence was already implicitly correct for them — only PA + unknown-domain approvals were broken
+
+---
+
+## AR-14: Invite Failure Does Not Falsely Mark Request Approved
+
+| Field | Value |
+|-------|-------|
+| **Last Checked** | ⏳ |
+| **Status** | ⏳ |
+| **Tester** | — |
+
+**Purpose**: Verify that when the `/api/invite` endpoint fails (e.g., 409 because a profile with that email already exists), the access request remains in "pending" status — it is NOT falsely marked as "approved".
+
+**Covers**: `approveAndInvite()` ordering (invite FIRST, review SECOND), error handling, request status preservation on failure
+
+**Bug context**: Before the fix, `approveAndInvite()` called `reviewRequest()` FIRST (marking as approved), THEN called `POST /invite`. If the invite failed (409 duplicate, 500 error, etc.), the request was stuck as "approved" with no invite sent. The fix reverses the order: invite first, mark approved only on success.
+
+### Data Setup
+
+```sql
+-- Create a pending request for an email that ALREADY has a profile
+-- This guarantees POST /invite will return 409 "A user with this email already exists"
+DELETE FROM access_requests WHERE email = 'e2e-invite-fail@calypsoclient.com';
+
+-- Verify profile exists for this email (must already exist — use a known test user)
+-- We'll use admin@calypsoclient.com which is a real user with a profile
+INSERT INTO access_requests (email, full_name, domain, status)
+VALUES ('admin@calypsoclient.com', 'Already Exists User', 'calypsoclient.com', 'pending');
+```
+
+### Steps
+
+| # | Action | Expected Result |
+|---|--------|-----------------|
+| 1 | Login as PA (`et@calypso-commodities.com`), navigate to `/admin/access-requests` | Requests table loaded |
+| 2 | Find `admin@calypsoclient.com` with status "Pending" | Row visible with amber "Pending" badge, Tenant shows "Calypso Client" (domain auto-resolved) |
+| 3 | Click row to expand | Review section with "Approve & Invite" and "Reject" buttons |
+| 4 | Click "Approve & Invite" | Spinner appears, then **error toast** (red) indicating invite failed |
+| 5 | Verify error message | Should show "A user with this email already exists" (409 from FastAPI) or similar error |
+| 6 | Wait for data to reload or manually refresh | Table reloads |
+| 7 | **Verify request is STILL "Pending"** | Status badge remains amber "Pending" — NOT changed to "Approved" |
+| 8 | Click row to expand again | Action buttons still visible — request can still be reviewed |
+
+### SQL Verification (critical)
+
+```sql
+-- The request should still be pending (NOT approved)
+SELECT email, status, reviewed_by, reviewed_at
+FROM access_requests
+WHERE email = 'admin@calypsoclient.com' AND full_name = 'Already Exists User';
+-- status = 'pending', reviewed_by = NULL, reviewed_at = NULL
+```
+
+### Cleanup
+
+```sql
+DELETE FROM access_requests WHERE email = 'admin@calypsoclient.com' AND full_name = 'Already Exists User';
+```
+
+### Notes / Learnings
+- Before the fix: `approveAndInvite()` ran `reviewRequest()` first → marked as approved → THEN invite failed → request stuck as "approved" with no invite. Admin had no way to retry.
+- After the fix: `approveAndInvite()` runs invite first → if it fails, `reviewRequest()` is never called → request stays "pending". Admin sees error and can retry or reject.
+- The `/api/invite` endpoint returns 409 when `profiles` table already has a row with that email (line 62-66 of `invite.py`)
+- This test uses a real existing user (`admin@calypsoclient.com`) to guarantee the 409 — no mocking needed
+- The error toast should be shown via the HTTP error interceptor (status >= 400)
+
+---
+
 ## Bugs Found During E2E Testing
 
 | # | Story | Bug Description | Severity | Fix | Status |
 |---|-------|----------------|----------|-----|--------|
-| — | — | No bugs found | — | — | — |
+| AR-BUG-01 | AR-12 | Duplicate access requests: same email could submit unlimited pending requests. Frontend had no duplicate check. | Medium | Added pre-INSERT SELECT check for existing pending request + user-friendly error message | Fixed |
+| AR-BUG-02 | AR-13 | `tenant_id` never saved to `access_requests` row on approval: `reviewRequest()` only updated status/reviewer fields, not `tenant_id`. PA-selected tenant was lost. | High | Added optional `tenantId` param to `reviewRequest()`, passed from `approveAndInvite()` | Fixed |
+| AR-BUG-03 | AR-14 | Non-transactional approval: `approveAndInvite()` marked request as 'approved' BEFORE calling invite endpoint. If invite failed (409/500), request was stuck as 'approved' with no invite sent. | High | Reversed order: invite first, then mark approved only on success | Fixed |
 
 ---
 

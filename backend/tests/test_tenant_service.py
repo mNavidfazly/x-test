@@ -6,6 +6,7 @@ from app.services.tenant import (
     ALL_AUTH_METHODS,
     extract_domain,
     lookup_idp_hint,
+    lookup_tenant_by_profile_email,
     resolve_auth_methods,
 )
 
@@ -87,3 +88,35 @@ class TestLookupIdpHint:
         mock_sb = MagicMock()
         self._mock_profiles_query(mock_sb, [{"keycloak_idp_alias": None}])
         assert lookup_idp_hint(mock_sb, "user@acme.com") is None
+
+
+class TestLookupTenantByProfileEmail:
+    def _mock_profiles_query(self, mock_supabase: MagicMock, data: list):
+        mock_supabase.table.return_value.select.return_value.eq.return_value.limit.return_value.execute.return_value = (
+            MagicMock(data=data)
+        )
+
+    def test_returns_tenant_when_profile_found(self):
+        mock_sb = MagicMock()
+        tenant_data = {"id": "tid-1", "name": "Calypso", "settings": {"auth_methods": ["email_password"]}}
+        self._mock_profiles_query(mock_sb, [{"tenant_id": "tid-1", "tenants": tenant_data}])
+        result = lookup_tenant_by_profile_email(mock_sb, "user@web.de")
+        assert result == tenant_data
+
+    def test_returns_none_when_no_profile(self):
+        mock_sb = MagicMock()
+        self._mock_profiles_query(mock_sb, [])
+        assert lookup_tenant_by_profile_email(mock_sb, "unknown@web.de") is None
+
+    def test_returns_none_when_tenants_join_is_none(self):
+        mock_sb = MagicMock()
+        self._mock_profiles_query(mock_sb, [{"tenant_id": "tid-1", "tenants": None}])
+        assert lookup_tenant_by_profile_email(mock_sb, "user@web.de") is None
+
+    def test_lowercases_email(self):
+        mock_sb = MagicMock()
+        tenant_data = {"id": "tid-1", "name": "Corp", "settings": None}
+        self._mock_profiles_query(mock_sb, [{"tenant_id": "tid-1", "tenants": tenant_data}])
+        lookup_tenant_by_profile_email(mock_sb, "User@WEB.DE")
+        call_args = mock_sb.table.return_value.select.return_value.eq.call_args
+        assert call_args[0] == ("email", "user@web.de")
