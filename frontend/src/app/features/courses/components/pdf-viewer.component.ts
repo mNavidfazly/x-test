@@ -33,8 +33,7 @@ import { ModulePdf } from '../../../core/models/course.model';
         <ngx-extended-pdf-viewer
           [src]="pdf().file_url"
           [height]="'80vh'"
-          [scrollMode]="0"
-          [spread]="'off'"
+          [pageViewMode]="'infinite-scroll'"
           [sidebarVisible]="false"
           [showToolbar]="true"
           [showSidebarButton]="true"
