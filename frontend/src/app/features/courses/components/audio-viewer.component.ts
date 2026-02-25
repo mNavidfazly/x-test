@@ -145,6 +145,13 @@ export class AudioViewerComponent {
       this.isLoading.set(true);
       this.loadError.set(null);
 
+      // Use HTML5 Audio element for streaming playback instead of Web Audio API.
+      // Web Audio's decodeAudioData loads the entire file into memory (~10x decoded size),
+      // which fails for large MP3s (30-50 MB -> 300-500 MB PCM in memory).
+      const audioElement = new Audio();
+      audioElement.crossOrigin = 'anonymous';
+      audioElement.preload = 'metadata';
+
       const ws = WaveSurfer.create({
         container: containerRef.nativeElement,
         waveColor: '#99f6e4',
@@ -154,6 +161,7 @@ export class AudioViewerComponent {
         barWidth: 2,
         barGap: 1,
         barRadius: 2,
+        media: audioElement,
         url: audioData.file_url,
       });
 
