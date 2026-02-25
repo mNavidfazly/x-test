@@ -88,7 +88,8 @@ const BADGE_LABELS: Record<string, string> = {
                     @if (lecturer.avatar_url) {
                       <img [src]="lecturer.avatar_url"
                            [alt]="lecturer.full_name ?? lecturer.email"
-                           class="w-8 h-8 rounded-full object-cover" />
+                           class="w-8 h-8 rounded-full object-cover opacity-0 transition-opacity duration-200"
+                           (load)="$any($event.target).classList.remove('opacity-0')" />
                     } @else {
                       <div class="w-8 h-8 rounded-full bg-teal-100 text-teal-700 text-xs font-semibold flex items-center justify-center">
                         {{ getInitials(lecturer.full_name ?? lecturer.email) }}

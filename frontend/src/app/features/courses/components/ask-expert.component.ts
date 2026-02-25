@@ -47,7 +47,8 @@ import { CourseLecturer } from '../../../core/models/course.model';
               @for (l of lecturers().slice(0, 3); track l.user_id) {
                 @if (l.avatar_url) {
                   <img [src]="l.avatar_url" [alt]="l.full_name ?? l.email"
-                       class="w-6 h-6 rounded-full object-cover border-2 border-white" />
+                       class="w-6 h-6 rounded-full object-cover border-2 border-white opacity-0 transition-opacity duration-200"
+                       (load)="$any($event.target).classList.remove('opacity-0')" />
                 } @else {
                   <div class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold flex items-center justify-center border-2 border-white">
                     {{ getInitials(l.full_name ?? l.email) }}
@@ -100,7 +101,8 @@ import { CourseLecturer } from '../../../core/models/course.model';
               @for (l of lecturers().slice(0, 3); track l.user_id) {
                 @if (l.avatar_url) {
                   <img [src]="l.avatar_url" [alt]="l.full_name ?? l.email"
-                       class="w-6 h-6 rounded-full object-cover border-2 border-white" />
+                       class="w-6 h-6 rounded-full object-cover border-2 border-white opacity-0 transition-opacity duration-200"
+                       (load)="$any($event.target).classList.remove('opacity-0')" />
                 } @else {
                   <div class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-[10px] font-bold flex items-center justify-center border-2 border-white">
                     {{ getInitials(l.full_name ?? l.email) }}

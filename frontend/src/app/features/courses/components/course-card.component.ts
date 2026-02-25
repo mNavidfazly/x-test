@@ -29,10 +29,11 @@ const BADGE_LABELS: Record<string, string> = {
 
       <!-- Thumbnail -->
       @if (course().thumbnail_url) {
-        <div class="aspect-video bg-slate-100 overflow-hidden">
+        <div class="aspect-video bg-slate-200 overflow-hidden animate-pulse">
           <img [src]="course().thumbnail_url" [alt]="course().title" loading="lazy"
                class="w-full h-full object-cover group-hover:scale-105 transition-[transform,opacity] duration-300 opacity-0"
-               (load)="$any($event.target).classList.remove('opacity-0')" />
+               (load)="$any($event.target).classList.remove('opacity-0'); $any($event.target).parentElement.classList.remove('animate-pulse')"
+               (error)="$any($event.target).parentElement.classList.remove('animate-pulse')" />
         </div>
       } @else {
         <div class="aspect-video bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">

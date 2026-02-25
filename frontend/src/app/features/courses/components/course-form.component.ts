@@ -49,11 +49,12 @@ export interface CourseFormSaveEvent {
 
         <!-- Preview -->
         @if (thumbnailPreviewUrl()) {
-          <div class="relative mb-3 rounded-lg overflow-hidden border border-slate-200 max-w-xs">
+          <div class="relative mb-3 rounded-lg overflow-hidden border border-slate-200 max-w-xs bg-slate-200 animate-pulse">
             <img
               [src]="thumbnailPreviewUrl()"
               alt="Thumbnail preview"
-              class="w-full aspect-video object-cover"
+              class="w-full aspect-video object-cover opacity-0 transition-opacity duration-300"
+              (load)="$any($event.target).classList.remove('opacity-0'); $any($event.target).parentElement.classList.remove('animate-pulse')"
             />
             <button
               type="button"

@@ -22,12 +22,17 @@ const COLOR_CLASSES: Record<AvatarColor, string> = {
   host: { class: 'inline-flex' },
   template: `
     @if (avatarUrl()) {
-      <img
-        [src]="avatarUrl()"
-        [alt]="name()"
-        [class]="imgClass()"
-        loading="lazy"
-      />
+      <div [class]="pulseClass()">
+        <img
+          [src]="avatarUrl()"
+          [alt]="name()"
+          [class]="imgClass()"
+          loading="lazy"
+          class="opacity-0 transition-opacity duration-200"
+          (load)="$any($event.target).classList.remove('opacity-0'); $any($event.target).parentElement.classList.remove('animate-pulse')"
+          (error)="$any($event.target).classList.remove('opacity-0'); $any($event.target).parentElement.classList.remove('animate-pulse')"
+        />
+      </div>
     } @else {
       <div [class]="fallbackClass()">
         {{ initials() }}
@@ -47,6 +52,11 @@ export class UserAvatarComponent {
   readonly imgClass = computed(() => {
     const s = SIZE_CLASSES[this.size()];
     return `${s.container} rounded-full object-cover ${this.extraClass()}`.trim();
+  });
+
+  readonly pulseClass = computed(() => {
+    const s = SIZE_CLASSES[this.size()];
+    return `${s.container} rounded-full bg-slate-200 animate-pulse ${this.extraClass()}`.trim();
   });
 
   readonly fallbackClass = computed(() => {

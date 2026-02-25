@@ -38,7 +38,8 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
               <img
                 [src]="avatarPreview() || profileData()!.avatar_url"
                 alt="Profile photo"
-                class="w-28 h-28 rounded-full object-cover border-2 border-slate-200"
+                class="w-28 h-28 rounded-full object-cover border-2 border-slate-200 opacity-0 transition-opacity duration-200"
+                (load)="$any($event.target).classList.remove('opacity-0')"
               />
             } @else {
               <div class="w-28 h-28 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center text-3xl font-bold border-2 border-slate-200">
