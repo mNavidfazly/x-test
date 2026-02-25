@@ -65,6 +65,8 @@ async def reset_password(
     try:
         domain = extract_domain(body.email)
         tenant = lookup_tenant(supabase, domain)
+        if tenant is None:
+            tenant = lookup_tenant_by_profile_email(supabase, body.email)
         methods = resolve_auth_methods(tenant)
 
         if "email_password" in methods:
