@@ -31,7 +31,7 @@ const BADGE_LABELS: Record<string, string> = {
       @if (course().thumbnail_url) {
         <div class="aspect-video bg-slate-100 overflow-hidden">
           <img [src]="course().thumbnail_url" [alt]="course().title" loading="lazy"
-               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 opacity-0 transition-opacity"
+               class="w-full h-full object-cover group-hover:scale-105 transition-[transform,opacity] duration-300 opacity-0"
                (load)="$any($event.target).classList.remove('opacity-0')" />
         </div>
       } @else {
