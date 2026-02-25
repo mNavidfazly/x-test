@@ -102,6 +102,18 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
               ariaLabel="Playback speed"
             />
           </div>
+
+          <div class="flex-1"></div>
+
+          <!-- Download button -->
+          <a
+            [href]="audio().file_url"
+            [download]="audio().file_name"
+            class="text-slate-400 hover:text-teal-600 transition-colors duration-200"
+            aria-label="Download audio"
+          >
+            <lucide-icon [img]="icons.Download" [size]="18"></lucide-icon>
+          </a>
         </div>
       }
     </div>
