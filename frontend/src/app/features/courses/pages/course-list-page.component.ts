@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule, BookOpen, Plus } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { CourseCardComponent } from '../components/course-card.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
+import { CourseWithProgress } from '../../../core/models/course.model';
 
 @Component({
   selector: 'app-course-list-page',
@@ -24,7 +25,9 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
         }
       </div>
 
-      @if (courseService.loading()) {
+      @if (courseService.error()) {
+        <app-error-alert [message]="courseService.error()!" />
+      } @else if (!batchReady()) {
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           @for (i of skeletons; track i) {
             <div class="card overflow-hidden animate-pulse">
@@ -37,8 +40,6 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
             </div>
           }
         </div>
-      } @else if (courseService.error()) {
-        <app-error-alert [message]="courseService.error()!" />
       } @else if (courseService.courses().length === 0) {
         <div class="text-center py-16">
           <lucide-icon [img]="icons.BookOpen" [size]="48" class="text-slate-300 mx-auto mb-4"></lucide-icon>
@@ -46,8 +47,8 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
         </div>
       } @else {
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          @for (course of courseService.courses(); track course.id) {
-            <app-course-card [course]="course" />
+          @for (course of courseService.courses(); track course.id; let i = $index) {
+            <app-course-card [course]="course" [preloaded]="i < BATCH_SIZE" />
           }
         </div>
       }
@@ -59,12 +60,48 @@ export class CourseListPageComponent implements OnInit {
   #auth = inject(AuthService);
   readonly icons = { BookOpen, Plus };
   readonly skeletons = [1, 2, 3, 4, 5, 6];
+  readonly BATCH_SIZE = 9;
+  readonly batchReady = signal(false);
 
   readonly isPlatformAdmin = computed(() =>
     this.#auth.currentUser()?.claims?.is_platform_admin ?? false,
   );
 
-  ngOnInit() {
-    this.courseService.loadCourses();
+  async ngOnInit() {
+    await this.courseService.loadCourses();
+    const courses = this.courseService.courses();
+    if (this.courseService.error() || courses.length === 0) {
+      this.batchReady.set(true);
+      return;
+    }
+    this.#preloadBatch(courses);
+  }
+
+  #preloadBatch(courses: CourseWithProgress[]) {
+    const urls = courses
+      .slice(0, this.BATCH_SIZE)
+      .map(c => c.thumbnail_url)
+      .filter((url): url is string => !!url);
+
+    if (urls.length === 0) {
+      this.batchReady.set(true);
+      return;
+    }
+
+    let loaded = 0;
+    const checkDone = () => {
+      loaded++;
+      if (loaded >= urls.length) this.batchReady.set(true);
+    };
+
+    // Safety timeout — never block skeleton more than 3 seconds
+    setTimeout(() => this.batchReady.set(true), 3000);
+
+    for (const url of urls) {
+      const img = new Image();
+      img.onload = checkDone;
+      img.onerror = checkDone;
+      img.src = url;
+    }
   }
 }

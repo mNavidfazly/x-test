@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   LucideAngularModule, LayoutDashboard, BookOpen, ArrowRight,
@@ -11,6 +11,7 @@ import { CourseService } from '../../core/services/course.service';
 import { DashboardService } from './dashboard.service';
 import { DashboardActionCardComponent } from './components/dashboard-action-card.component';
 import { CourseCardComponent } from '../courses/components/course-card.component';
+import { CourseWithProgress } from '../../core/models/course.model';
 import { StatCardComponent } from '../../shared/components/stat-card.component';
 import { StatusBadgeComponent, BadgeVariant } from '../../shared/components/status-badge.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner.component';
@@ -137,16 +138,16 @@ const ROLE_BADGE_MAP: Record<string, { label: string; variant: BadgeVariant }> =
         }
       </div>
 
-      @if (courseService.loading()) {
-        <app-loading-spinner message="Loading courses..." />
-      } @else if (courseService.error()) {
+      @if (courseService.error()) {
         <app-error-alert [message]="courseService.error()!" />
+      } @else if (!cardsBatchReady()) {
+        <app-loading-spinner message="Loading courses..." />
       } @else if (enrolledCourses().length === 0) {
         <app-empty-state [icon]="icons.BookOpen" message="No enrolled courses yet. Browse available courses to get started." />
       } @else {
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          @for (course of enrolledCourses(); track course.id) {
-            <app-course-card [course]="course" />
+          @for (course of enrolledCourses(); track course.id; let i = $index) {
+            <app-course-card [course]="course" [preloaded]="i < BATCH_SIZE" />
           }
         </div>
       }
@@ -297,10 +298,47 @@ export class DashboardComponent implements OnInit {
       .slice(0, 6),
   );
 
+  readonly BATCH_SIZE = 6;
+  readonly cardsBatchReady = signal(false);
+
   async ngOnInit() {
     await Promise.all([
       this.dashboardService.loadCounts(),
       this.courseService.loadCourses(),
     ]);
+
+    const courses = this.enrolledCourses();
+    if (this.courseService.error() || courses.length === 0) {
+      this.cardsBatchReady.set(true);
+      return;
+    }
+    this.#preloadBatch(courses);
+  }
+
+  #preloadBatch(courses: CourseWithProgress[]) {
+    const urls = courses
+      .slice(0, this.BATCH_SIZE)
+      .map(c => c.thumbnail_url)
+      .filter((url): url is string => !!url);
+
+    if (urls.length === 0) {
+      this.cardsBatchReady.set(true);
+      return;
+    }
+
+    let loaded = 0;
+    const checkDone = () => {
+      loaded++;
+      if (loaded >= urls.length) this.cardsBatchReady.set(true);
+    };
+
+    setTimeout(() => this.cardsBatchReady.set(true), 3000);
+
+    for (const url of urls) {
+      const img = new Image();
+      img.onload = checkDone;
+      img.onerror = checkDone;
+      img.src = url;
+    }
   }
 }

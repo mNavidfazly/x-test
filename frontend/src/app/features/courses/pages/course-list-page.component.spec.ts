@@ -60,7 +60,7 @@ describe('CourseListPageComponent', () => {
   it('should show empty state when no courses', async () => {
     const courseService = createMockCourseService({ courses: [] });
 
-    await render(CourseListPageComponent, {
+    const { fixture } = await render(CourseListPageComponent, {
       componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
@@ -68,6 +68,10 @@ describe('CourseListPageComponent', () => {
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
+
+    // Flush async ngOnInit (await loadCourses → batchReady.set(true))
+    await new Promise(r => setTimeout(r));
+    fixture.detectChanges();
 
     expect(screen.getByText('No courses available yet.')).toBeTruthy();
   });
@@ -80,7 +84,7 @@ describe('CourseListPageComponent', () => {
       ],
     });
 
-    await render(CourseListPageComponent, {
+    const { fixture } = await render(CourseListPageComponent, {
       componentImports: [MockLucideIconComponent, CourseCardComponent, ErrorAlertComponent],
       providers: [
         provideRouter([]),
@@ -88,6 +92,9 @@ describe('CourseListPageComponent', () => {
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true }) },
       ],
     });
+
+    await new Promise(r => setTimeout(r));
+    fixture.detectChanges();
 
     expect(screen.getByText('Course One')).toBeTruthy();
     expect(screen.getByText('Course Two')).toBeTruthy();

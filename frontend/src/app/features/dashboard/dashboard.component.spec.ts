@@ -85,7 +85,7 @@ describe('DashboardComponent', () => {
     if (options?.dashboardLoading) mockDashboardService.loading.set(true);
     if (options?.dashboardError) mockDashboardService.error.set(options.dashboardError);
 
-    return render(DashboardComponent, {
+    const result = await render(DashboardComponent, {
       componentImports: [
         MockLucideIconComponent, RouterLink,
         DashboardActionCardComponent, CourseCardComponent,
@@ -101,6 +101,12 @@ describe('DashboardComponent', () => {
         { provide: DashboardService, useValue: mockDashboardService },
       ],
     });
+
+    // Flush async ngOnInit (await loadCourses → cardsBatchReady.set(true))
+    await new Promise(r => setTimeout(r));
+    result.fixture.detectChanges();
+
+    return result;
   }
 
   // ─── Section 1: Welcome Header ─────────────────────

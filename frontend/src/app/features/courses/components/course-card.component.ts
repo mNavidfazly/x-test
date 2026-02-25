@@ -24,8 +24,8 @@ const BADGE_LABELS: Record<string, string> = {
   imports: [RouterLink, LucideAngularModule, UserAvatarComponent, ProgressRingComponent],
   host: { class: 'block' },
   template: `
-    <!-- Skeleton placeholder (visible while image loads) -->
-    @if (course().thumbnail_url && !imageReady()) {
+    <!-- Skeleton placeholder (visible while image loads, skipped if parent preloaded) -->
+    @if (showSkeleton()) {
       <div class="card-solid overflow-hidden">
         <div class="aspect-video bg-slate-200 animate-pulse"></div>
         <div class="p-4 space-y-3">
@@ -39,9 +39,9 @@ const BADGE_LABELS: Record<string, string> = {
            (load)="imageReady.set(true)" (error)="imageReady.set(true)" />
     }
 
-    <!-- Actual card (shown immediately if no thumbnail, or after image loads) -->
+    <!-- Actual card (shown immediately if preloaded/no thumbnail, or after image loads) -->
     <a [routerLink]="cardLink()"
-       [class.hidden]="course().thumbnail_url && !imageReady()"
+       [class.hidden]="showSkeleton()"
        class="block card-solid overflow-hidden group">
 
       <!-- Thumbnail -->
@@ -140,8 +140,14 @@ const BADGE_LABELS: Record<string, string> = {
 })
 export class CourseCardComponent {
   readonly course = input.required<CourseWithProgress>();
+  readonly preloaded = input(false);
   readonly icons = { BookOpen, Clock, ArrowRight };
   readonly imageReady = signal(false);
+
+  /** Skip per-card skeleton when parent already preloaded the image into browser cache */
+  readonly showSkeleton = computed(() =>
+    !!this.course().thumbnail_url && !this.preloaded() && !this.imageReady(),
+  );
 
   readonly cardLink = computed(() => {
     const c = this.course();
