@@ -8,6 +8,8 @@ export interface ActiveTrack {
   durationSeconds: number | null;
   nextModuleId?: string;
   prevModuleId?: string;
+  courseName?: string;
+  lectureName?: string;
 }
 
 @Injectable({ providedIn: 'root' })

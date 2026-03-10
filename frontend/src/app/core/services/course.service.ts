@@ -1770,10 +1770,13 @@ export class CourseService {
     }
     const detail = this.#courseDetail();
     let title = 'Audio';
+    let courseName: string | undefined;
+    let lectureName: string | undefined;
     if (detail) {
+      courseName = detail.title;
       for (const lec of detail.lectures) {
         const mod = lec.modules.find(m => m.id === moduleId);
-        if (mod) { title = mod.title; break; }
+        if (mod) { title = mod.title; lectureName = lec.title; break; }
       }
     }
     const { data, error } = await this.#supabase.client.from('module_audio')
@@ -1789,6 +1792,8 @@ export class CourseService {
       durationSeconds: (data as any).duration_seconds,
       nextModuleId: neighbors.next ?? undefined,
       prevModuleId: neighbors.prev ?? undefined,
+      courseName,
+      lectureName,
     };
   }
 

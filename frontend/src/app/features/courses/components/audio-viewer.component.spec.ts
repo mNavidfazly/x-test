@@ -133,9 +133,15 @@ describe('AudioViewerComponent', () => {
     );
   });
 
-  it('should pass audio-only neighbors to AudioPlayerService.play()', async () => {
+  it('should pass audio-only neighbors and course/lecture names to AudioPlayerService.play()', async () => {
     const audio = createMockAudio();
-    const mockCourse = createMockCourseService();
+    const mockCourse = createMockCourseService({
+      courseDetail: {
+        id: 'course-1',
+        title: 'LNG Trading',
+        lectures: [{ title: 'Section A', modules: [{ id: 'mod-1', module_type: 'audio' }] }],
+      } as any,
+    });
     mockCourse.findAudioNeighbors.mockReturnValue({ prev: 'audio-prev', next: 'audio-next' });
 
     const mockAudioPlayer = createMockAudioPlayerService({ duration: 300 });
@@ -157,6 +163,8 @@ describe('AudioViewerComponent', () => {
       expect.objectContaining({
         nextModuleId: 'audio-next',
         prevModuleId: 'audio-prev',
+        courseName: 'LNG Trading',
+        lectureName: 'Section A',
       }),
     );
   });

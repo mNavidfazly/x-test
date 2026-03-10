@@ -23,6 +23,8 @@ const mockTrack: ActiveTrack = {
   title: 'Introduction to Trading',
   fileUrl: 'https://example.com/intro.mp3',
   durationSeconds: 300,
+  courseName: 'LNG Trading Fundamentals',
+  lectureName: 'Module 1: Basics',
 };
 
 const mockTrackWithNav: ActiveTrack = {
@@ -101,6 +103,33 @@ describe('MiniPlayerComponent', () => {
 
       expect(screen.getByLabelText('Pause')).toBeTruthy();
       expect(screen.queryByLabelText('Play')).toBeNull();
+    });
+
+    it('shows course name and lecture name subtitle', async () => {
+      await renderMiniPlayer({ activeTrack: mockTrack });
+
+      expect(screen.getByText('LNG Trading Fundamentals · Module 1: Basics')).toBeTruthy();
+    });
+
+    it('shows only course name when no lecture name', async () => {
+      await renderMiniPlayer({
+        activeTrack: { ...mockTrack, lectureName: undefined },
+      });
+
+      expect(screen.getByText('LNG Trading Fundamentals')).toBeTruthy();
+      expect(screen.queryByText(/·/)).toBeNull();
+    });
+
+    it('does not show subtitle when no course or lecture name', async () => {
+      await renderMiniPlayer({
+        activeTrack: { ...mockTrack, courseName: undefined, lectureName: undefined },
+      });
+
+      expect(screen.getByText('Introduction to Trading')).toBeTruthy();
+      // Only the title text, no subtitle paragraph
+      const buttons = screen.getByText('Introduction to Trading').closest('button')!;
+      const paragraphs = buttons.querySelectorAll('p');
+      expect(paragraphs.length).toBe(1);
     });
 
     it('shows close player button', async () => {

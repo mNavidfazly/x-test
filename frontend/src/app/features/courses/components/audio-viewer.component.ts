@@ -159,6 +159,15 @@ export class AudioViewerComponent {
 
       // Get or create audio element via AudioPlayerService
       const audioNeighbors = this.#courseService.findAudioNeighbors(modId);
+      const detail = this.#courseService.courseDetail();
+      let courseName: string | undefined;
+      let lectureName: string | undefined;
+      if (detail) {
+        courseName = detail.title;
+        for (const lec of detail.lectures) {
+          if (lec.modules.some(m => m.id === modId)) { lectureName = lec.title; break; }
+        }
+      }
       const audioElement = this.audioPlayer.play({
         moduleId: modId,
         courseId: this.courseId(),
@@ -167,6 +176,8 @@ export class AudioViewerComponent {
         durationSeconds: audioData.duration_seconds,
         nextModuleId: audioNeighbors.next ?? undefined,
         prevModuleId: audioNeighbors.prev ?? undefined,
+        courseName,
+        lectureName,
       });
 
       const ws = WaveSurfer.create({

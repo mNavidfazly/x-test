@@ -27,6 +27,9 @@ import { CourseService } from '../../core/services/course.service';
           >
             <lucide-icon [img]="icons.Headphones" [size]="20" class="text-teal-600 shrink-0"></lucide-icon>
             <p class="text-sm font-medium text-slate-900 truncate">{{ track.title }}</p>
+            @if (track.courseName || track.lectureName) {
+              <p class="text-xs text-slate-500 truncate">{{ track.courseName }}{{ track.lectureName ? ' · ' + track.lectureName : '' }}</p>
+            }
           </button>
 
           <!-- Time display -->
