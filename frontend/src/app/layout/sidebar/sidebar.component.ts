@@ -85,7 +85,7 @@ import { filterNavSections } from './sidebar-nav.config';
       </nav>
 
       <!-- Footer -->
-      <div class="shrink-0 border-t border-slate-200 p-2">
+      <div class="shrink-0 border-t border-slate-200 p-2 flex items-center justify-center min-h-[57px]">
         <button
           class="hidden lg:flex items-center justify-center w-full rounded-lg py-2 text-slate-400
                  hover:bg-slate-100 hover:text-slate-600 transition-colors"
