@@ -19,6 +19,7 @@ export class AudioPlayerService {
   readonly #volume = signal(1);
   readonly #isMuted = signal(false);
   readonly #playbackRate = signal(1);
+  readonly #trackEnded = signal(false);
 
   readonly activeTrack = this.#activeTrack.asReadonly();
   readonly isPlaying = this.#isPlaying.asReadonly();
@@ -27,6 +28,7 @@ export class AudioPlayerService {
   readonly volume = this.#volume.asReadonly();
   readonly isMuted = this.#isMuted.asReadonly();
   readonly playbackRate = this.#playbackRate.asReadonly();
+  readonly trackEnded = this.#trackEnded.asReadonly();
 
   #audioElement: HTMLAudioElement | null = null;
 
@@ -56,6 +58,7 @@ export class AudioPlayerService {
     this.#currentTime.set(0);
     this.#duration.set(track.durationSeconds ?? 0);
     this.#isPlaying.set(false);
+    this.#trackEnded.set(false);
 
     return audio;
   }
@@ -175,6 +178,7 @@ export class AudioPlayerService {
 
   #onEnded = (): void => {
     this.#isPlaying.set(false);
+    this.#trackEnded.set(true);
   };
 
   #onLoadedMetadata = (): void => {

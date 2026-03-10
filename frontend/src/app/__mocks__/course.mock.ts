@@ -82,6 +82,8 @@ export function createMockCourseService(options?: {
     uploadThumbnail: vi.fn().mockResolvedValue('course-1/thumbnail-123.jpg'),
     deleteThumbnailIfStoragePath: vi.fn().mockResolvedValue(undefined),
     getCourseThumbnailSignedUrl: vi.fn().mockResolvedValue('https://test.supabase.co/storage/v1/object/sign/course-files/course-1/thumbnail-123.jpg?token=abc'),
+    findAudioNeighbors: vi.fn().mockReturnValue({ prev: null, next: null }),
+    fetchAudioTrack: vi.fn().mockResolvedValue(null),
     _setCourses: courses.set.bind(courses),
     _setCourseDetail: courseDetail.set.bind(courseDetail),
     _setModuleViewer: moduleViewer.set.bind(moduleViewer),

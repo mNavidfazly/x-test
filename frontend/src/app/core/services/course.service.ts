@@ -3,6 +3,7 @@ import { SupabaseService } from './supabase.service';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
 import { BunnyUploadService } from './bunny-upload.service';
+import { ActiveTrack } from './audio-player.service';
 import { extractErrorMessage } from '../utils/error.utils';
 import { isStoragePath } from '../utils/storage.utils';
 import { compressImage } from '../utils/image.utils';
@@ -1742,6 +1743,52 @@ export class CourseService {
       next: idx < flatModules.length - 1 ? flatModules[idx + 1] : null,
       current: idx + 1,
       total: flatModules.length,
+    };
+  }
+
+  // --- Audio playlist helpers ---
+
+  findAudioNeighbors(moduleId: string): { prev: string | null; next: string | null } {
+    const detail = this.#courseDetail();
+    if (!detail) return { prev: null, next: null };
+    const audioIds: string[] = [];
+    for (const lecture of detail.lectures) {
+      for (const mod of lecture.modules) {
+        if (mod.module_type === 'audio') audioIds.push(mod.id);
+      }
+    }
+    const idx = audioIds.indexOf(moduleId);
+    return {
+      prev: idx > 0 ? audioIds[idx - 1] : null,
+      next: idx < audioIds.length - 1 ? audioIds[idx + 1] : null,
+    };
+  }
+
+  async fetchAudioTrack(courseId: string, moduleId: string): Promise<ActiveTrack | null> {
+    if (!this.#courseDetail() || this.#courseDetail()!.id !== courseId) {
+      await this.loadCourseDetail(courseId);
+    }
+    const detail = this.#courseDetail();
+    let title = 'Audio';
+    if (detail) {
+      for (const lec of detail.lectures) {
+        const mod = lec.modules.find(m => m.id === moduleId);
+        if (mod) { title = mod.title; break; }
+      }
+    }
+    const { data, error } = await this.#supabase.client.from('module_audio')
+      .select('file_url, duration_seconds')
+      .eq('module_id', moduleId).single();
+    if (error || !data) return null;
+    const signedUrl = await this.#getSignedUrl((data as any).file_url);
+    if (!signedUrl) return null;
+
+    const neighbors = this.findAudioNeighbors(moduleId);
+    return {
+      moduleId, courseId, title, fileUrl: signedUrl,
+      durationSeconds: (data as any).duration_seconds,
+      nextModuleId: neighbors.next ?? undefined,
+      prevModuleId: neighbors.prev ?? undefined,
     };
   }
 

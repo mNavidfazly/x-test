@@ -30,6 +30,7 @@ export function createMockAudioPlayerService(options?: {
     close: vi.fn(),
     resumeIfWasPlaying: vi.fn(),
     getAudioElement: vi.fn().mockReturnValue(null),
+    trackEnded: signal(false),
   };
 }
 

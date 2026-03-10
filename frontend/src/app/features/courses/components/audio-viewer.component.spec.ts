@@ -133,6 +133,34 @@ describe('AudioViewerComponent', () => {
     );
   });
 
+  it('should pass audio-only neighbors to AudioPlayerService.play()', async () => {
+    const audio = createMockAudio();
+    const mockCourse = createMockCourseService();
+    mockCourse.findAudioNeighbors.mockReturnValue({ prev: 'audio-prev', next: 'audio-next' });
+
+    const mockAudioPlayer = createMockAudioPlayerService({ duration: 300 });
+    const mockAudioElement = document.createElement('audio');
+    mockAudioPlayer.play.mockReturnValue(mockAudioElement);
+
+    await render(AudioViewerComponent, {
+      componentInputs: { audio, moduleId: 'mod-1', courseId: 'course-1', moduleTitle: 'Test Audio' },
+      componentImports: [MockLucideIconComponent, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent, CustomSelectComponent],
+      providers: [
+        { provide: AudioPlayerService, useValue: mockAudioPlayer },
+        { provide: CourseService, useValue: mockCourse },
+      ],
+    });
+
+    await new Promise((r) => setTimeout(r));
+
+    expect(mockAudioPlayer.play).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nextModuleId: 'audio-next',
+        prevModuleId: 'audio-prev',
+      }),
+    );
+  });
+
   it('should render speed selector and change playback rate', async () => {
     const audio = createMockAudio();
     const { fixture } = await renderAudioViewer(audio);

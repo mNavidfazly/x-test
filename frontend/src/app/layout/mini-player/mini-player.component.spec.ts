@@ -6,10 +6,11 @@ import { Router, provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { MiniPlayerComponent } from './mini-player.component';
 import { AudioPlayerService } from '../../core/services/audio-player.service';
+import { CourseService } from '../../core/services/course.service';
 import {
   createMockAudioPlayerService,
-  MockAudioPlayerService,
 } from '../../__mocks__/audio-player.mock';
+import { createMockCourseService } from '../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../__mocks__/lucide.mock';
 import { ActiveTrack } from '../../core/services/audio-player.service';
 
@@ -30,6 +31,15 @@ const mockTrackWithNav: ActiveTrack = {
   nextModuleId: 'mod-next',
 };
 
+const mockNextTrack: ActiveTrack = {
+  moduleId: 'mod-next',
+  courseId: 'course-1',
+  title: 'Advanced Trading',
+  fileUrl: 'https://example.com/advanced.mp3',
+  durationSeconds: 600,
+  prevModuleId: 'mod-1',
+};
+
 async function renderMiniPlayer(options?: {
   activeTrack?: ActiveTrack | null;
   isPlaying?: boolean;
@@ -43,15 +53,22 @@ async function renderMiniPlayer(options?: {
     duration: options?.duration ?? 0,
   });
 
+  const courseService = createMockCourseService();
+  courseService.fetchAudioTrack.mockResolvedValue(mockNextTrack);
+
+  const mockAudioElement = { play: vi.fn().mockResolvedValue(undefined) };
+  audioPlayer.getAudioElement.mockReturnValue(mockAudioElement as any);
+
   const { fixture } = await render(MiniPlayerComponent, {
     componentImports: [MockLucideIconComponent],
     providers: [
       provideRouter([{ path: '**', component: DummyComponent }]),
       { provide: AudioPlayerService, useValue: audioPlayer },
+      { provide: CourseService, useValue: courseService },
     ],
   });
 
-  return { fixture, audioPlayer };
+  return { fixture, audioPlayer, courseService, mockAudioElement };
 }
 
 describe('MiniPlayerComponent', () => {
@@ -166,41 +183,53 @@ describe('MiniPlayerComponent', () => {
     it('does not show prev/next buttons when no nav IDs', async () => {
       await renderMiniPlayer({ activeTrack: mockTrack });
 
-      expect(screen.queryByLabelText('Previous module')).toBeNull();
-      expect(screen.queryByLabelText('Next module')).toBeNull();
+      expect(screen.queryByLabelText('Previous audio')).toBeNull();
+      expect(screen.queryByLabelText('Next audio')).toBeNull();
     });
 
     it('shows prev/next buttons when nav IDs are set', async () => {
       await renderMiniPlayer({ activeTrack: mockTrackWithNav });
 
-      expect(screen.getByLabelText('Previous module')).toBeTruthy();
-      expect(screen.getByLabelText('Next module')).toBeTruthy();
+      expect(screen.getByLabelText('Previous audio')).toBeTruthy();
+      expect(screen.getByLabelText('Next audio')).toBeTruthy();
     });
 
-    it('navigates to next module and closes player when next is clicked', async () => {
+    it('fetches and plays next audio track on next click', async () => {
       const user = userEvent.setup();
-      const { audioPlayer } = await renderMiniPlayer({
+      const { audioPlayer, courseService, mockAudioElement } = await renderMiniPlayer({
         activeTrack: mockTrackWithNav,
       });
 
-      await user.click(screen.getByLabelText('Next module'));
+      await user.click(screen.getByLabelText('Next audio'));
 
-      expect(audioPlayer.close).toHaveBeenCalledOnce();
-      const router = TestBed.inject(Router);
-      expect(router.url).toBe('/courses/course-1/modules/mod-next');
+      expect(courseService.fetchAudioTrack).toHaveBeenCalledWith('course-1', 'mod-next');
+      expect(audioPlayer.play).toHaveBeenCalledWith(mockNextTrack);
+      expect(mockAudioElement.play).toHaveBeenCalled();
     });
 
-    it('navigates to prev module and closes player when prev is clicked', async () => {
+    it('fetches and plays prev audio track on prev click', async () => {
       const user = userEvent.setup();
-      const { audioPlayer } = await renderMiniPlayer({
+      const { audioPlayer, courseService, mockAudioElement } = await renderMiniPlayer({
         activeTrack: mockTrackWithNav,
       });
 
-      await user.click(screen.getByLabelText('Previous module'));
+      await user.click(screen.getByLabelText('Previous audio'));
 
-      expect(audioPlayer.close).toHaveBeenCalledOnce();
+      expect(courseService.fetchAudioTrack).toHaveBeenCalledWith('course-1', 'mod-prev');
+      expect(audioPlayer.play).toHaveBeenCalled();
+      expect(mockAudioElement.play).toHaveBeenCalled();
+    });
+
+    it('does not navigate on next/prev click', async () => {
+      const user = userEvent.setup();
+      await renderMiniPlayer({ activeTrack: mockTrackWithNav });
+
       const router = TestBed.inject(Router);
-      expect(router.url).toBe('/courses/course-1/modules/mod-prev');
+      const initialUrl = router.url;
+
+      await user.click(screen.getByLabelText('Next audio'));
+
+      expect(router.url).toBe(initialUrl);
     });
   });
 

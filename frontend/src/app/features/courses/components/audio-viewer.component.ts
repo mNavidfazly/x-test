@@ -158,15 +158,15 @@ export class AudioViewerComponent {
       this.loadError.set(null);
 
       // Get or create audio element via AudioPlayerService
-      const nav = this.#courseService.moduleViewer()?.navigation;
+      const audioNeighbors = this.#courseService.findAudioNeighbors(modId);
       const audioElement = this.audioPlayer.play({
         moduleId: modId,
         courseId: this.courseId(),
         title: this.moduleTitle(),
         fileUrl: audioData.file_url,
         durationSeconds: audioData.duration_seconds,
-        nextModuleId: nav?.next?.id,
-        prevModuleId: nav?.prev?.id,
+        nextModuleId: audioNeighbors.next ?? undefined,
+        prevModuleId: audioNeighbors.prev ?? undefined,
       });
 
       const ws = WaveSurfer.create({

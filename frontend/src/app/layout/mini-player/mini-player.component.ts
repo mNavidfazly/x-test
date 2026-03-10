@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { LucideAngularModule, Headphones, Play, Pause, X, RotateCcw, RotateCw, SkipBack, SkipForward } from 'lucide-angular';
+import { LucideAngularModule, Headphones, Play, Pause, X, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2 } from 'lucide-angular';
 import { AudioPlayerService, ActiveTrack } from '../../core/services/audio-player.service';
+import { CourseService } from '../../core/services/course.service';
 
 @Component({
   selector: 'app-mini-player',
@@ -33,15 +34,20 @@ import { AudioPlayerService, ActiveTrack } from '../../core/services/audio-playe
             {{ formatTime(audioPlayer.currentTime()) }} / {{ formatTime(audioPlayer.duration()) }}
           </span>
 
-          <!-- Prev module -->
+          <!-- Prev audio -->
           @if (track.prevModuleId) {
             <button
               type="button"
               (click)="goToPrev(track)"
               class="btn-icon shrink-0 hidden sm:flex"
-              aria-label="Previous module"
+              aria-label="Previous audio"
+              [disabled]="isLoadingTrack()"
             >
-              <lucide-icon [img]="icons.SkipBack" [size]="16"></lucide-icon>
+              @if (isLoadingTrack()) {
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
+              } @else {
+                <lucide-icon [img]="icons.SkipBack" [size]="16"></lucide-icon>
+              }
             </button>
           }
 
@@ -75,15 +81,20 @@ import { AudioPlayerService, ActiveTrack } from '../../core/services/audio-playe
             <lucide-icon [img]="icons.RotateCw" [size]="16"></lucide-icon>
           </button>
 
-          <!-- Next module -->
+          <!-- Next audio -->
           @if (track.nextModuleId) {
             <button
               type="button"
               (click)="goToNext(track)"
               class="btn-icon shrink-0 hidden sm:flex"
-              aria-label="Next module"
+              aria-label="Next audio"
+              [disabled]="isLoadingTrack()"
             >
-              <lucide-icon [img]="icons.SkipForward" [size]="16"></lucide-icon>
+              @if (isLoadingTrack()) {
+                <span class="inline-flex animate-spin"><lucide-icon [img]="icons.Loader2" [size]="16"></lucide-icon></span>
+              } @else {
+                <lucide-icon [img]="icons.SkipForward" [size]="16"></lucide-icon>
+              }
             </button>
           }
 
@@ -103,14 +114,29 @@ import { AudioPlayerService, ActiveTrack } from '../../core/services/audio-playe
 })
 export class MiniPlayerComponent {
   readonly audioPlayer = inject(AudioPlayerService);
-  #router = inject(Router);
+  readonly #router = inject(Router);
+  readonly #courseService = inject(CourseService);
 
-  readonly icons = { Headphones, Play, Pause, X, RotateCcw, RotateCw, SkipBack, SkipForward };
+  readonly icons = { Headphones, Play, Pause, X, RotateCcw, RotateCw, SkipBack, SkipForward, Loader2 };
+
+  readonly isLoadingTrack = signal(false);
 
   readonly progressPercent = computed(() => {
     const dur = this.audioPlayer.duration();
     return dur > 0 ? (this.audioPlayer.currentTime() / dur) * 100 : 0;
   });
+
+  constructor() {
+    // Auto-advance to next audio when current track ends
+    effect(() => {
+      if (this.audioPlayer.trackEnded()) {
+        const track = this.audioPlayer.activeTrack();
+        if (track?.nextModuleId) {
+          this.goToNext(track);
+        }
+      }
+    });
+  }
 
   formatTime(seconds: number): string {
     const mins = Math.floor(seconds / 60);
@@ -122,17 +148,31 @@ export class MiniPlayerComponent {
     this.#router.navigate(['/courses', track.courseId, 'modules', track.moduleId]);
   }
 
-  goToNext(track: ActiveTrack): void {
-    if (track.nextModuleId) {
-      this.audioPlayer.close();
-      this.#router.navigate(['/courses', track.courseId, 'modules', track.nextModuleId]);
+  async goToNext(track: ActiveTrack): Promise<void> {
+    if (!track.nextModuleId || this.isLoadingTrack()) return;
+    this.isLoadingTrack.set(true);
+    try {
+      const next = await this.#courseService.fetchAudioTrack(track.courseId, track.nextModuleId);
+      if (next) {
+        this.audioPlayer.play(next);
+        this.audioPlayer.getAudioElement()?.play();
+      }
+    } finally {
+      this.isLoadingTrack.set(false);
     }
   }
 
-  goToPrev(track: ActiveTrack): void {
-    if (track.prevModuleId) {
-      this.audioPlayer.close();
-      this.#router.navigate(['/courses', track.courseId, 'modules', track.prevModuleId]);
+  async goToPrev(track: ActiveTrack): Promise<void> {
+    if (!track.prevModuleId || this.isLoadingTrack()) return;
+    this.isLoadingTrack.set(true);
+    try {
+      const prev = await this.#courseService.fetchAudioTrack(track.courseId, track.prevModuleId);
+      if (prev) {
+        this.audioPlayer.play(prev);
+        this.audioPlayer.getAudioElement()?.play();
+      }
+    } finally {
+      this.isLoadingTrack.set(false);
     }
   }
 }

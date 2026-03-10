@@ -409,6 +409,22 @@ describe('AudioPlayerService', () => {
       expect(service.isPlaying()).toBe(false);
     });
 
+    it('ended event should set trackEnded to true', () => {
+      mockAudio._fire('ended');
+      expect(service.trackEnded()).toBe(true);
+    });
+
+    it('trackEnded should reset to false on new play()', () => {
+      mockAudio._fire('ended');
+      expect(service.trackEnded()).toBe(true);
+
+      const mockAudio2 = createMockAudio();
+      vi.mocked(globalThis.Audio).mockImplementation(() => mockAudio2 as any);
+      service.play(createTrack({ moduleId: 'mod-2' }));
+
+      expect(service.trackEnded()).toBe(false);
+    });
+
     it('loadedmetadata should update duration from element', () => {
       mockAudio.duration = 245.3;
       mockAudio._fire('loadedmetadata');
