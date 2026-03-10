@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { ModulePdf } from '../core/models/course.model';
 
 @Component({
@@ -9,4 +9,6 @@ import { ModulePdf } from '../core/models/course.model';
 })
 export class MockPdfViewerComponent {
   readonly pdf = input.required<ModulePdf>();
+  readonly initialPage = input(1);
+  readonly pageChange = output<number>();
 }

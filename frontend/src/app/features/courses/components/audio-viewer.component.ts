@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   DestroyRef,
   effect,
   ElementRef,
@@ -14,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Headphones, Play, Pause, Volume2, VolumeX, Download } from 'lucide-angular';
 import WaveSurfer from 'wavesurfer.js';
 import { ModuleAudio } from '../../../core/models/course.model';
+import { AudioPlayerService } from '../../../core/services/audio-player.service';
 import { formatFileSize } from '../../../core/utils/file.utils';
 import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
@@ -61,14 +61,14 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
             type="button"
             (click)="togglePlay()"
             class="btn-icon w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-colors duration-200"
-            [attr.aria-label]="isPlaying() ? 'Pause' : 'Play'"
+            [attr.aria-label]="audioPlayer.isPlaying() ? 'Pause' : 'Play'"
           >
-            <lucide-icon [img]="isPlaying() ? icons.Pause : icons.Play" [size]="18"></lucide-icon>
+            <lucide-icon [img]="audioPlayer.isPlaying() ? icons.Pause : icons.Play" [size]="18"></lucide-icon>
           </button>
 
           <!-- Time display -->
           <span class="text-sm font-medium text-slate-700 tabular-nums min-w-[100px]">
-            {{ formatTime(currentTime()) }} / {{ formatTime(duration()) }}
+            {{ formatTime(audioPlayer.currentTime()) }} / {{ formatTime(audioPlayer.duration()) }}
           </span>
 
           <!-- Volume control -->
@@ -77,16 +77,16 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
               type="button"
               (click)="toggleMute()"
               class="text-slate-500 hover:text-slate-700 transition-colors"
-              [attr.aria-label]="isMuted() ? 'Unmute' : 'Mute'"
+              [attr.aria-label]="audioPlayer.isMuted() ? 'Unmute' : 'Mute'"
             >
-              <lucide-icon [img]="isMuted() ? icons.VolumeX : icons.Volume2" [size]="18"></lucide-icon>
+              <lucide-icon [img]="audioPlayer.isMuted() ? icons.VolumeX : icons.Volume2" [size]="18"></lucide-icon>
             </button>
             <input
               type="range"
               min="0"
               max="1"
               step="0.05"
-              [ngModel]="volume()"
+              [ngModel]="audioPlayer.volume()"
               (ngModelChange)="onVolumeChange($event)"
               class="w-20 h-1.5 accent-teal-600 cursor-pointer"
               aria-label="Volume"
@@ -97,7 +97,7 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
           <div class="relative">
             <app-custom-select
               [options]="speedOptions"
-              [value]="playbackRate().toString()"
+              [value]="audioPlayer.playbackRate().toString()"
               (valueChange)="onSpeedChange($any($event))"
               ariaLabel="Playback speed"
             />
@@ -121,8 +121,13 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 })
 export class AudioViewerComponent {
   readonly audio = input.required<ModuleAudio>();
+  readonly moduleId = input.required<string>();
+  readonly courseId = input.required<string>();
+  readonly moduleTitle = input.required<string>();
 
   readonly waveformContainer = viewChild<ElementRef>('waveformContainer');
+
+  readonly audioPlayer = inject(AudioPlayerService);
 
   readonly icons = { Headphones, Play, Pause, Volume2, VolumeX, Download };
   readonly speedOptions: SelectOption[] = [
@@ -135,34 +140,33 @@ export class AudioViewerComponent {
   ];
   readonly formatFileSize = formatFileSize;
 
-  readonly isPlaying = signal(false);
-  readonly currentTime = signal(0);
-  readonly duration = signal(0);
-  readonly volume = signal(1);
-  readonly isMuted = signal(false);
-  readonly playbackRate = signal(1);
   readonly isLoading = signal(true);
   readonly loadError = signal<string | null>(null);
 
   #wavesurfer: WaveSurfer | null = null;
+  #wasPlaying = false;
   readonly #destroyRef = inject(DestroyRef);
 
   constructor() {
     effect(() => {
       const audioData = this.audio();
       const containerRef = this.waveformContainer();
-      if (!audioData?.file_url || !containerRef) return;
+      const modId = this.moduleId();
+      if (!audioData?.file_url || !containerRef || !modId) return;
 
-      this.#destroyWaveSurfer();
+      this.#destroyWaveSurferOnly();
       this.isLoading.set(true);
       this.loadError.set(null);
 
-      // Use HTML5 Audio element for streaming playback instead of Web Audio API.
-      // Web Audio's decodeAudioData loads the entire file into memory (~10x decoded size),
-      // which fails for large MP3s (30-50 MB -> 300-500 MB PCM in memory).
-      // Provide generated peaks so WaveSurfer doesn't fetch the file for waveform rendering.
-      const audioElement = new Audio(audioData.file_url);
-      audioElement.preload = 'metadata';
+      // Get or create audio element via AudioPlayerService
+      const audioElement = this.audioPlayer.play({
+        moduleId: modId,
+        courseId: this.courseId(),
+        title: this.moduleTitle(),
+        fileName: audioData.file_name,
+        fileUrl: audioData.file_url,
+        durationSeconds: audioData.duration_seconds,
+      });
 
       const ws = WaveSurfer.create({
         container: containerRef.nativeElement,
@@ -180,7 +184,6 @@ export class AudioViewerComponent {
 
       ws.on('ready', () => {
         this.isLoading.set(false);
-        this.duration.set(ws.getDuration());
       });
 
       ws.on('error', (err) => {
@@ -188,23 +191,17 @@ export class AudioViewerComponent {
         this.loadError.set(typeof err === 'string' ? err : 'Failed to load audio');
       });
 
-      ws.on('timeupdate', (time: number) => {
-        this.currentTime.set(time);
-      });
-
-      ws.on('play', () => {
-        this.isPlaying.set(true);
-      });
-
-      ws.on('pause', () => {
-        this.isPlaying.set(false);
-      });
-
       this.#wavesurfer = ws;
     });
 
     this.#destroyRef.onDestroy(() => {
-      this.#destroyWaveSurfer();
+      // Only destroy WaveSurfer visualization — keep audio playing in service
+      this.#wasPlaying = this.audioPlayer.isPlaying();
+      this.#destroyWaveSurferOnly();
+      // WaveSurfer.destroy() may pause the media element — resume if was playing
+      if (this.#wasPlaying) {
+        this.audioPlayer.resumeIfWasPlaying();
+      }
     });
   }
 
@@ -213,21 +210,19 @@ export class AudioViewerComponent {
   }
 
   toggleMute() {
+    this.audioPlayer.toggleMute();
     if (this.#wavesurfer) {
-      const newMuted = !this.isMuted();
-      this.isMuted.set(newMuted);
-      this.#wavesurfer.setVolume(newMuted ? 0 : this.volume());
+      this.#wavesurfer.setVolume(this.audioPlayer.isMuted() ? 0 : this.audioPlayer.volume());
     }
   }
 
   onVolumeChange(value: number) {
-    this.volume.set(value);
-    this.isMuted.set(value === 0);
+    this.audioPlayer.setVolume(value);
     this.#wavesurfer?.setVolume(value);
   }
 
   onSpeedChange(rate: number) {
-    this.playbackRate.set(Number(rate));
+    this.audioPlayer.setPlaybackRate(Number(rate));
     this.#wavesurfer?.setPlaybackRate(Number(rate));
   }
 
@@ -240,7 +235,6 @@ export class AudioViewerComponent {
   #generatePeaks(length: number): Float32Array {
     const peaks = new Float32Array(length);
     for (let i = 0; i < length; i++) {
-      // Generate a natural-looking waveform pattern using sine waves
       const base = 0.3 + 0.2 * Math.sin(i * 0.05) + 0.15 * Math.sin(i * 0.13);
       const variation = 0.1 * Math.sin(i * 0.37) + 0.05 * Math.sin(i * 0.71);
       peaks[i] = Math.min(1, Math.max(0.1, base + variation));
@@ -248,7 +242,8 @@ export class AudioViewerComponent {
     return peaks;
   }
 
-  #destroyWaveSurfer() {
+  /** Destroy WaveSurfer visualization only — does NOT stop audio playback */
+  #destroyWaveSurferOnly() {
     if (this.#wavesurfer) {
       this.#wavesurfer.destroy();
       this.#wavesurfer = null;

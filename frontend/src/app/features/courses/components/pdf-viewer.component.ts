@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, viewChild, ElementRef } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, viewChild, ElementRef } from '@angular/core';
 import { LucideAngularModule, FileDown, Maximize } from 'lucide-angular';
 import { NgxExtendedPdfViewerModule, pdfDefaultOptions } from 'ngx-extended-pdf-viewer';
 import { ModulePdf } from '../../../core/models/course.model';
@@ -33,6 +33,8 @@ import { ModulePdf } from '../../../core/models/course.model';
         <ngx-extended-pdf-viewer
           [src]="pdf().file_url"
           [height]="'80vh'"
+          [page]="initialPage()"
+          (pageChange)="onPageChange($event)"
           [pageViewMode]="'infinite-scroll'"
           [sidebarVisible]="false"
           [showToolbar]="true"
@@ -57,6 +59,8 @@ import { ModulePdf } from '../../../core/models/course.model';
 })
 export class PdfViewerComponent {
   readonly pdf = input.required<ModulePdf>();
+  readonly initialPage = input(1);
+  readonly pageChange = output<number>();
   readonly icons = { FileDown, Maximize };
 
   private viewerContainer = viewChild<ElementRef<HTMLDivElement>>('viewerContainer');
@@ -64,6 +68,10 @@ export class PdfViewerComponent {
   constructor() {
     pdfDefaultOptions.disableRange = true;
     pdfDefaultOptions.disableStream = true;
+  }
+
+  onPageChange(page: number) {
+    this.pageChange.emit(page);
   }
 
   enterFullscreen() {

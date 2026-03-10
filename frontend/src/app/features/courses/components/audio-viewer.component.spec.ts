@@ -7,6 +7,8 @@ import { CustomSelectComponent } from '../../../shared/components/custom-select.
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { ModuleAudio } from '../../../core/models/course.model';
+import { AudioPlayerService } from '../../../core/services/audio-player.service';
+import { createMockAudioPlayerService } from '../../../__mocks__/audio-player.mock';
 
 vi.mock('wavesurfer.js', () => {
   const mockWs = {
@@ -36,16 +38,26 @@ function createMockAudio(overrides: Partial<ModuleAudio> = {}): ModuleAudio {
 }
 
 async function renderAudioViewer(audio: ModuleAudio) {
+  const mockAudioPlayer = createMockAudioPlayerService({
+    duration: audio.duration_seconds ?? 300,
+  });
+  // play() must return an HTMLAudioElement — the component passes it to WaveSurfer
+  const mockAudioElement = document.createElement('audio');
+  mockAudioPlayer.play.mockReturnValue(mockAudioElement);
+
   const result = await render(AudioViewerComponent, {
-    componentInputs: { audio },
+    componentInputs: { audio, moduleId: 'mod-1', courseId: 'course-1', moduleTitle: 'Test Audio' },
     componentImports: [MockLucideIconComponent, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent, CustomSelectComponent],
+    providers: [
+      { provide: AudioPlayerService, useValue: mockAudioPlayer },
+    ],
   });
 
   // Allow effect to run
   await new Promise((r) => setTimeout(r));
   result.fixture.detectChanges();
 
-  return result;
+  return { ...result, mockAudioPlayer };
 }
 
 async function triggerWaveSurferReady(fixture: any) {

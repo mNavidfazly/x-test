@@ -3,9 +3,11 @@ import { Router, RouterOutlet } from '@angular/router';
 import { LucideAngularModule, X } from 'lucide-angular';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { HeaderComponent } from '../header/header.component';
+import { MiniPlayerComponent } from '../mini-player/mini-player.component';
 import { ToastContainerComponent } from '../../shared/components/toast-container.component';
 import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog.component';
 import { NotificationService } from '../../core/services/notification.service';
+import { AudioPlayerService } from '../../core/services/audio-player.service';
 import { SidebarService } from '../../core/services/sidebar.service';
 import { AppNotification } from '../../core/models/notification.model';
 import { getNotificationRoute } from '../../core/models/notification.model';
@@ -13,7 +15,7 @@ import { getNotificationRoute } from '../../core/models/notification.model';
 @Component({
   selector: 'app-main-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, HeaderComponent, ToastContainerComponent, ConfirmDialogComponent, LucideAngularModule],
+  imports: [RouterOutlet, SidebarComponent, HeaderComponent, MiniPlayerComponent, ToastContainerComponent, ConfirmDialogComponent, LucideAngularModule],
   host: {
     class: 'block',
     '(document:keydown)': 'onKeydown($event)',
@@ -26,12 +28,13 @@ import { getNotificationRoute } from '../../core/models/notification.model';
       />
       <div class="flex-1 flex flex-col min-w-0">
         <app-header (menuToggle)="sidebarOpen.set(!sidebarOpen())" />
-        <main id="main-content" class="flex-1 overflow-y-auto p-3 lg:p-4">
+        <main id="main-content" class="flex-1 overflow-y-auto p-3 lg:p-4" [class.pb-16]="audioPlayer.activeTrack()">
           <router-outlet />
         </main>
       </div>
     </div>
 
+    <app-mini-player />
     <app-toast-container />
     <app-confirm-dialog />
 
@@ -60,6 +63,7 @@ import { getNotificationRoute } from '../../core/models/notification.model';
 export class MainLayoutComponent {
   readonly icons = { X };
   readonly notificationService = inject(NotificationService);
+  readonly audioPlayer = inject(AudioPlayerService);
   #router = inject(Router);
   #sidebar = inject(SidebarService);
 

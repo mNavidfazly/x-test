@@ -8,10 +8,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { ProfileService } from '../../core/services/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { SidebarService } from '../../core/services/sidebar.service';
+import { AudioPlayerService } from '../../core/services/audio-player.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
 import { createMockNotificationService, createMockCourseService } from '../../__mocks__/course.mock';
 import { createMockSidebarService } from '../../__mocks__/sidebar.mock';
+import { createMockAudioPlayerService } from '../../__mocks__/audio-player.mock';
 import { CourseService } from '../../core/services/course.service';
 import { ToastService } from '../../core/services/toast.service';
 import { createMockToastService } from '../../__mocks__/toast.mock';
@@ -24,6 +26,7 @@ async function renderLayout() {
   const profile = createMockProfileService({ profile: { full_name: 'Test', avatar_url: null } });
   const notifications = createMockNotificationService();
   const sidebar = createMockSidebarService();
+  const audioPlayer = createMockAudioPlayerService();
 
   const { fixture } = await render(MainLayoutComponent, {
     providers: [
@@ -34,6 +37,7 @@ async function renderLayout() {
       { provide: SidebarService, useValue: sidebar },
       { provide: CourseService, useValue: createMockCourseService() },
       { provide: ToastService, useValue: createMockToastService() },
+      { provide: AudioPlayerService, useValue: audioPlayer },
     ],
   });
 

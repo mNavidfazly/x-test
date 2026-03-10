@@ -9,4 +9,7 @@ import { ModuleAudio } from '../core/models/course.model';
 })
 export class MockAudioViewerComponent {
   readonly audio = input.required<ModuleAudio>();
+  readonly moduleId = input.required<string>();
+  readonly courseId = input.required<string>();
+  readonly moduleTitle = input.required<string>();
 }

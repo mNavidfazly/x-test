@@ -109,7 +109,11 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
               <app-video-viewer [video]="$any(courseService.moduleViewer()!.content.data)" />
             }
             @case ('pdf') {
-              <app-pdf-viewer [pdf]="$any(courseService.moduleViewer()!.content.data)" />
+              <app-pdf-viewer
+                [pdf]="$any(courseService.moduleViewer()!.content.data)"
+                [initialPage]="courseService.getViewerState(courseService.moduleViewer()!.module.id)?.pdfPage ?? 1"
+                (pageChange)="onPdfPageChange($event)"
+              />
             }
             @case ('markdown') {
               <app-markdown-viewer [content]="$any(courseService.moduleViewer()!.content.data).content" />
@@ -128,7 +132,12 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
                 (examCompleted)="onExamCompleted()" />
             }
             @case ('audio') {
-              <app-audio-viewer [audio]="$any(courseService.moduleViewer()!.content.data)" />
+              <app-audio-viewer
+                [audio]="$any(courseService.moduleViewer()!.content.data)"
+                [moduleId]="courseService.moduleViewer()!.module.id"
+                [courseId]="courseId()"
+                [moduleTitle]="courseService.moduleViewer()!.module.title"
+              />
             }
             @case ('download') {
               <app-download-viewer
@@ -279,5 +288,12 @@ export class ModuleViewerPageComponent {
   onExamCompleted() {
     // No-op: exam grading happens asynchronously by a lecturer.
     // Progress auto-marks via on_exam_passed_auto_mark trigger when graded.
+  }
+
+  onPdfPageChange(page: number) {
+    const moduleId = this.courseService.moduleViewer()?.module.id;
+    if (moduleId) {
+      this.courseService.setViewerState(moduleId, { pdfPage: page });
+    }
   }
 }

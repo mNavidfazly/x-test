@@ -34,6 +34,13 @@ export class CourseService {
   #loading = signal(false);
   #error = signal('');
 
+  // Caching layer: avoid redundant loading on navigation
+  #moduleCache = new Map<string, ModuleViewerData>();
+  #signedUrlCache = new Map<string, { url: string; expiresAt: number }>();
+  #viewerStateCache = new Map<string, { pdfPage?: number }>();
+  readonly #MODULE_CACHE_LIMIT = 20;
+  readonly #SIGNED_URL_TTL_MS = 50 * 60 * 1000; // 50 minutes
+
   readonly courses = this.#courses.asReadonly();
   readonly courseDetail = this.#courseDetail.asReadonly();
   readonly moduleViewer = this.#moduleViewer.asReadonly();
@@ -289,9 +296,17 @@ export class CourseService {
   }
 
   async loadModuleViewer(courseId: string, moduleId: string) {
-    this.#loading.set(true);
     this.#error.set('');
-    this.#moduleViewer.set(null);
+
+    // Stale-while-revalidate: show cached data immediately if available
+    const cached = this.#moduleCache.get(moduleId);
+    if (cached) {
+      this.#moduleViewer.set(cached);
+      this.#loading.set(false);
+    } else {
+      this.#loading.set(true);
+      this.#moduleViewer.set(null);
+    }
 
     try {
       const client = this.#supabase.client;
@@ -356,7 +371,15 @@ export class CourseService {
         ? { status: (progressRes.data as { status: string }).status as ModuleProgress['status'], completed_at: (progressRes.data as { completed_at: string | null }).completed_at, notes: (progressRes.data as any).notes ?? null }
         : null;
 
-      this.#moduleViewer.set({ module, content, files, progress, navigation });
+      const viewerData: ModuleViewerData = { module, content, files, progress, navigation };
+      this.#moduleViewer.set(viewerData);
+
+      // Update cache (LRU eviction if over limit)
+      this.#moduleCache.set(moduleId, viewerData);
+      if (this.#moduleCache.size > this.#MODULE_CACHE_LIMIT) {
+        const oldest = this.#moduleCache.keys().next().value;
+        if (oldest) this.#moduleCache.delete(oldest);
+      }
 
       // Auto-track in_progress when a user first views a module
       const tenantId = this.#auth.currentUser()?.claims?.tenant_id;
@@ -435,11 +458,13 @@ export class CourseService {
       return;
     }
 
-    // Update local state
-    this.#moduleViewer.set({
+    // Update local state + cache
+    const updated = {
       ...viewer,
-      progress: { status: 'completed', completed_at: new Date().toISOString(), notes: viewer.progress?.notes ?? null },
-    });
+      progress: { status: 'completed' as const, completed_at: new Date().toISOString(), notes: viewer.progress?.notes ?? null },
+    };
+    this.#moduleViewer.set(updated);
+    this.#moduleCache.set(moduleId, updated);
   }
 
   async saveModuleNotes(moduleId: string, notes: string): Promise<void> {
@@ -454,11 +479,24 @@ export class CourseService {
 
     if (error) throw new Error(extractErrorMessage(error, 'Failed to save notes'));
 
-    // Update local state
+    // Update local state + cache
     const viewer = this.#moduleViewer();
     if (viewer?.progress) {
-      this.#moduleViewer.set({ ...viewer, progress: { ...viewer.progress, notes: notes || null } });
+      const updated = { ...viewer, progress: { ...viewer.progress, notes: notes || null } };
+      this.#moduleViewer.set(updated);
+      this.#moduleCache.set(moduleId, updated);
     }
+  }
+
+  // --- Viewer state persistence (survives navigation) ---
+
+  setViewerState(moduleId: string, state: { pdfPage?: number }): void {
+    const existing = this.#viewerStateCache.get(moduleId) ?? {};
+    this.#viewerStateCache.set(moduleId, { ...existing, ...state });
+  }
+
+  getViewerState(moduleId: string): { pdfPage?: number } | undefined {
+    return this.#viewerStateCache.get(moduleId);
   }
 
   // --- Phase 4A: Enrollment methods ---
@@ -1679,13 +1717,24 @@ export class CourseService {
   }
 
   async #getSignedUrlFromBucket(bucket: string, storagePath: string): Promise<string | null> {
+    const cacheKey = `${bucket}/${storagePath}`;
+    const cached = this.#signedUrlCache.get(cacheKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.url;
+    }
+
     const { data, error } = await this.#supabase.client.storage
       .from(bucket)
       .createSignedUrl(storagePath, 3600);
     if (error) {
-      console.warn(`Signed URL failed for "${bucket}/${storagePath}": ${error.message}`);
+      console.warn(`Signed URL failed for "${cacheKey}": ${error.message}`);
       return null;
     }
+
+    this.#signedUrlCache.set(cacheKey, {
+      url: data.signedUrl,
+      expiresAt: Date.now() + this.#SIGNED_URL_TTL_MS,
+    });
     return data.signedUrl;
   }
 

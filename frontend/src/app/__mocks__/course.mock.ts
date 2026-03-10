@@ -40,6 +40,8 @@ export function createMockCourseService(options?: {
     loadModuleViewer: vi.fn().mockResolvedValue(undefined),
     markModuleComplete: vi.fn().mockResolvedValue(undefined),
     saveModuleNotes: vi.fn().mockResolvedValue(undefined),
+    setViewerState: vi.fn(),
+    getViewerState: vi.fn().mockReturnValue(undefined),
     createCourse: vi.fn().mockResolvedValue({ id: 'new-course-id' }),
     updateCourse: vi.fn().mockResolvedValue(undefined),
     deleteCourse: vi.fn().mockResolvedValue(undefined),
