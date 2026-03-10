@@ -14,6 +14,7 @@ import { LucideAngularModule, Headphones, Play, Pause, Volume2, VolumeX, Downloa
 import WaveSurfer from 'wavesurfer.js';
 import { ModuleAudio } from '../../../core/models/course.model';
 import { AudioPlayerService } from '../../../core/services/audio-player.service';
+import { CourseService } from '../../../core/services/course.service';
 import { formatFileSize } from '../../../core/utils/file.utils';
 import { CustomSelectComponent, SelectOption } from '../../../shared/components/custom-select.component';
 import { LoadingSpinnerComponent } from '../../../shared/components/loading-spinner.component';
@@ -29,12 +30,9 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
       <!-- File info header -->
       <div class="flex items-center gap-3">
         <lucide-icon [img]="icons.Headphones" [size]="24" class="text-teal-600"></lucide-icon>
-        <div class="min-w-0 flex-1">
-          <h3 class="text-lg font-semibold text-slate-900 truncate">{{ audio().file_name }}</h3>
-          @if (audio().file_size) {
-            <p class="text-sm text-slate-500">{{ formatFileSize(audio().file_size) }}</p>
-          }
-        </div>
+        @if (audio().file_size) {
+          <span class="text-sm text-slate-500">{{ formatFileSize(audio().file_size) }}</span>
+        }
       </div>
 
       @if (isLoading()) {
@@ -128,6 +126,7 @@ export class AudioViewerComponent {
   readonly waveformContainer = viewChild<ElementRef>('waveformContainer');
 
   readonly audioPlayer = inject(AudioPlayerService);
+  readonly #courseService = inject(CourseService);
 
   readonly icons = { Headphones, Play, Pause, Volume2, VolumeX, Download };
   readonly speedOptions: SelectOption[] = [
@@ -159,13 +158,15 @@ export class AudioViewerComponent {
       this.loadError.set(null);
 
       // Get or create audio element via AudioPlayerService
+      const nav = this.#courseService.moduleViewer()?.navigation;
       const audioElement = this.audioPlayer.play({
         moduleId: modId,
         courseId: this.courseId(),
         title: this.moduleTitle(),
-        fileName: audioData.file_name,
         fileUrl: audioData.file_url,
         durationSeconds: audioData.duration_seconds,
+        nextModuleId: nav?.next?.id,
+        prevModuleId: nav?.prev?.id,
       });
 
       const ws = WaveSurfer.create({

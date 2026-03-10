@@ -22,6 +22,8 @@ export function createMockAudioPlayerService(options?: {
     play: vi.fn(),
     togglePlay: vi.fn(),
     seek: vi.fn(),
+    skipForward: vi.fn(),
+    skipBack: vi.fn(),
     setVolume: vi.fn(),
     toggleMute: vi.fn(),
     setPlaybackRate: vi.fn(),

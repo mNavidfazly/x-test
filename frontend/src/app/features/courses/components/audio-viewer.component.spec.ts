@@ -8,7 +8,9 @@ import { LoadingSpinnerComponent } from '../../../shared/components/loading-spin
 import { ErrorAlertComponent } from '../../../shared/components/error-alert.component';
 import { ModuleAudio } from '../../../core/models/course.model';
 import { AudioPlayerService } from '../../../core/services/audio-player.service';
+import { CourseService } from '../../../core/services/course.service';
 import { createMockAudioPlayerService } from '../../../__mocks__/audio-player.mock';
+import { createMockCourseService } from '../../../__mocks__/course.mock';
 
 vi.mock('wavesurfer.js', () => {
   const mockWs = {
@@ -50,6 +52,7 @@ async function renderAudioViewer(audio: ModuleAudio) {
     componentImports: [MockLucideIconComponent, FormsModule, LoadingSpinnerComponent, ErrorAlertComponent, CustomSelectComponent],
     providers: [
       { provide: AudioPlayerService, useValue: mockAudioPlayer },
+      { provide: CourseService, useValue: createMockCourseService() },
     ],
   });
 
@@ -72,13 +75,6 @@ async function triggerWaveSurferReady(fixture: any) {
 describe('AudioViewerComponent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-  });
-
-  it('should display file name', async () => {
-    const audio = createMockAudio({ file_name: 'my-podcast.mp3' });
-    await renderAudioViewer(audio);
-
-    expect(screen.getByText('my-podcast.mp3')).toBeTruthy();
   });
 
   it('should display file size', async () => {

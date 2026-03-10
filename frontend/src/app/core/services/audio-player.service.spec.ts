@@ -35,7 +35,6 @@ function createTrack(overrides: Partial<ActiveTrack> = {}): ActiveTrack {
     moduleId: 'mod-1',
     courseId: 'course-1',
     title: 'Test Track',
-    fileName: 'audio.mp3',
     fileUrl: 'https://example.com/audio.mp3',
     durationSeconds: 120,
     ...overrides,
@@ -191,6 +190,77 @@ describe('AudioPlayerService', () => {
       service.seek(45.5);
 
       expect(mockAudio.currentTime).toBe(45.5);
+    });
+  });
+
+  describe('skipForward()', () => {
+    it('should do nothing when no element exists', () => {
+      service.skipForward();
+      // No error thrown
+    });
+
+    it('should advance currentTime by 10 seconds by default', () => {
+      service.play(createTrack());
+      mockAudio.currentTime = 30;
+      mockAudio.duration = 120;
+
+      service.skipForward();
+
+      expect(mockAudio.currentTime).toBe(40);
+    });
+
+    it('should advance by custom seconds', () => {
+      service.play(createTrack());
+      mockAudio.currentTime = 30;
+      mockAudio.duration = 120;
+
+      service.skipForward(15);
+
+      expect(mockAudio.currentTime).toBe(45);
+    });
+
+    it('should not exceed duration', () => {
+      service.play(createTrack());
+      mockAudio.currentTime = 115;
+      mockAudio.duration = 120;
+
+      service.skipForward();
+
+      expect(mockAudio.currentTime).toBe(120);
+    });
+  });
+
+  describe('skipBack()', () => {
+    it('should do nothing when no element exists', () => {
+      service.skipBack();
+      // No error thrown
+    });
+
+    it('should rewind currentTime by 10 seconds by default', () => {
+      service.play(createTrack());
+      mockAudio.currentTime = 30;
+
+      service.skipBack();
+
+      expect(mockAudio.currentTime).toBe(20);
+    });
+
+    it('should rewind by custom seconds', () => {
+      service.play(createTrack());
+      mockAudio.currentTime = 30;
+
+      service.skipBack(5);
+
+      expect(mockAudio.currentTime).toBe(25);
+    });
+
+    it('should not go below 0', () => {
+      service.play(createTrack());
+      mockAudio.currentTime = 5;
+
+      service.skipBack();
+
+      expect(mockAudio.currentTime).toBe(0);
     });
   });
 

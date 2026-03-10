@@ -20,9 +20,14 @@ const mockTrack: ActiveTrack = {
   moduleId: 'mod-1',
   courseId: 'course-1',
   title: 'Introduction to Trading',
-  fileName: 'intro-trading.mp3',
   fileUrl: 'https://example.com/intro.mp3',
   durationSeconds: 300,
+};
+
+const mockTrackWithNav: ActiveTrack = {
+  ...mockTrack,
+  prevModuleId: 'mod-prev',
+  nextModuleId: 'mod-next',
 };
 
 async function renderMiniPlayer(options?: {
@@ -61,11 +66,10 @@ describe('MiniPlayerComponent', () => {
   });
 
   describe('when active track is set', () => {
-    it('shows track title and filename', async () => {
+    it('shows track title', async () => {
       await renderMiniPlayer({ activeTrack: mockTrack });
 
       expect(screen.getByText('Introduction to Trading')).toBeTruthy();
-      expect(screen.getByText('intro-trading.mp3')).toBeTruthy();
     });
 
     it('shows play button when paused', async () => {
@@ -133,6 +137,70 @@ describe('MiniPlayerComponent', () => {
 
       const router = TestBed.inject(Router);
       expect(router.url).toBe('/courses/course-1/modules/mod-1');
+    });
+
+    it('calls skipBack when skip back button is clicked', async () => {
+      const user = userEvent.setup();
+      const { audioPlayer } = await renderMiniPlayer({
+        activeTrack: mockTrack,
+      });
+
+      await user.click(screen.getByLabelText('Skip back 10 seconds'));
+
+      expect(audioPlayer.skipBack).toHaveBeenCalledOnce();
+    });
+
+    it('calls skipForward when skip forward button is clicked', async () => {
+      const user = userEvent.setup();
+      const { audioPlayer } = await renderMiniPlayer({
+        activeTrack: mockTrack,
+      });
+
+      await user.click(screen.getByLabelText('Skip forward 10 seconds'));
+
+      expect(audioPlayer.skipForward).toHaveBeenCalledOnce();
+    });
+  });
+
+  describe('navigation buttons', () => {
+    it('does not show prev/next buttons when no nav IDs', async () => {
+      await renderMiniPlayer({ activeTrack: mockTrack });
+
+      expect(screen.queryByLabelText('Previous module')).toBeNull();
+      expect(screen.queryByLabelText('Next module')).toBeNull();
+    });
+
+    it('shows prev/next buttons when nav IDs are set', async () => {
+      await renderMiniPlayer({ activeTrack: mockTrackWithNav });
+
+      expect(screen.getByLabelText('Previous module')).toBeTruthy();
+      expect(screen.getByLabelText('Next module')).toBeTruthy();
+    });
+
+    it('navigates to next module and closes player when next is clicked', async () => {
+      const user = userEvent.setup();
+      const { audioPlayer } = await renderMiniPlayer({
+        activeTrack: mockTrackWithNav,
+      });
+
+      await user.click(screen.getByLabelText('Next module'));
+
+      expect(audioPlayer.close).toHaveBeenCalledOnce();
+      const router = TestBed.inject(Router);
+      expect(router.url).toBe('/courses/course-1/modules/mod-next');
+    });
+
+    it('navigates to prev module and closes player when prev is clicked', async () => {
+      const user = userEvent.setup();
+      const { audioPlayer } = await renderMiniPlayer({
+        activeTrack: mockTrackWithNav,
+      });
+
+      await user.click(screen.getByLabelText('Previous module'));
+
+      expect(audioPlayer.close).toHaveBeenCalledOnce();
+      const router = TestBed.inject(Router);
+      expect(router.url).toBe('/courses/course-1/modules/mod-prev');
     });
   });
 

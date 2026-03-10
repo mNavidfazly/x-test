@@ -31,10 +31,10 @@ import { getNotificationRoute } from '../../core/models/notification.model';
         <main id="main-content" class="flex-1 overflow-y-auto p-3 lg:p-4" [class.pb-16]="audioPlayer.activeTrack()">
           <router-outlet />
         </main>
+        <app-mini-player />
       </div>
     </div>
 
-    <app-mini-player />
     <app-toast-container />
     <app-confirm-dialog />
 

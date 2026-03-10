@@ -4,9 +4,10 @@ export interface ActiveTrack {
   moduleId: string;
   courseId: string;
   title: string;
-  fileName: string;
   fileUrl: string;
   durationSeconds: number | null;
+  nextModuleId?: string;
+  prevModuleId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -76,6 +77,19 @@ export class AudioPlayerService {
     if (this.#audioElement) {
       this.#audioElement.currentTime = time;
     }
+  }
+
+  skipForward(seconds = 10): void {
+    if (!this.#audioElement) return;
+    this.#audioElement.currentTime = Math.min(
+      this.#audioElement.currentTime + seconds,
+      this.#audioElement.duration || Infinity
+    );
+  }
+
+  skipBack(seconds = 10): void {
+    if (!this.#audioElement) return;
+    this.#audioElement.currentTime = Math.max(this.#audioElement.currentTime - seconds, 0);
   }
 
   setVolume(v: number): void {
