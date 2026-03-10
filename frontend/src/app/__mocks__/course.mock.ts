@@ -157,6 +157,7 @@ export function createMockCourseDetail(overrides?: Partial<CourseDetail>): Cours
     progressMap: {
       'mod-1': { status: 'completed', completed_at: '2026-01-15T10:00:00Z', notes: null },
       'mod-2': { status: 'in_progress', completed_at: null, notes: null },
+      'mod-3': { status: 'in_progress', completed_at: null, notes: null },
     },
     lecturers: [],
     ...overrides,

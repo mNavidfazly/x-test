@@ -12,10 +12,14 @@ const mockLecture = {
   description: null,
   sort_order: 0,
   modules: [
-    { id: 'm1', title: 'Welcome Video', description: null, module_type: 'video', sort_order: 0 },
-    { id: 'm2', title: 'Setup Guide', description: null, module_type: 'pdf', sort_order: 1 },
-    { id: 'm3', title: 'Knowledge Check', description: null, module_type: 'quiz', sort_order: 2 },
+    { id: 'm1', title: 'Welcome Video', description: null, module_type: 'video', sort_order: 0, estimated_duration_minutes: 10 },
+    { id: 'm2', title: 'Setup Guide', description: null, module_type: 'pdf', sort_order: 1, estimated_duration_minutes: 5 },
+    { id: 'm3', title: 'Knowledge Check', description: null, module_type: 'quiz', sort_order: 2, estimated_duration_minutes: 15 },
   ],
+};
+
+const progressWithStarted: Record<string, { status: string; completed_at: string | null; notes: string | null }> = {
+  'm1': { status: 'in_progress', completed_at: null, notes: null },
 };
 
 describe('LectureAccordionComponent', () => {
@@ -45,16 +49,28 @@ describe('LectureAccordionComponent', () => {
     expect(screen.getByText('2/3')).toBeTruthy();
   });
 
-  it('should render all modules when open', async () => {
-    await renderAccordion();
+  it('should start collapsed when no progress exists', async () => {
+    await renderAccordion({ progressMap: {} });
+
+    expect(screen.queryByText(/Welcome Video/)).toBeNull();
+  });
+
+  it('should start expanded when a module is in_progress', async () => {
+    await renderAccordion({ progressMap: { 'm1': { status: 'in_progress', completed_at: null, notes: null } } });
 
     expect(screen.getByText(/Welcome Video/)).toBeTruthy();
     expect(screen.getByText(/Setup Guide/)).toBeTruthy();
     expect(screen.getByText(/Knowledge Check/)).toBeTruthy();
   });
 
+  it('should start expanded when a module is completed', async () => {
+    await renderAccordion({ progressMap: { 'm2': { status: 'completed', completed_at: '2026-01-15T10:00:00Z', notes: null } } });
+
+    expect(screen.getByText(/Welcome Video/)).toBeTruthy();
+  });
+
   it('should collapse/expand on toggle click', async () => {
-    await renderAccordion();
+    await renderAccordion({ progressMap: progressWithStarted });
 
     const user = userEvent.setup();
     const toggleButton = screen.getByRole('button', { name: /1\. Getting Started/ });
@@ -68,8 +84,20 @@ describe('LectureAccordionComponent', () => {
     expect(screen.getByText(/Welcome Video/)).toBeTruthy();
   });
 
+  it('should expand a collapsed lecture on toggle click', async () => {
+    await renderAccordion({ progressMap: {} });
+
+    const user = userEvent.setup();
+    const toggleButton = screen.getByRole('button', { name: /1\. Getting Started/ });
+
+    expect(screen.queryByText(/Welcome Video/)).toBeNull();
+
+    await user.click(toggleButton);
+    expect(screen.getByText(/Welcome Video/)).toBeTruthy();
+  });
+
   it('should pass courseId to module items', async () => {
-    await renderAccordion();
+    await renderAccordion({ progressMap: progressWithStarted });
 
     const link = document.querySelector('a[href="/courses/c1/modules/m1"]');
     expect(link).toBeTruthy();
@@ -87,7 +115,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should show action buttons when canEdit is true', async () => {
-    await renderAccordion({ canEdit: true, isFirst: false, isLast: false });
+    await renderAccordion({ canEdit: true, isFirst: false, isLast: false, progressMap: progressWithStarted });
 
     expect(screen.getByTitle('Edit lecture')).toBeTruthy();
     expect(screen.getByTitle('Delete lecture')).toBeTruthy();
@@ -97,7 +125,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should hide lecture-level Move up when isFirst', async () => {
-    await renderAccordion({ canEdit: true, isFirst: true, isLast: false });
+    await renderAccordion({ canEdit: true, isFirst: true, isLast: false, progressMap: progressWithStarted });
 
     // Lecture-level Move up is hidden, but module items still have their own Move up buttons.
     // The lecture-level button has class p-1.5, module-level has p-1. We verify by counting:
@@ -111,7 +139,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should hide lecture-level Move down when isLast', async () => {
-    await renderAccordion({ canEdit: true, isFirst: false, isLast: true });
+    await renderAccordion({ canEdit: true, isFirst: false, isLast: true, progressMap: progressWithStarted });
 
     expect(screen.getAllByTitle('Move up').length).toBeGreaterThanOrEqual(1);
     // Lecture-level Move down is hidden, but module items still have their own Move down buttons.
@@ -123,7 +151,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit edit on edit button click', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true });
+    const { fixture } = await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     let editEmitted = false;
     fixture.componentInstance.edit.subscribe(() => { editEmitted = true; });
@@ -134,7 +162,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit moveUp on move up click', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true, isFirst: false });
+    const { fixture } = await renderAccordion({ canEdit: true, isFirst: false, progressMap: progressWithStarted });
 
     let moveUpEmitted = false;
     fixture.componentInstance.moveUp.subscribe(() => { moveUpEmitted = true; });
@@ -146,7 +174,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit moveDown on move down click', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true, isLast: false });
+    const { fixture } = await renderAccordion({ canEdit: true, isLast: false, progressMap: progressWithStarted });
 
     let moveDownEmitted = false;
     fixture.componentInstance.moveDown.subscribe(() => { moveDownEmitted = true; });
@@ -158,7 +186,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should show delete confirmation on delete click', async () => {
-    await renderAccordion({ canEdit: true });
+    await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     fireEvent.click(screen.getByTitle('Delete lecture'));
 
@@ -167,7 +195,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit deleteConfirmed on confirm delete', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true });
+    const { fixture } = await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     let deleteEmitted = false;
     fixture.componentInstance.deleteConfirmed.subscribe(() => { deleteEmitted = true; });
@@ -179,7 +207,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should cancel delete confirmation', async () => {
-    await renderAccordion({ canEdit: true });
+    await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     fireEvent.click(screen.getByTitle('Delete lecture'));
     expect(screen.getByText('Yes, Delete')).toBeTruthy();
@@ -192,7 +220,7 @@ describe('LectureAccordionComponent', () => {
   // --- Module-level action tests ---
 
   it('should show Add Module button when canEdit is true', async () => {
-    await renderAccordion({ canEdit: true });
+    await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     expect(screen.getByText('Add Module')).toBeTruthy();
   });
@@ -204,7 +232,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit addModule on Add Module click', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true });
+    const { fixture } = await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     let addModuleEmitted = false;
     fixture.componentInstance.addModule.subscribe(() => { addModuleEmitted = true; });
@@ -215,7 +243,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit editModule with module id on edit module click', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true });
+    const { fixture } = await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     let emittedId: string | null = null;
     fixture.componentInstance.editModule.subscribe((id: string) => { emittedId = id; });
@@ -226,7 +254,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit deleteModule with module id on delete module confirm', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true });
+    const { fixture } = await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     let emittedId: string | null = null;
     fixture.componentInstance.deleteModule.subscribe((id: string) => { emittedId = id; });
@@ -241,7 +269,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit moveModuleUp with module id', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true });
+    const { fixture } = await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     let emittedId: string | null = null;
     fixture.componentInstance.moveModuleUp.subscribe((id: string) => { emittedId = id; });
@@ -256,7 +284,7 @@ describe('LectureAccordionComponent', () => {
   });
 
   it('should emit moveModuleDown with module id', async () => {
-    const { fixture } = await renderAccordion({ canEdit: true });
+    const { fixture } = await renderAccordion({ canEdit: true, progressMap: progressWithStarted });
 
     let emittedId: string | null = null;
     fixture.componentInstance.moveModuleDown.subscribe((id: string) => { emittedId = id; });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, linkedSignal, output, signal } from '@angular/core';
 import { LucideAngularModule, ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus, Clock } from 'lucide-angular';
 import { formatDuration } from '../../../core/utils/date.utils';
 import { LectureWithModules, ModuleProgress } from '../../../core/models/course.model';
@@ -159,7 +159,15 @@ export class LectureAccordionComponent {
 
   readonly icons = { ChevronDown, ChevronRight, ChevronUp, Pencil, Trash2, Plus, Clock };
 
-  readonly isOpen = signal(true);
+  readonly #hasProgress = computed(() => {
+    const map = this.progressMap();
+    return this.lecture().modules.some(m => {
+      const status = map[m.id]?.status;
+      return status === 'in_progress' || status === 'completed';
+    });
+  });
+
+  readonly isOpen = linkedSignal(() => this.#hasProgress());
   readonly confirmingDelete = signal(false);
 
   readonly totalCount = computed(() => this.lecture().modules.length);
