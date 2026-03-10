@@ -53,24 +53,24 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
 
       <!-- Controls -->
       @if (!isLoading() && !loadError()) {
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
           <!-- Play/Pause button -->
           <button
             type="button"
             (click)="togglePlay()"
-            class="btn-icon w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-colors duration-200"
+            class="btn-icon w-10 h-10 flex items-center justify-center rounded-full bg-teal-600 text-white hover:bg-teal-700 transition-colors duration-200 shrink-0"
             [attr.aria-label]="audioPlayer.isPlaying() ? 'Pause' : 'Play'"
           >
             <lucide-icon [img]="audioPlayer.isPlaying() ? icons.Pause : icons.Play" [size]="18"></lucide-icon>
           </button>
 
           <!-- Time display -->
-          <span class="text-sm font-medium text-slate-700 tabular-nums min-w-[100px]">
+          <span class="text-sm font-medium text-slate-700 tabular-nums">
             {{ formatTime(audioPlayer.currentTime()) }} / {{ formatTime(audioPlayer.duration()) }}
           </span>
 
-          <!-- Volume control -->
-          <div class="flex items-center gap-2">
+          <!-- Volume control — hidden on mobile -->
+          <div class="hidden sm:flex items-center gap-2">
             <button
               type="button"
               (click)="toggleMute()"
@@ -91,8 +91,10 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
             />
           </div>
 
+          <div class="flex-1"></div>
+
           <!-- Speed selector -->
-          <div class="relative">
+          <div class="relative shrink-0">
             <app-custom-select
               [options]="speedOptions"
               [value]="audioPlayer.playbackRate().toString()"
@@ -101,13 +103,11 @@ import { ErrorAlertComponent } from '../../../shared/components/error-alert.comp
             />
           </div>
 
-          <div class="flex-1"></div>
-
           <!-- Download button -->
           <a
             [href]="audio().file_url"
             [download]="audio().file_name"
-            class="text-slate-400 hover:text-teal-600 transition-colors duration-200"
+            class="text-slate-400 hover:text-teal-600 transition-colors duration-200 shrink-0"
             aria-label="Download audio"
           >
             <lucide-icon [img]="icons.Download" [size]="18"></lucide-icon>

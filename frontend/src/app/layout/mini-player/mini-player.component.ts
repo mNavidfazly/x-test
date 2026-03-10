@@ -25,11 +25,13 @@ import { CourseService } from '../../core/services/course.service';
             class="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 text-left"
             (click)="navigateToModule(track)"
           >
-            <lucide-icon [img]="icons.Headphones" [size]="20" class="text-teal-600 shrink-0"></lucide-icon>
-            <p class="text-sm font-medium text-slate-900 truncate">{{ track.title }}</p>
-            @if (track.courseName || track.lectureName) {
-              <p class="text-xs text-slate-500 truncate">{{ track.courseName }}{{ track.lectureName ? ' · ' + track.lectureName : '' }}</p>
-            }
+            <lucide-icon [img]="icons.Headphones" [size]="20" class="text-teal-600 shrink-0 hidden sm:block"></lucide-icon>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-slate-900 truncate">{{ track.title }}</p>
+              @if (track.courseName || track.lectureName) {
+                <p class="text-xs text-slate-500 truncate">{{ track.courseName }}{{ track.lectureName ? ' · ' + track.lectureName : '' }}</p>
+              }
+            </div>
           </button>
 
           <!-- Time display -->
