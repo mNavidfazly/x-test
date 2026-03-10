@@ -156,7 +156,8 @@ describe('ModuleViewerPageComponent', () => {
     });
     await renderPage({ viewer });
 
-    expect(screen.getByText('Mark as complete')).toBeTruthy();
+    // Top + bottom action bars both show the button
+    expect(screen.getAllByText('Mark as complete').length).toBe(2);
   });
 
   it('should render quiz taker for quiz module', async () => {
@@ -182,8 +183,9 @@ describe('ModuleViewerPageComponent', () => {
     });
     await renderPage({ viewer });
 
-    expect(screen.getByText('Previous')).toBeTruthy();
-    expect(screen.getByText('Next')).toBeTruthy();
+    // Top + bottom bars both show Previous/Next
+    expect(screen.getAllByText('Previous').length).toBe(2);
+    expect(screen.getAllByText('Next').length).toBe(2);
     expect(screen.getByText('2 of 3 modules')).toBeTruthy();
   });
 
@@ -193,7 +195,8 @@ describe('ModuleViewerPageComponent', () => {
     const viewer = createMockModuleViewerData(); // video type, no progress
     await renderPage({ viewer });
 
-    expect(screen.getByText('Mark as complete')).toBeTruthy();
+    // Top + bottom action bars both show the button
+    expect(screen.getAllByText('Mark as complete').length).toBe(2);
   });
 
   it('should show completed state when already done', async () => {
@@ -202,7 +205,8 @@ describe('ModuleViewerPageComponent', () => {
     });
     await renderPage({ viewer });
 
-    expect(screen.getByText('Completed')).toBeTruthy();
+    // Top + bottom bars both show completed badge
+    expect(screen.getAllByText('Completed').length).toBe(2);
     expect(screen.queryByText('Mark as complete')).toBeNull();
   });
 
@@ -276,7 +280,7 @@ describe('ModuleViewerPageComponent', () => {
     const viewer = createMockModuleViewerData(); // video type, no progress
     await renderPage({ viewer, isEnrolled: true });
 
-    expect(screen.getByText('Mark as complete')).toBeTruthy();
+    expect(screen.getAllByText('Mark as complete').length).toBe(2);
   });
 
   // --- Exam integration tests ---
@@ -379,7 +383,7 @@ describe('ModuleViewerPageComponent', () => {
     });
     await renderPage({ viewer });
 
-    expect(screen.getByText('Mark as complete')).toBeTruthy();
+    expect(screen.getAllByText('Mark as complete').length).toBe(2);
   });
 
   // --- Download viewer integration ---
@@ -402,7 +406,7 @@ describe('ModuleViewerPageComponent', () => {
     });
     await renderPage({ viewer });
 
-    expect(screen.getByText('Mark as complete')).toBeTruthy();
+    expect(screen.getAllByText('Mark as complete').length).toBe(2);
   });
 
   // --- Module Notes integration ---

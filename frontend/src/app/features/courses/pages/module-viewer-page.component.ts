@@ -222,6 +222,42 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
           <div class="mt-8 pt-6 border-t border-slate-200 h-20"></div>
         }
 
+        <!-- Bottom action bar -->
+        <div class="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">
+          <div class="min-w-[100px]">
+            @if (courseService.moduleViewer()!.navigation.prev; as prev) {
+              <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
+                 class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200">
+                <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
+                Previous
+              </a>
+            }
+          </div>
+          <div class="flex items-center gap-3">
+            @if (canMarkComplete()) {
+              @if (isCompleted()) {
+                <span class="badge-success inline-flex items-center gap-1">
+                  <lucide-icon [img]="icons.Check" [size]="14"></lucide-icon>
+                  Completed
+                </span>
+              } @else {
+                <button (click)="onMarkComplete()" class="btn-primary btn-sm">
+                  Mark as complete
+                </button>
+              }
+            }
+          </div>
+          <div class="min-w-[100px] text-right">
+            @if (courseService.moduleViewer()!.navigation.next; as next) {
+              <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
+                 class="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200">
+                Next
+                <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
+              </a>
+            }
+          </div>
+        </div>
+
       }
     </div>
   `,
