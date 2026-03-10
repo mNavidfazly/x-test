@@ -734,22 +734,18 @@ describe('CourseService', () => {
   });
 
   describe('swapLectureSortOrder', () => {
-    it('should swap sort_order of two lectures sequentially', async () => {
-      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
-        resolve({ data: null, error: null }));
+    it('should call RPC to atomically swap lecture sort_order', async () => {
+      supabase.client.rpc.mockResolvedValueOnce({ data: null, error: null });
 
-      await service.swapLectureSortOrder('l1', 0, 'l2', 1);
+      await service.swapLectureSortOrder('l1', 'l2');
 
-      expect(supabase.client.from).toHaveBeenCalledWith('lectures');
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 1 });
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 0 });
+      expect(supabase.client.rpc).toHaveBeenCalledWith('swap_lecture_sort_order', { p_id_a: 'l1', p_id_b: 'l2' });
     });
 
-    it('should throw on first update error', async () => {
-      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
-        resolve({ data: null, error: { message: 'Reorder failed' } }));
+    it('should throw on RPC error', async () => {
+      supabase.client.rpc.mockResolvedValueOnce({ data: null, error: { message: 'Reorder failed' } });
 
-      await expect(service.swapLectureSortOrder('l1', 0, 'l2', 1)).rejects.toThrow('Reorder failed');
+      await expect(service.swapLectureSortOrder('l1', 'l2')).rejects.toThrow('Reorder failed');
     });
   });
 
@@ -921,22 +917,18 @@ describe('CourseService', () => {
   });
 
   describe('swapModuleSortOrder', () => {
-    it('should swap sort_order of two modules', async () => {
-      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: unknown; error: null }) => void) =>
-        resolve({ data: null, error: null }));
+    it('should call RPC to atomically swap module sort_order', async () => {
+      supabase.client.rpc.mockResolvedValueOnce({ data: null, error: null });
 
-      await service.swapModuleSortOrder('m1', 0, 'm2', 1);
+      await service.swapModuleSortOrder('m1', 'm2');
 
-      expect(supabase.client.from).toHaveBeenCalledWith('modules');
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 1 });
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({ sort_order: 0 });
+      expect(supabase.client.rpc).toHaveBeenCalledWith('swap_module_sort_order', { p_id_a: 'm1', p_id_b: 'm2' });
     });
 
-    it('should throw on first update error', async () => {
-      supabase._mockQueryBuilder.then.mockImplementation((resolve: (value: { data: null; error: { message: string } }) => void) =>
-        resolve({ data: null, error: { message: 'Reorder failed' } }));
+    it('should throw on RPC error', async () => {
+      supabase.client.rpc.mockResolvedValueOnce({ data: null, error: { message: 'Reorder failed' } });
 
-      await expect(service.swapModuleSortOrder('m1', 0, 'm2', 1)).rejects.toThrow('Reorder failed');
+      await expect(service.swapModuleSortOrder('m1', 'm2')).rejects.toThrow('Reorder failed');
     });
   });
 

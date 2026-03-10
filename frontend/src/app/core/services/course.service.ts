@@ -1121,20 +1121,9 @@ export class CourseService {
     this.#cleanupBunnyVideos(bunnyVideoIds);
   }
 
-  async swapLectureSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
-    const resA = await this.#supabase.client
-      .from('lectures')
-      .update({ sort_order: orderB })
-      .eq('id', idA);
-
-    if (resA.error) throw new Error(extractErrorMessage(resA.error, 'Failed to reorder lectures'));
-
-    const resB = await this.#supabase.client
-      .from('lectures')
-      .update({ sort_order: orderA })
-      .eq('id', idB);
-
-    if (resB.error) throw new Error(extractErrorMessage(resB.error, 'Failed to reorder lectures'));
+  async swapLectureSortOrder(idA: string, idB: string): Promise<void> {
+    const { error } = await this.#supabase.client.rpc('swap_lecture_sort_order', { p_id_a: idA, p_id_b: idB });
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to reorder lectures'));
   }
 
   // --- Phase 3C: Module CRUD methods ---
@@ -1210,20 +1199,9 @@ export class CourseService {
     this.#cleanupBunnyVideos(bunnyVideoIds);
   }
 
-  async swapModuleSortOrder(idA: string, orderA: number, idB: string, orderB: number): Promise<void> {
-    const resA = await this.#supabase.client
-      .from('modules')
-      .update({ sort_order: orderB })
-      .eq('id', idA);
-
-    if (resA.error) throw new Error(extractErrorMessage(resA.error, 'Failed to reorder modules'));
-
-    const resB = await this.#supabase.client
-      .from('modules')
-      .update({ sort_order: orderA })
-      .eq('id', idB);
-
-    if (resB.error) throw new Error(extractErrorMessage(resB.error, 'Failed to reorder modules'));
+  async swapModuleSortOrder(idA: string, idB: string): Promise<void> {
+    const { error } = await this.#supabase.client.rpc('swap_module_sort_order', { p_id_a: idA, p_id_b: idB });
+    if (error) throw new Error(extractErrorMessage(error, 'Failed to reorder modules'));
   }
 
   // --- Module files methods ---

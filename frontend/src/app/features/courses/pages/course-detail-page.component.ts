@@ -429,8 +429,8 @@ export class CourseDetailPageComponent implements OnInit {
 
     try {
       await this.courseService.swapLectureSortOrder(
-        lectures[idx].id, lectures[idx].sort_order,
-        lectures[targetIdx].id, lectures[targetIdx].sort_order,
+        lectures[idx].id,
+        lectures[targetIdx].id,
       );
       await this.courseService.loadCourseDetail(courseId);
       this.#toast.success('Lecture moved');
@@ -481,8 +481,8 @@ export class CourseDetailPageComponent implements OnInit {
 
     try {
       await this.courseService.swapModuleSortOrder(
-        modules[idx].id, modules[idx].sort_order,
-        modules[targetIdx].id, modules[targetIdx].sort_order,
+        modules[idx].id,
+        modules[targetIdx].id,
       );
       await this.courseService.loadCourseDetail(courseId);
       this.#toast.success('Module moved');
