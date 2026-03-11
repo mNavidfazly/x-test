@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnDestroy, output, signal } from '@angular/core';
 import { LucideAngularModule, Clock, Trophy, AlertTriangle, RotateCcw, CheckCircle2, XCircle, Play, Eye } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
-import { XpService } from '../../../core/services/xp.service';
+import { XpService, computeQuizAttemptXp } from '../../../core/services/xp.service';
 import { QuizTakingData, QuizAttempt, QuizResults, QuizAnswerMap } from '../../../core/models/course.model';
 import { QuizQuestionComponent } from './quiz-question.component';
 import { QuizResultItemComponent } from './quiz-result-item.component';
@@ -434,8 +434,8 @@ export class QuizTakerComponent implements OnDestroy {
       if (results.grade.passed) {
         this.quizCompleted.emit();
         const isFirstPass = this.pastAttempts().filter(a => a.passed).length <= 1;
-        const bonus = Math.round(results.grade.score / 10);
-        const xpAmount = (isFirstPass ? 25 : 15) + bonus;
+        const questionCount = this.quizData()?.questions.length ?? 10;
+        const xpAmount = computeQuizAttemptXp(questionCount, results.grade.score, isFirstPass);
         this.xpGainAmount.set(xpAmount);
         setTimeout(() => this.xpGainAmount.set(null), 1600);
         this.#xpService.loadXp(true);

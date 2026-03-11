@@ -47,6 +47,7 @@ export interface XpBreakdown {
 export interface XpRawData {
   completedModules: number;
   passedQuizAttempts: { quiz_id: string; score: number; created_at: string }[];
+  quizQuestionCounts: Record<string, number>;
   gradedExams: { score: number }[];
   externalQuizPasses: number;
   correctKnowledgeChecks: number;
@@ -56,24 +57,32 @@ export interface XpRawData {
   enrollments: number;
 }
 
+/**
+ * Compute quiz XP for a single attempt.
+ * Formula: questionCount × multiplier + score/10 bonus
+ * First pass multiplier = 2, retake multiplier = 1
+ * Fallback to 10 questions if count unknown.
+ */
+export function computeQuizAttemptXp(questionCount: number, score: number, isFirstPass: boolean): number {
+  const multiplier = isFirstPass ? 2 : 1;
+  return questionCount * multiplier + Math.round(score / 10);
+}
+
 export function computeXp(data: XpRawData): XpBreakdown {
   // Modules: 10 XP each
   const modules = data.completedModules * 10;
 
-  // Quizzes: 25 XP first pass per quiz, 15 subsequent, + score/10 bonus
+  // Quizzes: questionCount × 2 (first pass) or × 1 (retake) + score/10 bonus
   let quizzes = 0;
   const firstPassPerQuiz = new Set<string>();
   const sorted = [...data.passedQuizAttempts].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
   );
   for (const attempt of sorted) {
-    if (!firstPassPerQuiz.has(attempt.quiz_id)) {
-      firstPassPerQuiz.add(attempt.quiz_id);
-      quizzes += 25;
-    } else {
-      quizzes += 15;
-    }
-    quizzes += Math.round(attempt.score / 10);
+    const isFirstPass = !firstPassPerQuiz.has(attempt.quiz_id);
+    if (isFirstPass) firstPassPerQuiz.add(attempt.quiz_id);
+    const questionCount = data.quizQuestionCounts[attempt.quiz_id] ?? 10;
+    quizzes += computeQuizAttemptXp(questionCount, attempt.score, isFirstPass);
   }
 
   // Exams: 50 base + score/5 bonus
@@ -175,6 +184,7 @@ export class XpService {
       const [
         progressRes,
         quizAttemptsRes,
+        quizQuestionsRes,
         examSubsRes,
         extQuizRes,
         knowledgeRes,
@@ -185,8 +195,9 @@ export class XpService {
       ] = await Promise.all([
         client.from('user_progress').select('id', { count: 'exact', head: true })
           .eq('user_id', userId).eq('status', 'completed'),
-        client.from('quiz_attempts').select('quiz_id, score, passed, created_at')
+        client.from('quiz_attempts').select('quiz_id, score, passed, started_at')
           .eq('user_id', userId).eq('passed', true),
+        client.from('quiz_questions').select('quiz_id'),
         client.from('exam_submissions').select('score')
           .eq('user_id', userId).not('score', 'is', null),
         client.from('external_quiz_results').select('id', { count: 'exact', head: true })
@@ -203,13 +214,21 @@ export class XpService {
           .eq('user_id', userId),
       ]);
 
+      // Build quiz_id → question count map
+      const quizQuestionCounts: Record<string, number> = {};
+      for (const row of quizQuestionsRes.data ?? []) {
+        const qid = row.quiz_id as string;
+        quizQuestionCounts[qid] = (quizQuestionCounts[qid] ?? 0) + 1;
+      }
+
       const rawData: XpRawData = {
         completedModules: progressRes.count ?? 0,
         passedQuizAttempts: (quizAttemptsRes.data ?? []).map(a => ({
           quiz_id: a.quiz_id as string,
           score: (a.score as number) ?? 0,
-          created_at: a.created_at as string,
+          created_at: a.started_at as string,
         })),
+        quizQuestionCounts,
         gradedExams: (examSubsRes.data ?? []).map(e => ({ score: (e.score as number) ?? 0 })),
         externalQuizPasses: extQuizRes.count ?? 0,
         correctKnowledgeChecks: knowledgeRes.count ?? 0,

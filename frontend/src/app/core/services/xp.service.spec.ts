@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import {
   computeXp,
+  computeQuizAttemptXp,
   getLevelForXp,
   LEVELS,
   XpRawData,
@@ -18,6 +19,7 @@ describe('computeXp', () => {
   const emptyData: XpRawData = {
     completedModules: 0,
     passedQuizAttempts: [],
+    quizQuestionCounts: {},
     gradedExams: [],
     externalQuizPasses: 0,
     correctKnowledgeChecks: 0,
@@ -43,27 +45,29 @@ describe('computeXp', () => {
     expect(result.total).toBe(50);
   });
 
-  it('awards 25 XP for first quiz pass per quiz', () => {
+  it('scales first pass XP by question count', () => {
     const result = computeXp({
       ...emptyData,
       passedQuizAttempts: [
         { quiz_id: 'q1', score: 100, created_at: '2025-01-01T00:00:00Z' },
       ],
+      quizQuestionCounts: { q1: 15 },
     });
-    // 25 base + 10 bonus (100/10)
-    expect(result.quizzes).toBe(35);
+    // 15×2 + 10 bonus (100/10) = 40
+    expect(result.quizzes).toBe(40);
   });
 
-  it('awards 15 XP for subsequent quiz passes', () => {
+  it('scales retake XP by question count', () => {
     const result = computeXp({
       ...emptyData,
       passedQuizAttempts: [
         { quiz_id: 'q1', score: 80, created_at: '2025-01-01T00:00:00Z' },
         { quiz_id: 'q1', score: 90, created_at: '2025-01-02T00:00:00Z' },
       ],
+      quizQuestionCounts: { q1: 15 },
     });
-    // First: 25 + 8 = 33, Second: 15 + 9 = 24
-    expect(result.quizzes).toBe(57);
+    // First: 15×2 + 8 = 38, Second: 15×1 + 9 = 24
+    expect(result.quizzes).toBe(62);
   });
 
   it('detects first pass per quiz_id correctly', () => {
@@ -74,9 +78,21 @@ describe('computeXp', () => {
         { quiz_id: 'q2', score: 80, created_at: '2025-01-02T00:00:00Z' },
         { quiz_id: 'q1', score: 90, created_at: '2025-01-03T00:00:00Z' },
       ],
+      quizQuestionCounts: { q1: 10, q2: 20 },
     });
-    // q1 first: 25+7=32, q2 first: 25+8=33, q1 second: 15+9=24
-    expect(result.quizzes).toBe(89);
+    // q1 first: 10×2+7=27, q2 first: 20×2+8=48, q1 retake: 10×1+9=19
+    expect(result.quizzes).toBe(94);
+  });
+
+  it('falls back to 10 questions when count unknown', () => {
+    const result = computeXp({
+      ...emptyData,
+      passedQuizAttempts: [
+        { quiz_id: 'q1', score: 80, created_at: '2025-01-01T00:00:00Z' },
+      ],
+    });
+    // fallback 10×2 + 8 = 28
+    expect(result.quizzes).toBe(28);
   });
 
   it('awards exam XP with score bonus', () => {
@@ -116,6 +132,7 @@ describe('computeXp', () => {
       passedQuizAttempts: [
         { quiz_id: 'q1', score: 100, created_at: '2025-01-01T00:00:00Z' },
       ],
+      quizQuestionCounts: { q1: 15 },
       gradedExams: [{ score: 90 }],
       externalQuizPasses: 1,
       correctKnowledgeChecks: 5,
@@ -125,7 +142,7 @@ describe('computeXp', () => {
       enrollments: 2,
     });
     const modules = 100;
-    const quizzes = 25 + 10; // first pass + 100/10 bonus
+    const quizzes = 15 * 2 + 10; // 15Q first pass + 100/10 bonus = 40
     const exams = 50 + 18 + 20; // exam + score/5 bonus + ext quiz
     const kc = 25;
     const engagement = 6 + 2 + 5 + 10;
@@ -138,8 +155,24 @@ describe('computeXp', () => {
       passedQuizAttempts: [
         { quiz_id: 'q1', score: 0, created_at: '2025-01-01T00:00:00Z' },
       ],
+      quizQuestionCounts: { q1: 10 },
     });
-    expect(result.quizzes).toBe(25); // 25 base, 0 bonus
+    expect(result.quizzes).toBe(20); // 10×2 base, 0 bonus
+  });
+});
+
+// ── computeQuizAttemptXp ──────────────────────────────────────────
+
+describe('computeQuizAttemptXp', () => {
+  it('calculates first pass XP: questionCount×2 + score/10', () => {
+    expect(computeQuizAttemptXp(15, 85, true)).toBe(39); // 30 + 9
+    expect(computeQuizAttemptXp(20, 80, true)).toBe(48); // 40 + 8
+    expect(computeQuizAttemptXp(7, 100, true)).toBe(24); // 14 + 10
+  });
+
+  it('calculates retake XP: questionCount×1 + score/10', () => {
+    expect(computeQuizAttemptXp(15, 85, false)).toBe(24); // 15 + 9
+    expect(computeQuizAttemptXp(20, 80, false)).toBe(28); // 20 + 8
   });
 });
 

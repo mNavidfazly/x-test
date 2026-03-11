@@ -247,9 +247,9 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
                 </button>
               }
             }
-            @if (xpGainAmount()) {
-              <span class="absolute -top-6 left-1/2 -translate-x-1/2 xp-float text-sm font-bold text-teal-600 whitespace-nowrap">
-                +{{ xpGainAmount() }} XP
+            @if (xpGainAmount(); as amount) {
+              <span class="absolute -top-8 left-1/2 -translate-x-1/2 xp-float text-base font-bold text-teal-600 whitespace-nowrap z-10">
+                +{{ amount }} XP
               </span>
             }
           </div>
