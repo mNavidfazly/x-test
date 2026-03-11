@@ -1,6 +1,6 @@
 import { signal, computed } from '@angular/core';
 import { vi } from 'vitest';
-import { LEVELS, getLevelForXp, XpBreakdown, XpGain, LevelDefinition } from '../core/services/xp.service';
+import { LEVELS, getLevelForXp, XpBreakdown, LevelDefinition } from '../core/services/xp.service';
 
 export function createMockXpService(options?: {
   totalXp?: number;
@@ -16,7 +16,6 @@ export function createMockXpService(options?: {
     engagement: 0,
   });
   const loading = signal(options?.loading ?? false);
-  const xpGains = signal<XpGain[]>([]);
   const levelUp = signal<LevelDefinition | null>(null);
 
   const totalXp = computed(() => breakdown().total);
@@ -42,15 +41,12 @@ export function createMockXpService(options?: {
     progressToNext,
     loading: loading.asReadonly(),
     error: signal('').asReadonly(),
-    xpGains: xpGains.asReadonly(),
     levelUp: levelUp.asReadonly(),
     loadXp: vi.fn().mockResolvedValue(undefined),
-    showXpGain: vi.fn(),
     dismissLevelUp: vi.fn(),
     // Test helpers
     _setBreakdown: breakdown.set.bind(breakdown),
     _setLoading: loading.set.bind(loading),
-    _setXpGains: xpGains.set.bind(xpGains),
     _setLevelUp: levelUp.set.bind(levelUp),
   };
 }

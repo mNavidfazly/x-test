@@ -219,6 +219,11 @@ import { formatDate } from '../../../core/utils/date.utils';
                 <p class="text-xs text-slate-500">
                   {{ results()!.grade.earned_points }} / {{ results()!.grade.total_points }} points
                 </p>
+                @if (xpGainAmount()) {
+                  <span class="inline-block mt-2 xp-float text-sm font-bold text-teal-600">
+                    +{{ xpGainAmount() }} XP
+                  </span>
+                }
               </div>
 
               <!-- Question results -->
@@ -257,6 +262,7 @@ export class QuizTakerComponent implements OnDestroy {
   readonly quizCompleted = output<void>();
 
   readonly icons = { Clock, Trophy, AlertTriangle, RotateCcw, CheckCircle2, XCircle, Play, Eye };
+  readonly xpGainAmount = signal<number | null>(null);
 
   readonly phase = signal<'start' | 'active' | 'results'>('start');
   readonly quizData = signal<QuizTakingData | null>(null);
@@ -429,7 +435,9 @@ export class QuizTakerComponent implements OnDestroy {
         this.quizCompleted.emit();
         const isFirstPass = this.pastAttempts().filter(a => a.passed).length <= 1;
         const bonus = Math.round(results.grade.score / 10);
-        this.#xpService.showXpGain((isFirstPass ? 25 : 15) + bonus);
+        const xpAmount = (isFirstPass ? 25 : 15) + bonus;
+        this.xpGainAmount.set(xpAmount);
+        setTimeout(() => this.xpGainAmount.set(null), 1600);
         this.#xpService.loadXp(true);
       }
     } catch (e: unknown) {

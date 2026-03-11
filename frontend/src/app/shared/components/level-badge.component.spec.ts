@@ -122,14 +122,6 @@ describe('LevelBadgeComponent', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('shows XP gain float text', async () => {
-    const { fixture, mockXp } = await renderBadge({ totalXp: 150 });
-    mockXp._setXpGains([{ id: 1, amount: 10 }]);
-    fixture.detectChanges();
-
-    expect(screen.getByText('+10 XP')).toBeTruthy();
-  });
-
   it('shows level-up celebration', async () => {
     const { fixture, mockXp } = await renderBadge({ totalXp: 650 });
     mockXp._setLevelUp(LEVELS[4]); // Scholar

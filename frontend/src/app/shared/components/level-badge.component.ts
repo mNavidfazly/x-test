@@ -9,7 +9,7 @@ import {
 import { DecimalPipe } from '@angular/common';
 import { LucideAngularModule, Star, Award, Trophy, Flame, Crown, BookOpen, Brain, FileCheck, Lightbulb, MessageCircle, Sparkles } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
-import { XpService, LevelDefinition } from '../../core/services/xp.service';
+import { XpService } from '../../core/services/xp.service';
 
 function iconForLevel(level: number) {
   if (level <= 3) return Star;
@@ -44,13 +44,6 @@ function iconForLevel(level: number) {
           <lucide-icon [img]="levelIcon()" [size]="14"></lucide-icon>
           <span class="tabular-nums">Lv.{{ xpService.currentLevel().level }}</span>
         </button>
-
-        <!-- XP gain floating animations -->
-        @for (gain of xpService.xpGains(); track gain.id) {
-          <span class="absolute -top-2 left-1/2 -translate-x-1/2 xp-float text-xs font-bold text-teal-600 whitespace-nowrap z-[70]">
-            +{{ gain.amount }} XP
-          </span>
-        }
 
         <!-- Level-up celebration -->
         @if (xpService.levelUp(); as newLevel) {

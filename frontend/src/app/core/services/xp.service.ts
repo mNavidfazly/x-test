@@ -105,13 +105,6 @@ export function computeXp(data: XpRawData): XpBreakdown {
   };
 }
 
-// ── XP Gain (floating animation) ───────────────────────────────────
-
-export interface XpGain {
-  id: number;
-  amount: number;
-}
-
 // ── Service ────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -124,16 +117,14 @@ export class XpService {
   #error = signal('');
   #lastLoadedAt: number | null = null;
   #previousLevel: LevelDefinition | null = null;
-  #gainCounter = 0;
+  #hasLoadedOnce = false;
 
-  #xpGains = signal<XpGain[]>([]);
   #levelUp = signal<LevelDefinition | null>(null);
 
   readonly breakdown = this.#breakdown.asReadonly();
   readonly totalXp = computed(() => this.#breakdown().total);
   readonly loading = this.#loading.asReadonly();
   readonly error = this.#error.asReadonly();
-  readonly xpGains = this.#xpGains.asReadonly();
   readonly levelUp = this.#levelUp.asReadonly();
 
   readonly currentLevel = computed(() => getLevelForXp(this.totalXp()));
@@ -161,6 +152,7 @@ export class XpService {
         this.#breakdown.set({ total: 0, modules: 0, quizzes: 0, exams: 0, knowledgeChecks: 0, engagement: 0 });
         this.#lastLoadedAt = null;
         this.#previousLevel = null;
+        this.#hasLoadedOnce = false;
       }
     });
   }
@@ -231,25 +223,18 @@ export class XpService {
       this.#breakdown.set(breakdown);
       this.#lastLoadedAt = Date.now();
 
-      // Check for level-up
+      // Check for level-up (only after first load to avoid false positive on page refresh)
       const newLevel = getLevelForXp(breakdown.total);
-      if (this.#previousLevel && newLevel.level > this.#previousLevel.level) {
+      if (this.#hasLoadedOnce && this.#previousLevel && newLevel.level > this.#previousLevel.level) {
         this.#levelUp.set(newLevel);
         setTimeout(() => this.#levelUp.set(null), 4000);
       }
+      this.#hasLoadedOnce = true;
     } catch {
       this.#error.set('Failed to load XP data');
     } finally {
       this.#loading.set(false);
     }
-  }
-
-  showXpGain(amount: number) {
-    const id = ++this.#gainCounter;
-    this.#xpGains.update(gains => [...gains, { id, amount }]);
-    setTimeout(() => {
-      this.#xpGains.update(gains => gains.filter(g => g.id !== id));
-    }, 1600);
   }
 
   dismissLevelUp() {

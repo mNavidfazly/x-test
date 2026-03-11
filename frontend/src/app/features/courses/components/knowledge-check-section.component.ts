@@ -102,6 +102,13 @@ import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/mo
                 </div>
               }
 
+              <!-- XP gain float -->
+              @if (xpGainQuestionId() === question.id) {
+                <div class="ml-10 mt-2">
+                  <span class="xp-float text-sm font-bold text-teal-600">+5 XP</span>
+                </div>
+              }
+
               <!-- Explanation (after answering) -->
               @if (response?.explanation) {
                 <div class="flex gap-2 mt-3 ml-10 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
@@ -137,6 +144,7 @@ export class KnowledgeCheckSectionComponent {
   readonly responses = signal<Map<string, KnowledgeCheckResponse>>(new Map());
   readonly selectedOptions = signal<Map<string, number>>(new Map());
   readonly submitting = signal<string | null>(null);
+  readonly xpGainQuestionId = signal<string | null>(null);
 
   readonly answeredCount = () => this.responses().size;
   readonly progressPercent = () => {
@@ -168,7 +176,8 @@ export class KnowledgeCheckSectionComponent {
       updated.set(questionId, response);
       this.responses.set(updated);
       if (response.isCorrect) {
-        this.#xpService.showXpGain(5);
+        this.xpGainQuestionId.set(questionId);
+        setTimeout(() => this.xpGainQuestionId.set(null), 1600);
         this.#xpService.loadXp(true);
       }
     } catch {

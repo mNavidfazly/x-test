@@ -207,27 +207,6 @@ describe('XpService', () => {
     expect(service.nextLevel()?.name).toBe('Explorer');
   });
 
-  it('showXpGain pushes to xpGains signal', () => {
-    service.showXpGain(10);
-    expect(service.xpGains().length).toBe(1);
-    expect(service.xpGains()[0].amount).toBe(10);
-  });
-
-  it('showXpGain auto-removes after timeout', () => {
-    vi.useFakeTimers();
-    service.showXpGain(10);
-    expect(service.xpGains().length).toBe(1);
-    vi.advanceTimersByTime(1700);
-    expect(service.xpGains().length).toBe(0);
-    vi.useRealTimers();
-  });
-
-  it('multiple XP gains stack', () => {
-    service.showXpGain(10);
-    service.showXpGain(25);
-    expect(service.xpGains().length).toBe(2);
-  });
-
   it('dismissLevelUp clears the signal', () => {
     // Directly test the dismiss method
     service.dismissLevelUp();

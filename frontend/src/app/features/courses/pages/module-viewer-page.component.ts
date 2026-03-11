@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock } from 'lucide-angular';
@@ -234,7 +234,7 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
               </a>
             }
           </div>
-          <div class="flex items-center gap-3">
+          <div class="relative flex items-center gap-3">
             @if (canMarkComplete()) {
               @if (isCompleted()) {
                 <span class="badge-success inline-flex items-center gap-1">
@@ -246,6 +246,11 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
                   Mark as complete
                 </button>
               }
+            }
+            @if (xpGainAmount()) {
+              <span class="absolute -top-6 left-1/2 -translate-x-1/2 xp-float text-sm font-bold text-teal-600 whitespace-nowrap">
+                +{{ xpGainAmount() }} XP
+              </span>
             }
           </div>
           <div class="min-w-[100px] text-right">
@@ -269,6 +274,7 @@ export class ModuleViewerPageComponent {
   #route = inject(ActivatedRoute);
 
   readonly icons = { ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock };
+  readonly xpGainAmount = signal<number | null>(null);
 
   // Reactive route params — toSignal converts the paramMap observable to a signal
   // so the effect below fires on every param change (e.g. Next/Previous navigation).
@@ -314,7 +320,8 @@ export class ModuleViewerPageComponent {
     if (moduleId) {
       await this.courseService.markModuleComplete(moduleId);
       if (!this.courseService.error()) {
-        this.#xpService.showXpGain(10);
+        this.xpGainAmount.set(10);
+        setTimeout(() => this.xpGainAmount.set(null), 1600);
         this.#xpService.loadXp(true);
       }
     }
