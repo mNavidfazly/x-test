@@ -16,7 +16,7 @@ class TextQuestion(TypedDict):
 
 
 def check_text_answers(api_key: str, questions: List[TextQuestion]) -> Dict[str, bool]:
-    """Check text answers using Claude Haiku for semantic equivalence.
+    """Check text answers using Claude Sonnet with extended thinking.
 
     Returns a dict mapping question_id -> is_correct.
     On any failure, returns an empty dict (graceful degradation).
@@ -52,13 +52,21 @@ def check_text_answers(api_key: str, questions: List[TextQuestion]) -> Dict[str,
     try:
         client = anthropic.Anthropic(api_key=api_key)
         message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=256,
+            model="claude-sonnet-4-6",
+            max_tokens=16000,
+            thinking={
+                "type": "enabled",
+                "budget_tokens": 5000,
+            },
             messages=[{"role": "user", "content": prompt}],
         )
 
-        # Extract text from response
-        text = message.content[0].text.strip()
+        # Extract text from response — skip thinking blocks, find the text block
+        text = ""
+        for block in message.content:
+            if getattr(block, "type", None) == "text":
+                text = block.text.strip()
+                break
 
         # Parse JSON — handle potential markdown code blocks
         if text.startswith("```"):

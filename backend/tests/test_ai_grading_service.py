@@ -14,6 +14,21 @@ def _make_question(qid="q1", qtype="short_answer", correct="Liquefied Natural Ga
     }
 
 
+def _make_text_block(text):
+    """Create a mock content block with type='text'."""
+    block = MagicMock()
+    block.type = "text"
+    block.text = text
+    return block
+
+
+def _make_thinking_block():
+    """Create a mock thinking content block."""
+    block = MagicMock()
+    block.type = "thinking"
+    return block
+
+
 class TestCheckTextAnswers:
     def test_empty_questions_returns_empty(self):
         assert check_text_answers("key", []) == {}
@@ -24,7 +39,7 @@ class TestCheckTextAnswers:
     @patch("app.services.ai_grading.anthropic")
     def test_successful_ai_check(self, mock_anthropic):
         mock_msg = MagicMock()
-        mock_msg.content = [MagicMock(text='{"q1": true, "q2": false}')]
+        mock_msg.content = [_make_thinking_block(), _make_text_block('{"q1": true, "q2": false}')]
         mock_anthropic.Anthropic.return_value.messages.create.return_value = mock_msg
 
         result = check_text_answers("key", [
@@ -38,7 +53,7 @@ class TestCheckTextAnswers:
     @patch("app.services.ai_grading.anthropic")
     def test_ai_returns_markdown_code_block(self, mock_anthropic):
         mock_msg = MagicMock()
-        mock_msg.content = [MagicMock(text='```json\n{"q1": true}\n```')]
+        mock_msg.content = [_make_thinking_block(), _make_text_block('```json\n{"q1": true}\n```')]
         mock_anthropic.Anthropic.return_value.messages.create.return_value = mock_msg
 
         result = check_text_answers("key", [_make_question("q1")])
@@ -54,7 +69,7 @@ class TestCheckTextAnswers:
     @patch("app.services.ai_grading.anthropic")
     def test_invalid_json_returns_empty(self, mock_anthropic):
         mock_msg = MagicMock()
-        mock_msg.content = [MagicMock(text="not valid json")]
+        mock_msg.content = [_make_thinking_block(), _make_text_block("not valid json")]
         mock_anthropic.Anthropic.return_value.messages.create.return_value = mock_msg
 
         result = check_text_answers("key", [_make_question()])
@@ -63,7 +78,7 @@ class TestCheckTextAnswers:
     @patch("app.services.ai_grading.anthropic")
     def test_non_dict_json_returns_empty(self, mock_anthropic):
         mock_msg = MagicMock()
-        mock_msg.content = [MagicMock(text="[1, 2, 3]")]
+        mock_msg.content = [_make_thinking_block(), _make_text_block("[1, 2, 3]")]
         mock_anthropic.Anthropic.return_value.messages.create.return_value = mock_msg
 
         result = check_text_answers("key", [_make_question()])
@@ -72,7 +87,7 @@ class TestCheckTextAnswers:
     @patch("app.services.ai_grading.anthropic")
     def test_fill_blank_uses_strict_mode(self, mock_anthropic):
         mock_msg = MagicMock()
-        mock_msg.content = [MagicMock(text='{"q1": true}')]
+        mock_msg.content = [_make_thinking_block(), _make_text_block('{"q1": true}')]
         mock_anthropic.Anthropic.return_value.messages.create.return_value = mock_msg
 
         check_text_answers("key", [_make_question("q1", qtype="fill_blank")])
