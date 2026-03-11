@@ -383,9 +383,10 @@
            disabled:opacity-50 disabled:cursor-not-allowed;
   }
   .custom-select-panel {
-    @apply absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg
+    @apply absolute left-0 min-w-full w-max mt-1 bg-white border border-slate-200 rounded-lg shadow-lg
            overflow-y-auto py-1 animate-select-slide-down;
     max-height: 18rem;
+    max-width: min(28rem, calc(100vw - 2rem));
     z-index: var(--z-overlay);
   }
   .custom-select-option {

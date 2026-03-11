@@ -67,7 +67,7 @@ export interface SelectOption {
             (click)="selectOption($event, option)"
             (mouseenter)="highlightedIndex.set(i)"
           >
-            <span class="truncate">{{ option.label }}</span>
+            <span>{{ option.label }}</span>
             @if (option.value === value()) {
               <lucide-icon [img]="icons.Check" [size]="16" class="shrink-0 text-teal-600"></lucide-icon>
             }
