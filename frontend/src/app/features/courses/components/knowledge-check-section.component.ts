@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
-import { LucideAngularModule, ClipboardCheck, CheckCircle2, Check, X, Lightbulb } from 'lucide-angular';
+import { LucideAngularModule, ClipboardCheck, CheckCircle2, Check, X, Lightbulb, Star } from 'lucide-angular';
 import { KnowledgeCheckService } from '../../../core/services/knowledge-check.service';
 import { XpService } from '../../../core/services/xp.service';
 import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/models/knowledge-check.model';
@@ -102,10 +102,13 @@ import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/mo
                 </div>
               }
 
-              <!-- XP gain float -->
+              <!-- XP gain toast -->
               @if (xpGainQuestionId() === question.id) {
-                <div class="ml-10 mt-2">
-                  <span class="xp-float text-sm font-bold text-teal-600">+5 XP</span>
+                <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 xp-float">
+                  <div class="bg-teal-600 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold">
+                    <lucide-icon [img]="icons.Star" [size]="16"></lucide-icon>
+                    +5 XP
+                  </div>
                 </div>
               }
 
@@ -134,7 +137,7 @@ import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/mo
 export class KnowledgeCheckSectionComponent {
   readonly moduleId = input.required<string>();
 
-  readonly icons = { ClipboardCheck, CheckCircle2, Check, X, Lightbulb };
+  readonly icons = { ClipboardCheck, CheckCircle2, Check, X, Lightbulb, Star };
 
   #kcService = inject(KnowledgeCheckService);
   #xpService = inject(XpService);
