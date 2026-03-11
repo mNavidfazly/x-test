@@ -437,7 +437,7 @@ export class QuizTakerComponent implements OnDestroy {
         const questionCount = this.quizData()?.questions.length ?? 10;
         const xpAmount = computeQuizAttemptXp(questionCount, results.grade.score, isFirstPass);
         this.xpGainAmount.set(xpAmount);
-        setTimeout(() => this.xpGainAmount.set(null), 1600);
+        setTimeout(() => this.xpGainAmount.set(null), 2500);
         this.#xpService.loadXp(true);
       }
     } catch (e: unknown) {

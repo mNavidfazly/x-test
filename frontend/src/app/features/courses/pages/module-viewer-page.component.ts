@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock, Star } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { XpService } from '../../../core/services/xp.service';
 import { formatDuration } from '../../../core/utils/date.utils';
@@ -52,6 +52,16 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
             <p class="text-sm text-slate-500 mt-1">{{ courseService.moduleViewer()!.module.description }}</p>
           }
         </div>
+
+        <!-- XP gain toast (fixed position, always visible) -->
+        @if (xpGainAmount(); as amount) {
+          <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 xp-float">
+            <div class="bg-teal-600 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold">
+              <lucide-icon [img]="icons.Star" [size]="16"></lucide-icon>
+              +{{ amount }} XP
+            </div>
+          </div>
+        }
 
         <!-- Action bar -->
         <div class="bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2.5 flex items-center justify-between mb-6">
@@ -234,7 +244,7 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
               </a>
             }
           </div>
-          <div class="relative flex items-center gap-3">
+          <div class="flex items-center gap-3">
             @if (canMarkComplete()) {
               @if (isCompleted()) {
                 <span class="badge-success inline-flex items-center gap-1">
@@ -246,11 +256,6 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
                   Mark as complete
                 </button>
               }
-            }
-            @if (xpGainAmount(); as amount) {
-              <span class="absolute -top-8 left-1/2 -translate-x-1/2 xp-float text-base font-bold text-teal-600 whitespace-nowrap z-10">
-                +{{ amount }} XP
-              </span>
             }
           </div>
           <div class="min-w-[100px] text-right">
@@ -273,7 +278,7 @@ export class ModuleViewerPageComponent {
   #xpService = inject(XpService);
   #route = inject(ActivatedRoute);
 
-  readonly icons = { ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock };
+  readonly icons = { ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock, Star };
   readonly xpGainAmount = signal<number | null>(null);
 
   // Reactive route params — toSignal converts the paramMap observable to a signal
@@ -321,7 +326,7 @@ export class ModuleViewerPageComponent {
       await this.courseService.markModuleComplete(moduleId);
       if (!this.courseService.error()) {
         this.xpGainAmount.set(10);
-        setTimeout(() => this.xpGainAmount.set(null), 1600);
+        setTimeout(() => this.xpGainAmount.set(null), 2500);
         this.#xpService.loadXp(true);
       }
     }

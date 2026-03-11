@@ -177,7 +177,7 @@ export class KnowledgeCheckSectionComponent {
       this.responses.set(updated);
       if (response.isCorrect) {
         this.xpGainQuestionId.set(questionId);
-        setTimeout(() => this.xpGainQuestionId.set(null), 1600);
+        setTimeout(() => this.xpGainQuestionId.set(null), 2500);
         this.#xpService.loadXp(true);
       }
     } catch {
