@@ -15,43 +15,34 @@ describe('QuizResultItemComponent', () => {
     });
   };
 
-  it('shows question text and points', async () => {
-    await renderResult({ points: 3 });
+  it('shows question text and earned/max points', async () => {
+    await renderResult({ points: 3, correct_answer: null, user_answer: 'o-2' });
 
     expect(screen.getByText('What is 2 + 2?')).toBeTruthy();
-    expect(screen.getByText('3 points')).toBeTruthy();
+    expect(screen.getByText('3 / 3 points')).toBeTruthy();
   });
 
   it('shows correct answer styling when user picked the correct option', async () => {
-    // correct_answer is null for option-based questions (correctness via options.is_correct)
-    // user_answer=o-2 which has is_correct=true in the default mock options
     await renderResult({ correct_answer: null, user_answer: 'o-2' });
 
-    // Question number badge should have emerald (correct) styling
     const badge = screen.getByText('1');
     expect(badge.className).toContain('bg-emerald-100');
 
-    // The outer card should have emerald border
     const card = badge.closest('.rounded-xl')!;
     expect(card.className).toContain('border-emerald-200');
 
-    // "Correct answer:" section should NOT appear (user got it right)
     expect(screen.queryByText('Correct answer:')).toBeNull();
   });
 
   it('shows incorrect styling when user picked the wrong option', async () => {
-    // user_answer=o-1 (option "3") which has is_correct=false
     await renderResult({ correct_answer: null, user_answer: 'o-1' });
 
-    // Question number badge should have rose (incorrect) styling
     const badge = screen.getByText('1');
     expect(badge.className).toContain('bg-rose-100');
 
-    // The outer card should have rose border
     const card = badge.closest('.rounded-xl')!;
     expect(card.className).toContain('border-rose-200');
 
-    // The "Your answer:" label should be present
     expect(screen.getByText('Your answer:')).toBeTruthy();
   });
 
@@ -64,11 +55,8 @@ describe('QuizResultItemComponent', () => {
   it('shows correct answer when correct_answer is non-null and user is wrong', async () => {
     await renderResult({ correct_answer: 'o-2', user_answer: 'o-1' });
 
-    // The "Correct answer:" label should be visible
     expect(screen.getByText('Correct answer:')).toBeTruthy();
 
-    // The correct answer text "4" appears in the correct answer section (emerald-700)
-    // and in the option list. Verify at least one element with text "4" has correct styling.
     const allFours = screen.getAllByText('4');
     const correctAnswerSpan = allFours.find(el =>
       el.classList.contains('font-medium') && el.classList.contains('text-emerald-700')
@@ -77,15 +65,12 @@ describe('QuizResultItemComponent', () => {
   });
 
   it('hides correct answer when correct_answer is null (show_correct_answers=false)', async () => {
-    // Default mock has correct_answer: null, simulating show_correct_answers=false
     await renderResult({ correct_answer: null, user_answer: 'o-1' });
 
     expect(screen.queryByText('Correct answer:')).toBeNull();
   });
 
   it('marks single_choice correct when correct_answer is null and option is_correct matches', async () => {
-    // In the DB, single_choice questions have correct_answer=null;
-    // correctness is determined by quiz_question_options.is_correct
     await renderResult({
       question_type: 'single_choice',
       correct_answer: null,
@@ -117,7 +102,7 @@ describe('QuizResultItemComponent', () => {
     expect(badge.className).toContain('bg-emerald-100');
   });
 
-  it('marks multiple_choice correct when correct_answer is null and all correct options selected', async () => {
+  it('marks multiple_choice correct when all correct options selected', async () => {
     await renderResult({
       question_type: 'multiple_choice',
       correct_answer: null,
@@ -133,11 +118,12 @@ describe('QuizResultItemComponent', () => {
     expect(badge.className).toContain('bg-emerald-100');
   });
 
-  it('marks multiple_choice incorrect when only some correct options selected', async () => {
+  it('shows partial styling for multiple_choice with some correct options', async () => {
     await renderResult({
       question_type: 'multiple_choice',
       correct_answer: null,
       user_answer: 'mc-1',
+      points: 3,
       options: [
         { id: 'mc-1', option_text: 'A', is_correct: true },
         { id: 'mc-2', option_text: 'B', is_correct: false },
@@ -145,8 +131,73 @@ describe('QuizResultItemComponent', () => {
       ],
     });
 
+    // 1 correct, 0 incorrect, 2 total correct → (1-0)/2 * 3 = 1.5 points → partial (amber)
+    const badge = screen.getByText('1');
+    expect(badge.className).toContain('bg-amber-100');
+    const card = badge.closest('.rounded-xl')!;
+    expect(card.className).toContain('border-amber-200');
+    expect(screen.getByText('1.5 / 3 points')).toBeTruthy();
+  });
+
+  it('shows partial styling for multiple_choice with correct and incorrect selections', async () => {
+    await renderResult({
+      question_type: 'multiple_choice',
+      correct_answer: null,
+      user_answer: 'mc-1,mc-3,mc-2',
+      points: 3,
+      options: [
+        { id: 'mc-1', option_text: 'A', is_correct: true },
+        { id: 'mc-2', option_text: 'B', is_correct: false },
+        { id: 'mc-3', option_text: 'C', is_correct: true },
+      ],
+    });
+
+    // 2 correct, 1 incorrect, 2 total correct → max(0, (2-1)/2) * 3 = 1.5 points → partial
+    const badge = screen.getByText('1');
+    expect(badge.className).toContain('bg-amber-100');
+    expect(screen.getByText('1.5 / 3 points')).toBeTruthy();
+  });
+
+  it('shows zero points for multiple_choice when penalty zeroes out score', async () => {
+    await renderResult({
+      question_type: 'multiple_choice',
+      correct_answer: null,
+      user_answer: 'mc-1,mc-2',
+      points: 3,
+      options: [
+        { id: 'mc-1', option_text: 'A', is_correct: true },
+        { id: 'mc-2', option_text: 'B', is_correct: false },
+        { id: 'mc-3', option_text: 'C', is_correct: true },
+      ],
+    });
+
+    // 1 correct, 1 incorrect, 2 total correct → max(0, (1-1)/2) = 0 → rose
     const badge = screen.getByText('1');
     expect(badge.className).toContain('bg-rose-100');
+    expect(screen.getByText('0 / 3 points')).toBeTruthy();
+  });
+
+  it('shows partial styling for matching with some correct pairs', async () => {
+    await renderResult({
+      question_type: 'matching',
+      correct_answer: JSON.stringify([
+        { left: 'A', right: '1' },
+        { left: 'B', right: '2' },
+        { left: 'C', right: '3' },
+      ]),
+      user_answer: JSON.stringify([
+        { left: 'A', right: '1' },
+        { left: 'B', right: '3' },
+        { left: 'C', right: '3' },
+      ]),
+      points: 3,
+      options: null,
+    });
+
+    // 2 of 3 pairs correct → (2/3) * 3 = 2 points → partial
+    const badge = screen.getByText('1');
+    expect(badge.className).toContain('bg-amber-100');
+    expect(screen.getByText('2 / 3 points')).toBeTruthy();
   });
 
   it('marks fill_blank correct via correct_answer text comparison', async () => {
@@ -173,6 +224,14 @@ describe('QuizResultItemComponent', () => {
     expect(badge.className).toContain('bg-rose-100');
   });
 
+  it('shows 0 earned points when no answer given', async () => {
+    await renderResult({ user_answer: null, points: 5 });
+
+    expect(screen.getByText('0 / 5 points')).toBeTruthy();
+    const badge = screen.getByText('1');
+    expect(badge.className).toContain('bg-rose-100');
+  });
+
   // --- Explanation ---
 
   it('shows explanation when provided', async () => {
@@ -190,7 +249,6 @@ describe('QuizResultItemComponent', () => {
   it('hides explanation when empty string', async () => {
     await renderResult({ explanation: '' });
 
-    // Empty string is falsy, so @if block should not render
     const explanationBlocks = document.querySelectorAll('.bg-amber-50');
     expect(explanationBlocks.length).toBe(0);
   });

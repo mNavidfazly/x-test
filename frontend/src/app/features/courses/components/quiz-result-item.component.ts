@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { LucideAngularModule, Check, X, Lightbulb } from 'lucide-angular';
+import { LucideAngularModule, Check, X, Lightbulb, MinusCircle } from 'lucide-angular';
 import { QuizQuestionResult } from '../../../core/models/course.model';
 
 @Component({
@@ -8,20 +8,26 @@ import { QuizQuestionResult } from '../../../core/models/course.model';
   imports: [LucideAngularModule],
   host: { class: 'block' },
   template: `
-    <div class="rounded-xl border bg-white p-5" [class.border-emerald-200]="isCorrect()" [class.border-rose-200]="!isCorrect()">
+    <div class="rounded-xl border bg-white p-5"
+         [class.border-emerald-200]="resultStatus() === 'correct'"
+         [class.border-amber-200]="resultStatus() === 'partial'"
+         [class.border-rose-200]="resultStatus() === 'incorrect'">
       <div class="flex items-start gap-3 mb-3">
         <span class="flex-shrink-0 w-7 h-7 rounded-full text-xs font-bold flex items-center justify-center"
-              [class.bg-emerald-100]="isCorrect()" [class.text-emerald-700]="isCorrect()"
-              [class.bg-rose-100]="!isCorrect()" [class.text-rose-700]="!isCorrect()">
+              [class.bg-emerald-100]="resultStatus() === 'correct'" [class.text-emerald-700]="resultStatus() === 'correct'"
+              [class.bg-amber-100]="resultStatus() === 'partial'" [class.text-amber-700]="resultStatus() === 'partial'"
+              [class.bg-rose-100]="resultStatus() === 'incorrect'" [class.text-rose-700]="resultStatus() === 'incorrect'">
           {{ questionNumber() }}
         </span>
         <div class="flex-1">
           <p class="text-sm font-semibold text-slate-900">{{ result().question_text }}</p>
-          <p class="text-xs text-slate-400 mt-0.5">{{ result().points }} {{ result().points === 1 ? 'point' : 'points' }}</p>
+          <p class="text-xs text-slate-400 mt-0.5">{{ earnedPoints() }} / {{ result().points }} {{ result().points === 1 ? 'point' : 'points' }}</p>
         </div>
         <div class="flex-shrink-0">
-          @if (isCorrect()) {
+          @if (resultStatus() === 'correct') {
             <lucide-icon [img]="icons.Check" [size]="20" class="text-emerald-600"></lucide-icon>
+          } @else if (resultStatus() === 'partial') {
+            <lucide-icon [img]="icons.MinusCircle" [size]="20" class="text-amber-500"></lucide-icon>
           } @else {
             <lucide-icon [img]="icons.X" [size]="20" class="text-rose-600"></lucide-icon>
           }
@@ -33,7 +39,10 @@ import { QuizQuestionResult } from '../../../core/models/course.model';
         <div class="text-sm">
           <span class="text-slate-500">Your answer: </span>
           @if (result().user_answer) {
-            <span class="font-medium" [class.text-emerald-700]="isCorrect()" [class.text-rose-700]="!isCorrect()">
+            <span class="font-medium"
+                  [class.text-emerald-700]="resultStatus() === 'correct'"
+                  [class.text-amber-700]="resultStatus() === 'partial'"
+                  [class.text-rose-700]="resultStatus() === 'incorrect'">
               {{ displayUserAnswer() }}
             </span>
           } @else {
@@ -42,7 +51,7 @@ import { QuizQuestionResult } from '../../../core/models/course.model';
         </div>
 
         <!-- Correct answer (if show_correct_answers enabled) -->
-        @if (result().correct_answer !== null && !isCorrect()) {
+        @if (result().correct_answer !== null && resultStatus() !== 'correct') {
           <div class="text-sm">
             <span class="text-slate-500">Correct answer: </span>
             <span class="font-medium text-emerald-700">{{ displayCorrectAnswer() }}</span>
@@ -89,34 +98,61 @@ export class QuizResultItemComponent {
   readonly result = input.required<QuizQuestionResult>();
   readonly questionNumber = input.required<number>();
 
-  readonly icons = { Check, X, Lightbulb };
+  readonly icons = { Check, X, Lightbulb, MinusCircle };
 
-  readonly isCorrect = computed(() => {
+  readonly earnedPoints = computed(() => {
     const r = this.result();
-    if (!r.user_answer) return false;
+    if (!r.user_answer) return 0;
     const type = r.question_type;
-    // Option-based: check options directly, don't need correct_answer text
+
     if (type === 'single_choice' || type === 'true_false') {
-      return r.options?.some(o => o.id === r.user_answer && o.is_correct === true) ?? false;
+      const correct = r.options?.some(o => o.id === r.user_answer && o.is_correct === true) ?? false;
+      return correct ? r.points : 0;
     }
+
     if (type === 'multiple_choice') {
-      const userIds = new Set((r.user_answer ?? '').split(',').filter(Boolean).sort());
-      const correctIds = new Set((r.options ?? []).filter(o => o.is_correct === true).map(o => o.id).sort());
-      return userIds.size === correctIds.size && [...userIds].every(id => correctIds.has(id));
+      const userIds = new Set((r.user_answer ?? '').split(',').filter(Boolean));
+      const options = r.options ?? [];
+      const correctIds = new Set(options.filter(o => o.is_correct === true).map(o => o.id));
+      if (correctIds.size === 0) return 0;
+      let correctSelected = 0;
+      let incorrectSelected = 0;
+      for (const id of userIds) {
+        if (correctIds.has(id)) correctSelected++;
+        else incorrectSelected++;
+      }
+      const ratio = Math.max(0, (correctSelected - incorrectSelected) / correctIds.size);
+      return Math.round(ratio * r.points * 100) / 100;
     }
-    // Text-based types need correct_answer
-    if (r.correct_answer === null) return false;
+
     if (type === 'fill_blank' || type === 'short_answer') {
-      return (r.user_answer ?? '').trim().toLowerCase() === (r.correct_answer ?? '').trim().toLowerCase();
+      if (r.correct_answer === null) return 0;
+      const correct = (r.user_answer ?? '').trim().toLowerCase() === (r.correct_answer ?? '').trim().toLowerCase();
+      return correct ? r.points : 0;
     }
+
     if (type === 'matching') {
+      if (r.correct_answer === null) return 0;
       try {
-        const userPairs = JSON.parse(r.user_answer ?? '[]');
-        const correctPairs = JSON.parse(r.correct_answer ?? '[]');
-        return JSON.stringify(userPairs) === JSON.stringify(correctPairs);
-      } catch { return false; }
+        const userPairs = JSON.parse(r.user_answer ?? '[]') as { left: string; right: string }[];
+        const correctPairs = JSON.parse(r.correct_answer ?? '[]') as { left: string; right: string }[];
+        if (correctPairs.length === 0) return 0;
+        let correctCount = 0;
+        for (let i = 0; i < correctPairs.length; i++) {
+          if (userPairs[i]?.right === correctPairs[i]?.right) correctCount++;
+        }
+        return Math.round((correctCount / correctPairs.length) * r.points * 100) / 100;
+      } catch { return 0; }
     }
-    return false;
+
+    return 0;
+  });
+
+  readonly resultStatus = computed<'correct' | 'partial' | 'incorrect'>(() => {
+    const earned = this.earnedPoints();
+    if (earned >= this.result().points) return 'correct';
+    if (earned > 0) return 'partial';
+    return 'incorrect';
   });
 
   readonly showOptionList = computed(() => {
