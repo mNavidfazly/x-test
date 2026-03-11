@@ -1,7 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
+import { ApiService } from './api.service';
 import { BunnyUploadService } from './bunny-upload.service';
 import { ActiveTrack } from './audio-player.service';
 import { extractErrorMessage } from '../utils/error.utils';
@@ -27,6 +29,7 @@ import {
 export class CourseService {
   #supabase = inject(SupabaseService);
   #auth = inject(AuthService);
+  #api = inject(ApiService);
   #bunnyUpload = inject(BunnyUploadService);
 
   #courses = signal<CourseWithProgress[]>([]);
@@ -886,6 +889,30 @@ export class CourseService {
     };
 
     return { attempt: a, grade, questions };
+  }
+
+  /**
+   * Fire-and-forget AI check for text answers that failed exact match.
+   * Returns updated QuizResults if AI made corrections, null otherwise.
+   */
+  async checkAiGrading(attemptId: string): Promise<QuizResults | null> {
+    try {
+      const res = await firstValueFrom(
+        this.#api.post<{ score: number; passed: boolean; earned_points: number; total_points: number; ai_corrections: number }>(
+          '/quiz-grading/ai-check',
+          { attempt_id: attemptId }
+        )
+      );
+
+      if (res.ai_corrections > 0) {
+        // Re-fetch results to get updated ai_accepted flags
+        return await this.getQuizAttemptResults(attemptId);
+      }
+      return null;
+    } catch {
+      // Silently ignore — exact-match score stands
+      return null;
+    }
   }
 
   // --- Phase 5C: Exam Taking methods ---

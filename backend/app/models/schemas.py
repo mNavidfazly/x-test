@@ -100,3 +100,15 @@ class InviteUserRequest(BaseModel):
 class InviteUserResponse(BaseModel):
     message: str
     user_id: Optional[str] = None
+
+
+class AiGradeRequest(BaseModel):
+    attempt_id: str
+
+
+class AiGradeResponse(BaseModel):
+    score: float
+    passed: bool
+    earned_points: float
+    total_points: float
+    ai_corrections: int

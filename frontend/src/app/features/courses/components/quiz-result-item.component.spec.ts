@@ -252,4 +252,46 @@ describe('QuizResultItemComponent', () => {
     const explanationBlocks = document.querySelectorAll('.bg-amber-50');
     expect(explanationBlocks.length).toBe(0);
   });
+
+  // --- AI Grading ---
+
+  it('shows AI accepted badge when ai_accepted is true', async () => {
+    await renderResult({
+      question_type: 'short_answer',
+      correct_answer: 'Liquefied Natural Gas',
+      user_answer: 'liquid natural gas',
+      ai_accepted: true,
+      options: null,
+    });
+
+    expect(screen.getByText('AI accepted')).toBeTruthy();
+  });
+
+  it('awards full points when ai_accepted is true for fill_blank', async () => {
+    await renderResult({
+      question_type: 'fill_blank',
+      correct_answer: 'Paris',
+      user_answer: 'paris, france',
+      points: 5,
+      ai_accepted: true,
+      options: null,
+    });
+
+    // Exact match would fail ('paris, france' !== 'paris'), but AI accepted → full points
+    expect(screen.getByText('5 / 5 points')).toBeTruthy();
+    const badge = screen.getByText('1');
+    expect(badge.className).toContain('bg-emerald-100');
+  });
+
+  it('does not show AI badge when ai_accepted is false', async () => {
+    await renderResult({
+      question_type: 'short_answer',
+      correct_answer: 'LNG',
+      user_answer: 'LNG',
+      ai_accepted: false,
+      options: null,
+    });
+
+    expect(screen.queryByText('AI accepted')).toBeNull();
+  });
 });

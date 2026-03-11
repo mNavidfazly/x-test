@@ -310,6 +310,7 @@ export interface QuizQuestionResult {
   user_answer: string | null;
   options: { id: string; option_text: string; is_correct: boolean | null }[] | null;
   explanation: string | null;
+  ai_accepted?: boolean;
 }
 
 export interface QuizResults {

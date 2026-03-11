@@ -443,6 +443,27 @@ export class QuizTakerComponent implements OnDestroy {
         setTimeout(() => this.xpGainAmount.set(null), 2500);
         this.#xpService.loadXp(true);
       }
+
+      // Fire-and-forget AI check for text answers that failed exact match
+      const hasTextQuestions = results.questions.some(
+        q => q.question_type === 'fill_blank' || q.question_type === 'short_answer'
+      );
+      if (hasTextQuestions) {
+        this.#courseService.checkAiGrading(attempt.id).then(updated => {
+          if (updated) {
+            this.results.set(updated);
+            // Update past attempts with corrected score
+            this.pastAttempts.update(prev =>
+              prev.map(a => a.id === attempt.id ? updated.attempt : a)
+            );
+            // If AI corrections caused a pass, emit completion
+            if (updated.grade.passed && !results.grade.passed) {
+              this.quizCompleted.emit();
+              this.#xpService.loadXp(true);
+            }
+          }
+        });
+      }
     } catch (e: unknown) {
       this.error.set(e instanceof Error ? e.message : 'Failed to submit quiz');
     } finally {

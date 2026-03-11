@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { LucideAngularModule, Check, X, Lightbulb, MinusCircle } from 'lucide-angular';
+import { LucideAngularModule, Check, X, Lightbulb, MinusCircle, Sparkles } from 'lucide-angular';
 import { QuizQuestionResult } from '../../../core/models/course.model';
 
 @Component({
@@ -50,6 +50,14 @@ import { QuizQuestionResult } from '../../../core/models/course.model';
           }
         </div>
 
+        <!-- AI accepted badge -->
+        @if (result().ai_accepted) {
+          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
+            <lucide-icon [img]="icons.Sparkles" [size]="12"></lucide-icon>
+            AI accepted
+          </span>
+        }
+
         <!-- Correct answer (if show_correct_answers enabled) -->
         @if (result().correct_answer !== null && resultStatus() !== 'correct') {
           <div class="text-sm">
@@ -98,7 +106,7 @@ export class QuizResultItemComponent {
   readonly result = input.required<QuizQuestionResult>();
   readonly questionNumber = input.required<number>();
 
-  readonly icons = { Check, X, Lightbulb, MinusCircle };
+  readonly icons = { Check, X, Lightbulb, MinusCircle, Sparkles };
 
   readonly earnedPoints = computed(() => {
     const r = this.result();
@@ -126,6 +134,7 @@ export class QuizResultItemComponent {
     }
 
     if (type === 'fill_blank' || type === 'short_answer') {
+      if (r.ai_accepted) return r.points;
       if (r.correct_answer === null) return 0;
       const correct = (r.user_answer ?? '').trim().toLowerCase() === (r.correct_answer ?? '').trim().toLowerCase();
       return correct ? r.points : 0;
