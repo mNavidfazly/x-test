@@ -95,11 +95,13 @@ import { CustomSelectComponent, SelectOption } from '../../../shared/components/
           </div>
         }
         @case ('matching') {
-          <div class="ml-10 space-y-3">
+          <div class="sm:ml-10 space-y-3">
             @for (left of question().matchingLeft ?? []; track left; let i = $index) {
-              <div class="flex items-center gap-3">
-                <span class="text-sm font-medium text-slate-700 min-w-[120px]">{{ left }}</span>
-                <span class="text-slate-400">→</span>
+              <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <div class="flex items-center gap-2 sm:min-w-[120px]">
+                  <span class="text-sm font-medium text-slate-700">{{ left }}</span>
+                  <span class="text-slate-400 hidden sm:inline">→</span>
+                </div>
                 <div class="flex-1 relative">
                   <app-custom-select
                     [options]="matchingOptions()"
