@@ -297,4 +297,23 @@ describe('LectureAccordionComponent', () => {
 
     expect(emittedId).toBe('m1');
   });
+
+  it('should render section title divider when module has section_title', async () => {
+    const lectureWithSections = {
+      ...mockLecture,
+      modules: [
+        { id: 'm1', title: 'Welcome Video', description: null, module_type: 'video', sort_order: 0, estimated_duration_minutes: 10, section_title: 'Getting Started' },
+        { id: 'm2', title: 'Setup Guide', description: null, module_type: 'pdf', sort_order: 1, estimated_duration_minutes: 5, section_title: null },
+      ],
+    };
+    await renderAccordion({ lecture: lectureWithSections, progressMap: progressWithStarted });
+
+    expect(screen.getByText('Getting Started')).toBeTruthy();
+  });
+
+  it('should not render section title divider when section_title is null', async () => {
+    await renderAccordion({ progressMap: progressWithStarted });
+
+    expect(screen.queryByText('GETTING STARTED')).toBeNull();
+  });
 });

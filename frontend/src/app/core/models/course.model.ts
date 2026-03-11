@@ -43,6 +43,7 @@ export interface ModuleSummary {
   module_type: ModuleType;
   sort_order: number;
   estimated_duration_minutes: number;
+  section_title?: string | null;
 }
 
 export interface CourseDetail {
@@ -103,6 +104,7 @@ export interface ModuleDetail {
   lecture_id: string;
   course_id: string;
   estimated_duration_minutes: number;
+  section_title?: string | null;
 }
 
 export type BunnyEncodingStatus = 0 | 1 | 2 | 3 | 4 | 5;
@@ -386,6 +388,7 @@ export interface ModuleFormData {
   module_type: ModuleType;
   lecture_id: string;
   estimated_duration_minutes: number;
+  section_title?: string | null;
 }
 
 export interface VideoFormData {

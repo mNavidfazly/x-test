@@ -104,6 +104,13 @@ import { ModuleItemComponent } from './module-item.component';
       @if (isOpen()) {
         <div class="border-t border-slate-100 bg-white px-2 py-1">
           @for (mod of lecture().modules; track mod.id; let i = $index; let first = $first; let last = $last) {
+            @if (mod.section_title) {
+              <div class="flex items-center gap-3 px-3 pt-4 pb-1" [class.pt-2]="first">
+                <div class="h-px flex-1 bg-slate-200"></div>
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{{ mod.section_title }}</span>
+                <div class="h-px flex-1 bg-slate-200"></div>
+              </div>
+            }
             <app-module-item
               [module]="mod"
               [courseId]="courseId()"

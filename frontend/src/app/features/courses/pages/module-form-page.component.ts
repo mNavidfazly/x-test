@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, ArrowLeft, Loader2, Clock, LucideIconData } from 'lucide-angular';
+import { LucideAngularModule, ArrowLeft, Loader2, Clock, SeparatorHorizontal, LucideIconData } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -110,6 +110,21 @@ interface TypeOption {
               placeholder="15"
             />
             <p class="text-xs text-slate-400 mt-1">How long this module takes to complete.</p>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label flex items-center gap-1.5 mb-1">
+              <lucide-icon [img]="icons.SeparatorHorizontal" [size]="14" class="text-slate-400"></lucide-icon>
+              Section Title
+            </label>
+            <input
+              type="text"
+              class="input-field"
+              [value]="sectionTitle() ?? ''"
+              (input)="sectionTitle.set($any($event.target).value || null)"
+              placeholder="Optional — adds a section heading above this module"
+            />
+            <p class="text-xs text-slate-400 mt-1">Displays a visual separator with this title above the module.</p>
           </div>
         }
 
@@ -232,7 +247,7 @@ export class ModuleFormPageComponent implements OnInit {
   #route = inject(ActivatedRoute);
   #router = inject(Router);
 
-  readonly icons = { ArrowLeft, Loader2, Clock };
+  readonly icons = { ArrowLeft, Loader2, Clock, SeparatorHorizontal };
 
   readonly loading = signal(false);
   readonly saving = signal(false);
@@ -241,6 +256,7 @@ export class ModuleFormPageComponent implements OnInit {
   readonly selectedType = signal<ModuleType | null>(null);
   readonly significantUpdate = signal(false);
   readonly estimatedDuration = signal(15);
+  readonly sectionTitle = signal<string | null>(null);
 
   readonly courseId = computed(() => this.#route.snapshot.paramMap.get('courseId') ?? '');
   readonly moduleId = computed(() => this.#route.snapshot.paramMap.get('moduleId') ?? '');
@@ -325,6 +341,7 @@ export class ModuleFormPageComponent implements OnInit {
   async onSave(payload: ModuleSavePayload) {
     this.saving.set(true);
     payload.module.estimated_duration_minutes = this.estimatedDuration();
+    payload.module.section_title = this.sectionTitle();
     try {
       if (this.isEditMode()) {
         payload.significantUpdate = this.significantUpdate();
@@ -350,6 +367,7 @@ export class ModuleFormPageComponent implements OnInit {
       const { module, content } = await this.#courseService.loadModuleForEdit(this.moduleId());
       this.selectedType.set(module.module_type);
       this.estimatedDuration.set(module.estimated_duration_minutes);
+      this.sectionTitle.set(module.section_title ?? null);
       this.moduleFormData.set({
         title: module.title,
         description: module.description,

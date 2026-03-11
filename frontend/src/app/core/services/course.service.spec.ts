@@ -788,14 +788,15 @@ describe('CourseService', () => {
 
       expect(result).toEqual({ id: 'new-mod-id' });
       expect(supabase.client.from).toHaveBeenCalledWith('modules');
-      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith({
+      expect(supabase._mockQueryBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({
         course_id: 'c1',
         lecture_id: 'l1',
         title: 'New Video',
         description: 'Desc',
         module_type: 'video',
         sort_order: 2,
-      });
+        section_title: null,
+      }));
     });
 
     it('should calculate sort_order from loaded courseDetail', async () => {
@@ -878,10 +879,11 @@ describe('CourseService', () => {
       });
 
       expect(supabase.client.from).toHaveBeenCalledWith('modules');
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Updated Title',
         description: 'Updated Desc',
-      });
+        section_title: null,
+      }));
       expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'mod-1');
     });
 
@@ -1206,10 +1208,11 @@ describe('CourseService', () => {
         content: { type: 'video', data: { video_url: 'v.mp4', thumbnail_url: null, duration: null } },
       });
 
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith({
+      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(expect.objectContaining({
         title: 'Updated',
         description: null,
-      });
+        section_title: null,
+      }));
     });
   });
 

@@ -1159,6 +1159,7 @@ export type Database = {
           id: string
           lecture_id: string
           module_type: Database["public"]["Enums"]["module_type"]
+          section_title: string | null
           significant_update_at: string | null
           sort_order: number
           staleness_postponed_until: string | null
@@ -1175,6 +1176,7 @@ export type Database = {
           id?: string
           lecture_id: string
           module_type: Database["public"]["Enums"]["module_type"]
+          section_title?: string | null
           significant_update_at?: string | null
           sort_order?: number
           staleness_postponed_until?: string | null
@@ -1191,6 +1193,7 @@ export type Database = {
           id?: string
           lecture_id?: string
           module_type?: Database["public"]["Enums"]["module_type"]
+          section_title?: string | null
           significant_update_at?: string | null
           sort_order?: number
           staleness_postponed_until?: string | null
@@ -2012,6 +2015,14 @@ export type Database = {
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_claim_array: { Args: { claim: string }; Returns: string[] }
       password_verification_hook: { Args: { event: Json }; Returns: Json }
+      swap_lecture_sort_order: {
+        Args: { p_id_a: string; p_id_b: string }
+        Returns: undefined
+      }
+      swap_module_sort_order: {
+        Args: { p_id_a: string; p_id_b: string }
+        Returns: undefined
+      }
     }
     Enums: {
       access_request_status: "pending" | "approved" | "rejected"
