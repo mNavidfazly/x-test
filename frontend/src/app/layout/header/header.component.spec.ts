@@ -12,9 +12,14 @@ import { CourseService } from '../../core/services/course.service';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockProfileService } from '../../__mocks__/profile.mock';
 import { createMockNotificationService, createMockCourseService } from '../../__mocks__/course.mock';
+import { createMockXpService } from '../../__mocks__/xp.mock';
 import { MockLucideIconComponent } from '../../__mocks__/lucide.mock';
 import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
+import { XpService } from '../../core/services/xp.service';
 import { UserRole } from '../../core/models/auth.model';
+
+@Component({ selector: 'app-level-badge', standalone: true, template: '' })
+class MockLevelBadgeComponent {}
 
 @Component({ standalone: true, template: '' })
 class DummyComponent {}
@@ -44,7 +49,7 @@ async function renderHeader(options?: {
   const menuToggleSpy = vi.fn();
 
   const { fixture } = await render(HeaderComponent, {
-    componentImports: [MockLucideIconComponent, UserAvatarComponent],
+    componentImports: [MockLucideIconComponent, UserAvatarComponent, MockLevelBadgeComponent],
     componentOutputs: { menuToggle: { emit: menuToggleSpy } as any },
     providers: [
       provideRouter([{ path: '**', component: DummyComponent }]),
@@ -52,6 +57,7 @@ async function renderHeader(options?: {
       { provide: ProfileService, useValue: profile },
       { provide: NotificationService, useValue: notifications },
       { provide: CourseService, useValue: createMockCourseService() },
+      { provide: XpService, useValue: createMockXpService() },
     ],
   });
 

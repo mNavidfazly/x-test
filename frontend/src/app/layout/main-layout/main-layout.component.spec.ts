@@ -17,6 +17,8 @@ import { createMockAudioPlayerService } from '../../__mocks__/audio-player.mock'
 import { CourseService } from '../../core/services/course.service';
 import { ToastService } from '../../core/services/toast.service';
 import { createMockToastService } from '../../__mocks__/toast.mock';
+import { XpService } from '../../core/services/xp.service';
+import { createMockXpService } from '../../__mocks__/xp.mock';
 
 @Component({ selector: 'app-test-child', standalone: true, template: '<p>Test child content</p>' })
 class TestChildComponent {}
@@ -38,6 +40,7 @@ async function renderLayout() {
       { provide: CourseService, useValue: createMockCourseService() },
       { provide: ToastService, useValue: createMockToastService() },
       { provide: AudioPlayerService, useValue: audioPlayer },
+      { provide: XpService, useValue: createMockXpService() },
     ],
   });
 

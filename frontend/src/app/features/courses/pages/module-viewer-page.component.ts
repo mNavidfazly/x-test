@@ -3,6 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LucideAngularModule, ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
+import { XpService } from '../../../core/services/xp.service';
 import { formatDuration } from '../../../core/utils/date.utils';
 import { VideoViewerComponent } from '../components/video-viewer.component';
 import { PdfViewerComponent } from '../components/pdf-viewer.component';
@@ -264,6 +265,7 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
 })
 export class ModuleViewerPageComponent {
   readonly courseService = inject(CourseService);
+  #xpService = inject(XpService);
   #route = inject(ActivatedRoute);
 
   readonly icons = { ArrowLeft, ChevronLeft, ChevronRight, Check, Loader2, BookOpen, Clock };
@@ -307,10 +309,14 @@ export class ModuleViewerPageComponent {
     });
   }
 
-  onMarkComplete() {
+  async onMarkComplete() {
     const moduleId = this.courseService.moduleViewer()?.module.id;
     if (moduleId) {
-      this.courseService.markModuleComplete(moduleId);
+      await this.courseService.markModuleComplete(moduleId);
+      if (!this.courseService.error()) {
+        this.#xpService.showXpGain(10);
+        this.#xpService.loadXp(true);
+      }
     }
   }
 

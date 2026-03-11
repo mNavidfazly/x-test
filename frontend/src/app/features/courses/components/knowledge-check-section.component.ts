@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
 import { LucideAngularModule, ClipboardCheck, CheckCircle2, Check, X, Lightbulb } from 'lucide-angular';
 import { KnowledgeCheckService } from '../../../core/services/knowledge-check.service';
+import { XpService } from '../../../core/services/xp.service';
 import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/models/knowledge-check.model';
 
 @Component({
@@ -129,6 +130,7 @@ export class KnowledgeCheckSectionComponent {
   readonly icons = { ClipboardCheck, CheckCircle2, Check, X, Lightbulb };
 
   #kcService = inject(KnowledgeCheckService);
+  #xpService = inject(XpService);
 
   readonly loading = signal(true);
   readonly questions = signal<KnowledgeCheckQuestion[]>([]);
@@ -165,6 +167,10 @@ export class KnowledgeCheckSectionComponent {
       const updated = new Map(this.responses());
       updated.set(questionId, response);
       this.responses.set(updated);
+      if (response.isCorrect) {
+        this.#xpService.showXpGain(5);
+        this.#xpService.loadXp(true);
+      }
     } catch {
       // Error is non-critical for a comprehension check
     } finally {

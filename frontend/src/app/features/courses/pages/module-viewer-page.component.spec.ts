@@ -34,6 +34,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
 import { createMockAuthService } from '../../../__mocks__/auth.mock';
 import { createMockSupabaseService } from '../../../__mocks__/supabase.mock';
+import { XpService } from '../../../core/services/xp.service';
+import { createMockXpService } from '../../../__mocks__/xp.mock';
 
 function createMockBunnyUploadService() {
   return {
@@ -85,6 +87,7 @@ describe('ModuleViewerPageComponent', () => {
         { provide: AuthService, useValue: createMockAuthService() },
         { provide: SupabaseService, useValue: createMockSupabaseService() },
         { provide: KnowledgeCheckService, useValue: createMockKnowledgeCheckService() },
+        { provide: XpService, useValue: createMockXpService() },
         // Provide paramMap as an observable — the component uses toSignal(route.paramMap)
         // to reactively respond to route param changes (e.g. Next/Previous navigation).
         { provide: ActivatedRoute, useValue: { paramMap: paramMap$ } },

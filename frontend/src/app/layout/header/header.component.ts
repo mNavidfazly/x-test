@@ -10,6 +10,7 @@ import { ProfileService } from '../../core/services/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { CourseService } from '../../core/services/course.service';
 import { UserAvatarComponent } from '../../shared/components/user-avatar.component';
+import { LevelBadgeComponent } from '../../shared/components/level-badge.component';
 
 interface BreadcrumbItem {
   label: string;
@@ -40,7 +41,7 @@ const ROUTE_NAME_MAP: readonly [string, string][] = [
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, LucideAngularModule, UserAvatarComponent],
+  imports: [RouterLink, LucideAngularModule, UserAvatarComponent, LevelBadgeComponent],
   host: { class: 'block' },
   template: `
     <header class="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-4">
@@ -85,6 +86,8 @@ const ROUTE_NAME_MAP: readonly [string, string][] = [
             </span>
           }
         </a>
+
+        <app-level-badge />
 
         <!-- User menu -->
         <div class="relative">
