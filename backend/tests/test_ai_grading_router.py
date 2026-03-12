@@ -18,12 +18,10 @@ def _make_supabase_mock(
     attempt=None,
     answers=None,
     questions=None,
-    quiz=None,
-    options=None,
+    rpc_result=None,
 ):
     mock = MagicMock()
 
-    # Build a flexible .table().select().eq().limit().execute() chain
     def table_side_effect(table_name):
         t = MagicMock()
 
@@ -41,18 +39,12 @@ def _make_supabase_mock(
             t.select.return_value.eq.return_value.execute.return_value = MagicMock(
                 data=questions or []
             )
-        elif table_name == "quizzes":
-            t.select.return_value.eq.return_value.limit.return_value.execute.return_value = MagicMock(
-                data=[quiz] if quiz else []
-            )
-        elif table_name == "quiz_question_options":
-            t.select.return_value.in_.return_value.execute.return_value = MagicMock(
-                data=options or []
-            )
         return t
 
     mock.table.side_effect = table_side_effect
-    mock.rpc.return_value.execute.return_value = MagicMock()
+    mock.rpc.return_value.execute.return_value = MagicMock(
+        data=rpc_result or {"score": 0, "passed": False, "earned_points": 0, "total_points": 0}
+    )
     return mock
 
 
@@ -75,12 +67,7 @@ _ANSWERS = [
     {"question_id": "q2", "user_answer": "opt-correct", "ai_accepted": False},
 ]
 
-_QUIZ = {"passing_score": 60}
-
-_OPTIONS = [
-    {"id": "opt-correct", "question_id": "q2", "is_correct": True},
-    {"id": "opt-wrong", "question_id": "q2", "is_correct": False},
-]
+_RPC_RESULT = {"score": 50.0, "passed": False, "earned_points": 10, "total_points": 20}
 
 
 class TestAiGradingRouter:
@@ -108,7 +95,6 @@ class TestAiGradingRouter:
         """Without anthropic_api_key configured, should return 503."""
         mock_sb = _make_supabase_mock()
         client = self._get_client(mock_sb)
-        # Default settings have empty anthropic_api_key
         resp = client.post("/api/quiz-grading/ai-check", json={"attempt_id": "attempt-1"})
         assert resp.status_code == 503
 
@@ -138,51 +124,13 @@ class TestAiGradingRouter:
         settings.anthropic_api_key = ""
 
     @patch("app.routers.ai_grading.check_text_answers")
-    def test_no_text_questions_returns_zero_corrections(self, mock_ai):
+    def test_no_text_questions_early_return_calls_rpc(self, mock_ai):
         questions = [_QUESTIONS[1]]  # Only true_false
         answers = [_ANSWERS[1]]
+        rpc_result = {"score": 50.0, "passed": False, "earned_points": 10, "total_points": 20}
         mock_sb = _make_supabase_mock(
             attempt=_ATTEMPT, answers=answers, questions=questions,
-            quiz=_QUIZ, options=_OPTIONS,
-        )
-        settings = get_settings()
-        settings.anthropic_api_key = "test-key"
-
-        client = self._get_client(mock_sb)
-        resp = client.post("/api/quiz-grading/ai-check", json={"attempt_id": "attempt-1"})
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["ai_corrections"] == 0
-        mock_ai.assert_not_called()
-
-        settings.anthropic_api_key = ""
-
-    @patch("app.routers.ai_grading.check_text_answers")
-    def test_ai_accepts_answer_updates_score(self, mock_ai):
-        mock_ai.return_value = {"q1": True}
-        mock_sb = _make_supabase_mock(
-            attempt=_ATTEMPT, answers=_ANSWERS, questions=_QUESTIONS,
-            quiz=_QUIZ, options=_OPTIONS,
-        )
-        settings = get_settings()
-        settings.anthropic_api_key = "test-key"
-
-        client = self._get_client(mock_sb)
-        resp = client.post("/api/quiz-grading/ai-check", json={"attempt_id": "attempt-1"})
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["ai_corrections"] == 1
-        assert data["score"] == 100.0  # Both questions now correct
-        assert data["passed"] is True
-
-        settings.anthropic_api_key = ""
-
-    @patch("app.routers.ai_grading.check_text_answers")
-    def test_ai_rejects_answer_no_change(self, mock_ai):
-        mock_ai.return_value = {"q1": False}
-        mock_sb = _make_supabase_mock(
-            attempt=_ATTEMPT, answers=_ANSWERS, questions=_QUESTIONS,
-            quiz=_QUIZ, options=_OPTIONS,
+            rpc_result=rpc_result,
         )
         settings = get_settings()
         settings.anthropic_api_key = "test-key"
@@ -193,15 +141,40 @@ class TestAiGradingRouter:
         data = resp.json()
         assert data["ai_corrections"] == 0
         assert data["score"] == 50.0
+        mock_sb.rpc.assert_called_once_with("recalculate_quiz_score", {"p_attempt_id": "attempt-1"})
+        mock_ai.assert_not_called()
 
         settings.anthropic_api_key = ""
 
     @patch("app.routers.ai_grading.check_text_answers")
-    def test_ai_failure_returns_zero_corrections(self, mock_ai):
-        mock_ai.return_value = {}  # AI failed gracefully
+    def test_ai_accepts_answer_calls_rpc(self, mock_ai):
+        mock_ai.return_value = {"q1": True}
+        rpc_result = {"score": 100.0, "passed": True, "earned_points": 20, "total_points": 20}
         mock_sb = _make_supabase_mock(
             attempt=_ATTEMPT, answers=_ANSWERS, questions=_QUESTIONS,
-            quiz=_QUIZ, options=_OPTIONS,
+            rpc_result=rpc_result,
+        )
+        settings = get_settings()
+        settings.anthropic_api_key = "test-key"
+
+        client = self._get_client(mock_sb)
+        resp = client.post("/api/quiz-grading/ai-check", json={"attempt_id": "attempt-1"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["ai_corrections"] == 1
+        assert data["score"] == 100.0
+        assert data["passed"] is True
+        mock_sb.rpc.assert_called_once_with("recalculate_quiz_score", {"p_attempt_id": "attempt-1"})
+
+        settings.anthropic_api_key = ""
+
+    @patch("app.routers.ai_grading.check_text_answers")
+    def test_ai_rejects_answer_still_calls_rpc(self, mock_ai):
+        mock_ai.return_value = {"q1": False}
+        rpc_result = {"score": 50.0, "passed": False, "earned_points": 10, "total_points": 20}
+        mock_sb = _make_supabase_mock(
+            attempt=_ATTEMPT, answers=_ANSWERS, questions=_QUESTIONS,
+            rpc_result=rpc_result,
         )
         settings = get_settings()
         settings.anthropic_api_key = "test-key"
@@ -211,5 +184,47 @@ class TestAiGradingRouter:
         assert resp.status_code == 200
         data = resp.json()
         assert data["ai_corrections"] == 0
+        assert data["score"] == 50.0
+        mock_sb.rpc.assert_called_once_with("recalculate_quiz_score", {"p_attempt_id": "attempt-1"})
+
+        settings.anthropic_api_key = ""
+
+    @patch("app.routers.ai_grading.check_text_answers")
+    def test_ai_failure_returns_zero_corrections(self, mock_ai):
+        mock_ai.return_value = {}  # AI failed gracefully
+        rpc_result = {"score": 50.0, "passed": False, "earned_points": 10, "total_points": 20}
+        mock_sb = _make_supabase_mock(
+            attempt=_ATTEMPT, answers=_ANSWERS, questions=_QUESTIONS,
+            rpc_result=rpc_result,
+        )
+        settings = get_settings()
+        settings.anthropic_api_key = "test-key"
+
+        client = self._get_client(mock_sb)
+        resp = client.post("/api/quiz-grading/ai-check", json={"attempt_id": "attempt-1"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["ai_corrections"] == 0
+
+        settings.anthropic_api_key = ""
+
+    @patch("app.routers.ai_grading.check_text_answers")
+    def test_ai_hallucinated_ids_filtered(self, mock_ai):
+        """AI returns IDs we didn't send — they should be ignored."""
+        mock_ai.return_value = {"q1": True, "unknown-id": True}
+        rpc_result = {"score": 100.0, "passed": True, "earned_points": 20, "total_points": 20}
+        mock_sb = _make_supabase_mock(
+            attempt=_ATTEMPT, answers=_ANSWERS, questions=_QUESTIONS,
+            rpc_result=rpc_result,
+        )
+        settings = get_settings()
+        settings.anthropic_api_key = "test-key"
+
+        client = self._get_client(mock_sb)
+        resp = client.post("/api/quiz-grading/ai-check", json={"attempt_id": "attempt-1"})
+        assert resp.status_code == 200
+        data = resp.json()
+        # Only q1 should be counted, not unknown-id
+        assert data["ai_corrections"] == 1
 
         settings.anthropic_api_key = ""

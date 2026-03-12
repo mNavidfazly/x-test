@@ -91,30 +91,26 @@ def ai_grade_check(
 
     # 4. Early return if nothing to check
     if not text_to_check:
-        quiz_result = (
-            supabase.table("quizzes")
-            .select("passing_score")
-            .eq("id", attempt["quiz_id"])
-            .limit(1)
-            .execute()
-        )
-        passing_score = quiz_result.data[0]["passing_score"] if quiz_result.data else 0
-
-        total_points = sum(q["points"] for q in questions)
-        earned_points = (attempt["score"] / 100) * total_points if total_points > 0 else 0
-
+        rpc_result = supabase.rpc(
+            "recalculate_quiz_score", {"p_attempt_id": body.attempt_id}
+        ).execute()
+        result = rpc_result.data
         return AiGradeResponse(
-            score=attempt["score"],
-            passed=attempt["passed"],
-            earned_points=round(earned_points, 2),
-            total_points=total_points,
+            score=result["score"],
+            passed=result["passed"],
+            earned_points=result["earned_points"],
+            total_points=result["total_points"],
             ai_corrections=0,
         )
 
     # 5. Call AI service
     ai_results = check_text_answers(settings.anthropic_api_key, text_to_check)
 
-    # 6. Update ai_accepted for accepted answers
+    # 6. Validate AI results — only accept IDs that we actually sent
+    valid_question_ids = {item["question_id"] for item in text_to_check}
+    ai_results = {qid: v for qid, v in ai_results.items() if qid in valid_question_ids}
+
+    # 7. Update ai_accepted for accepted answers
     accepted_ids = [qid for qid, accepted in ai_results.items() if accepted]
 
     for qid in accepted_ids:
@@ -122,109 +118,22 @@ def ai_grade_check(
             {"ai_accepted": True}
         ).eq("attempt_id", body.attempt_id).eq("question_id", qid).execute()
 
-    # 7. Recalculate score
-    quiz_result = (
-        supabase.table("quizzes")
-        .select("passing_score")
-        .eq("id", attempt["quiz_id"])
-        .limit(1)
-        .execute()
-    )
-    passing_score = quiz_result.data[0]["passing_score"] if quiz_result.data else 0
-
-    # Get option data for choice-based questions
-    options_result = (
-        supabase.table("quiz_question_options")
-        .select("id, question_id, is_correct")
-        .in_("question_id", [q["id"] for q in questions])
-        .execute()
-    )
-    options_by_qid = {}
-    for opt in (options_result.data or []):
-        options_by_qid.setdefault(opt["question_id"], []).append(opt)
-
-    accepted_set = set(accepted_ids)
-    # Include previously AI-accepted answers
-    for q in questions:
-        ans = answers_by_qid.get(q["id"])
-        if ans and ans["ai_accepted"]:
-            accepted_set.add(q["id"])
-
-    total_points = 0
-    earned_points = 0
-
-    for q in questions:
-        pts = q["points"]
-        total_points += pts
-        ans = answers_by_qid.get(q["id"])
-        user_answer = ans["user_answer"] if ans else None
-
-        if not user_answer:
-            continue
-
-        qtype = q["question_type"]
-
-        if qtype in ("single_choice", "true_false"):
-            opts = options_by_qid.get(q["id"], [])
-            for opt in opts:
-                if opt["id"] == user_answer and opt["is_correct"]:
-                    earned_points += pts
-                    break
-
-        elif qtype == "multiple_choice":
-            opts = options_by_qid.get(q["id"], [])
-            correct_ids = {o["id"] for o in opts if o["is_correct"]}
-            if correct_ids:
-                user_ids = set(user_answer.split(","))
-                correct_selected = len(user_ids & correct_ids)
-                incorrect_selected = len(user_ids) - correct_selected
-                ratio = max(0, (correct_selected - incorrect_selected) / len(correct_ids))
-                earned_points += round(ratio * pts, 2)
-
-        elif qtype in ("fill_blank", "short_answer"):
-            if q["correct_answer"]:
-                if user_answer.strip().lower() == q["correct_answer"].strip().lower():
-                    earned_points += pts
-                elif q["id"] in accepted_set:
-                    earned_points += pts
-
-        elif qtype == "matching":
-            if q["correct_answer"]:
-                try:
-                    import json
-                    user_pairs = json.loads(user_answer)
-                    correct_pairs = json.loads(q["correct_answer"])
-                    total_pairs = len(correct_pairs)
-                    if total_pairs > 0:
-                        correct_count = sum(
-                            1 for i in range(total_pairs)
-                            if i < len(user_pairs) and user_pairs[i].get("right") == correct_pairs[i].get("right")
-                        )
-                        earned_points += round((correct_count / total_pairs) * pts, 2)
-                except (ValueError, TypeError, KeyError):
-                    pass
-
-    # Calculate new score
-    new_score = round((earned_points / total_points) * 100, 2) if total_points > 0 else 0
-    new_passed = new_score >= passing_score
-
-    # 8. Update score via RPC (bypasses protect trigger)
-    if new_score != attempt["score"]:
-        supabase.rpc("update_quiz_score", {
-            "p_attempt_id": body.attempt_id,
-            "p_score": new_score,
-            "p_passed": new_passed,
-        }).execute()
+    # 8. Recalculate score via RPC — single source of truth for grading logic
+    rpc_result = supabase.rpc(
+        "recalculate_quiz_score", {"p_attempt_id": body.attempt_id}
+    ).execute()
+    result = rpc_result.data
 
     logger.info(
-        "AI grading: attempt=%s corrections=%d score=%s->%s",
-        body.attempt_id, len(accepted_ids), attempt["score"], new_score,
+        "AI grading: attempt=%s checked=%d accepted=%d score=%s->%s",
+        body.attempt_id, len(text_to_check), len(accepted_ids),
+        attempt["score"], result["score"],
     )
 
     return AiGradeResponse(
-        score=new_score,
-        passed=new_passed,
-        earned_points=round(earned_points, 2),
-        total_points=total_points,
+        score=result["score"],
+        passed=result["passed"],
+        earned_points=result["earned_points"],
+        total_points=result["total_points"],
         ai_corrections=len(accepted_ids),
     )
