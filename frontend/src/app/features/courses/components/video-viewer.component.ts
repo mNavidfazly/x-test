@@ -54,7 +54,6 @@ const RESUME_WINDOW_MS = 2_000;
               <iframe
                 #videoIframe
                 [src]="trustedEmbedUrl()"
-                loading="lazy"
                 class="absolute inset-0 w-full h-full rounded-lg"
                 allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
                 allowfullscreen
@@ -95,6 +94,7 @@ export class VideoViewerComponent implements OnDestroy {
   #resuming = false;
   #resumeEndTimer: ReturnType<typeof setTimeout> | null = null;
   #visibilityHandler = () => this.#onVisibilityChange();
+  #boundOnLoad: (() => void) | null = null;
 
   readonly trustedEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const url = this.#embedUrl();
@@ -132,11 +132,13 @@ export class VideoViewerComponent implements OnDestroy {
       }
     });
 
-    // Initialize Player.js when iframe becomes available
+    // Wait for iframe load event before initializing Player.js
     effect(() => {
       const iframeRef = this.videoIframe();
       if (iframeRef && typeof playerjs !== 'undefined') {
-        this.#initPlayer(iframeRef.nativeElement);
+        const iframe = iframeRef.nativeElement;
+        this.#boundOnLoad = () => this.#initPlayer(iframe);
+        iframe.addEventListener('load', this.#boundOnLoad);
       }
     });
   }
@@ -220,12 +222,10 @@ export class VideoViewerComponent implements OnDestroy {
 
   #onVisibilityChange() {
     if (this.#document.hidden) {
-      // Tab hidden — Bunny will auto-pause, but we remember the state
       return;
     }
     // Tab visible again
     if (this.#wasPlaying) {
-      // Enter resume mode: any pause event in the next 2s gets countered
       this.#resuming = true;
       this.#player?.play();
 
@@ -242,6 +242,11 @@ export class VideoViewerComponent implements OnDestroy {
     if (this.#resumeEndTimer) {
       clearTimeout(this.#resumeEndTimer);
       this.#resumeEndTimer = null;
+    }
+    // Clean up iframe load listener
+    if (this.#boundOnLoad) {
+      this.videoIframe()?.nativeElement.removeEventListener('load', this.#boundOnLoad);
+      this.#boundOnLoad = null;
     }
     this.#player = null;
     this.#wasPlaying = false;
