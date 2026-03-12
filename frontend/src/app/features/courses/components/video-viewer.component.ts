@@ -5,8 +5,10 @@ import { LucideAngularModule, Loader2, AlertCircle } from 'lucide-angular';
 import { ModuleVideo } from '../../../core/models/course.model';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
 
+declare const playerjs: { Player: new (el: HTMLIFrameElement) => any };
+
 const POLL_INTERVAL_MS = 10_000;
-const RESUME_DELAY_MS = 500;
+const RESUME_WINDOW_MS = 2_000;
 
 @Component({
   selector: 'app-video-viewer',
@@ -88,12 +90,11 @@ export class VideoViewerComponent implements OnDestroy {
   readonly #polledStatus = signal<number | null>(null);
   readonly encodeProgress = signal(0);
   #pollTimer: ReturnType<typeof setInterval> | null = null;
+  #player: any = null;
   #wasPlaying = false;
-  #tabHidden = false;
-  #iframeReady = false;
-  #resumeTimer: ReturnType<typeof setTimeout> | null = null;
+  #resuming = false;
+  #resumeEndTimer: ReturnType<typeof setTimeout> | null = null;
   #visibilityHandler = () => this.#onVisibilityChange();
-  #messageHandler = (e: MessageEvent) => this.#onMessage(e);
 
   readonly trustedEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const url = this.#embedUrl();
@@ -120,6 +121,7 @@ export class VideoViewerComponent implements OnDestroy {
     effect(() => {
       const v = this.video();
       this.#stopPolling();
+      this.#destroyPlayer();
       this.#polledStatus.set(null);
       this.encodeProgress.set(0);
 
@@ -130,18 +132,18 @@ export class VideoViewerComponent implements OnDestroy {
       }
     });
 
-    // Set up tab-switch resume when iframe is available
+    // Initialize Player.js when iframe becomes available
     effect(() => {
       const iframeRef = this.videoIframe();
-      if (iframeRef) {
-        this.#setupResume();
+      if (iframeRef && typeof playerjs !== 'undefined') {
+        this.#initPlayer(iframeRef.nativeElement);
       }
     });
   }
 
   ngOnDestroy() {
     this.#stopPolling();
-    this.#teardownResume();
+    this.#destroyPlayer();
   }
 
   #fetchEmbedUrl(videoId: string) {
@@ -191,68 +193,58 @@ export class VideoViewerComponent implements OnDestroy {
     }
   }
 
-  // ── Tab-switch resume via raw postMessage (Player.js protocol) ────
+  // ── Player.js: resume video after tab switch ──────────────────────
 
-  #setupResume() {
-    this.#teardownResume();
-    window.addEventListener('message', this.#messageHandler);
-    this.#document.addEventListener('visibilitychange', this.#visibilityHandler);
-  }
-
-  #onMessage(e: MessageEvent) {
-    // Player.js protocol: iframe sends JSON with event name
-    if (!e.data || typeof e.data !== 'string') return;
-    try {
-      const msg = JSON.parse(e.data);
-      if (msg.event === 'ready') {
-        this.#iframeReady = true;
-      } else if (msg.event === 'play') {
+  #initPlayer(iframe: HTMLIFrameElement) {
+    this.#destroyPlayer();
+    this.#player = new playerjs.Player(iframe);
+    this.#player.on('ready', () => {
+      this.#player.on('play', () => {
         this.#wasPlaying = true;
-      } else if (msg.event === 'pause') {
-        if (!this.#tabHidden) {
+      });
+      this.#player.on('pause', () => {
+        if (this.#resuming) {
+          // Bunny auto-paused after tab switch — fight back
+          this.#player?.play();
+        } else {
+          // User genuinely paused
           this.#wasPlaying = false;
         }
-      } else if (msg.event === 'ended') {
+      });
+      this.#player.on('ended', () => {
         this.#wasPlaying = false;
-      }
-    } catch {
-      // Not JSON — ignore
-    }
-  }
-
-  #sendCommand(method: string) {
-    const iframe = this.videoIframe()?.nativeElement;
-    if (!iframe?.contentWindow || !this.#iframeReady) return;
-    iframe.contentWindow.postMessage(
-      JSON.stringify({ context: 'player.js', version: '1.0', method }),
-      '*',
-    );
+      });
+    });
+    this.#document.addEventListener('visibilitychange', this.#visibilityHandler);
   }
 
   #onVisibilityChange() {
     if (this.#document.hidden) {
-      this.#tabHidden = true;
-    } else {
-      this.#tabHidden = false;
-      if (this.#wasPlaying) {
-        if (this.#resumeTimer) clearTimeout(this.#resumeTimer);
-        this.#resumeTimer = setTimeout(() => {
-          this.#sendCommand('play');
-          this.#resumeTimer = null;
-        }, RESUME_DELAY_MS);
-      }
+      // Tab hidden — Bunny will auto-pause, but we remember the state
+      return;
+    }
+    // Tab visible again
+    if (this.#wasPlaying) {
+      // Enter resume mode: any pause event in the next 2s gets countered
+      this.#resuming = true;
+      this.#player?.play();
+
+      if (this.#resumeEndTimer) clearTimeout(this.#resumeEndTimer);
+      this.#resumeEndTimer = setTimeout(() => {
+        this.#resuming = false;
+        this.#resumeEndTimer = null;
+      }, RESUME_WINDOW_MS);
     }
   }
 
-  #teardownResume() {
-    window.removeEventListener('message', this.#messageHandler);
+  #destroyPlayer() {
     this.#document.removeEventListener('visibilitychange', this.#visibilityHandler);
-    if (this.#resumeTimer) {
-      clearTimeout(this.#resumeTimer);
-      this.#resumeTimer = null;
+    if (this.#resumeEndTimer) {
+      clearTimeout(this.#resumeEndTimer);
+      this.#resumeEndTimer = null;
     }
+    this.#player = null;
     this.#wasPlaying = false;
-    this.#tabHidden = false;
-    this.#iframeReady = false;
+    this.#resuming = false;
   }
 }

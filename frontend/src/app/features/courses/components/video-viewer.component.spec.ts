@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/angular';
 import { signal } from '@angular/core';
 import { of, EMPTY } from 'rxjs';
@@ -6,6 +6,20 @@ import { VideoViewerComponent } from './video-viewer.component';
 import { createMockModuleVideo } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
+
+// Mock Player.js global (loaded via CDN script in index.html)
+function createMockPlayer() {
+  return {
+    on: vi.fn(),
+    play: vi.fn(),
+    pause: vi.fn(),
+    getPaused: vi.fn(),
+  };
+}
+
+(globalThis as any).playerjs = {
+  Player: vi.fn().mockImplementation(() => createMockPlayer()),
+};
 
 function createMockBunnyUploadService() {
   return {
@@ -28,8 +42,16 @@ function defaultProviders() {
 }
 
 describe('VideoViewerComponent', () => {
+  beforeEach(() => {
+    (globalThis as any).playerjs.Player.mockClear();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
+    // Re-setup playerjs mock after restoreAllMocks
+    (globalThis as any).playerjs = {
+      Player: vi.fn().mockImplementation(() => createMockPlayer()),
+    };
   });
 
   it('should show processing state for encoding_status < 4', async () => {
@@ -95,7 +117,6 @@ describe('VideoViewerComponent', () => {
       providers: [{ provide: BunnyUploadService, useValue: mockService }],
     });
 
-    // Allow effect to run and signal to update
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
@@ -147,9 +168,7 @@ describe('VideoViewerComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    // pollStatus should have been called (immediate first poll)
     expect(mockService.pollStatus).toHaveBeenCalledWith('test-guid');
-    // Progress bar should show 45%
     expect(screen.getByText('Encoding')).toBeTruthy();
     expect(screen.getByText('45%')).toBeTruthy();
   });
@@ -200,7 +219,6 @@ describe('VideoViewerComponent', () => {
     await new Promise(r => setTimeout(r));
     fixture.detectChanges();
 
-    // Should have transitioned from processing to ready with iframe
     const iframe = document.querySelector('iframe');
     expect(iframe).toBeTruthy();
     expect(screen.queryByText('Video is being processed')).toBeNull();
