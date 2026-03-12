@@ -91,6 +91,7 @@ export class VideoViewerComponent implements OnDestroy {
   #pollTimer: ReturnType<typeof setInterval> | null = null;
   #player: any = null;
   #wasPlaying = false;
+  #tabHidden = false;
   #visibilityHandler = () => this.#onVisibilityChange();
 
   readonly trustedEmbedUrl = computed<SafeResourceUrl | null>(() => {
@@ -197,7 +198,12 @@ export class VideoViewerComponent implements OnDestroy {
     this.#player = new playerjs.Player(iframe);
     this.#player.on('ready', () => {
       this.#player.on('play', () => { this.#wasPlaying = true; });
-      this.#player.on('pause', () => { this.#wasPlaying = false; });
+      this.#player.on('pause', () => {
+        // Ignore pause events caused by Bunny's auto-pause on tab hide
+        if (!this.#tabHidden) {
+          this.#wasPlaying = false;
+        }
+      });
       this.#player.on('ended', () => { this.#wasPlaying = false; });
     });
     this.#document.addEventListener('visibilitychange', this.#visibilityHandler);
@@ -205,13 +211,12 @@ export class VideoViewerComponent implements OnDestroy {
 
   #onVisibilityChange() {
     if (this.#document.hidden) {
-      // Capture play state before Bunny's player auto-pauses
-      this.#player?.getPaused((paused: boolean) => {
-        this.#wasPlaying = !paused;
-      });
-    } else if (this.#wasPlaying) {
-      // Tab visible again — resume playback
-      this.#player?.play();
+      this.#tabHidden = true;
+    } else {
+      this.#tabHidden = false;
+      if (this.#wasPlaying) {
+        this.#player?.play();
+      }
     }
   }
 
@@ -219,5 +224,6 @@ export class VideoViewerComponent implements OnDestroy {
     this.#document.removeEventListener('visibilitychange', this.#visibilityHandler);
     this.#player = null;
     this.#wasPlaying = false;
+    this.#tabHidden = false;
   }
 }
