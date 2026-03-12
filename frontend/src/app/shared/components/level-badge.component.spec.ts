@@ -77,7 +77,7 @@ describe('LevelBadgeComponent', () => {
     const badge = screen.getByRole('button', { name: /level 3/i });
     await fireEvent.click(badge);
 
-    expect(screen.getByText('150 XP')).toBeTruthy();
+    expect(screen.getAllByText('150 XP').length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows breakdown categories in popover', async () => {

@@ -32,18 +32,33 @@ function iconForLevel(level: number) {
       @if (xpService.loading() && xpService.totalXp() === 0) {
         <div class="w-16 h-7 rounded-full skeleton-bar"></div>
       } @else {
-        <!-- Badge button -->
-        <button
-          type="button"
-          [attr.aria-label]="'Level ' + xpService.currentLevel().level + ' - ' + xpService.currentLevel().name + ' - ' + xpService.totalXp() + ' XP'"
-          class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-[background-color,transform] duration-200 hover:opacity-90"
-          [class]="xpService.currentLevel().bgClass"
-          [class.level-pop]="!!xpService.levelUp()"
-          (click)="toggle($event)"
-        >
-          <lucide-icon [img]="levelIcon()" [size]="14"></lucide-icon>
-          <span class="tabular-nums">Lv.{{ xpService.currentLevel().level }}</span>
-        </button>
+        <div class="flex items-center gap-2">
+          <!-- Badge button -->
+          <button
+            type="button"
+            [attr.aria-label]="'Level ' + xpService.currentLevel().level + ' - ' + xpService.currentLevel().name + ' - ' + xpService.totalXp() + ' XP'"
+            class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-[background-color,transform] duration-200 hover:opacity-90"
+            [class]="xpService.currentLevel().bgClass"
+            [class.level-pop]="!!xpService.levelUp()"
+            (click)="toggle($event)"
+          >
+            <lucide-icon [img]="levelIcon()" [size]="14"></lucide-icon>
+            <span class="tabular-nums">Lv.{{ xpService.currentLevel().level }}</span>
+          </button>
+
+          <!-- Mini progress bar (desktop only) -->
+          <div class="hidden sm:flex items-center gap-1.5">
+            <div class="w-20 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-[width] duration-500"
+                   [class]="xpService.currentLevel().progressBarClass"
+                   [style.width.%]="xpService.progressToNext()">
+              </div>
+            </div>
+            <span class="text-[10px] text-slate-400 tabular-nums whitespace-nowrap">
+              {{ xpService.totalXp() | number }} XP
+            </span>
+          </div>
+        </div>
 
         <!-- Level-up celebration -->
         @if (xpService.levelUp(); as newLevel) {
