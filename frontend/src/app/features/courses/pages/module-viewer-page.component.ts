@@ -54,52 +54,55 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
         </div>
 
         <!-- Action bar -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2.5 flex items-center justify-between mb-6">
-          <!-- Previous -->
-          <div class="min-w-[100px]">
-            @if (courseService.moduleViewer()!.navigation.prev; as prev) {
-              <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
-                 class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200">
-                <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
-                Previous
-              </a>
-            }
-          </div>
-
-          <!-- Center: position + completion -->
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-400 tabular-nums">
-              {{ courseService.moduleViewer()!.navigation.current }} of {{ courseService.moduleViewer()!.navigation.total }} modules
-            </span>
-            <span class="text-slate-200">|</span>
-            <span class="flex items-center gap-1 text-xs text-slate-400 tabular-nums">
-              <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
-              {{ moduleDuration() }}
-            </span>
-            @if (canMarkComplete()) {
-              <span class="text-slate-200">|</span>
-              @if (isCompleted()) {
-                <span class="badge-success inline-flex items-center gap-1">
-                  <lucide-icon [img]="icons.Check" [size]="14"></lucide-icon>
-                  Completed
-                </span>
-              } @else {
-                <button (click)="onMarkComplete()" class="btn-primary btn-sm">
-                  Mark as complete
-                </button>
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm px-4 py-2.5 mb-6">
+          <div class="flex items-center justify-between">
+            <!-- Previous -->
+            <div class="shrink-0">
+              @if (courseService.moduleViewer()!.navigation.prev; as prev) {
+                <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
+                   class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200">
+                  <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
+                  <span class="hidden sm:inline">Previous</span>
+                </a>
               }
-            }
-          </div>
+            </div>
 
-          <!-- Next -->
-          <div class="min-w-[100px] text-right">
-            @if (courseService.moduleViewer()!.navigation.next; as next) {
-              <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
-                 class="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200">
-                Next
-                <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
-              </a>
-            }
+            <!-- Center: position + completion -->
+            <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 min-w-0 px-2">
+              <span class="text-xs text-slate-400 tabular-nums whitespace-nowrap">
+                {{ courseService.moduleViewer()!.navigation.current }} of {{ courseService.moduleViewer()!.navigation.total }}
+              </span>
+              <span class="hidden sm:inline text-slate-200">|</span>
+              <span class="flex items-center gap-1 text-xs text-slate-400 tabular-nums whitespace-nowrap">
+                <lucide-icon [img]="icons.Clock" [size]="12"></lucide-icon>
+                {{ moduleDuration() }}
+              </span>
+              @if (canMarkComplete()) {
+                <span class="hidden sm:inline text-slate-200">|</span>
+                @if (isCompleted()) {
+                  <span class="badge-success inline-flex items-center gap-1">
+                    <lucide-icon [img]="icons.Check" [size]="14"></lucide-icon>
+                    <span class="hidden sm:inline">Completed</span>
+                  </span>
+                } @else {
+                  <button (click)="onMarkComplete()" class="btn-primary btn-sm whitespace-nowrap">
+                    <span class="sm:hidden">Complete</span>
+                    <span class="hidden sm:inline">Mark as complete</span>
+                  </button>
+                }
+              }
+            </div>
+
+            <!-- Next -->
+            <div class="shrink-0">
+              @if (courseService.moduleViewer()!.navigation.next; as next) {
+                <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
+                   class="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200">
+                  <span class="hidden sm:inline">Next</span>
+                  <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
+                </a>
+              }
+            </div>
           </div>
         </div>
 
@@ -225,12 +228,12 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
 
         <!-- Bottom action bar -->
         <div class="mt-8 pt-6 border-t border-slate-200 flex items-center justify-between">
-          <div class="min-w-[100px]">
+          <div class="shrink-0">
             @if (courseService.moduleViewer()!.navigation.prev; as prev) {
               <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
                  class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200">
                 <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
-                Previous
+                <span class="hidden sm:inline">Previous</span>
               </a>
             }
           </div>
@@ -239,20 +242,21 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
               @if (isCompleted()) {
                 <span class="badge-success inline-flex items-center gap-1">
                   <lucide-icon [img]="icons.Check" [size]="14"></lucide-icon>
-                  Completed
+                  <span class="hidden sm:inline">Completed</span>
                 </span>
               } @else {
-                <button (click)="onMarkComplete()" class="btn-primary btn-sm">
-                  Mark as complete
+                <button (click)="onMarkComplete()" class="btn-primary btn-sm whitespace-nowrap">
+                  <span class="sm:hidden">Complete</span>
+                  <span class="hidden sm:inline">Mark as complete</span>
                 </button>
               }
             }
           </div>
-          <div class="min-w-[100px] text-right">
+          <div class="shrink-0">
             @if (courseService.moduleViewer()!.navigation.next; as next) {
               <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
                  class="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200">
-                Next
+                <span class="hidden sm:inline">Next</span>
                 <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
               </a>
             }
