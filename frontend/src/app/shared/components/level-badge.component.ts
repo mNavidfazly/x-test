@@ -57,7 +57,8 @@ function iconForLevel(level: number) {
                    [style.width.%]="xpService.progressToNext()">
               </div>
             </div>
-            <span class="text-[10px] text-slate-400 tabular-nums whitespace-nowrap">
+            <span class="text-[10px] tabular-nums whitespace-nowrap"
+                  [class]="xpService.currentLevel().textClass">
               {{ displayedXp() | number }} XP
             </span>
           </div>
