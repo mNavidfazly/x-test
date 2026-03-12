@@ -62,12 +62,24 @@ describe('XpAnimationService', () => {
     expect(service.badgePulse()).toBe(false); // Already cleared
   });
 
-  it('sets xpCounterTarget with estimated new XP', async () => {
+  it('sets xpCounterTarget with estimated new XP then resets to null', async () => {
+    let observedTarget: number | null = null;
+    // Capture the target before finalize resets it
+    const origSet = service.xpCounterTarget.set.bind(service.xpCounterTarget);
+    const spy = vi.spyOn(service.xpCounterTarget, 'set').mockImplementation((val: number | null) => {
+      if (val !== null) observedTarget = val;
+      origSet(val);
+    });
+
     service.triggerXpGain(25);
-    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(3000);
 
     // Should have been set to currentXp + amount = 100 + 25 = 125
-    expect(service.xpCounterTarget()).toBe(125);
+    expect(observedTarget).toBe(125);
+    // After finalize, resets to null so LevelBadge syncs with real XP
+    expect(service.xpCounterTarget()).toBeNull();
+
+    spy.mockRestore();
   });
 
   it('queues animations when already animating', async () => {

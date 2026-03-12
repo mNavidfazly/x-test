@@ -157,12 +157,9 @@ export class XpAnimationService {
     this.badgePulse.set(true);
     setTimeout(() => this.badgePulse.set(false), 600);
 
-    // Animate XP counter
+    // Animate XP counter (optimistic estimate before server refresh)
     const currentXp = this.#xpService.totalXp();
     this.xpCounterTarget.set(currentXp + amount);
-
-    // Trigger server refresh (fire-and-forget)
-    this.#xpService.loadXp(true);
 
     await this.#wait(600);
   }
@@ -276,7 +273,12 @@ export class XpAnimationService {
   }
 
   #finalize(amount: number): void {
+    // Reset counter target so LevelBadge syncs with real XP
+    this.xpCounterTarget.set(null);
+
+    // Refresh real XP from server
     this.#xpService.loadXp(true);
+
     this.#animating = false;
 
     // Process next in queue

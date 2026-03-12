@@ -131,7 +131,7 @@ export class LevelBadgeComponent {
   #el = inject(ElementRef);
 
   readonly isOpen = signal(false);
-  readonly displayedXp = signal(0);
+  readonly displayedXp = signal(this.xpService.totalXp());
 
   readonly icons = { Star, Award, Trophy, Flame, Crown, BookOpen, Brain, FileCheck, Lightbulb, MessageCircle, Sparkles };
 
