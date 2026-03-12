@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/angular';
 import { signal } from '@angular/core';
 import { of, EMPTY } from 'rxjs';
@@ -6,6 +6,20 @@ import { VideoViewerComponent } from './video-viewer.component';
 import { createMockModuleVideo } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
+
+// Mock Player.js global (loaded via script tag in index.html)
+function createMockPlayer() {
+  return {
+    on: vi.fn(),
+    play: vi.fn(),
+    pause: vi.fn(),
+    getPaused: vi.fn(),
+  };
+}
+
+(globalThis as any).playerjs = {
+  Player: vi.fn().mockImplementation(() => createMockPlayer()),
+};
 
 function createMockBunnyUploadService() {
   return {
@@ -28,8 +42,16 @@ function defaultProviders() {
 }
 
 describe('VideoViewerComponent', () => {
+  beforeEach(() => {
+    (globalThis as any).playerjs.Player.mockClear();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
+    // Re-setup playerjs mock after restoreAllMocks
+    (globalThis as any).playerjs = {
+      Player: vi.fn().mockImplementation(() => createMockPlayer()),
+    };
   });
 
   it('should show processing state for encoding_status < 4', async () => {

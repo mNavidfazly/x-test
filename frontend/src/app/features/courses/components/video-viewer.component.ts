@@ -1,8 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnDestroy, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, input, OnDestroy, signal, viewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { LucideAngularModule, Loader2, AlertCircle } from 'lucide-angular';
 import { ModuleVideo } from '../../../core/models/course.model';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
+
+declare const playerjs: { Player: new (el: HTMLIFrameElement) => any };
 
 const POLL_INTERVAL_MS = 10_000;
 
@@ -48,6 +51,7 @@ const POLL_INTERVAL_MS = 10_000;
           @if (trustedEmbedUrl()) {
             <div class="relative w-full" style="padding-top: 56.25%">
               <iframe
+                #videoIframe
                 [src]="trustedEmbedUrl()"
                 loading="lazy"
                 class="absolute inset-0 w-full h-full rounded-lg"
@@ -74,14 +78,20 @@ export class VideoViewerComponent implements OnDestroy {
 
   readonly #sanitizer = inject(DomSanitizer);
   readonly #bunnyUpload = inject(BunnyUploadService);
+  readonly #document = inject(DOCUMENT);
 
   protected readonly Loader2 = Loader2;
   protected readonly AlertCircle = AlertCircle;
+
+  private readonly videoIframe = viewChild<ElementRef<HTMLIFrameElement>>('videoIframe');
 
   readonly #embedUrl = signal<string | null>(null);
   readonly #polledStatus = signal<number | null>(null);
   readonly encodeProgress = signal(0);
   #pollTimer: ReturnType<typeof setInterval> | null = null;
+  #player: any = null;
+  #wasPlaying = false;
+  #visibilityHandler = () => this.#onVisibilityChange();
 
   readonly trustedEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const url = this.#embedUrl();
@@ -108,6 +118,7 @@ export class VideoViewerComponent implements OnDestroy {
     effect(() => {
       const v = this.video();
       this.#stopPolling();
+      this.#destroyPlayer();
       this.#polledStatus.set(null);
       this.encodeProgress.set(0);
 
@@ -117,10 +128,19 @@ export class VideoViewerComponent implements OnDestroy {
         this.#pollEncodingProgress(v.bunny_video_id);
       }
     });
+
+    // Initialize Player.js when iframe becomes available
+    effect(() => {
+      const iframeRef = this.videoIframe();
+      if (iframeRef && typeof playerjs !== 'undefined') {
+        this.#initPlayer(iframeRef.nativeElement);
+      }
+    });
   }
 
   ngOnDestroy() {
     this.#stopPolling();
+    this.#destroyPlayer();
   }
 
   #fetchEmbedUrl(videoId: string) {
@@ -168,5 +188,36 @@ export class VideoViewerComponent implements OnDestroy {
       clearInterval(this.#pollTimer);
       this.#pollTimer = null;
     }
+  }
+
+  // ── Player.js: resume video after tab switch ──────────────────────
+
+  #initPlayer(iframe: HTMLIFrameElement) {
+    this.#destroyPlayer();
+    this.#player = new playerjs.Player(iframe);
+    this.#player.on('ready', () => {
+      this.#player.on('play', () => { this.#wasPlaying = true; });
+      this.#player.on('pause', () => { this.#wasPlaying = false; });
+      this.#player.on('ended', () => { this.#wasPlaying = false; });
+    });
+    this.#document.addEventListener('visibilitychange', this.#visibilityHandler);
+  }
+
+  #onVisibilityChange() {
+    if (this.#document.hidden) {
+      // Capture play state before Bunny's player auto-pauses
+      this.#player?.getPaused((paused: boolean) => {
+        this.#wasPlaying = !paused;
+      });
+    } else if (this.#wasPlaying) {
+      // Tab visible again — resume playback
+      this.#player?.play();
+    }
+  }
+
+  #destroyPlayer() {
+    this.#document.removeEventListener('visibilitychange', this.#visibilityHandler);
+    this.#player = null;
+    this.#wasPlaying = false;
   }
 }
