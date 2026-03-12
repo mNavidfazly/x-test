@@ -13,8 +13,8 @@ import {
   MockCourseService,
 } from '../../../__mocks__/course.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
-import { XpService } from '../../../core/services/xp.service';
-import { createMockXpService } from '../../../__mocks__/xp.mock';
+import { XpAnimationService } from '../../../core/services/xp-animation.service';
+import { createMockXpAnimationService } from '../../../__mocks__/xp-animation.mock';
 
 describe('QuizTakerComponent', () => {
   let mockService: MockCourseService;
@@ -34,7 +34,7 @@ describe('QuizTakerComponent', () => {
       componentImports: [MockLucideIconComponent, QuizQuestionComponent, QuizResultItemComponent],
       providers: [
         { provide: CourseService, useValue: service },
-        { provide: XpService, useValue: createMockXpService() },
+        { provide: XpAnimationService, useValue: createMockXpAnimationService() },
       ],
       on: { quizCompleted: quizCompletedSpy },
     });
@@ -54,7 +54,7 @@ describe('QuizTakerComponent', () => {
     await render(QuizTakerComponent, {
       componentInputs: { moduleId: 'mod-1' },
       componentImports: [MockLucideIconComponent, QuizQuestionComponent, QuizResultItemComponent],
-      providers: [{ provide: CourseService, useValue: mockService }, { provide: XpService, useValue: createMockXpService() }],
+      providers: [{ provide: CourseService, useValue: mockService }, { provide: XpAnimationService, useValue: createMockXpAnimationService() }],
     });
 
     // Loading skeleton has animate-pulse divs

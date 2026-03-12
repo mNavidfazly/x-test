@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   ElementRef,
   inject,
   signal,
@@ -10,6 +11,7 @@ import { DecimalPipe } from '@angular/common';
 import { LucideAngularModule, Star, Award, Trophy, Flame, Crown, BookOpen, Brain, FileCheck, Lightbulb, MessageCircle, Sparkles } from 'lucide-angular';
 import { AuthService } from '../../core/services/auth.service';
 import { XpService } from '../../core/services/xp.service';
+import { XpAnimationService } from '../../core/services/xp-animation.service';
 
 function iconForLevel(level: number) {
   if (level <= 3) return Star;
@@ -35,11 +37,12 @@ function iconForLevel(level: number) {
         <div class="flex items-center gap-2">
           <!-- Badge button -->
           <button
+            id="xp-level-badge"
             type="button"
             [attr.aria-label]="'Level ' + xpService.currentLevel().level + ' - ' + xpService.currentLevel().name + ' - ' + xpService.totalXp() + ' XP'"
             class="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-[background-color,transform] duration-200 hover:opacity-90"
             [class]="xpService.currentLevel().bgClass"
-            [class.level-pop]="!!xpService.levelUp()"
+            [class.level-pop]="!!xpService.levelUp() || xpAnimation.badgePulse()"
             (click)="toggle($event)"
           >
             <lucide-icon [img]="levelIcon()" [size]="14"></lucide-icon>
@@ -55,7 +58,7 @@ function iconForLevel(level: number) {
               </div>
             </div>
             <span class="text-[10px] text-slate-400 tabular-nums whitespace-nowrap">
-              {{ xpService.totalXp() | number }} XP
+              {{ displayedXp() | number }} XP
             </span>
           </div>
         </div>
@@ -123,12 +126,33 @@ function iconForLevel(level: number) {
 })
 export class LevelBadgeComponent {
   readonly xpService = inject(XpService);
+  readonly xpAnimation = inject(XpAnimationService);
   #auth = inject(AuthService);
   #el = inject(ElementRef);
 
   readonly isOpen = signal(false);
+  readonly displayedXp = signal(0);
 
   readonly icons = { Star, Award, Trophy, Flame, Crown, BookOpen, Brain, FileCheck, Lightbulb, MessageCircle, Sparkles };
+
+  constructor() {
+    // Sync displayedXp with actual XP (for non-animated updates like initial load)
+    effect(() => {
+      const actual = this.xpService.totalXp();
+      // Only sync directly when no animation target is active
+      if (this.xpAnimation.xpCounterTarget() === null) {
+        this.displayedXp.set(actual);
+      }
+    });
+
+    // Animate counter when animation service sets a target
+    effect(() => {
+      const target = this.xpAnimation.xpCounterTarget();
+      if (target !== null) {
+        this.#animateCounter(this.displayedXp(), target);
+      }
+    });
+  }
 
   readonly isLearner = computed(() => {
     const roles = this.#auth.roles();
@@ -163,5 +187,20 @@ export class LevelBadgeComponent {
     if (this.isOpen() && !this.#el.nativeElement.contains(event.target)) {
       this.close();
     }
+  }
+
+  #animateCounter(from: number, to: number) {
+    const duration = 400;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      this.displayedXp.set(Math.round(from + (to - from) * eased));
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      }
+    };
+    requestAnimationFrame(tick);
   }
 }

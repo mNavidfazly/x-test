@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, OnDestroy, output, signal } from '@angular/core';
-import { LucideAngularModule, Clock, Trophy, AlertTriangle, RotateCcw, CheckCircle2, XCircle, Play, Eye, Star } from 'lucide-angular';
+import { LucideAngularModule, Clock, Trophy, AlertTriangle, RotateCcw, CheckCircle2, XCircle, Play, Eye } from 'lucide-angular';
 import { CourseService } from '../../../core/services/course.service';
-import { XpService, computeQuizAttemptXp } from '../../../core/services/xp.service';
+import { computeQuizAttemptXp } from '../../../core/services/xp.service';
+import { XpAnimationService } from '../../../core/services/xp-animation.service';
 import { QuizTakingData, QuizAttempt, QuizResults, QuizAnswerMap } from '../../../core/models/course.model';
 import { QuizQuestionComponent } from './quiz-question.component';
 import { QuizResultItemComponent } from './quiz-result-item.component';
@@ -219,14 +220,6 @@ import { formatDate } from '../../../core/utils/date.utils';
                 <p class="text-xs text-slate-500">
                   {{ results()!.grade.earned_points }} / {{ results()!.grade.total_points }} points
                 </p>
-                @if (xpGainAmount(); as amount) {
-                  <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 xp-float">
-                    <div class="bg-teal-600 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold">
-                      <lucide-icon [img]="icons.Star" [size]="16"></lucide-icon>
-                      +{{ amount }} XP
-                    </div>
-                  </div>
-                }
               </div>
 
               <!-- Question results -->
@@ -260,12 +253,11 @@ import { formatDate } from '../../../core/utils/date.utils';
 })
 export class QuizTakerComponent implements OnDestroy {
   readonly #courseService = inject(CourseService);
-  readonly #xpService = inject(XpService);
+  readonly #xpAnimation = inject(XpAnimationService);
   readonly moduleId = input.required<string>();
   readonly quizCompleted = output<void>();
 
-  readonly icons = { Clock, Trophy, AlertTriangle, RotateCcw, CheckCircle2, XCircle, Play, Eye, Star };
-  readonly xpGainAmount = signal<number | null>(null);
+  readonly icons = { Clock, Trophy, AlertTriangle, RotateCcw, CheckCircle2, XCircle, Play, Eye };
 
   readonly phase = signal<'start' | 'active' | 'results'>('start');
   readonly quizData = signal<QuizTakingData | null>(null);
@@ -439,9 +431,7 @@ export class QuizTakerComponent implements OnDestroy {
         const isFirstPass = this.pastAttempts().filter(a => a.passed).length <= 1;
         const questionCount = this.quizData()?.questions.length ?? 10;
         const xpAmount = computeQuizAttemptXp(questionCount, results.grade.score, isFirstPass);
-        this.xpGainAmount.set(xpAmount);
-        setTimeout(() => this.xpGainAmount.set(null), 2500);
-        this.#xpService.loadXp(true);
+        this.#xpAnimation.triggerXpGain(xpAmount);
       }
 
       // Fire-and-forget AI check for text answers that failed exact match
@@ -459,7 +449,10 @@ export class QuizTakerComponent implements OnDestroy {
             // If AI corrections caused a pass, emit completion
             if (updated.grade.passed && !results.grade.passed) {
               this.quizCompleted.emit();
-              this.#xpService.loadXp(true);
+              const isFirstPass = this.pastAttempts().filter(a => a.passed).length <= 1;
+              const questionCount = this.quizData()?.questions.length ?? 10;
+              const xpAmount = computeQuizAttemptXp(questionCount, updated.grade.score, isFirstPass);
+              this.#xpAnimation.triggerXpGain(xpAmount);
             }
           }
         });

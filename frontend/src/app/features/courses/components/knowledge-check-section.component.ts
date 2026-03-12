@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, signal } from '@angular/core';
-import { LucideAngularModule, ClipboardCheck, CheckCircle2, Check, X, Lightbulb, Star } from 'lucide-angular';
+import { LucideAngularModule, ClipboardCheck, CheckCircle2, Check, X, Lightbulb } from 'lucide-angular';
 import { KnowledgeCheckService } from '../../../core/services/knowledge-check.service';
-import { XpService } from '../../../core/services/xp.service';
+import { XpAnimationService } from '../../../core/services/xp-animation.service';
 import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/models/knowledge-check.model';
 
 @Component({
@@ -102,16 +102,6 @@ import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/mo
                 </div>
               }
 
-              <!-- XP gain toast -->
-              @if (xpGainQuestionId() === question.id) {
-                <div class="fixed top-20 left-1/2 -translate-x-1/2 z-50 xp-float">
-                  <div class="bg-teal-600 text-white px-5 py-2.5 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold">
-                    <lucide-icon [img]="icons.Star" [size]="16"></lucide-icon>
-                    +5 XP
-                  </div>
-                </div>
-              }
-
               <!-- Explanation (after answering) -->
               @if (response?.explanation) {
                 <div class="flex gap-2 mt-3 ml-10 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
@@ -137,17 +127,16 @@ import { KnowledgeCheckQuestion, KnowledgeCheckResponse } from '../../../core/mo
 export class KnowledgeCheckSectionComponent {
   readonly moduleId = input.required<string>();
 
-  readonly icons = { ClipboardCheck, CheckCircle2, Check, X, Lightbulb, Star };
+  readonly icons = { ClipboardCheck, CheckCircle2, Check, X, Lightbulb };
 
   #kcService = inject(KnowledgeCheckService);
-  #xpService = inject(XpService);
+  #xpAnimation = inject(XpAnimationService);
 
   readonly loading = signal(true);
   readonly questions = signal<KnowledgeCheckQuestion[]>([]);
   readonly responses = signal<Map<string, KnowledgeCheckResponse>>(new Map());
   readonly selectedOptions = signal<Map<string, number>>(new Map());
   readonly submitting = signal<string | null>(null);
-  readonly xpGainQuestionId = signal<string | null>(null);
 
   readonly answeredCount = () => this.responses().size;
   readonly progressPercent = () => {
@@ -179,9 +168,7 @@ export class KnowledgeCheckSectionComponent {
       updated.set(questionId, response);
       this.responses.set(updated);
       if (response.isCorrect) {
-        this.xpGainQuestionId.set(questionId);
-        setTimeout(() => this.xpGainQuestionId.set(null), 2500);
-        this.#xpService.loadXp(true);
+        this.#xpAnimation.triggerXpGain(5);
       }
     } catch {
       // Error is non-critical for a comprehension check

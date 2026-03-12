@@ -411,9 +411,6 @@
   .notification-enter {
     @apply animate-notification-slide-in;
   }
-  .xp-float {
-    @apply animate-xp-float pointer-events-none;
-  }
   .level-pop {
     @apply animate-level-pop;
   }

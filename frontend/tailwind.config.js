@@ -28,13 +28,6 @@ module.exports = {
           from: { opacity: '0', transform: 'translateY(-4px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
-        'xp-float-up': {
-          '0%': { opacity: '0', transform: 'translateY(-20px) scale(0.8)' },
-          '10%': { opacity: '1', transform: 'translateY(0) scale(1.05)' },
-          '20%': { opacity: '1', transform: 'translateY(0) scale(1)' },
-          '75%': { opacity: '1', transform: 'translateY(0) scale(1)' },
-          '100%': { opacity: '0', transform: 'translateY(-20px) scale(0.9)' },
-        },
         'level-up-pop': {
           '0%': { transform: 'scale(1)' },
           '50%': { transform: 'scale(1.2)' },
@@ -46,7 +39,6 @@ module.exports = {
         'toast-slide-in': 'toast-slide-in 0.2s ease-out',
         'notification-slide-in': 'notification-slide-in 0.2s ease-out',
         'select-slide-down': 'select-slide-down 150ms ease-out',
-        'xp-float': 'xp-float-up 2.2s ease-out forwards',
         'level-pop': 'level-up-pop 0.5s ease-out',
       },
     },

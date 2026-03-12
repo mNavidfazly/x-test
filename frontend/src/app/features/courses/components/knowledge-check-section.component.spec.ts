@@ -6,8 +6,8 @@ import { KnowledgeCheckService } from '../../../core/services/knowledge-check.se
 import { createMockKnowledgeCheckService, createMockKnowledgeCheckQuestion } from '../../../__mocks__/knowledge-check.mock';
 import { MockLucideIconComponent } from '../../../__mocks__/lucide.mock';
 import { KnowledgeCheckResponse } from '../../../core/models/knowledge-check.model';
-import { XpService } from '../../../core/services/xp.service';
-import { createMockXpService } from '../../../__mocks__/xp.mock';
+import { XpAnimationService } from '../../../core/services/xp-animation.service';
+import { createMockXpAnimationService } from '../../../__mocks__/xp-animation.mock';
 
 describe('KnowledgeCheckSectionComponent', () => {
   let mockService: ReturnType<typeof createMockKnowledgeCheckService>;
@@ -24,7 +24,7 @@ describe('KnowledgeCheckSectionComponent', () => {
       },
       providers: [
         { provide: KnowledgeCheckService, useValue: mockService },
-        { provide: XpService, useValue: createMockXpService() },
+        { provide: XpAnimationService, useValue: createMockXpAnimationService() },
       ],
     });
 

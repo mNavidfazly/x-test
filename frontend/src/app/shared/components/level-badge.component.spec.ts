@@ -4,8 +4,10 @@ import { Component } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { LevelBadgeComponent } from './level-badge.component';
 import { XpService, LEVELS } from '../../core/services/xp.service';
+import { XpAnimationService } from '../../core/services/xp-animation.service';
 import { AuthService } from '../../core/services/auth.service';
 import { createMockXpService } from '../../__mocks__/xp.mock';
+import { createMockXpAnimationService } from '../../__mocks__/xp-animation.mock';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 
 @Component({ selector: 'lucide-icon', standalone: true, template: '', inputs: ['img', 'size'] })
@@ -28,6 +30,7 @@ async function renderBadge(options?: {
     providers: [
       { provide: AuthService, useValue: mockAuth },
       { provide: XpService, useValue: mockXp },
+      { provide: XpAnimationService, useValue: createMockXpAnimationService() },
     ],
   });
 
@@ -137,5 +140,11 @@ describe('LevelBadgeComponent', () => {
     expect(badge.getAttribute('aria-label')).toContain('Level 4');
     expect(badge.getAttribute('aria-label')).toContain('Student');
     expect(badge.getAttribute('aria-label')).toContain('350 XP');
+  });
+
+  it('badge button has id="xp-level-badge"', async () => {
+    await renderBadge({ totalXp: 150 });
+    const badge = screen.getByRole('button', { name: /level 3/i });
+    expect(badge.id).toBe('xp-level-badge');
   });
 });
