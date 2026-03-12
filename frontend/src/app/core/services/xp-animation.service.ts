@@ -19,10 +19,10 @@ interface ParticleTier {
 }
 
 function getParticleTier(amount: number): ParticleTier {
-  if (amount <= 5) return { count: 4, minSize: 6, maxSize: 10, minDistance: 60, maxDistance: 120 };
-  if (amount <= 10) return { count: 6, minSize: 8, maxSize: 12, minDistance: 70, maxDistance: 150 };
-  if (amount <= 20) return { count: 8, minSize: 10, maxSize: 14, minDistance: 80, maxDistance: 180 };
-  return { count: 12, minSize: 10, maxSize: 16, minDistance: 80, maxDistance: 200 };
+  if (amount <= 5) return { count: 8, minSize: 6, maxSize: 12, minDistance: 60, maxDistance: 140 };
+  if (amount <= 10) return { count: 12, minSize: 8, maxSize: 14, minDistance: 70, maxDistance: 160 };
+  if (amount <= 20) return { count: 16, minSize: 10, maxSize: 16, minDistance: 80, maxDistance: 200 };
+  return { count: 22, minSize: 10, maxSize: 18, minDistance: 80, maxDistance: 220 };
 }
 
 // ── Service ─────────────────────────────────────────────────────────
