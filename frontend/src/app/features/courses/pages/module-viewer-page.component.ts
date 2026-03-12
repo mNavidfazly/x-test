@@ -60,8 +60,9 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
             <div class="shrink-0">
               @if (courseService.moduleViewer()!.navigation.prev; as prev) {
                 <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
-                   class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200">
-                  <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
+                   class="inline-flex items-center justify-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200 min-h-[44px] min-w-[44px] sm:min-w-0 sm:min-h-0 rounded-lg sm:rounded-none hover:bg-slate-50 sm:hover:bg-transparent">
+                  <lucide-icon [img]="icons.ChevronLeft" [size]="20" class="sm:hidden"></lucide-icon>
+                  <lucide-icon [img]="icons.ChevronLeft" [size]="16" class="hidden sm:block"></lucide-icon>
                   <span class="hidden sm:inline">Previous</span>
                 </a>
               }
@@ -97,9 +98,10 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
             <div class="shrink-0">
               @if (courseService.moduleViewer()!.navigation.next; as next) {
                 <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
-                   class="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200">
+                   class="inline-flex items-center justify-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200 min-h-[44px] min-w-[44px] sm:min-w-0 sm:min-h-0 rounded-lg sm:rounded-none hover:bg-teal-50 sm:hover:bg-transparent">
                   <span class="hidden sm:inline">Next</span>
-                  <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
+                  <lucide-icon [img]="icons.ChevronRight" [size]="20" class="sm:hidden"></lucide-icon>
+                  <lucide-icon [img]="icons.ChevronRight" [size]="16" class="hidden sm:block"></lucide-icon>
                 </a>
               }
             </div>
@@ -231,8 +233,9 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
           <div class="shrink-0">
             @if (courseService.moduleViewer()!.navigation.prev; as prev) {
               <a [routerLink]="['/courses', courseId(), 'modules', prev.id]"
-                 class="inline-flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200">
-                <lucide-icon [img]="icons.ChevronLeft" [size]="16"></lucide-icon>
+                 class="inline-flex items-center justify-center gap-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors duration-200 min-h-[44px] min-w-[44px] sm:min-w-0 sm:min-h-0 rounded-lg sm:rounded-none hover:bg-slate-50 sm:hover:bg-transparent">
+                <lucide-icon [img]="icons.ChevronLeft" [size]="20" class="sm:hidden"></lucide-icon>
+                <lucide-icon [img]="icons.ChevronLeft" [size]="16" class="hidden sm:block"></lucide-icon>
                 <span class="hidden sm:inline">Previous</span>
               </a>
             }
@@ -255,9 +258,10 @@ import { KnowledgeCheckSectionComponent } from '../components/knowledge-check-se
           <div class="shrink-0">
             @if (courseService.moduleViewer()!.navigation.next; as next) {
               <a [routerLink]="['/courses', courseId(), 'modules', next.id]"
-                 class="inline-flex items-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200">
+                 class="inline-flex items-center justify-center gap-1 text-sm font-medium text-teal-600 hover:text-teal-800 transition-colors duration-200 min-h-[44px] min-w-[44px] sm:min-w-0 sm:min-h-0 rounded-lg sm:rounded-none hover:bg-teal-50 sm:hover:bg-transparent">
                 <span class="hidden sm:inline">Next</span>
-                <lucide-icon [img]="icons.ChevronRight" [size]="16"></lucide-icon>
+                <lucide-icon [img]="icons.ChevronRight" [size]="20" class="sm:hidden"></lucide-icon>
+                <lucide-icon [img]="icons.ChevronRight" [size]="16" class="hidden sm:block"></lucide-icon>
               </a>
             }
           </div>
