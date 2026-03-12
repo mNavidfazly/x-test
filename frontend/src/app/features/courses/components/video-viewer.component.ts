@@ -98,6 +98,7 @@ export class VideoViewerComponent implements OnDestroy {
 
   readonly trustedEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const url = this.#embedUrl();
+    console.log('[VideoViewer] trustedEmbedUrl computed', { url: url?.substring(0, 60) });
     return url ? this.#sanitizer.bypassSecurityTrustResourceUrl(url) : null;
   });
 
@@ -120,6 +121,7 @@ export class VideoViewerComponent implements OnDestroy {
   constructor() {
     effect(() => {
       const v = this.video();
+      console.log('[VideoViewer] video effect fired', { videoId: v.bunny_video_id, status: v.encoding_status });
       this.#stopPolling();
       this.#destroyPlayer();
       this.#polledStatus.set(null);
@@ -135,9 +137,13 @@ export class VideoViewerComponent implements OnDestroy {
     // Wait for iframe load event before initializing Player.js
     effect(() => {
       const iframeRef = this.videoIframe();
+      console.log('[VideoViewer] iframe effect fired', { hasIframe: !!iframeRef, hasPlayerJs: typeof playerjs !== 'undefined' });
       if (iframeRef && typeof playerjs !== 'undefined') {
         const iframe = iframeRef.nativeElement;
-        this.#boundOnLoad = () => this.#initPlayer(iframe);
+        this.#boundOnLoad = () => {
+          console.log('[VideoViewer] iframe load event fired');
+          this.#initPlayer(iframe);
+        };
         iframe.addEventListener('load', this.#boundOnLoad);
       }
     });
@@ -198,15 +204,20 @@ export class VideoViewerComponent implements OnDestroy {
   // ── Player.js: resume video after tab switch ──────────────────────
 
   #initPlayer(iframe: HTMLIFrameElement) {
+    console.log('[VideoViewer] initPlayer called');
     this.#destroyPlayer();
     this.#player = new playerjs.Player(iframe);
     this.#player.on('ready', () => {
+      console.log('[VideoViewer] Player.js READY event received');
       this.#player.on('play', () => {
+        console.log('[VideoViewer] play event');
         this.#wasPlaying = true;
       });
       this.#player.on('pause', () => {
+        console.log('[VideoViewer] pause event', { resuming: this.#resuming });
         if (this.#resuming) {
           // Bunny auto-paused after tab switch — fight back
+          console.log('[VideoViewer] COUNTER-PLAY: fighting Bunny auto-pause');
           this.#player?.play();
         } else {
           // User genuinely paused
@@ -221,6 +232,7 @@ export class VideoViewerComponent implements OnDestroy {
   }
 
   #onVisibilityChange() {
+    console.log('[VideoViewer] visibilitychange', { hidden: this.#document.hidden, wasPlaying: this.#wasPlaying });
     if (this.#document.hidden) {
       return;
     }
