@@ -5,10 +5,8 @@ import { LucideAngularModule, Loader2, AlertCircle } from 'lucide-angular';
 import { ModuleVideo } from '../../../core/models/course.model';
 import { BunnyUploadService } from '../../../core/services/bunny-upload.service';
 
-declare const playerjs: { Player: new (el: HTMLIFrameElement) => any };
-
 const POLL_INTERVAL_MS = 10_000;
-const RESUME_DELAY_MS = 300;
+const RESUME_DELAY_MS = 500;
 
 @Component({
   selector: 'app-video-viewer',
@@ -90,11 +88,12 @@ export class VideoViewerComponent implements OnDestroy {
   readonly #polledStatus = signal<number | null>(null);
   readonly encodeProgress = signal(0);
   #pollTimer: ReturnType<typeof setInterval> | null = null;
-  #player: any = null;
   #wasPlaying = false;
   #tabHidden = false;
+  #iframeReady = false;
   #resumeTimer: ReturnType<typeof setTimeout> | null = null;
   #visibilityHandler = () => this.#onVisibilityChange();
+  #messageHandler = (e: MessageEvent) => this.#onMessage(e);
 
   readonly trustedEmbedUrl = computed<SafeResourceUrl | null>(() => {
     const url = this.#embedUrl();
@@ -131,18 +130,18 @@ export class VideoViewerComponent implements OnDestroy {
       }
     });
 
-    // Initialize Player.js when iframe becomes available
+    // Set up tab-switch resume when iframe is available
     effect(() => {
       const iframeRef = this.videoIframe();
-      if (iframeRef && typeof playerjs !== 'undefined') {
-        this.#initPlayer(iframeRef.nativeElement);
+      if (iframeRef) {
+        this.#setupResume();
       }
     });
   }
 
   ngOnDestroy() {
     this.#stopPolling();
-    this.#destroyPlayer();
+    this.#teardownResume();
   }
 
   #fetchEmbedUrl(videoId: string) {
@@ -192,47 +191,68 @@ export class VideoViewerComponent implements OnDestroy {
     }
   }
 
-  // ── Player.js: resume video after tab switch ──────────────────────
+  // ── Tab-switch resume via raw postMessage (Player.js protocol) ────
 
-  #initPlayer(iframe: HTMLIFrameElement) {
-    this.#destroyPlayer();
-    this.#player = new playerjs.Player(iframe);
-    this.#player.on('ready', () => {
-      this.#player.on('play', () => { this.#wasPlaying = true; });
-      this.#player.on('pause', () => {
+  #setupResume() {
+    this.#teardownResume();
+    window.addEventListener('message', this.#messageHandler);
+    this.#document.addEventListener('visibilitychange', this.#visibilityHandler);
+  }
+
+  #onMessage(e: MessageEvent) {
+    // Player.js protocol: iframe sends JSON with event name
+    if (!e.data || typeof e.data !== 'string') return;
+    try {
+      const msg = JSON.parse(e.data);
+      if (msg.event === 'ready') {
+        this.#iframeReady = true;
+      } else if (msg.event === 'play') {
+        this.#wasPlaying = true;
+      } else if (msg.event === 'pause') {
         if (!this.#tabHidden) {
           this.#wasPlaying = false;
         }
-      });
-      this.#player.on('ended', () => { this.#wasPlaying = false; });
-    });
-    this.#document.addEventListener('visibilitychange', this.#visibilityHandler);
+      } else if (msg.event === 'ended') {
+        this.#wasPlaying = false;
+      }
+    } catch {
+      // Not JSON — ignore
+    }
+  }
+
+  #sendCommand(method: string) {
+    const iframe = this.videoIframe()?.nativeElement;
+    if (!iframe?.contentWindow || !this.#iframeReady) return;
+    iframe.contentWindow.postMessage(
+      JSON.stringify({ context: 'player.js', version: '1.0', method }),
+      '*',
+    );
   }
 
   #onVisibilityChange() {
     if (this.#document.hidden) {
       this.#tabHidden = true;
     } else {
-      // Delay resume to let Bunny's internal pause settle first
       this.#tabHidden = false;
       if (this.#wasPlaying) {
         if (this.#resumeTimer) clearTimeout(this.#resumeTimer);
         this.#resumeTimer = setTimeout(() => {
-          this.#player?.play();
+          this.#sendCommand('play');
           this.#resumeTimer = null;
         }, RESUME_DELAY_MS);
       }
     }
   }
 
-  #destroyPlayer() {
+  #teardownResume() {
+    window.removeEventListener('message', this.#messageHandler);
     this.#document.removeEventListener('visibilitychange', this.#visibilityHandler);
     if (this.#resumeTimer) {
       clearTimeout(this.#resumeTimer);
       this.#resumeTimer = null;
     }
-    this.#player = null;
     this.#wasPlaying = false;
     this.#tabHidden = false;
+    this.#iframeReady = false;
   }
 }
