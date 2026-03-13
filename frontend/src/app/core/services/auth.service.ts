@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Session } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 import { ToastService } from './toast.service';
+import { PosthogService } from './posthog.service';
 import { AppUser, JwtClaims, UserRole } from '../models/auth.model';
 
 const DEFAULT_CLAIMS: JwtClaims = {
@@ -20,6 +21,7 @@ export class AuthService {
   #supabase = inject(SupabaseService);
   #router = inject(Router);
   #toast = inject(ToastService);
+  #posthog = inject(PosthogService);
   #currentUser = signal<AppUser | null>(null);
   #loading = signal(true);
   #signOutInitiated = false;
@@ -32,10 +34,16 @@ export class AuthService {
   constructor() {
     this.#supabase.client.auth.onAuthStateChange((event, session) => {
       const wasAuthenticated = this.#currentUser() !== null;
-      this.#currentUser.set(this.#parseSession(session));
+      const user = this.#parseSession(session);
+      this.#currentUser.set(user);
       this.#loading.set(false);
 
+      if (user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+        this.#posthog.identify(user);
+      }
+
       if (event === 'SIGNED_OUT' && wasAuthenticated) {
+        this.#posthog.reset();
         if (this.#signOutInitiated) {
           this.#signOutInitiated = false;
           this.#router.navigate(['/login']);

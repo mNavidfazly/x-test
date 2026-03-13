@@ -34,6 +34,7 @@
     "ngx-extended-pdf-viewer": "^25.6.4",
     "ngx-markdown": "^19.1.1",
     "ngx-tiptap": "^12.0.0",
+    "posthog-js": "^1.360.1",
     "prismjs": "^1.30.0",
     "rxjs": "~7.8.0",
     "tiptap-markdown": "^0.8.10",
