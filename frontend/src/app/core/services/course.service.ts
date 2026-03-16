@@ -1300,10 +1300,40 @@ export class CourseService {
     };
 
     const module: ModuleDetail = { ...mod, module_type: mod.module_type as ModuleType };
-    const viewerContent = await this.#fetchModuleContent(client, moduleId, mod.module_type);
-    const content = this.#contentToFormData(viewerContent);
+    // For edit mode, fetch raw storage paths — NOT signed URLs.
+    // #fetchModuleContent resolves file_url to signed URLs for the viewer,
+    // but saving those back would corrupt the DB data.
+    const content = await this.#fetchModuleContentForEdit(client, moduleId, mod.module_type);
 
     return { module, content };
+  }
+
+  async #fetchModuleContentForEdit(client: SupabaseClient, moduleId: string, moduleType: string): Promise<ModuleContentFormData> {
+    switch (moduleType) {
+      case 'pdf': {
+        const res = await client.from('module_pdfs').select('file_url, file_name, page_count').eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as { file_url: string; file_name: string; page_count: number | null };
+        return { type: 'pdf', data: { file_url: d.file_url, file_name: d.file_name, page_count: d.page_count } };
+      }
+      case 'audio': {
+        const res = await client.from('module_audio').select('file_url, file_name, file_size, duration_seconds, mime_type').eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as any;
+        return { type: 'audio', data: { file_url: d.file_url, file_name: d.file_name, file_size: d.file_size, duration_seconds: d.duration_seconds, mime_type: d.mime_type } };
+      }
+      case 'download': {
+        const res = await client.from('module_downloads').select('file_url, file_name, file_size').eq('module_id', moduleId).single();
+        if (res.error) throw res.error;
+        const d = res.data as any;
+        return { type: 'download', data: { file_url: d.file_url, file_name: d.file_name, file_size: d.file_size } };
+      }
+      default: {
+        // Types without file_url (video, markdown, quiz, exam, external_quiz) — use the viewer path
+        const viewerContent = await this.#fetchModuleContent(client, moduleId, moduleType);
+        return this.#contentToFormData(viewerContent);
+      }
+    }
   }
 
   async #insertModuleContent(moduleId: string, content: ModuleContentFormData): Promise<void> {

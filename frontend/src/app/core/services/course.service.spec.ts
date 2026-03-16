@@ -974,9 +974,9 @@ describe('CourseService', () => {
       }
     });
 
-    // PDF file_url is a storage path in the DB — #fetchModuleContent resolves it
-    // to a signed URL via createSignedUrl() so the viewer can display it securely.
-    it('should load module and convert PDF content to form data with signed URL', async () => {
+    // PDF file_url is a storage path in the DB — for edit mode, the raw storage
+    // path is returned (NOT a signed URL) to prevent signed URLs being saved back.
+    it('should load module and return raw storage path for PDF in edit mode', async () => {
       supabase._mockQueryBuilder.single
         .mockResolvedValueOnce({
           data: { id: 'mod-2', title: 'PDF Mod', description: null, module_type: 'pdf', sort_order: 1, lecture_id: 'l1', course_id: 'c1' },
@@ -992,9 +992,9 @@ describe('CourseService', () => {
       expect(result.module.module_type).toBe('pdf');
       expect(result.content.type).toBe('pdf');
       if (result.content.type === 'pdf') {
-        // file_url should be a signed URL (from mock: createSignedUrl returns signedUrl)
+        // file_url should be the raw storage path, not a signed URL
         expect(result.content.data).toEqual({
-          file_url: expect.stringContaining('sign'),
+          file_url: 'course-1/123-test.pdf',
           file_name: 'test.pdf',
           page_count: 10,
         });
@@ -1039,7 +1039,7 @@ describe('CourseService', () => {
       }
     });
 
-    it('should return empty file_url for PDF when storage file is missing', async () => {
+    it('should return raw storage path for PDF even when storage file is missing', async () => {
       supabase._mockQueryBuilder.single
         .mockResolvedValueOnce({
           data: { id: 'mod-pdf', title: 'PDF Mod', description: null, module_type: 'pdf', sort_order: 0, lecture_id: 'l1', course_id: 'c1' },
@@ -1050,26 +1050,14 @@ describe('CourseService', () => {
           error: null,
         });
 
-      // Mock createSignedUrl to fail (file deleted from storage)
-      const storageMock = supabase.client.storage.from('course-files');
-      storageMock.createSignedUrl = vi.fn().mockResolvedValueOnce({
-        data: null,
-        error: { message: 'Object not found' },
-      });
-
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
       const result = await service.loadModuleForEdit('mod-pdf');
 
       expect(result.content.type).toBe('pdf');
       if (result.content.type === 'pdf') {
-        // file_url should be empty string when file is missing
-        expect(result.content.data.file_url).toBe('');
+        // Edit mode returns raw storage path — no signed URL resolution
+        expect(result.content.data.file_url).toBe('course-1/deleted.pdf');
         expect(result.content.data.file_name).toBe('deleted.pdf');
       }
-
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('deleted.pdf'));
-      warnSpy.mockRestore();
     });
 
     it('should clear exam_file_url when storage file is missing', async () => {
