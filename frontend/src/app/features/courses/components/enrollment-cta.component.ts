@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
-import { LucideAngularModule, Check, Lock, UserPlus, Info } from 'lucide-angular';
+import { LucideAngularModule, Check, Lock, UserPlus, Info, Star } from 'lucide-angular';
 import { EnrollmentType } from '../../../core/models/course.model';
 
 @Component({
@@ -17,19 +17,25 @@ import { EnrollmentType } from '../../../core/models/course.model';
       } @else {
         @switch (enrollmentType()) {
           @case ('open') {
-            <button
-              type="button"
-              (click)="onEnroll()"
-              [disabled]="enrolling()"
-              class="btn-primary px-5 py-2.5"
-            >
-              <lucide-icon [img]="icons.UserPlus" [size]="16"></lucide-icon>
-              @if (enrolling()) {
-                Enrolling...
-              } @else {
-                Enroll Now
-              }
-            </button>
+            <div class="inline-flex flex-col items-start gap-1.5">
+              <button
+                type="button"
+                (click)="onEnroll()"
+                [disabled]="enrolling()"
+                class="btn-primary px-5 py-2.5"
+              >
+                <lucide-icon [img]="icons.UserPlus" [size]="16"></lucide-icon>
+                @if (enrolling()) {
+                  Enrolling...
+                } @else {
+                  Enroll Now
+                }
+              </button>
+              <span class="inline-flex items-center gap-1 text-xs text-slate-500">
+                <lucide-icon [img]="icons.Star" [size]="12" class="text-amber-400"></lucide-icon>
+                Track progress and earn XP
+              </span>
+            </div>
           }
           @case ('password_protected') {
             <div class="card-glass p-4 max-w-md">
@@ -62,6 +68,10 @@ import { EnrollmentType } from '../../../core/models/course.model';
               @if (passwordError()) {
                 <p class="text-xs text-rose-600 mt-2">{{ passwordError() }}</p>
               }
+              <span class="inline-flex items-center gap-1 text-xs text-slate-500 mt-2">
+                <lucide-icon [img]="icons.Star" [size]="12" class="text-amber-400"></lucide-icon>
+                Track progress and earn XP
+              </span>
             </div>
           }
           @case ('invite_only') {
@@ -87,7 +97,7 @@ export class EnrollmentCtaComponent {
   readonly passwordError = signal('');
   readonly enrolling = signal(false);
 
-  readonly icons = { Check, Lock, UserPlus, Info };
+  readonly icons = { Check, Lock, UserPlus, Info, Star };
 
   onEnroll() {
     this.enrolling.set(true);
