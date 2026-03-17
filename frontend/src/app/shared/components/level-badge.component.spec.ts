@@ -44,12 +44,22 @@ describe('LevelBadgeComponent', () => {
   });
 
   it('does not render for platform_admin', async () => {
-    await renderBadge({ roles: ['platform_admin'] });
+    await renderBadge({ roles: ['platform_admin', 'learner'] });
     expect(screen.queryByRole('button', { name: /level/i })).toBeNull();
   });
 
-  it('does not render for tenant_admin', async () => {
+  it('renders badge for tenant_admin', async () => {
     await renderBadge({ roles: ['tenant_admin', 'learner'] });
+    expect(screen.getByRole('button', { name: /level/i })).toBeTruthy();
+  });
+
+  it('does not render for csm', async () => {
+    await renderBadge({ roles: ['csm', 'learner'] });
+    expect(screen.queryByRole('button', { name: /level/i })).toBeNull();
+  });
+
+  it('does not render for lecturer', async () => {
+    await renderBadge({ roles: ['lecturer', 'learner'] });
     expect(screen.queryByRole('button', { name: /level/i })).toBeNull();
   });
 

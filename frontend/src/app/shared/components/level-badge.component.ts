@@ -30,7 +30,7 @@ function iconForLevel(level: number) {
     '(document:click)': 'onClickOutside($event)',
   },
   template: `
-    @if (isLearner()) {
+    @if (showXpBadge()) {
       @if (xpService.loading() && xpService.totalXp() === 0) {
         <div class="w-16 h-7 rounded-full skeleton-bar"></div>
       } @else {
@@ -155,10 +155,10 @@ export class LevelBadgeComponent {
     });
   }
 
-  readonly isLearner = computed(() => {
+  readonly showXpBadge = computed(() => {
     const roles = this.#auth.roles();
     return roles.includes('learner') && !roles.some(r =>
-      r === 'platform_admin' || r === 'tenant_admin' || r === 'csm' || r === 'lecturer'
+      r === 'platform_admin' || r === 'csm' || r === 'lecturer'
     );
   });
 
