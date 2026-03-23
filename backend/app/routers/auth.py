@@ -42,9 +42,11 @@ async def resolve_tenant(
     except ValueError:
         return ResolveEmailResponse(tenant_name=None, auth_methods=[])
 
-    tenant = lookup_tenant(supabase, domain)
+    # Existing users: route to their ACTUAL tenant (profile-based)
+    # New users: fall back to domain-based resolution
+    tenant = lookup_tenant_by_profile_email(supabase, body.email)
     if tenant is None:
-        tenant = lookup_tenant_by_profile_email(supabase, body.email)
+        tenant = lookup_tenant(supabase, domain)
     methods = resolve_auth_methods(tenant)
     tenant_name = tenant["name"] if tenant else None
 
@@ -64,9 +66,9 @@ async def reset_password(
 ) -> ResetPasswordResponse:
     try:
         domain = extract_domain(body.email)
-        tenant = lookup_tenant(supabase, domain)
+        tenant = lookup_tenant_by_profile_email(supabase, body.email)
         if tenant is None:
-            tenant = lookup_tenant_by_profile_email(supabase, body.email)
+            tenant = lookup_tenant(supabase, domain)
         methods = resolve_auth_methods(tenant)
 
         if "email_password" in methods:
