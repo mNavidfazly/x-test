@@ -1,6 +1,7 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Session } from '@supabase/supabase-js';
+import * as Sentry from '@sentry/angular';
 import { SupabaseService } from './supabase.service';
 import { ToastService } from './toast.service';
 import { PosthogService } from './posthog.service';
@@ -40,10 +41,14 @@ export class AuthService {
 
       if (user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
         this.#posthog.identify(user);
+        Sentry.setUser({ id: user.id, email: user.email });
+        Sentry.setTag('tenant_id', user.tenantId);
+        Sentry.setTag('roles', user.roles.join(','));
       }
 
       if (event === 'SIGNED_OUT' && wasAuthenticated) {
         this.#posthog.reset();
+        Sentry.setUser(null);
         if (this.#signOutInitiated) {
           this.#signOutInitiated = false;
           this.#router.navigate(['/login']);

@@ -6,4 +6,5 @@ export const environment = {
   apiUrl: 'http://localhost:8000/api',
   posthogApiKey: 'phc_jG0XkQtsolp2t1DQcVUchxkjUoBX4BKEUBicla6aIUK',
   posthogHost: 'https://eu.i.posthog.com',
+  sentryDsn: '',
 };
