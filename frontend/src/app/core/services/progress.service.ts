@@ -8,6 +8,7 @@ import {
   DashboardCourseSummary, ReminderRequest, ReminderResponse,
 } from '../models/course.model';
 import { extractErrorMessage } from '../utils/error.utils';
+import { paginateAll } from '../utils/paginate';
 
 @Injectable({ providedIn: 'root' })
 export class ProgressService {
@@ -36,18 +37,32 @@ export class ProgressService {
 
       const isPAOrCSM = user.claims.is_platform_admin || user.claims.csm_tenant_ids.length > 0;
 
-      // 4 parallel queries — RLS auto-scopes per role
-      const [coursesRes, enrollmentsRes, progressRes, modulesRes] = await Promise.all([
+      // 4 parallel queries — RLS auto-scopes per role.
+      // user_progress and modules paginated to bypass PostgREST 1000-row cap
+      // (3071 user_progress rows in prod cross-tenant; modules approaching cap).
+      const [coursesRes, enrollmentsRows, progressRows, modulesRows] = await Promise.all([
         client.from('courses').select('id, title').order('title'),
-        client.from('course_enrollments').select('user_id, tenant_id, course_id, profiles(email, full_name)'),
-        client.from('user_progress').select('user_id, course_id, module_id, status, updated_at'),
-        client.from('modules').select('id, course_id'),
+        paginateAll<{
+          user_id: string; tenant_id: string; course_id: string;
+          profiles: { email: string; full_name: string | null } | null;
+        }>((from, to) =>
+          client.from('course_enrollments')
+            .select('user_id, tenant_id, course_id, profiles(email, full_name)')
+            .range(from, to) as never,
+        ),
+        paginateAll<{
+          user_id: string; course_id: string; module_id: string; status: string; updated_at: string;
+        }>((from, to) =>
+          client.from('user_progress')
+            .select('user_id, course_id, module_id, status, updated_at')
+            .range(from, to),
+        ),
+        paginateAll<{ id: string; course_id: string }>((from, to) =>
+          client.from('modules').select('id, course_id').range(from, to),
+        ),
       ]);
 
-      // Check errors
-      for (const res of [coursesRes, enrollmentsRes, progressRes, modulesRes]) {
-        if (res.error) throw res.error;
-      }
+      if (coursesRes.error) throw coursesRes.error;
 
       // Optional: load tenants for PA/CSM tenant name column
       let tenantMap = new Map<string, string>();
@@ -61,14 +76,9 @@ export class ProgressService {
       }
 
       const courses = (coursesRes.data ?? []) as { id: string; title: string }[];
-      const enrollments = (enrollmentsRes.data ?? []) as unknown as {
-        user_id: string; tenant_id: string; course_id: string;
-        profiles: { email: string; full_name: string | null } | null;
-      }[];
-      const progress = (progressRes.data ?? []) as {
-        user_id: string; course_id: string; module_id: string; status: string; updated_at: string;
-      }[];
-      const modules = (modulesRes.data ?? []) as { id: string; course_id: string }[];
+      const enrollments = enrollmentsRows;
+      const progress = progressRows;
+      const modules = modulesRows;
 
       // Build module count per course
       const moduleCountByCourse = new Map<string, number>();

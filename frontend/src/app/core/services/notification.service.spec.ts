@@ -155,7 +155,7 @@ describe('NotificationService', () => {
   });
 
   describe('markAllAsRead', () => {
-    it('should update all unread and update local signal', async () => {
+    it('should call mark_all_notifications_read RPC and update local signal', async () => {
       const mockData = [
         createNotification({ id: 'n1', read_at: null }),
         createNotification({ id: 'n2', read_at: null }),
@@ -165,19 +165,26 @@ describe('NotificationService', () => {
       await service.loadNotifications();
       expect(service.unreadCount()).toBe(2);
 
-      supabase._mockQueryBuilder.then.mockImplementationOnce(
-        (resolve: (value: { data: null; error: null }) => void) =>
-          resolve({ data: null, error: null }),
-      );
+      supabase.client.rpc = vi.fn().mockResolvedValue({ data: 2, error: null });
 
       await service.markAllAsRead();
 
-      expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
-        expect.objectContaining({ read_at: expect.any(String) }),
-      );
-      expect(supabase._mockQueryBuilder.is).toHaveBeenCalledWith('read_at', null);
+      expect(supabase.client.rpc).toHaveBeenCalledWith('mark_all_notifications_read');
       expect(service.unreadCount()).toBe(0);
       expect(service.notifications().every(n => n.read_at !== null)).toBe(true);
+    });
+
+    it('should not update local signal when RPC returns error', async () => {
+      const mockData = [createNotification({ id: 'n1', read_at: null })];
+      supabase._mockQueryResponse(mockData);
+      await service.loadNotifications();
+
+      supabase.client.rpc = vi.fn().mockResolvedValue({ data: null, error: { message: 'fail' } });
+
+      await service.markAllAsRead();
+
+      expect(service.unreadCount()).toBe(1);
+      expect(service.notifications()[0].read_at).toBeNull();
     });
   });
 

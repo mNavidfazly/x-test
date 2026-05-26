@@ -74,10 +74,9 @@ export class NotificationService {
 
   async markAllAsRead(): Promise<void> {
     const readAt = new Date().toISOString();
-    const { error } = await this.#supabase.client
-      .from('notifications')
-      .update({ read_at: readAt })
-      .is('read_at', null);
+    // RPC bypasses PostgREST 1000-row UPDATE cap (matters for users with many unread).
+    // Body: UPDATE notifications SET read_at = now() WHERE user_id = auth.uid() AND read_at IS NULL.
+    const { error } = await this.#supabase.client.rpc('mark_all_notifications_read');
 
     if (error) return;
 

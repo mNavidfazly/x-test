@@ -12,6 +12,7 @@ import { isStoragePath } from '../utils/storage.utils';
 import { compressImage } from '../utils/image.utils';
 import { resolveAvatarUrls } from '../utils/avatar.utils';
 import { extractStoragePaths } from '../utils/markdown-storage.utils';
+import { paginateAll } from '../utils/paginate';
 import {
   CourseWithProgress, CourseDetail, CourseLecturer, ModuleProgress, EnrollmentType, ModuleType,
   ModuleDetail, ModuleViewerData, ModuleContent, ModuleFile, ModuleNavItem, ModuleVideo,
@@ -594,19 +595,27 @@ export class CourseService {
   async loadCourseProgressAdmin(courseId: string): Promise<UserProgressSummary[]> {
     const client = this.#supabase.client;
 
-    const [enrollmentsRes, progressRes] = await Promise.all([
+    // user_progress paginated to bypass PostgREST 1000-row cap.
+    // LNG course has 1494 progress rows today (18 users × up to 261 modules).
+    // Truncation surfaced as Radoslaw showing 60/261 instead of 225/261.
+    const [enrollmentsRes, progressRows] = await Promise.all([
       client
         .from('course_enrollments')
         .select('user_id, tenant_id, profiles(email, full_name)')
         .eq('course_id', courseId),
-      client
-        .from('user_progress')
-        .select('user_id, module_id, status, completed_at, marked_by')
-        .eq('course_id', courseId),
+      paginateAll<{
+        user_id: string; module_id: string; status: string;
+        completed_at: string | null; marked_by: string | null;
+      }>((from, to) =>
+        client
+          .from('user_progress')
+          .select('user_id, module_id, status, completed_at, marked_by')
+          .eq('course_id', courseId)
+          .range(from, to),
+      ),
     ]);
 
     if (enrollmentsRes.error) throw new Error(extractErrorMessage(enrollmentsRes.error, 'Failed to load enrollments'));
-    if (progressRes.error) throw new Error(extractErrorMessage(progressRes.error, 'Failed to load progress'));
 
     const detail = this.#courseDetail();
     const totalModules = detail
@@ -614,8 +623,7 @@ export class CourseService {
       : 0;
 
     const progressByUser = new Map<string, UserProgressRecord[]>();
-    for (const p of (progressRes.data ?? [])) {
-      const rec = p as { user_id: string; module_id: string; status: string; completed_at: string | null; marked_by: string | null };
+    for (const rec of progressRows) {
       const list = progressByUser.get(rec.user_id) ?? [];
       list.push({
         module_id: rec.module_id,

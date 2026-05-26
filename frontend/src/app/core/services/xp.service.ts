@@ -1,6 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
+import { paginateAll } from '../utils/paginate';
 
 // ── Level Definitions ──────────────────────────────────────────────
 
@@ -184,7 +185,7 @@ export class XpService {
       const [
         progressRes,
         quizAttemptsRes,
-        quizQuestionsRes,
+        quizQuestionRows,
         examSubsRes,
         extQuizRes,
         knowledgeRes,
@@ -197,7 +198,11 @@ export class XpService {
           .eq('user_id', userId).eq('status', 'completed'),
         client.from('quiz_attempts').select('quiz_id, score, passed, started_at')
           .eq('user_id', userId).eq('passed', true),
-        client.from('quiz_questions').select('quiz_id'),
+        // Paginated to bypass PostgREST 1000-row cap (3000+ quiz_questions in prod).
+        // See plan: docs/QUERY_PATTERNS.md and CLAUDE.md rule #7.
+        paginateAll<{ quiz_id: string }>((from, to) =>
+          client.from('quiz_questions').select('quiz_id').range(from, to),
+        ),
         client.from('exam_submissions').select('score')
           .eq('user_id', userId).not('score', 'is', null),
         client.from('external_quiz_results').select('id', { count: 'exact', head: true })
@@ -216,9 +221,8 @@ export class XpService {
 
       // Build quiz_id → question count map
       const quizQuestionCounts: Record<string, number> = {};
-      for (const row of quizQuestionsRes.data ?? []) {
-        const qid = row.quiz_id as string;
-        quizQuestionCounts[qid] = (quizQuestionCounts[qid] ?? 0) + 1;
+      for (const row of quizQuestionRows) {
+        quizQuestionCounts[row.quiz_id] = (quizQuestionCounts[row.quiz_id] ?? 0) + 1;
       }
 
       const rawData: XpRawData = {

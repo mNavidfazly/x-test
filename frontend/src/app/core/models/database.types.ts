@@ -1,3 +1,5 @@
+WARN: environment variable is unset: SUPABASE_AUTH_EXTERNAL_KEYCLOAK_SECRET
+Initialising login role...
 export type Json =
   | string
   | number
@@ -1332,18 +1334,21 @@ export type Database = {
       }
       quiz_attempt_answers: {
         Row: {
+          ai_accepted: boolean
           attempt_id: string
           id: string
           question_id: string
           user_answer: string | null
         }
         Insert: {
+          ai_accepted?: boolean
           attempt_id: string
           id?: string
           question_id: string
           user_answer?: string | null
         }
         Update: {
+          ai_accepted?: boolean
           attempt_id?: string
           id?: string
           question_id?: string
@@ -2001,6 +2006,7 @@ export type Database = {
       get_quiz_results: {
         Args: { p_attempt_id: string }
         Returns: {
+          ai_accepted: boolean
           correct_answer: string
           explanation: string
           options: Json
@@ -2014,7 +2020,9 @@ export type Database = {
       grade_quiz_attempt: { Args: { p_attempt_id: string }; Returns: Json }
       jwt_claim: { Args: { claim: string }; Returns: string }
       jwt_claim_array: { Args: { claim: string }; Returns: string[] }
+      mark_all_notifications_read: { Args: never; Returns: number }
       password_verification_hook: { Args: { event: Json }; Returns: Json }
+      recalculate_quiz_score: { Args: { p_attempt_id: string }; Returns: Json }
       swap_lecture_sort_order: {
         Args: { p_id_a: string; p_id_b: string }
         Returns: undefined
@@ -2239,3 +2247,6 @@ export const Constants = {
     },
   },
 } as const
+<claude-code-hint v="1" type="plugin" value="supabase@claude-plugins-official" />
+A new version of Supabase CLI is available: v2.101.0 (currently installed v2.98.2)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
