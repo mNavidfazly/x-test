@@ -4,15 +4,28 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import {
-  DashboardUserProgress, DashboardCourseProgress,
+  DashboardUserProgress,
   DashboardCourseSummary, ReminderRequest, ReminderResponse,
 } from '../models/course.model';
 import { extractErrorMessage } from '../utils/error.utils';
-import { paginateAll } from '../utils/paginate';
+
+interface RpcRow {
+  user_id: string;
+  tenant_id: string;
+  tenant_name: string | null;
+  email: string;
+  full_name: string | null;
+  course_id: string;
+  course_title: string;
+  completed: number;
+  total: number;
+  last_updated: string | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ProgressService {
   #supabase = inject(SupabaseService);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   #auth = inject(AuthService);
   #api = inject(ApiService);
 
@@ -31,117 +44,47 @@ export class ProgressService {
     this.#error.set('');
 
     try {
-      const client = this.#supabase.client;
-      const user = this.#auth.currentUser();
-      if (!user) throw new Error('Not authenticated');
+      // Single RPC replaces 4 parallel queries + optional 5th tenants query.
+      // Permission gating (PA/TA/CSM/Lecturer 4-role branches) and per-course
+      // completion aggregation now server-side. See migration 00060.
+      const { data, error } = await this.#supabase.client.rpc('get_progress_dashboard_data');
+      if (error) throw error;
+      const rows = (data ?? []) as RpcRow[];
 
-      const isPAOrCSM = user.claims.is_platform_admin || user.claims.csm_tenant_ids.length > 0;
-
-      // 4 parallel queries — RLS auto-scopes per role.
-      // user_progress and modules paginated to bypass PostgREST 1000-row cap
-      // (3071 user_progress rows in prod cross-tenant; modules approaching cap).
-      const [coursesRes, enrollmentsRows, progressRows, modulesRows] = await Promise.all([
-        client.from('courses').select('id, title').order('title'),
-        paginateAll<{
-          user_id: string; tenant_id: string; course_id: string;
-          profiles: { email: string; full_name: string | null } | null;
-        }>((from, to) =>
-          client.from('course_enrollments')
-            .select('user_id, tenant_id, course_id, profiles(email, full_name)')
-            .range(from, to) as never,
-        ),
-        paginateAll<{
-          user_id: string; course_id: string; module_id: string; status: string; updated_at: string;
-        }>((from, to) =>
-          client.from('user_progress')
-            .select('user_id, course_id, module_id, status, updated_at')
-            .range(from, to),
-        ),
-        paginateAll<{ id: string; course_id: string }>((from, to) =>
-          client.from('modules').select('id, course_id').range(from, to),
-        ),
-      ]);
-
-      if (coursesRes.error) throw coursesRes.error;
-
-      // Optional: load tenants for PA/CSM tenant name column
-      let tenantMap = new Map<string, string>();
-      if (isPAOrCSM) {
-        const tenantsRes = await client.from('tenants').select('id, name');
-        if (tenantsRes.data) {
-          for (const t of tenantsRes.data) {
-            tenantMap.set((t as any).id, (t as any).name);
-          }
-        }
-      }
-
-      const courses = (coursesRes.data ?? []) as { id: string; title: string }[];
-      const enrollments = enrollmentsRows;
-      const progress = progressRows;
-      const modules = modulesRows;
-
-      // Build module count per course
-      const moduleCountByCourse = new Map<string, number>();
-      for (const m of modules) {
-        moduleCountByCourse.set(m.course_id, (moduleCountByCourse.get(m.course_id) ?? 0) + 1);
-      }
-
-      // Build course title lookup
-      const courseTitleMap = new Map<string, string>();
-      for (const c of courses) {
-        courseTitleMap.set(c.id, c.title);
-      }
-
-      // Build progress lookup: userId → courseId → { completed, lastUpdated }
-      const progressLookup = new Map<string, Map<string, { completed: number; lastUpdated: string | null }>>();
-      for (const p of progress) {
-        if (!progressLookup.has(p.user_id)) progressLookup.set(p.user_id, new Map());
-        const courseMap = progressLookup.get(p.user_id)!;
-        if (!courseMap.has(p.course_id)) courseMap.set(p.course_id, { completed: 0, lastUpdated: null });
-        const entry = courseMap.get(p.course_id)!;
-        if (p.status === 'completed') entry.completed++;
-        if (p.updated_at && (!entry.lastUpdated || p.updated_at > entry.lastUpdated)) {
-          entry.lastUpdated = p.updated_at;
-        }
-      }
-
-      // Build user list — deduplicate by user_id
+      // Group rows by user_id (RPC returns one row per (user, course) enrollment)
       const userMap = new Map<string, DashboardUserProgress>();
-      for (const e of enrollments) {
-        if (!userMap.has(e.user_id)) {
-          userMap.set(e.user_id, {
-            user_id: e.user_id,
-            tenant_id: e.tenant_id,
-            email: e.profiles?.email ?? '',
-            full_name: e.profiles?.full_name ?? null,
-            tenant_name: isPAOrCSM ? (tenantMap.get(e.tenant_id) ?? null) : null,
+      const courseMap = new Map<string, DashboardCourseSummary>();
+
+      for (const r of rows) {
+        if (!courseMap.has(r.course_id)) {
+          courseMap.set(r.course_id, { id: r.course_id, title: r.course_title });
+        }
+        if (!userMap.has(r.user_id)) {
+          userMap.set(r.user_id, {
+            user_id: r.user_id,
+            tenant_id: r.tenant_id,
+            email: r.email,
+            full_name: r.full_name,
+            tenant_name: r.tenant_name,
             courses: [],
             overallPercent: 0,
             lastActive: null,
           });
         }
-
-        const u = userMap.get(e.user_id)!;
-        const total = moduleCountByCourse.get(e.course_id) ?? 0;
-        const courseProgress = progressLookup.get(e.user_id)?.get(e.course_id);
-        const completed = courseProgress?.completed ?? 0;
-
+        const u = userMap.get(r.user_id)!;
         u.courses.push({
-          course_id: e.course_id,
-          course_title: courseTitleMap.get(e.course_id) ?? 'Unknown',
-          completed,
-          total,
-          percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+          course_id: r.course_id,
+          course_title: r.course_title,
+          completed: r.completed,
+          total: r.total,
+          percent: r.total > 0 ? Math.round((r.completed / r.total) * 100) : 0,
         });
-
-        // Update lastActive
-        const lastUpdated = courseProgress?.lastUpdated ?? null;
-        if (lastUpdated && (!u.lastActive || lastUpdated > u.lastActive)) {
-          u.lastActive = lastUpdated;
+        if (r.last_updated && (!u.lastActive || r.last_updated > u.lastActive)) {
+          u.lastActive = r.last_updated;
         }
       }
 
-      // Compute overall percent per user (weighted)
+      // Compute overall weighted percent per user
       const users: DashboardUserProgress[] = [];
       for (const u of userMap.values()) {
         if (u.courses.length > 0) {
@@ -151,11 +94,12 @@ export class ProgressService {
         }
         users.push(u);
       }
-
       users.sort((a, b) => a.email.localeCompare(b.email));
 
+      const courses = Array.from(courseMap.values()).sort((a, b) => a.title.localeCompare(b.title));
+
       this.#users.set(users);
-      this.#courses.set(courses.map(c => ({ id: c.id, title: c.title })));
+      this.#courses.set(courses);
     } catch (err) {
       this.#error.set(extractErrorMessage(err, 'Failed to load progress data'));
     } finally {

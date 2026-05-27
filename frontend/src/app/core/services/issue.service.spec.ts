@@ -183,21 +183,23 @@ describe('IssueService', () => {
   });
 
   describe('loadBoardIssues', () => {
-    it('should load issues with reporter FK join', async () => {
-      const mockIssues = [
-        {
-          id: 'iss-1', user_id: 'user-1', tenant_id: 'tenant-1', course_id: 'c1', module_id: 'mod-1',
-          description: 'Typo on slide 3', issue_type: 'content_error', status: 'open',
-          internal_notes: 'Checking with author', resolved_at: null, resolved_by: null,
-          created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
-          course: { title: 'Alpha Course' }, module: { title: 'Lesson 1' },
-          reporter: { full_name: 'Test Learner', email: 'learner@test.com' },
-        },
-      ];
-      supabase._mockQueryResponse(mockIssues);
+    function mockBoardRpc(rows: unknown[], error: unknown = null) {
+      supabase.client.rpc = vi.fn().mockResolvedValue({ data: rows, error });
+    }
+
+    it('should call get_issues_board_data RPC and load issues with reporter', async () => {
+      mockBoardRpc([{
+        issue_id: 'iss-1', user_id: 'user-1', tenant_id: 'tenant-1', course_id: 'c1', module_id: 'mod-1',
+        description: 'Typo on slide 3', issue_type: 'content_error', status: 'open',
+        internal_notes: 'Checking with author', resolved_at: null, resolved_by: null,
+        created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
+        course_title: 'Alpha Course', module_title: 'Lesson 1',
+        reporter_full_name: 'Test Learner', reporter_email: 'learner@test.com', reporter_avatar_url: null,
+      }]);
 
       await service.loadBoardIssues();
 
+      expect(supabase.client.rpc).toHaveBeenCalledWith('get_issues_board_data');
       expect(service.boardIssues().length).toBe(1);
       expect(service.boardIssues()[0].reporter?.email).toBe('learner@test.com');
       expect(service.boardIssues()[0].internal_notes).toBe('Checking with author');
@@ -206,16 +208,14 @@ describe('IssueService', () => {
     });
 
     it('should handle null FK joins gracefully', async () => {
-      const mockIssues = [
-        {
-          id: 'iss-2', user_id: 'user-1', tenant_id: 'tenant-1', course_id: 'c1', module_id: null,
-          description: 'General issue', issue_type: 'technical', status: 'open',
-          internal_notes: null, resolved_at: null, resolved_by: null,
-          created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
-          course: null, module: null, reporter: null,
-        },
-      ];
-      supabase._mockQueryResponse(mockIssues);
+      mockBoardRpc([{
+        issue_id: 'iss-2', user_id: 'user-1', tenant_id: 'tenant-1', course_id: 'c1', module_id: null,
+        description: 'General issue', issue_type: 'technical', status: 'open',
+        internal_notes: null, resolved_at: null, resolved_by: null,
+        created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
+        course_title: null, module_title: null,
+        reporter_full_name: null, reporter_email: null, reporter_avatar_url: null,
+      }]);
 
       await service.loadBoardIssues();
 
@@ -225,56 +225,44 @@ describe('IssueService', () => {
     });
 
     it('should handle empty list', async () => {
-      supabase._mockQueryResponse([]);
-
+      mockBoardRpc([]);
       await service.loadBoardIssues();
-
       expect(service.boardIssues()).toEqual([]);
       expect(service.boardCourses()).toEqual([]);
       expect(service.boardLoading()).toBe(false);
     });
 
     it('should set error on failure', async () => {
-      supabase._mockQueryResponse(null, { message: 'DB error' });
-
+      mockBoardRpc(null, { message: 'DB error' });
       await service.loadBoardIssues();
-
       expect(service.boardError()).toBe('DB error');
       expect(service.boardLoading()).toBe(false);
     });
 
     it('should set loading to false after completion', async () => {
-      supabase._mockQueryResponse([]);
-
+      mockBoardRpc([]);
       await service.loadBoardIssues();
-
       expect(service.boardLoading()).toBe(false);
     });
 
     it('should derive courses sorted alphabetically', async () => {
-      const mockIssues = [
-        {
-          id: 'iss-1', user_id: 'u1', tenant_id: 't1', course_id: 'c2', module_id: null,
+      mockBoardRpc([
+        { issue_id: 'iss-1', user_id: 'u1', tenant_id: 't1', course_id: 'c2', module_id: null,
           description: 'd', issue_type: 'technical', status: 'open',
           internal_notes: null, resolved_at: null, resolved_by: null,
           created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
-          course: { title: 'Zebra Course' }, module: null, reporter: null,
-        },
-        {
-          id: 'iss-2', user_id: 'u1', tenant_id: 't1', course_id: 'c1', module_id: null,
+          course_title: 'Zebra Course', module_title: null,
+          reporter_full_name: null, reporter_email: null, reporter_avatar_url: null },
+        { issue_id: 'iss-2', user_id: 'u1', tenant_id: 't1', course_id: 'c1', module_id: null,
           description: 'd', issue_type: 'technical', status: 'open',
           internal_notes: null, resolved_at: null, resolved_by: null,
           created_at: '2026-02-01T10:00:00Z', updated_at: '2026-02-01T10:00:00Z',
-          course: { title: 'Alpha Course' }, module: null, reporter: null,
-        },
-      ];
-      supabase._mockQueryResponse(mockIssues);
+          course_title: 'Alpha Course', module_title: null,
+          reporter_full_name: null, reporter_email: null, reporter_avatar_url: null },
+      ]);
 
       await service.loadBoardIssues();
-
-      expect(service.boardCourses().length).toBe(2);
-      expect(service.boardCourses()[0].title).toBe('Alpha Course');
-      expect(service.boardCourses()[1].title).toBe('Zebra Course');
+      expect(service.boardCourses().map(c => c.title)).toEqual(['Alpha Course', 'Zebra Course']);
     });
 
     it('should throw when not authenticated', async () => {
@@ -292,14 +280,6 @@ describe('IssueService', () => {
       await service.loadBoardIssues();
 
       expect(service.boardError()).toBe('Not authenticated');
-    });
-
-    it('should query base issues table (not issues_safe)', async () => {
-      supabase._mockQueryResponse([]);
-
-      await service.loadBoardIssues();
-
-      expect(supabase.client.from).toHaveBeenCalledWith('issues');
     });
   });
 

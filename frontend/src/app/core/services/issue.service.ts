@@ -102,25 +102,46 @@ export class IssueService {
       const user = this.#auth.currentUser();
       if (!user) throw new Error('Not authenticated');
 
-      // RLS auto-scopes: lecturer sees assigned courses cross-tenant, PA sees all
-      const { data, error } = await this.#supabase.client
-        .from('issues')
-        .select(`
-          *,
-          course:courses!issues_course_id_fkey(title),
-          module:modules!issues_module_id_fkey(title),
-          reporter:profiles!user_id(full_name, email, avatar_url)
-        `)
-        .order('created_at', { ascending: false });
-
+      // Single RPC replaces unbounded SELECT with 3-table embed.
+      // Permission gating (PA/CSM/Lecturer) enforced server-side.
+      // See migration 00063.
+      const { data, error } = await this.#supabase.client.rpc('get_issues_board_data');
       if (error) throw error;
 
-      const issues = (data ?? []).map((row: any) => ({
-        ...row,
-        course: row.course ?? null,
-        module: row.module ?? null,
-        reporter: row.reporter ?? null,
-      })) as IssueForBoard[];
+      type RpcRow = {
+        issue_id: string; user_id: string; tenant_id: string;
+        course_id: string; module_id: string | null;
+        issue_type: string; description: string; status: string;
+        internal_notes: string | null;
+        resolved_at: string | null; resolved_by: string | null;
+        created_at: string; updated_at: string;
+        course_title: string | null; module_title: string | null;
+        reporter_full_name: string | null; reporter_email: string | null; reporter_avatar_url: string | null;
+      };
+      const rows = (data ?? []) as RpcRow[];
+
+      const issues = rows.map(r => ({
+        id: r.issue_id,
+        user_id: r.user_id,
+        tenant_id: r.tenant_id,
+        course_id: r.course_id,
+        module_id: r.module_id,
+        issue_type: r.issue_type,
+        description: r.description,
+        status: r.status,
+        internal_notes: r.internal_notes,
+        resolved_at: r.resolved_at,
+        resolved_by: r.resolved_by,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        course: r.course_title ? { title: r.course_title } : null,
+        module: r.module_title ? { title: r.module_title } : null,
+        reporter: r.reporter_email ? {
+          full_name: r.reporter_full_name,
+          email: r.reporter_email,
+          avatar_url: r.reporter_avatar_url,
+        } : null,
+      })) as unknown as IssueForBoard[];
 
       // Derive course list from issue data (Map dedup + sort)
       const courseMap = new Map<string, string>();

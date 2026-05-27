@@ -193,22 +193,23 @@ describe('ExpertQuestionService', () => {
   });
 
   describe('loadBoardQuestions', () => {
-    it('should load questions with asker join', async () => {
-      const mockData = [
-        {
-          id: 'eq-1', user_id: 'u1', tenant_id: 't1', course_id: 'c1', module_id: 'mod-1',
-          question_text: 'Formula question', status: 'pending',
-          response_text: null, responded_by: null, responded_at: null,
-          created_at: '2026-02-10T10:00:00Z',
-          course: { title: 'X-LNG Advanced' },
-          module: { title: 'Module 3' },
-          asker: { full_name: 'Bob Santos', email: 'bob@santos.com' },
-        },
-      ];
-      supabase._mockQueryResponse(mockData);
+    function mockBoardRpc(rows: unknown[], error: unknown = null) {
+      supabase.client.rpc = vi.fn().mockResolvedValue({ data: rows, error });
+    }
+
+    it('should call get_questions_board_data RPC and load questions with asker', async () => {
+      mockBoardRpc([{
+        question_id: 'eq-1', user_id: 'u1', tenant_id: 't1', course_id: 'c1', module_id: 'mod-1',
+        question_text: 'Formula question', status: 'pending',
+        response_text: null, responded_by: null, responded_at: null,
+        created_at: '2026-02-10T10:00:00Z',
+        course_title: 'X-LNG Advanced', module_title: 'Module 3',
+        asker_full_name: 'Bob Santos', asker_email: 'bob@santos.com', asker_avatar_url: null,
+      }]);
 
       await service.loadBoardQuestions();
 
+      expect(supabase.client.rpc).toHaveBeenCalledWith('get_questions_board_data');
       expect(service.boardQuestions().length).toBe(1);
       expect(service.boardQuestions()[0].asker?.email).toBe('bob@santos.com');
       expect(service.boardQuestions()[0].course?.title).toBe('X-LNG Advanced');
@@ -217,16 +218,14 @@ describe('ExpertQuestionService', () => {
     });
 
     it('should handle null FK joins gracefully', async () => {
-      const mockData = [
-        {
-          id: 'eq-2', user_id: 'u2', tenant_id: 't1', course_id: 'c1', module_id: null,
-          question_text: 'General', status: 'pending',
-          response_text: null, responded_by: null, responded_at: null,
-          created_at: '2026-02-10T10:00:00Z',
-          course: null, module: null, asker: null,
-        },
-      ];
-      supabase._mockQueryResponse(mockData);
+      mockBoardRpc([{
+        question_id: 'eq-2', user_id: 'u2', tenant_id: 't1', course_id: 'c1', module_id: null,
+        question_text: 'General', status: 'pending',
+        response_text: null, responded_by: null, responded_at: null,
+        created_at: '2026-02-10T10:00:00Z',
+        course_title: null, module_title: null,
+        asker_full_name: null, asker_email: null, asker_avatar_url: null,
+      }]);
 
       await service.loadBoardQuestions();
 
@@ -236,62 +235,46 @@ describe('ExpertQuestionService', () => {
     });
 
     it('should handle empty list', async () => {
-      supabase._mockQueryResponse([]);
-
+      mockBoardRpc([]);
       await service.loadBoardQuestions();
-
       expect(service.boardQuestions()).toEqual([]);
       expect(service.boardCourses()).toEqual([]);
     });
 
     it('should set error on failure', async () => {
-      supabase._mockQueryResponse(null, { message: 'Permission denied' });
-
+      mockBoardRpc(null, { message: 'Permission denied' });
       await service.loadBoardQuestions();
-
       expect(service.boardError()).toBe('Permission denied');
       expect(service.boardLoading()).toBe(false);
     });
 
     it('should set loading to false after completion', async () => {
-      supabase._mockQueryResponse([]);
-
+      mockBoardRpc([]);
       await service.loadBoardQuestions();
-
       expect(service.boardLoading()).toBe(false);
     });
 
     it('should derive courses sorted alphabetically', async () => {
-      const mockData = [
-        {
-          id: 'eq-1', user_id: 'u1', tenant_id: 't1', course_id: 'c2', module_id: null,
-          question_text: 'Q1', status: 'pending',
-          response_text: null, responded_by: null, responded_at: null,
+      mockBoardRpc([
+        { question_id: 'eq-1', user_id: 'u1', tenant_id: 't1', course_id: 'c2', module_id: null,
+          question_text: 'Q1', status: 'pending', response_text: null, responded_by: null, responded_at: null,
           created_at: '2026-02-10T10:00:00Z',
-          course: { title: 'Zebra Course' }, module: null, asker: null,
-        },
-        {
-          id: 'eq-2', user_id: 'u2', tenant_id: 't1', course_id: 'c1', module_id: null,
-          question_text: 'Q2', status: 'pending',
-          response_text: null, responded_by: null, responded_at: null,
+          course_title: 'Zebra Course', module_title: null,
+          asker_full_name: null, asker_email: null, asker_avatar_url: null },
+        { question_id: 'eq-2', user_id: 'u2', tenant_id: 't1', course_id: 'c1', module_id: null,
+          question_text: 'Q2', status: 'pending', response_text: null, responded_by: null, responded_at: null,
           created_at: '2026-02-10T10:00:00Z',
-          course: { title: 'Alpha Course' }, module: null, asker: null,
-        },
-        {
-          id: 'eq-3', user_id: 'u3', tenant_id: 't1', course_id: 'c2', module_id: null,
-          question_text: 'Q3', status: 'pending',
-          response_text: null, responded_by: null, responded_at: null,
+          course_title: 'Alpha Course', module_title: null,
+          asker_full_name: null, asker_email: null, asker_avatar_url: null },
+        { question_id: 'eq-3', user_id: 'u3', tenant_id: 't1', course_id: 'c2', module_id: null,
+          question_text: 'Q3', status: 'pending', response_text: null, responded_by: null, responded_at: null,
           created_at: '2026-02-10T10:00:00Z',
-          course: { title: 'Zebra Course' }, module: null, asker: null,
-        },
-      ];
-      supabase._mockQueryResponse(mockData);
+          course_title: 'Zebra Course', module_title: null,
+          asker_full_name: null, asker_email: null, asker_avatar_url: null },
+      ]);
 
       await service.loadBoardQuestions();
-
-      expect(service.boardCourses().length).toBe(2);
-      expect(service.boardCourses()[0].title).toBe('Alpha Course');
-      expect(service.boardCourses()[1].title).toBe('Zebra Course');
+      expect(service.boardCourses().map(c => c.title)).toEqual(['Alpha Course', 'Zebra Course']);
     });
 
     it('should throw when not authenticated', async () => {

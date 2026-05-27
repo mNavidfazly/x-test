@@ -2020,9 +2020,91 @@ export type Database = {
           updated_at: string
         }[]
       }
+      get_exam_grading_data: {
+        Args: never
+        Returns: {
+          course_id: string
+          course_title: string
+          deadline: string
+          exam_id: string
+          exam_title: string
+          feedback: string
+          file_url: string
+          graded_at: string
+          graded_by: string
+          learner_avatar_url: string
+          learner_email: string
+          learner_full_name: string
+          passing_score: number
+          score: number
+          submission_id: string
+          submitted_at: string
+          tenant_id: string
+          user_id: string
+        }[]
+      }
+      get_issues_board_data: {
+        Args: never
+        Returns: {
+          course_id: string
+          course_title: string
+          created_at: string
+          description: string
+          internal_notes: string
+          issue_id: string
+          issue_type: Database["public"]["Enums"]["issue_type"]
+          module_id: string
+          module_title: string
+          reporter_avatar_url: string
+          reporter_email: string
+          reporter_full_name: string
+          resolved_at: string
+          resolved_by: string
+          status: Database["public"]["Enums"]["issue_status"]
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_matching_question_terms: {
         Args: { p_question_ids: string[] }
         Returns: Json
+      }
+      get_progress_dashboard_data: {
+        Args: never
+        Returns: {
+          completed: number
+          course_id: string
+          course_title: string
+          email: string
+          full_name: string
+          last_updated: string
+          tenant_id: string
+          tenant_name: string
+          total: number
+          user_id: string
+        }[]
+      }
+      get_questions_board_data: {
+        Args: never
+        Returns: {
+          asker_avatar_url: string
+          asker_email: string
+          asker_full_name: string
+          course_id: string
+          course_title: string
+          created_at: string
+          module_id: string
+          module_title: string
+          question_id: string
+          question_text: string
+          responded_at: string
+          responded_by: string
+          response_text: string
+          status: Database["public"]["Enums"]["expert_question_status"]
+          tenant_id: string
+          user_id: string
+        }[]
       }
       get_quiz_results: {
         Args: { p_attempt_id: string }
@@ -2061,6 +2143,21 @@ export type Database = {
           staleness_threshold_days: number
           title: string
           total_modules: number
+        }[]
+      }
+      get_user_management_data: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          is_platform_admin: boolean
+          is_tenant_admin: boolean
+          tenant_id: string
+          tenant_name: string
+          updated_at: string
+          user_id: string
         }[]
       }
       get_user_xp_breakdown: {

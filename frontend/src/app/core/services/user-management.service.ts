@@ -34,24 +34,31 @@ export class UserManagementService {
     this.#error.set('');
 
     try {
-      const { data, error } = await this.#supabase.client
-        .from('profiles')
-        .select('*, tenant:tenants(name)')
-        .order('created_at', { ascending: false });
-
+      // Single RPC replaces star-select with embed. Permission gating
+      // (PA all, TA own tenant) enforced server-side. See migration 00064.
+      const { data, error } = await this.#supabase.client.rpc('get_user_management_data');
       if (error) throw error;
 
-      const users: UserForBoard[] = (data ?? []).map((row: any) => ({
-        id: row.id,
-        email: row.email,
-        full_name: row.full_name,
-        avatar_url: row.avatar_url,
-        is_tenant_admin: row.is_tenant_admin,
-        is_platform_admin: row.is_platform_admin,
-        tenant_id: row.tenant_id,
-        tenant_name: row.tenant?.name ?? 'Unknown',
-        created_at: row.created_at,
-        updated_at: row.updated_at,
+      type RpcRow = {
+        user_id: string; email: string; full_name: string | null;
+        avatar_url: string | null;
+        is_tenant_admin: boolean; is_platform_admin: boolean;
+        tenant_id: string; tenant_name: string | null;
+        created_at: string; updated_at: string;
+      };
+      const rows = (data ?? []) as RpcRow[];
+
+      const users: UserForBoard[] = rows.map(r => ({
+        id: r.user_id,
+        email: r.email,
+        full_name: r.full_name,
+        avatar_url: r.avatar_url,
+        is_tenant_admin: r.is_tenant_admin,
+        is_platform_admin: r.is_platform_admin,
+        tenant_id: r.tenant_id,
+        tenant_name: r.tenant_name ?? 'Unknown',
+        created_at: r.created_at,
+        updated_at: r.updated_at,
       }));
 
       await resolveAvatarUrls(this.#supabase.client, users);

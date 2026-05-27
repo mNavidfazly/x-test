@@ -95,25 +95,43 @@ export class ExpertQuestionService {
       const user = this.#auth.currentUser();
       if (!user) throw new Error('Not authenticated');
 
-      // RLS auto-scopes: lecturer sees assigned courses cross-tenant, PA sees all
-      const { data, error } = await client
-        .from('expert_questions')
-        .select(`
-          *,
-          course:courses!course_id(title),
-          module:modules!module_id(title),
-          asker:profiles!user_id(full_name, email, avatar_url)
-        `)
-        .order('created_at', { ascending: false });
-
+      // Single RPC replaces unbounded SELECT with 3-table embed.
+      // Permission gating (PA/TA/CSM/Lecturer) enforced server-side.
+      // See migration 00062.
+      const { data, error } = await client.rpc('get_questions_board_data');
       if (error) throw error;
 
-      const questions = (data ?? []).map((q: any) => ({
-        ...q,
-        course: q.course ?? null,
-        module: q.module ?? null,
-        asker: q.asker ?? null,
-      })) as ExpertQuestionForBoard[];
+      type RpcRow = {
+        question_id: string; user_id: string; tenant_id: string;
+        course_id: string; module_id: string | null;
+        question_text: string; status: string;
+        response_text: string | null; responded_by: string | null; responded_at: string | null;
+        created_at: string;
+        course_title: string | null; module_title: string | null;
+        asker_full_name: string | null; asker_email: string | null; asker_avatar_url: string | null;
+      };
+      const rows = (data ?? []) as RpcRow[];
+
+      const questions = rows.map(r => ({
+        id: r.question_id,
+        user_id: r.user_id,
+        tenant_id: r.tenant_id,
+        course_id: r.course_id,
+        module_id: r.module_id,
+        question_text: r.question_text,
+        status: r.status,
+        response_text: r.response_text,
+        responded_by: r.responded_by,
+        responded_at: r.responded_at,
+        created_at: r.created_at,
+        course: r.course_title ? { title: r.course_title } : null,
+        module: r.module_title ? { title: r.module_title } : null,
+        asker: r.asker_email ? {
+          full_name: r.asker_full_name,
+          email: r.asker_email,
+          avatar_url: r.asker_avatar_url,
+        } : null,
+      })) as unknown as ExpertQuestionForBoard[];
 
       // Derive course list from question data (Map dedup + sort)
       const courseMap = new Map<string, string>();

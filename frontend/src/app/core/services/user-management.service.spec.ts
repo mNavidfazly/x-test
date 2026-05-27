@@ -44,47 +44,40 @@ describe('UserManagementService', () => {
   });
 
   describe('loadUsers', () => {
-    it('should load users with tenant_name from FK join', async () => {
-      const mockUsers = [
-        {
-          id: 'u1', email: 'alice@test.com', full_name: 'Alice',
-          avatar_url: null, is_tenant_admin: false, is_platform_admin: false,
-          tenant_id: 't1', tenant: { name: 'Calypso' },
-          created_at: '2026-01-01T00:00:00Z', updated_at: '2026-02-01T00:00:00Z',
-        },
-        {
-          id: 'u2', email: 'bob@test.com', full_name: 'Bob',
-          avatar_url: null, is_tenant_admin: true, is_platform_admin: false,
-          tenant_id: 't1', tenant: { name: 'Calypso' },
-          created_at: '2026-01-15T00:00:00Z', updated_at: '2026-02-10T00:00:00Z',
-        },
-      ];
-      supabase._mockQueryResponse(mockUsers);
+    function mockRpc(rows: unknown[], error: unknown = null) {
+      supabase.client.rpc = vi.fn().mockResolvedValue({ data: rows, error });
+    }
+
+    it('should call get_user_management_data RPC and map rows', async () => {
+      mockRpc([
+        { user_id: 'u1', email: 'alice@test.com', full_name: 'Alice', avatar_url: null,
+          is_tenant_admin: false, is_platform_admin: false, tenant_id: 't1', tenant_name: 'Calypso',
+          created_at: '2026-01-01T00:00:00Z', updated_at: '2026-02-01T00:00:00Z' },
+        { user_id: 'u2', email: 'bob@test.com', full_name: 'Bob', avatar_url: null,
+          is_tenant_admin: true, is_platform_admin: false, tenant_id: 't1', tenant_name: 'Calypso',
+          created_at: '2026-01-15T00:00:00Z', updated_at: '2026-02-10T00:00:00Z' },
+      ]);
 
       await service.loadUsers();
 
+      expect(supabase.client.rpc).toHaveBeenCalledWith('get_user_management_data');
       expect(service.users().length).toBe(2);
       expect(service.users()[0].email).toBe('alice@test.com');
       expect(service.users()[0].tenant_name).toBe('Calypso');
       expect(service.users()[1].is_tenant_admin).toBe(true);
-      expect(service.loading()).toBe(false);
       expect(service.error()).toBe('');
     });
 
-    it('should set error on failure', async () => {
-      supabase._mockQueryResponse(null, { message: 'DB error' });
-
+    it('should set error on RPC failure', async () => {
+      mockRpc(null, { message: 'DB error' });
       await service.loadUsers();
-
       expect(service.error()).toBe('DB error');
       expect(service.loading()).toBe(false);
     });
 
     it('should set loading to false after completion', async () => {
-      supabase._mockQueryResponse([]);
-
+      mockRpc([]);
       await service.loadUsers();
-
       expect(service.loading()).toBe(false);
     });
 
@@ -107,15 +100,12 @@ describe('UserManagementService', () => {
       expect(service.loading()).toBe(false);
     });
 
-    it('should map null tenant join to Unknown', async () => {
-      supabase._mockQueryResponse([
-        {
-          id: 'u1', email: 'orphan@test.com', full_name: null,
-          avatar_url: null, is_tenant_admin: false, is_platform_admin: false,
-          tenant_id: 't1', tenant: null,
-          created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
-        },
-      ]);
+    it('should map null tenant_name to Unknown', async () => {
+      mockRpc([{
+        user_id: 'u1', email: 'orphan@test.com', full_name: null, avatar_url: null,
+        is_tenant_admin: false, is_platform_admin: false, tenant_id: 't1', tenant_name: null,
+        created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z',
+      }]);
 
       await service.loadUsers();
 

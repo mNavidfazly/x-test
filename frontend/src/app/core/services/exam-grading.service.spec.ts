@@ -23,6 +23,10 @@ describe('ExamGradingService', () => {
     service = TestBed.inject(ExamGradingService);
   });
 
+  function mockRpc(rows: unknown[], error: unknown = null) {
+    supabase.client.rpc = vi.fn().mockResolvedValue({ data: rows, error });
+  }
+
   it('should have empty initial state', () => {
     expect(service.submissions()).toEqual([]);
     expect(service.courses()).toEqual([]);
@@ -31,32 +35,21 @@ describe('ExamGradingService', () => {
   });
 
   describe('loadGradingData', () => {
-    function mockSubmissionsQuery(submissions: unknown[], error: unknown = null) {
-      supabase._mockQueryBuilder.then.mockImplementation(
-        (resolve: (value: { data: unknown; error: unknown }) => void) =>
-          resolve({ data: submissions, error }),
-      );
-    }
-
-    it('should load submissions and derive courses', async () => {
-      mockSubmissionsQuery([
-        {
-          id: 'sub-1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c1',
-          file_url: 'c1/u1/file.pdf', submitted_at: '2026-02-13T10:00:00Z', deadline: '2026-02-13T11:00:00Z',
-          score: null, feedback: null, graded_by: null, graded_at: null,
-          profiles: { email: 'learner@test.com', full_name: 'Test Learner' },
-          exams: { title: 'Final Exam', passing_score: 70 },
-          courses: { title: 'Test Course' },
-        },
-      ]);
+    it('should call get_exam_grading_data RPC and map rows', async () => {
+      mockRpc([{
+        submission_id: 'sub-1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c1',
+        file_url: 'c1/u1/file.pdf', submitted_at: '2026-02-13T10:00:00Z', deadline: '2026-02-13T11:00:00Z',
+        score: null, feedback: null, graded_by: null, graded_at: null,
+        learner_email: 'learner@test.com', learner_full_name: 'Test Learner', learner_avatar_url: null,
+        exam_title: 'Final Exam', passing_score: 70, course_title: 'Test Course',
+      }]);
 
       await service.loadGradingData();
 
-      expect(service.error()).toBe('');
-      expect(service.loading()).toBe(false);
-
+      expect(supabase.client.rpc).toHaveBeenCalledWith('get_exam_grading_data');
       const subs = service.submissions();
       expect(subs).toHaveLength(1);
+      expect(subs[0].id).toBe('sub-1');
       expect(subs[0].learner_email).toBe('learner@test.com');
       expect(subs[0].learner_name).toBe('Test Learner');
       expect(subs[0].course_title).toBe('Test Course');
@@ -64,55 +57,40 @@ describe('ExamGradingService', () => {
       expect(subs[0].passing_score).toBe(70);
       expect(subs[0].file_storage_path).toBe('c1/u1/file.pdf');
 
-      const courses = service.courses();
-      expect(courses).toHaveLength(1);
-      expect(courses[0]).toEqual({ id: 'c1', title: 'Test Course' });
+      expect(service.courses()).toEqual([{ id: 'c1', title: 'Test Course' }]);
     });
 
     it('should resolve signed URLs for file_url', async () => {
-      mockSubmissionsQuery([
-        {
-          id: 'sub-1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c1',
-          file_url: 'c1/u1/file.pdf', submitted_at: '2026-02-13T10:00:00Z', deadline: '2026-02-13T11:00:00Z',
-          score: null, feedback: null, graded_by: null, graded_at: null,
-          profiles: { email: 'a@t.com', full_name: null },
-          exams: { title: 'Exam', passing_score: 70 },
-          courses: { title: 'Course' },
-        },
-      ]);
+      mockRpc([{
+        submission_id: 'sub-1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c1',
+        file_url: 'c1/u1/file.pdf', submitted_at: '2026-02-13T10:00:00Z', deadline: '2026-02-13T11:00:00Z',
+        score: null, feedback: null, graded_by: null, graded_at: null,
+        learner_email: 'a@t.com', learner_full_name: null, learner_avatar_url: null,
+        exam_title: 'Exam', passing_score: 70, course_title: 'Course',
+      }]);
 
       await service.loadGradingData();
 
-      const subs = service.submissions();
-      expect(subs[0].file_url).toContain('sign');
-      expect(subs[0].file_storage_path).toBe('c1/u1/file.pdf');
+      expect(service.submissions()[0].file_url).toContain('sign');
       expect(supabase.client.storage.from).toHaveBeenCalledWith('exam-submissions');
     });
 
-    it('should handle query error', async () => {
-      mockSubmissionsQuery(null, { message: 'Permission denied' });
-
+    it('should set error on RPC failure', async () => {
+      mockRpc(null, { message: 'Permission denied' });
       await service.loadGradingData();
-
       expect(service.error()).toBe('Permission denied');
       expect(service.submissions()).toEqual([]);
-      expect(service.loading()).toBe(false);
     });
 
     it('should handle empty data', async () => {
-      mockSubmissionsQuery([]);
-
+      mockRpc([]);
       await service.loadGradingData();
-
       expect(service.submissions()).toEqual([]);
       expect(service.courses()).toEqual([]);
-      expect(service.error()).toBe('');
     });
 
     it('should set loading signal during load', async () => {
-      mockSubmissionsQuery([]);
-
-      expect(service.loading()).toBe(false);
+      mockRpc([]);
       const promise = service.loadGradingData();
       expect(service.loading()).toBe(true);
       await promise;
@@ -120,58 +98,37 @@ describe('ExamGradingService', () => {
     });
 
     it('should sort courses alphabetically', async () => {
-      mockSubmissionsQuery([
-        {
-          id: 'sub-1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c2',
+      mockRpc([
+        { submission_id: 's1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c2',
           file_url: 'c2/u1/f.pdf', submitted_at: '2026-02-13T10:00:00Z', deadline: '2026-02-13T11:00:00Z',
           score: null, feedback: null, graded_by: null, graded_at: null,
-          profiles: { email: 'a@t.com', full_name: null },
-          exams: { title: 'Exam', passing_score: 70 },
-          courses: { title: 'Zulu Course' },
-        },
-        {
-          id: 'sub-2', user_id: 'u2', tenant_id: 't1', exam_id: 'e2', course_id: 'c1',
+          learner_email: 'a@t.com', learner_full_name: null, learner_avatar_url: null,
+          exam_title: 'E', passing_score: 70, course_title: 'Zulu Course' },
+        { submission_id: 's2', user_id: 'u2', tenant_id: 't1', exam_id: 'e2', course_id: 'c1',
           file_url: 'c1/u2/f.pdf', submitted_at: '2026-02-13T09:00:00Z', deadline: '2026-02-13T10:00:00Z',
           score: 85, feedback: 'Good', graded_by: 'g1', graded_at: '2026-02-13T12:00:00Z',
-          profiles: { email: 'b@t.com', full_name: null },
-          exams: { title: 'Exam 2', passing_score: 60 },
-          courses: { title: 'Alpha Course' },
-        },
+          learner_email: 'b@t.com', learner_full_name: null, learner_avatar_url: null,
+          exam_title: 'E2', passing_score: 60, course_title: 'Alpha Course' },
       ]);
 
       await service.loadGradingData();
-
-      expect(service.courses()[0].title).toBe('Alpha Course');
-      expect(service.courses()[1].title).toBe('Zulu Course');
+      expect(service.courses().map(c => c.title)).toEqual(['Alpha Course', 'Zulu Course']);
     });
   });
 
   describe('gradeSubmission', () => {
     it('should call update with correct payload', async () => {
-      supabase._mockQueryBuilder.then.mockImplementation(
-        (resolve: (value: { data: unknown; error: null }) => void) =>
-          resolve({ data: null, error: null }),
-      );
-
+      supabase._mockQueryResponse(null);
       await service.gradeSubmission('sub-1', { score: 85, feedback: 'Well done' });
-
       expect(supabase.client.from).toHaveBeenCalledWith('exam_submissions');
       expect(supabase._mockQueryBuilder.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          score: 85,
-          feedback: 'Well done',
-          graded_by: 'test-user-id',
-        }),
+        expect.objectContaining({ score: 85, feedback: 'Well done', graded_by: 'test-user-id' }),
       );
       expect(supabase._mockQueryBuilder.eq).toHaveBeenCalledWith('id', 'sub-1');
     });
 
     it('should throw on error', async () => {
-      supabase._mockQueryBuilder.then.mockImplementation(
-        (resolve: (value: { data: unknown; error: unknown }) => void) =>
-          resolve({ data: null, error: { message: 'Update failed' } }),
-      );
-
+      supabase._mockQueryResponse(null, { message: 'Update failed' });
       await expect(service.gradeSubmission('sub-1', { score: 85, feedback: '' }))
         .rejects.toThrow('Update failed');
     });
@@ -179,30 +136,17 @@ describe('ExamGradingService', () => {
 
   describe('resetSubmission', () => {
     it('should delete submission and clean up storage', async () => {
-      // Seed submissions signal with a submission that has file_storage_path
-      (service as any)['#submissions'] = undefined; // can't access private
-      // Instead, load data first to populate submissions
-      supabase._mockQueryBuilder.then.mockImplementation(
-        (resolve: (value: { data: unknown; error: null }) => void) =>
-          resolve({ data: [
-            {
-              id: 'sub-1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c1',
-              file_url: 'c1/u1/file.pdf', submitted_at: '2026-02-13T10:00:00Z', deadline: '2026-02-13T11:00:00Z',
-              score: null, feedback: null, graded_by: null, graded_at: null,
-              profiles: { email: 'a@t.com', full_name: null },
-              exams: { title: 'Exam', passing_score: 70 },
-              courses: { title: 'Course' },
-            },
-          ], error: null }),
-      );
+      // Seed via RPC load first
+      mockRpc([{
+        submission_id: 'sub-1', user_id: 'u1', tenant_id: 't1', exam_id: 'e1', course_id: 'c1',
+        file_url: 'c1/u1/file.pdf', submitted_at: '2026-02-13T10:00:00Z', deadline: '2026-02-13T11:00:00Z',
+        score: null, feedback: null, graded_by: null, graded_at: null,
+        learner_email: 'a@t.com', learner_full_name: null, learner_avatar_url: null,
+        exam_title: 'Exam', passing_score: 70, course_title: 'Course',
+      }]);
       await service.loadGradingData();
 
-      // Mock delete response
-      supabase._mockQueryBuilder.then.mockImplementation(
-        (resolve: (value: { data: unknown; error: null }) => void) =>
-          resolve({ data: null, error: null }),
-      );
-
+      supabase._mockQueryResponse(null);
       await service.resetSubmission('sub-1');
 
       expect(supabase.client.from).toHaveBeenCalledWith('exam_submissions');
@@ -212,11 +156,7 @@ describe('ExamGradingService', () => {
     });
 
     it('should throw on delete error', async () => {
-      supabase._mockQueryBuilder.then.mockImplementation(
-        (resolve: (value: { data: unknown; error: unknown }) => void) =>
-          resolve({ data: null, error: { message: 'Delete failed' } }),
-      );
-
+      supabase._mockQueryResponse(null, { message: 'Delete failed' });
       await expect(service.resetSubmission('sub-1')).rejects.toThrow('Delete failed');
     });
   });
