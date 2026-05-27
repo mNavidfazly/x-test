@@ -1,7 +1,18 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { AuthService } from './auth.service';
 import { extractErrorMessage } from '../utils/error.utils';
+
+interface RpcModule {
+  id: string;
+  title: string;
+  module_type: string;
+  updated_at: string;
+  days_since_update: number;
+  is_stale: boolean;
+  days_overdue: number | null;
+  postponed_until: string | null;
+  is_postponed: boolean;
+}
 
 export interface StaleModule {
   id: string;
@@ -30,7 +41,6 @@ export interface StaleCourse {
 @Injectable({ providedIn: 'root' })
 export class StalenessService {
   #supabase = inject(SupabaseService);
-  #auth = inject(AuthService);
 
   #courses = signal<StaleCourse[]>([]);
   #loading = signal(false);
@@ -45,58 +55,28 @@ export class StalenessService {
     this.#error.set('');
 
     try {
-      const client = this.#supabase.client;
+      // Single RPC replaces 2 queries + client-side filter/group/staleness math.
+      // Permission gating and per-module staleness flags computed server-side.
+      // See migration 00057.
+      const { data, error } = await this.#supabase.client.rpc('get_staleness_data');
+      if (error) throw error;
 
-      const [coursesRes, modulesRes] = await Promise.all([
-        client.from('courses').select('id, title, staleness_threshold_days'),
-        client.from('modules').select('id, title, module_type, course_id, updated_at, staleness_postponed_until'),
-      ]);
+      type RpcRow = { course_id: string; title: string; threshold_days: number; modules: unknown };
+      const rows = (data ?? []) as RpcRow[];
+      const courses: StaleCourse[] = rows.map((row: RpcRow) => {
+        const rpcModules = (row.modules as unknown as RpcModule[]) ?? [];
 
-      if (coursesRes.error) throw coursesRes.error;
-      if (modulesRes.error) throw modulesRes.error;
-
-      // Filter to only assigned courses (PA sees all)
-      const claims = this.#auth.currentUser()?.claims;
-      const isPlatformAdmin = claims?.is_platform_admin === true;
-      const lecturerIds = new Set(claims?.lecturer_course_ids ?? []);
-      const visibleCourses = (coursesRes.data ?? []).filter(
-        (course: any) => isPlatformAdmin || lecturerIds.has(course.id),
-      );
-
-      // Group modules by course_id into arrays
-      const moduleMap = new Map<string, Array<{ id: string; title: string; module_type: string; updated_at: string; staleness_postponed_until: string | null }>>();
-      for (const mod of modulesRes.data ?? []) {
-        const arr = moduleMap.get(mod.course_id) ?? [];
-        arr.push(mod);
-        moduleMap.set(mod.course_id, arr);
-      }
-
-      const now = Date.now();
-      const MS_PER_DAY = 86_400_000;
-
-      const courses: StaleCourse[] = visibleCourses.map((course: any) => {
-        const threshold = course.staleness_threshold_days ?? 180;
-        const courseModules = moduleMap.get(course.id) ?? [];
-
-        const modules: StaleModule[] = courseModules.map(mod => {
-          const daysSinceUpdate = Math.floor((now - new Date(mod.updated_at).getTime()) / MS_PER_DAY);
-          const isPastThreshold = daysSinceUpdate > threshold;
-          const isPostponed = mod.staleness_postponed_until
-            ? new Date(mod.staleness_postponed_until).getTime() > now
-            : false;
-          const isStale = isPastThreshold && !isPostponed;
-          return {
-            id: mod.id,
-            title: mod.title,
-            moduleType: mod.module_type,
-            updatedAt: mod.updated_at,
-            daysSinceUpdate,
-            isStale,
-            daysOverdue: isPastThreshold ? daysSinceUpdate - threshold : null,
-            postponedUntil: mod.staleness_postponed_until,
-            isPostponed,
-          };
-        });
+        const modules: StaleModule[] = rpcModules.map(m => ({
+          id: m.id,
+          title: m.title,
+          moduleType: m.module_type,
+          updatedAt: m.updated_at,
+          daysSinceUpdate: m.days_since_update,
+          isStale: m.is_stale,
+          daysOverdue: m.days_overdue,
+          postponedUntil: m.postponed_until,
+          isPostponed: m.is_postponed,
+        }));
 
         // Sort modules: stale first (by daysOverdue desc), then postponed, then fresh (by daysSinceUpdate desc)
         modules.sort((a, b) => {
@@ -112,9 +92,9 @@ export class StalenessService {
         const postponedModuleCount = modules.filter(m => m.isPostponed).length;
 
         return {
-          id: course.id,
-          title: course.title,
-          thresholdDays: threshold,
+          id: row.course_id,
+          title: row.title,
+          thresholdDays: row.threshold_days,
           modules,
           staleModuleCount,
           freshModuleCount: modules.length - staleModuleCount - postponedModuleCount,

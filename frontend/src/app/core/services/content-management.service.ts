@@ -4,36 +4,25 @@ import { extractErrorMessage } from '../utils/error.utils';
 import { ContentCourse, ContentLecture, ContentModule } from '../models/content-management.model';
 import { ModuleType } from '../models/course.model';
 
-interface RawModule {
+interface RpcModule {
   id: string;
   title: string;
   module_type: string;
   sort_order: number;
   estimated_duration_minutes: number;
   updated_at: string;
-  staleness_postponed_until: string | null;
+  days_since_update: number;
+  is_stale: boolean;
+  is_postponed: boolean;
+  postponed_until: string | null;
 }
 
-interface RawLecture {
+interface RpcLecture {
   id: string;
   title: string;
   sort_order: number;
-  modules: RawModule[];
+  modules: RpcModule[];
 }
-
-interface RawCourse {
-  id: string;
-  title: string;
-  description: string | null;
-  thumbnail_url: string | null;
-  enrollment_type: string;
-  staleness_threshold_days: number | null;
-  updated_at: string;
-  lectures: RawLecture[];
-  tenant_courses: { count: number }[];
-}
-
-const MS_PER_DAY = 86_400_000;
 
 @Injectable({ providedIn: 'root' })
 export class ContentManagementService {
@@ -52,88 +41,74 @@ export class ContentManagementService {
     this.#error.set('');
 
     try {
-      const { data, error } = await this.#supabase.client
-        .from('courses')
-        .select(`
-          id, title, description, thumbnail_url, enrollment_type,
-          staleness_threshold_days, updated_at,
-          lectures(id, title, sort_order,
-            modules(id, title, module_type, sort_order, estimated_duration_minutes, updated_at, staleness_postponed_until)),
-          tenant_courses(count)
-        `)
-        .order('title')
-        .order('sort_order', { referencedTable: 'lectures' })
-        .order('sort_order', { referencedTable: 'lectures.modules' });
-
+      // Single RPC replaces deeply-nested embed (courses → lectures → modules
+      // + tenant_courses(count)). Embedded children counted against PostgREST
+      // 1000-row cap per parent — risky as content grows. Staleness math now
+      // server-side. See migration 00058.
+      const { data, error } = await this.#supabase.client.rpc('get_content_overview');
       if (error) throw error;
 
-      const now = Date.now();
-
-      const courses: ContentCourse[] = ((data ?? []) as unknown as RawCourse[]).map(row => {
-        const threshold = row.staleness_threshold_days ?? 180;
-
-        const lectures: ContentLecture[] = (row.lectures ?? []).map(l => ({
+      type RpcRow = {
+        course_id: string;
+        title: string;
+        description: string | null;
+        thumbnail_url: string | null;
+        enrollment_type: string;
+        staleness_threshold_days: number;
+        updated_at: string;
+        tenant_count: number;
+        lecture_count: number;
+        total_modules: number;
+        modules_by_type: unknown;
+        stale_module_count: number;
+        postponed_module_count: number;
+        last_module_update: string | null;
+        total_duration_minutes: number;
+        lectures: unknown;
+      };
+      const rows = (data ?? []) as RpcRow[];
+      const courses: ContentCourse[] = rows.map((row: RpcRow) => {
+        const lectures: ContentLecture[] = ((row.lectures as unknown as RpcLecture[]) ?? []).map(l => ({
           id: l.id,
           title: l.title,
           sort_order: l.sort_order,
-          modules: (l.modules ?? []).map(m => {
-            const daysSinceUpdate = Math.floor(
-              (now - new Date(m.updated_at).getTime()) / MS_PER_DAY,
-            );
-            const isPastThreshold = daysSinceUpdate > threshold;
-            const isPostponed = m.staleness_postponed_until
-              ? new Date(m.staleness_postponed_until).getTime() > now
-              : false;
-            return {
-              id: m.id,
-              title: m.title,
-              module_type: m.module_type as ModuleType,
-              sort_order: m.sort_order,
-              estimated_duration_minutes: m.estimated_duration_minutes,
-              updated_at: m.updated_at,
-              daysSinceUpdate,
-              isStale: isPastThreshold && !isPostponed,
-              isPostponed,
-              postponedUntil: m.staleness_postponed_until,
-            } satisfies ContentModule;
-          }),
+          modules: (l.modules ?? []).map(m => ({
+            id: m.id,
+            title: m.title,
+            module_type: m.module_type as ModuleType,
+            sort_order: m.sort_order,
+            estimated_duration_minutes: m.estimated_duration_minutes,
+            updated_at: m.updated_at,
+            daysSinceUpdate: m.days_since_update,
+            isStale: m.is_stale,
+            isPostponed: m.is_postponed,
+            postponedUntil: m.postponed_until,
+          } satisfies ContentModule)),
         }));
 
-        const allModules = lectures.flatMap(l => l.modules);
-        const modulesByType: Partial<Record<ModuleType, number>> = {};
-        for (const m of allModules) {
-          modulesByType[m.module_type] = (modulesByType[m.module_type] ?? 0) + 1;
-        }
-
-        const staleModuleCount = allModules.filter(m => m.isStale).length;
-        const postponedModuleCount = allModules.filter(m => m.isPostponed).length;
-
-        let lastModuleUpdate: string | null = null;
-        for (const m of allModules) {
-          if (!lastModuleUpdate || m.updated_at > lastModuleUpdate) {
-            lastModuleUpdate = m.updated_at;
-          }
-        }
+        const modulesByType = (row.modules_by_type ?? {}) as Partial<Record<ModuleType, number>>;
+        const staleModuleCount = row.stale_module_count;
+        const postponedModuleCount = row.postponed_module_count;
 
         return {
-          id: row.id,
+          id: row.course_id,
           title: row.title,
           description: row.description,
           thumbnail_url: row.thumbnail_url,
           enrollment_type: row.enrollment_type,
-          staleness_threshold_days: threshold,
+          staleness_threshold_days: row.staleness_threshold_days,
           updated_at: row.updated_at,
           lectures,
-          tenantCount: row.tenant_courses?.[0]?.count ?? 0,
-          lectureCount: lectures.length,
-          totalModules: allModules.length,
+          tenantCount: row.tenant_count,
+          lectureCount: row.lecture_count,
+          totalModules: row.total_modules,
           modulesByType,
           staleModuleCount,
-          freshModuleCount: allModules.length - staleModuleCount - postponedModuleCount,
+          freshModuleCount: row.total_modules - staleModuleCount - postponedModuleCount,
           postponedModuleCount,
           hasStaleModules: staleModuleCount > 0,
-          lastModuleUpdate,
-          totalDurationMinutes: allModules.reduce((sum, m) => sum + m.estimated_duration_minutes, 0),
+          lastModuleUpdate: row.last_module_update,
+          totalDurationMinutes: row.total_duration_minutes,
         } as ContentCourse;
       });
 

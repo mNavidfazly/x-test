@@ -1999,6 +1999,27 @@ export type Database = {
         Args: { p_course_id: string; p_password: string }
         Returns: string
       }
+      get_content_overview: {
+        Args: never
+        Returns: {
+          course_id: string
+          description: string
+          enrollment_type: Database["public"]["Enums"]["enrollment_type"]
+          last_module_update: string
+          lecture_count: number
+          lectures: Json
+          modules_by_type: Json
+          postponed_module_count: number
+          stale_module_count: number
+          staleness_threshold_days: number
+          tenant_count: number
+          thumbnail_url: string
+          title: string
+          total_duration_minutes: number
+          total_modules: number
+          updated_at: string
+        }[]
+      }
       get_matching_question_terms: {
         Args: { p_question_ids: string[] }
         Returns: Json
@@ -2015,6 +2036,41 @@ export type Database = {
           question_text: string
           question_type: Database["public"]["Enums"]["quiz_question_type"]
           user_answer: string
+        }[]
+      }
+      get_staleness_data: {
+        Args: never
+        Returns: {
+          course_id: string
+          modules: Json
+          threshold_days: number
+          title: string
+        }[]
+      }
+      get_teaching_overview: {
+        Args: never
+        Returns: {
+          can_edit: boolean
+          can_grade: boolean
+          course_id: string
+          enrolled_count: number
+          open_issues: number
+          pending_exams: number
+          pending_questions: number
+          stale_modules: number
+          staleness_threshold_days: number
+          title: string
+          total_modules: number
+        }[]
+      }
+      get_user_xp_breakdown: {
+        Args: { p_user_id?: string }
+        Returns: {
+          engagement_xp: number
+          exams_xp: number
+          knowledge_checks_xp: number
+          modules_xp: number
+          quizzes_xp: number
         }[]
       }
       grade_quiz_attempt: { Args: { p_attempt_id: string }; Returns: Json }

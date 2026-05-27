@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { ContentManagementService } from './content-management.service';
 import { SupabaseService } from './supabase.service';
@@ -20,47 +20,30 @@ describe('ContentManagementService', () => {
     service = TestBed.inject(ContentManagementService);
   });
 
-  const now = Date.now();
-  const daysAgo = (n: number) => new Date(now - n * 86_400_000).toISOString();
-  const daysFromNow = (n: number) => new Date(now + n * 86_400_000).toISOString();
+  const now = new Date().toISOString();
 
-  function mockCourses(courses: unknown[], error?: unknown) {
-    supabase._mockQueryResponse(courses, error ?? null);
+  function mockRpc(rows: unknown[], error: unknown = null) {
+    supabase.client.rpc = vi.fn().mockResolvedValue({ data: rows, error });
   }
 
-  function makeCourse(overrides: Record<string, unknown> = {}) {
+  function makeRpcRow(overrides: Record<string, unknown> = {}) {
     return {
-      id: 'c1',
+      course_id: 'c1',
       title: 'Test Course',
       description: null,
       thumbnail_url: null,
       enrollment_type: 'open',
       staleness_threshold_days: 180,
-      updated_at: daysAgo(10),
+      updated_at: now,
+      tenant_count: 0,
+      lecture_count: 0,
+      total_modules: 0,
+      modules_by_type: {},
+      stale_module_count: 0,
+      postponed_module_count: 0,
+      last_module_update: null,
+      total_duration_minutes: 0,
       lectures: [],
-      tenant_courses: [{ count: 0 }],
-      ...overrides,
-    };
-  }
-
-  function makeModule(overrides: Record<string, unknown> = {}) {
-    return {
-      id: 'm1',
-      title: 'Module A',
-      module_type: 'video',
-      sort_order: 0,
-      updated_at: daysAgo(10),
-      staleness_postponed_until: null,
-      ...overrides,
-    };
-  }
-
-  function makeLecture(overrides: Record<string, unknown> = {}) {
-    return {
-      id: 'l1',
-      title: 'Lecture 1',
-      sort_order: 0,
-      modules: [],
       ...overrides,
     };
   }
@@ -71,278 +54,111 @@ describe('ContentManagementService', () => {
     expect(service.error()).toBe('');
   });
 
-  it('should load courses with nested lectures and modules', async () => {
-    mockCourses([
-      makeCourse({
-        lectures: [
-          makeLecture({
-            modules: [makeModule()],
-          }),
-        ],
-        tenant_courses: [{ count: 2 }],
-      }),
-    ]);
-
+  it('should call get_content_overview RPC', async () => {
+    mockRpc([]);
     await service.loadContentOverview();
-
-    expect(service.courses().length).toBe(1);
-    const course = service.courses()[0];
-    expect(course.id).toBe('c1');
-    expect(course.title).toBe('Test Course');
-    expect(course.lectureCount).toBe(1);
-    expect(course.totalModules).toBe(1);
-    expect(course.tenantCount).toBe(2);
-  });
-
-  it('should compute per-module staleness correctly', async () => {
-    mockCourses([
-      makeCourse({
-        staleness_threshold_days: 90,
-        lectures: [
-          makeLecture({
-            modules: [
-              makeModule({ id: 'm1', updated_at: daysAgo(120) }),
-              makeModule({ id: 'm2', title: 'Fresh Mod', updated_at: daysAgo(50) }),
-            ],
-          }),
-        ],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    const course = service.courses()[0];
-    expect(course.staleModuleCount).toBe(1);
-    expect(course.hasStaleModules).toBe(true);
-
-    const stale = course.lectures[0].modules[0];
-    expect(stale.daysSinceUpdate).toBe(120);
-    expect(stale.isStale).toBe(true);
-    expect(stale.isPostponed).toBe(false);
-
-    const fresh = course.lectures[0].modules[1];
-    expect(fresh.daysSinceUpdate).toBe(50);
-    expect(fresh.isStale).toBe(false);
-  });
-
-  it('should mark module with future postponedUntil as postponed, not stale', async () => {
-    mockCourses([
-      makeCourse({
-        staleness_threshold_days: 90,
-        lectures: [
-          makeLecture({
-            modules: [
-              makeModule({
-                updated_at: daysAgo(120),
-                staleness_postponed_until: daysFromNow(15),
-              }),
-            ],
-          }),
-        ],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    const mod = service.courses()[0].lectures[0].modules[0];
-    expect(mod.isPostponed).toBe(true);
-    expect(mod.isStale).toBe(false);
-    expect(mod.postponedUntil).toBeTruthy();
-  });
-
-  it('should mark module with expired postponedUntil as stale', async () => {
-    mockCourses([
-      makeCourse({
-        staleness_threshold_days: 90,
-        lectures: [
-          makeLecture({
-            modules: [
-              makeModule({
-                updated_at: daysAgo(120),
-                staleness_postponed_until: daysAgo(5),
-              }),
-            ],
-          }),
-        ],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    const mod = service.courses()[0].lectures[0].modules[0];
-    expect(mod.isPostponed).toBe(false);
-    expect(mod.isStale).toBe(true);
-  });
-
-  it('should compute modulesByType breakdown', async () => {
-    mockCourses([
-      makeCourse({
-        lectures: [
-          makeLecture({
-            modules: [
-              makeModule({ id: 'm1', module_type: 'video' }),
-              makeModule({ id: 'm2', module_type: 'video' }),
-              makeModule({ id: 'm3', module_type: 'pdf' }),
-              makeModule({ id: 'm4', module_type: 'quiz' }),
-            ],
-          }),
-        ],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    const course = service.courses()[0];
-    expect(course.modulesByType).toEqual({ video: 2, pdf: 1, quiz: 1 });
-    expect(course.totalModules).toBe(4);
-  });
-
-  it('should compute tenantCount from nested count', async () => {
-    mockCourses([
-      makeCourse({ tenant_courses: [{ count: 5 }] }),
-    ]);
-
-    await service.loadContentOverview();
-
-    expect(service.courses()[0].tenantCount).toBe(5);
-  });
-
-  it('should default tenantCount to 0 when tenant_courses is empty', async () => {
-    mockCourses([
-      makeCourse({ tenant_courses: [] }),
-    ]);
-
-    await service.loadContentOverview();
-
-    expect(service.courses()[0].tenantCount).toBe(0);
-  });
-
-  it('should compute lastModuleUpdate as max updated_at', async () => {
-    const oldest = daysAgo(100);
-    const newest = daysAgo(5);
-    const middle = daysAgo(50);
-
-    mockCourses([
-      makeCourse({
-        lectures: [
-          makeLecture({
-            modules: [
-              makeModule({ id: 'm1', updated_at: oldest }),
-              makeModule({ id: 'm2', updated_at: newest }),
-              makeModule({ id: 'm3', updated_at: middle }),
-            ],
-          }),
-        ],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    expect(service.courses()[0].lastModuleUpdate).toBe(newest);
-  });
-
-  it('should handle courses with no lectures', async () => {
-    mockCourses([makeCourse({ lectures: [] })]);
-
-    await service.loadContentOverview();
-
-    const course = service.courses()[0];
-    expect(course.lectureCount).toBe(0);
-    expect(course.totalModules).toBe(0);
-    expect(course.hasStaleModules).toBe(false);
-    expect(course.lastModuleUpdate).toBeNull();
-  });
-
-  it('should handle courses with lectures but no modules', async () => {
-    mockCourses([
-      makeCourse({
-        lectures: [makeLecture({ modules: [] })],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    const course = service.courses()[0];
-    expect(course.lectureCount).toBe(1);
-    expect(course.totalModules).toBe(0);
-  });
-
-  it('should default threshold to 180 when staleness_threshold_days is null', async () => {
-    mockCourses([
-      makeCourse({
-        staleness_threshold_days: null,
-        lectures: [
-          makeLecture({
-            modules: [makeModule({ updated_at: daysAgo(200) })],
-          }),
-        ],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    const course = service.courses()[0];
-    expect(course.staleness_threshold_days).toBe(180);
-    expect(course.lectures[0].modules[0].isStale).toBe(true);
+    expect(supabase.client.rpc).toHaveBeenCalledWith('get_content_overview');
   });
 
   it('should set loading during fetch', async () => {
-    mockCourses([]);
+    mockRpc([]);
     const promise = service.loadContentOverview();
     expect(service.loading()).toBe(true);
     await promise;
     expect(service.loading()).toBe(false);
   });
 
-  it('should set error on query failure', async () => {
-    mockCourses(null, { message: 'Permission denied' });
+  it('should map flat RPC row to ContentCourse with nested lectures/modules', async () => {
+    mockRpc([makeRpcRow({
+      course_id: 'c1',
+      title: 'Intro',
+      description: 'Hello',
+      thumbnail_url: 'thumb.jpg',
+      enrollment_type: 'invite_only',
+      staleness_threshold_days: 90,
+      tenant_count: 3,
+      lecture_count: 2,
+      total_modules: 3,
+      modules_by_type: { video: 2, quiz: 1 },
+      stale_module_count: 1,
+      postponed_module_count: 1,
+      last_module_update: now,
+      total_duration_minutes: 90,
+      lectures: [
+        {
+          id: 'l1', title: 'Lec 1', sort_order: 0,
+          modules: [
+            { id: 'm1', title: 'V', module_type: 'video', sort_order: 0, estimated_duration_minutes: 30, updated_at: now, days_since_update: 200, is_stale: true, is_postponed: false, postponed_until: null },
+            { id: 'm2', title: 'Q', module_type: 'quiz', sort_order: 1, estimated_duration_minutes: 20, updated_at: now, days_since_update: 200, is_stale: false, is_postponed: true, postponed_until: now },
+          ],
+        },
+        {
+          id: 'l2', title: 'Lec 2', sort_order: 1,
+          modules: [
+            { id: 'm3', title: 'V2', module_type: 'video', sort_order: 0, estimated_duration_minutes: 40, updated_at: now, days_since_update: 10, is_stale: false, is_postponed: false, postponed_until: null },
+          ],
+        },
+      ],
+    })]);
 
     await service.loadContentOverview();
 
-    expect(service.error()).toBe('Permission denied');
+    const c = service.courses()[0];
+    expect(c.id).toBe('c1');
+    expect(c.title).toBe('Intro');
+    expect(c.tenantCount).toBe(3);
+    expect(c.lectureCount).toBe(2);
+    expect(c.totalModules).toBe(3);
+    expect(c.modulesByType).toEqual({ video: 2, quiz: 1 });
+    expect(c.staleModuleCount).toBe(1);
+    expect(c.postponedModuleCount).toBe(1);
+    expect(c.freshModuleCount).toBe(1);
+    expect(c.hasStaleModules).toBe(true);
+    expect(c.totalDurationMinutes).toBe(90);
+    expect(c.lectures.length).toBe(2);
+    expect(c.lectures[0].modules.length).toBe(2);
+    expect(c.lectures[0].modules[0].isStale).toBe(true);
+    expect(c.lectures[0].modules[1].isPostponed).toBe(true);
+    expect(c.lectures[1].modules[0].isStale).toBe(false);
+  });
+
+  it('should compute freshModuleCount correctly', async () => {
+    mockRpc([makeRpcRow({
+      total_modules: 10,
+      stale_module_count: 3,
+      postponed_module_count: 2,
+    })]);
+    await service.loadContentOverview();
+    expect(service.courses()[0].freshModuleCount).toBe(5);
+  });
+
+  it('should handle empty courses', async () => {
+    mockRpc([]);
+    await service.loadContentOverview();
     expect(service.courses()).toEqual([]);
-    expect(service.loading()).toBe(false);
-  });
-
-  it('should compute freshModuleCount excluding stale and postponed', async () => {
-    mockCourses([
-      makeCourse({
-        staleness_threshold_days: 90,
-        lectures: [
-          makeLecture({
-            modules: [
-              makeModule({ id: 'm1', updated_at: daysAgo(200) }),
-              makeModule({ id: 'm2', updated_at: daysAgo(150), staleness_postponed_until: daysFromNow(20) }),
-              makeModule({ id: 'm3', updated_at: daysAgo(10) }),
-            ],
-          }),
-        ],
-      }),
-    ]);
-
-    await service.loadContentOverview();
-
-    const course = service.courses()[0];
-    expect(course.staleModuleCount).toBe(1);
-    expect(course.postponedModuleCount).toBe(1);
-    expect(course.freshModuleCount).toBe(1);
-  });
-
-  it('should query courses table', async () => {
-    mockCourses([]);
-
-    await service.loadContentOverview();
-
-    expect(supabase.client.from).toHaveBeenCalledWith('courses');
-  });
-
-  it('should handle empty course list', async () => {
-    mockCourses([]);
-
-    await service.loadContentOverview();
-
-    expect(service.courses()).toEqual([]);
-    expect(service.loading()).toBe(false);
     expect(service.error()).toBe('');
+  });
+
+  it('should set error on RPC failure', async () => {
+    mockRpc(null, { message: 'forbidden' });
+    await service.loadContentOverview();
+    expect(service.error()).toBe('forbidden');
+    expect(service.courses()).toEqual([]);
+    expect(service.loading()).toBe(false);
+  });
+
+  it('should handle row with no lectures', async () => {
+    mockRpc([makeRpcRow({ lecture_count: 0, lectures: [] })]);
+    await service.loadContentOverview();
+    expect(service.courses()[0].lectures).toEqual([]);
+  });
+
+  it('should preserve order from RPC (server sorts by title)', async () => {
+    mockRpc([
+      makeRpcRow({ course_id: 'a', title: 'Alpha' }),
+      makeRpcRow({ course_id: 'b', title: 'Beta' }),
+    ]);
+    await service.loadContentOverview();
+    expect(service.courses().map(c => c.title)).toEqual(['Alpha', 'Beta']);
   });
 });

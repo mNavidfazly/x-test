@@ -1,7 +1,6 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
-import { paginateAll } from '../utils/paginate';
 
 // ── Level Definitions ──────────────────────────────────────────────
 
@@ -182,67 +181,28 @@ export class XpService {
     try {
       const client = this.#supabase.client;
 
-      const [
-        progressRes,
-        quizAttemptsRes,
-        quizQuestionRows,
-        examSubsRes,
-        extQuizRes,
-        knowledgeRes,
-        commentsRes,
-        repliesRes,
-        questionsRes,
-        enrollmentsRes,
-      ] = await Promise.all([
-        client.from('user_progress').select('id', { count: 'exact', head: true })
-          .eq('user_id', userId).eq('status', 'completed'),
-        client.from('quiz_attempts').select('quiz_id, score, passed, started_at')
-          .eq('user_id', userId).eq('passed', true),
-        // Paginated to bypass PostgREST 1000-row cap (3000+ quiz_questions in prod).
-        // See plan: docs/QUERY_PATTERNS.md and CLAUDE.md rule #7.
-        paginateAll<{ quiz_id: string }>((from, to) =>
-          client.from('quiz_questions').select('quiz_id').range(from, to),
-        ),
-        client.from('exam_submissions').select('score')
-          .eq('user_id', userId).not('score', 'is', null),
-        client.from('external_quiz_results').select('id', { count: 'exact', head: true })
-          .eq('user_id', userId).eq('passed', true),
-        client.from('knowledge_check_responses').select('id', { count: 'exact', head: true })
-          .eq('user_id', userId).eq('is_correct', true),
-        client.from('comments').select('id', { count: 'exact', head: true })
-          .eq('user_id', userId),
-        client.from('comment_replies').select('id', { count: 'exact', head: true })
-          .eq('user_id', userId),
-        client.from('expert_questions').select('id', { count: 'exact', head: true })
-          .eq('user_id', userId),
-        client.from('course_enrollments').select('id', { count: 'exact', head: true })
-          .eq('user_id', userId),
-      ]);
+      // Single RPC replaces 10 parallel queries + client-side first/retake detection.
+      // Server-side window function computes first-pass-vs-retake split per quiz_id,
+      // returning the 5 pre-computed XP category totals. See migration 00055.
+      const { data, error } = await client.rpc('get_user_xp_breakdown', { p_user_id: userId });
+      if (error) throw error;
 
-      // Build quiz_id → question count map
-      const quizQuestionCounts: Record<string, number> = {};
-      for (const row of quizQuestionRows) {
-        quizQuestionCounts[row.quiz_id] = (quizQuestionCounts[row.quiz_id] ?? 0) + 1;
-      }
-
-      const rawData: XpRawData = {
-        completedModules: progressRes.count ?? 0,
-        passedQuizAttempts: (quizAttemptsRes.data ?? []).map(a => ({
-          quiz_id: a.quiz_id as string,
-          score: (a.score as number) ?? 0,
-          created_at: a.started_at as string,
-        })),
-        quizQuestionCounts,
-        gradedExams: (examSubsRes.data ?? []).map(e => ({ score: (e.score as number) ?? 0 })),
-        externalQuizPasses: extQuizRes.count ?? 0,
-        correctKnowledgeChecks: knowledgeRes.count ?? 0,
-        comments: commentsRes.count ?? 0,
-        replies: repliesRes.count ?? 0,
-        expertQuestions: questionsRes.count ?? 0,
-        enrollments: enrollmentsRes.count ?? 0,
+      const row = data?.[0] ?? {
+        modules_xp: 0,
+        quizzes_xp: 0,
+        exams_xp: 0,
+        knowledge_checks_xp: 0,
+        engagement_xp: 0,
       };
 
-      const breakdown = computeXp(rawData);
+      const breakdown: XpBreakdown = {
+        total: row.modules_xp + row.quizzes_xp + row.exams_xp + row.knowledge_checks_xp + row.engagement_xp,
+        modules: row.modules_xp,
+        quizzes: row.quizzes_xp,
+        exams: row.exams_xp,
+        knowledgeChecks: row.knowledge_checks_xp,
+        engagement: row.engagement_xp,
+      };
       this.#breakdown.set(breakdown);
       this.#lastLoadedAt = Date.now();
 
