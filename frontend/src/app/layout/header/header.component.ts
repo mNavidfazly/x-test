@@ -58,7 +58,7 @@ const ROUTE_NAME_MAP: readonly [string, string][] = [
 
         @if (breadcrumbs().length) {
           <nav class="hidden lg:flex items-center gap-1.5 text-sm" aria-label="Breadcrumb">
-            <span class="font-semibold"><span class="italic text-teal-600">X</span><span class="text-slate-800">-Courses</span></span>
+            <span class="font-semibold"><span class="italic text-teal-600">X</span><span class="text-slate-800">-Test</span></span>
             @for (crumb of breadcrumbs(); track $index; let last = $last) {
               <span class="text-slate-300">/</span>
               @if (crumb.route && !last) {

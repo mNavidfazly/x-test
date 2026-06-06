@@ -1,4 +1,4 @@
-# X-Courses v2 — Project Instructions
+# X-Test — Project Instructions
 
 ## Project Owner
 
@@ -121,15 +121,18 @@ Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-l
 - **CSM = tenant-scoped, Lecturer = course-scoped** — CSM sees assigned tenants' data (group by tenant). Lecturer sees assigned courses' data across ALL tenants (group by course). Different access models, different UI groupings.
 - **JWT staleness (~1 hour)** — after role/assignment changes, claims update on next token refresh. Show "re-login" message or call `refreshSession()`.
 - **Profileless users exist** — authenticated ≠ has a profile. No profile = no JWT claims = zero RLS access. Auth flow must detect and redirect to access request page.
-- **Tenant-aware login** — email → resolve tenant (FastAPI) → show allowed auth methods. Not a simple login form. Password reset proxies through FastAPI. See `docs/AUTH_SYSTEM.md`.
+- **Keycloak SSO login** — single "Sign in with SSO" button, no tenant-aware email resolution needed.
 
 ## CLI Tools & Deployment
 
 - **Available CLIs:** `supabase` (DB migrations, type generation, branch management), `railway` (backend deployment/logs), `vercel` (frontend deployment/logs), Playwright MCP (E2E browser testing).
 - **Deployment is Git-push based** — push to `main` on GitHub auto-deploys: Vercel picks up `frontend/`, Railway picks up `backend/`. Supabase migrations are pushed manually via `supabase db push`. **Always commit and push to GitHub for deployment — never deploy directly from CLI.**
-- **Monorepo:** `TereschenkoAI/x-courses-v2` (private, SSH remote). Vercel root: `frontend/`. Railway root: `backend/`.
-- **Supabase Cloud:** project ref `ruhdnvtvoxxiodnyyqqf` (Frankfurt). Type generation: `supabase gen types typescript --linked > frontend/src/app/core/models/database.types.ts`.
+- **Monorepo:** `mNavidfazly/x-test` (GitHub). Vercel root: `frontend/`. Railway root: `backend/`.
+- **Supabase Cloud:** project ref `yecivnczykkdhjjhydam` (shared with X-Comparison). Type generation: `supabase gen types typescript --linked > frontend/src/app/core/models/database.types.ts`.
+- **Railway:** project `capable-fulfillment` in tereschenkoai workspace. Backend URL: `https://x-test-production.up.railway.app`
+- **Frontend hosted on:** `https://x-comparison.vercel.app`
 - **No CI/CD GitHub Actions** — deployment is purely git-based auto-deploy from hosting providers.
+- **No SMTP/email** — invite, reminder, and password reset endpoints have been removed.
 
 
 ## Schema Quick Reference
@@ -211,16 +214,14 @@ Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-l
 - **CSM** — via `csm_tenant_assignments` row. **Must be from master tenant.** Scoped to assigned tenants. Can view progress/comments/issues. **Cannot** grade or edit courses.
 - **Lecturer** — via `lecturer_course_assignments` row with `can_edit`/`can_grade` booleans. **Must be from master tenant.** Scoped to assigned courses, **cross-tenant** visibility.
 
-### Auth Flow Gotchas
+### Auth Flow (Keycloak SSO)
 
-- **Login is tenant-aware:** email → `POST /api/auth/resolve-tenant` (FastAPI) → resolve domain → show allowed auth methods. Not a simple login form.
-- **Password reset MUST proxy through FastAPI** (`POST /api/auth/reset-password`). Never call `resetPasswordForEmail()` directly — it sets passwords on SSO-only users without firing `handle_new_user()`.
-- **PKCE flow required:** `flowType: 'pkce'` in Supabase client init. Also `autoRefreshToken: true`, `persistSession: true`, `detectSessionInUrl: true`.
-- **`password_verification_hook()`** fires on every password sign-in. Blocks if tenant doesn't allow `email_password`.
-- **Supabase can't distinguish email+password from magic link** — both show `provider: 'email'`. Frontend must enforce which UI to show.
-- **Automatic Identity Linking:** same email via different providers merges into one `auth.users` row. No duplicate profiles.
-- **`handle_new_user()` tenant resolution:** (1) email domain → `tenants.domain`, (2) fallback to `raw_user_meta_data.tenant_id` (admin invitations). Both fail → no profile created.
-- **`tenants.domain` is UNIQUE** — one email domain = one tenant. One email cannot belong to two tenants.
+- **Keycloak SSO only** — no email/password, no magic link. Single "Sign in with SSO" button.
+- **Keycloak config:** `https://dev-auth.x-lng.com` / realm `customers` / client `x-origination-ui`
+- **Token exchange:** Keycloak token → Supabase token via edge function (`/functions/v1/exchange-token`)
+- **Silent SSO:** `public/silent-check-sso.html` handles background token refresh with PKCE S256
+- **Frontend auth flow:** `KeycloakService` wraps keycloak-js with Angular signals → `AuthService` decodes JWT claims → `SupabaseService` exchanges token for Supabase access
+- **No SMTP/email system** — no invitation emails, no password reset, no reminder emails
 
 ### FastAPI Endpoints (intentionally thin)
 
@@ -228,9 +229,6 @@ Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-l
 |----------|------|---------|
 | `GET /api/health` | None | Health check |
 | `POST /api/auth/resolve-tenant` | None (rate-limited 10/min/IP) | Resolve email domain → tenant + allowed auth methods |
-| `POST /api/auth/reset-password` | None | Validate tenant allows email_password, then forward to Supabase |
-| `POST /api/invite` | JWT: Tenant Admin / Platform Admin | Send invitation email via SMTP |
-| `POST /api/reminders/send` | JWT: TA / CSM / Lecturer / PA | Send reminder email via SMTP |
 | `POST /api/quiz-results/external` | API key / webhook | Receive external quiz results |
 
 **All CRUD goes Angular → Supabase directly. Never add CRUD endpoints to FastAPI.**
@@ -252,7 +250,7 @@ Glassmorphism: bg-white/80 backdrop-blur-sm border-white/20 rounded-2xl shadow-l
 These rules are NOT covered in other sections and cause hard-to-debug failures:
 
 1. **Never expose `quiz_question_options.is_correct` or `quiz_questions.correct_answer` to learners** — always query `quiz_questions_safe` and `quiz_question_options_safe` views instead of base tables.
-2. **Never call `resetPasswordForEmail()` directly from frontend** — must proxy through FastAPI (`POST /api/auth/reset-password`). Direct calls set passwords on SSO-only users.
+2. **Auth is Keycloak SSO only** — no email/password, no magic link, no password reset. All auth goes through `KeycloakService` → token exchange → Supabase.
 3. **Never create SECURITY DEFINER functions without `SET search_path = public`** — `supabase_auth_admin` has `search_path=auth`, causing 500 errors on every auth operation.
 4. **Never insert notifications from application code** — only database triggers create notifications. There are 13 trigger functions with deduplication and exception handling.
 5. **Never set `modules.course_id` independently** — it must match `lectures.course_id` (enforced by `enforce_module_course_consistency()` trigger). Setting it wrong silently breaks RLS.

@@ -6,11 +6,9 @@ import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { BunnyUploadService } from './bunny-upload.service';
-import { PosthogService } from './posthog.service';
 import { createMockSupabaseService } from '../../__mocks__/supabase.mock';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
 import { createMockApiService } from '../../__mocks__/api.mock';
-import { createMockPosthogService } from '../../__mocks__/posthog.mock';
 
 describe('CourseService', () => {
   let service: CourseService;
@@ -26,7 +24,6 @@ describe('CourseService', () => {
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, userId: 'test-user-id' }) },
         { provide: ApiService, useValue: createMockApiService() },
         { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
-        { provide: PosthogService, useValue: createMockPosthogService() },
       ],
     });
     service = TestBed.inject(CourseService);
@@ -170,8 +167,7 @@ describe('CourseService', () => {
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
           { provide: ApiService, useValue: createMockApiService() },
           { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
-          { provide: PosthogService, useValue: createMockPosthogService() },
-        ],
+          ],
       });
       const unauthService = TestBed.inject(CourseService);
 
@@ -376,8 +372,7 @@ describe('CourseService', () => {
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
           { provide: ApiService, useValue: createMockApiService() },
           { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
-          { provide: PosthogService, useValue: createMockPosthogService() },
-        ],
+          ],
       });
       const unauthService = TestBed.inject(CourseService);
 
@@ -1949,8 +1944,7 @@ describe('CourseService', () => {
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
           { provide: ApiService, useValue: createMockApiService() },
           { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
-          { provide: PosthogService, useValue: createMockPosthogService() },
-        ],
+          ],
       });
       const unauthService = TestBed.inject(CourseService);
 
@@ -2198,8 +2192,7 @@ describe('CourseService', () => {
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
           { provide: ApiService, useValue: createMockApiService() },
           { provide: BunnyUploadService, useValue: { deleteVideo: vi.fn().mockReturnValue(EMPTY) } },
-          { provide: PosthogService, useValue: createMockPosthogService() },
-        ],
+          ],
       });
       const unauthService = TestBed.inject(CourseService);
 

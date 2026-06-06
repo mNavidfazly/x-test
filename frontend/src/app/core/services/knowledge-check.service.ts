@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
-import { PosthogService } from './posthog.service';
+
 import { extractErrorMessage } from '../utils/error.utils';
 import {
   KnowledgeCheckOption,
@@ -14,7 +14,7 @@ import {
 export class KnowledgeCheckService {
   #supabase = inject(SupabaseService);
   #auth = inject(AuthService);
-  #posthog = inject(PosthogService);
+
 
   // --- Learner methods ---
 
@@ -43,10 +43,6 @@ export class KnowledgeCheckService {
     });
     if (error) throw new Error(extractErrorMessage(error, 'Failed to submit answer'));
     const result = data as unknown as { is_correct: boolean; correct_index: number; explanation: string | null };
-    this.#posthog.capture('knowledge_check_answered', {
-      question_id: questionId,
-      correct: result.is_correct,
-    });
     return {
       questionId,
       selectedOptionIndex: selectedIndex,

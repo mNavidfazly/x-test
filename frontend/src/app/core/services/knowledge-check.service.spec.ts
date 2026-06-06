@@ -3,10 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { KnowledgeCheckService } from './knowledge-check.service';
 import { SupabaseService } from './supabase.service';
 import { AuthService } from './auth.service';
-import { PosthogService } from './posthog.service';
 import { createMockSupabaseService } from '../../__mocks__/supabase.mock';
 import { createMockAuthService } from '../../__mocks__/auth.mock';
-import { createMockPosthogService } from '../../__mocks__/posthog.mock';
 
 describe('KnowledgeCheckService', () => {
   let service: KnowledgeCheckService;
@@ -20,7 +18,6 @@ describe('KnowledgeCheckService', () => {
         KnowledgeCheckService,
         { provide: SupabaseService, useValue: supabase },
         { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: true, userId: 'test-user-id' }) },
-        { provide: PosthogService, useValue: createMockPosthogService() },
       ],
     });
     service = TestBed.inject(KnowledgeCheckService);
@@ -128,8 +125,7 @@ describe('KnowledgeCheckService', () => {
           KnowledgeCheckService,
           { provide: SupabaseService, useValue: supabase },
           { provide: AuthService, useValue: createMockAuthService({ isAuthenticated: false }) },
-          { provide: PosthogService, useValue: createMockPosthogService() },
-        ],
+          ],
       });
       const unauthService = TestBed.inject(KnowledgeCheckService);
 

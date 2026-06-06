@@ -1,10 +1,8 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Session } from '@supabase/supabase-js';
 import * as Sentry from '@sentry/angular';
+import { KeycloakService } from './keycloak.service';
 import { SupabaseService } from './supabase.service';
-import { ToastService } from './toast.service';
-import { PosthogService } from './posthog.service';
 import { AppUser, JwtClaims, UserRole } from '../models/auth.model';
 
 const DEFAULT_CLAIMS: JwtClaims = {
@@ -19,13 +17,11 @@ const DEFAULT_CLAIMS: JwtClaims = {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  #keycloak = inject(KeycloakService);
   #supabase = inject(SupabaseService);
   #router = inject(Router);
-  #toast = inject(ToastService);
-  #posthog = inject(PosthogService);
   #currentUser = signal<AppUser | null>(null);
   #loading = signal(true);
-  #signOutInitiated = false;
 
   readonly currentUser = this.#currentUser.asReadonly();
   readonly loading = this.#loading.asReadonly();
@@ -33,86 +29,55 @@ export class AuthService {
   readonly roles = computed(() => this.#currentUser()?.roles ?? []);
 
   constructor() {
-    this.#supabase.client.auth.onAuthStateChange((event, session) => {
-      const wasAuthenticated = this.#currentUser() !== null;
-      const user = this.#parseSession(session);
-      this.#currentUser.set(user);
-      this.#loading.set(false);
-
-      if (user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
-        this.#posthog.identify(user);
-        Sentry.setUser({ id: user.id, email: user.email });
-        Sentry.setTag('tenant_id', user.tenantId);
-        Sentry.setTag('roles', user.roles.join(','));
-      }
-
-      if (event === 'SIGNED_OUT' && wasAuthenticated) {
-        this.#posthog.reset();
-        Sentry.setUser(null);
-        if (this.#signOutInitiated) {
-          this.#signOutInitiated = false;
-          this.#router.navigate(['/login']);
-        } else {
-          this.#toast.error('Your session has expired. Please sign in again.', { persistent: true });
-          const returnUrl = this.#router.url;
-          this.#router.navigate(['/login'], {
-            queryParams: returnUrl !== '/' && returnUrl !== '/login' ? { returnUrl } : {},
-          });
-        }
-      }
-    });
-
-    this.#supabase.client.auth.getSession()
-      .then(({ data: { session } }) => {
-        this.#currentUser.set(this.#parseSession(session));
-        this.#loading.set(false);
-      })
-      .catch(() => {
-        this.#currentUser.set(null);
-        this.#loading.set(false);
-      });
+    this.#initKeycloak();
   }
 
-  async signInWithPassword(email: string, password: string) {
-    return this.#supabase.client.auth.signInWithPassword({ email, password });
-  }
+  async #initKeycloak(): Promise<void> {
+    const authenticated = await this.#keycloak.init();
 
-  async signInWithOtp(email: string) {
-    return this.#supabase.client.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: false },
-    });
-  }
-
-  async verifyOtp(email: string, token: string) {
-    return this.#supabase.client.auth.verifyOtp({ email, token, type: 'email' });
-  }
-
-  async verifyRecoveryOtp(email: string, token: string) {
-    return this.#supabase.client.auth.verifyOtp({ email, token, type: 'recovery' });
-  }
-
-  async updatePassword(password: string) {
-    return this.#supabase.client.auth.updateUser({ password });
-  }
-
-  async signInWithOAuth(hint?: string) {
-    const options: Record<string, unknown> = {
-      redirectTo: `${window.location.origin}/auth/callback`,
-      scopes: 'openid',
-    };
-    if (hint) {
-      options['queryParams'] = { kc_idp_hint: hint };
+    if (authenticated) {
+      this.#updateUser();
     }
-    return this.#supabase.client.auth.signInWithOAuth({
-      provider: 'keycloak',
-      options,
-    });
+
+    this.#loading.set(false);
   }
 
-  async signOut() {
-    this.#signOutInitiated = true;
-    await this.#supabase.client.auth.signOut();
+  #updateUser(): void {
+    const kcUser = this.#keycloak.getUser();
+    const token = this.#keycloak.getToken();
+
+    if (!kcUser || !token) {
+      this.#currentUser.set(null);
+      return;
+    }
+
+    const claims = this.#decodeJwtClaims(token);
+    const roles = this.#computeRoles(claims);
+    const userId = this.#keycloak.getUserId() ?? '';
+
+    const user: AppUser = {
+      id: userId,
+      email: kcUser.email ?? '',
+      tenantId: claims.tenant_id,
+      roles,
+      claims,
+    };
+
+    this.#currentUser.set(user);
+    Sentry.setUser({ id: user.id, email: user.email });
+    Sentry.setTag('tenant_id', user.tenantId);
+    Sentry.setTag('roles', user.roles.join(','));
+  }
+
+  async login(): Promise<void> {
+    await this.#keycloak.login();
+  }
+
+  async signOut(): Promise<void> {
+    this.#supabase.clearToken();
+    this.#currentUser.set(null);
+    Sentry.setUser(null);
+    await this.#keycloak.logout();
   }
 
   hasRole(role: UserRole): boolean {
@@ -121,21 +86,6 @@ export class AuthService {
 
   hasAnyRole(roles: UserRole[]): boolean {
     return roles.some((r) => this.roles().includes(r));
-  }
-
-  #parseSession(session: Session | null): AppUser | null {
-    if (!session?.user) return null;
-
-    const claims = this.#decodeJwtClaims(session.access_token);
-    const roles = this.#computeRoles(claims);
-
-    return {
-      id: session.user.id,
-      email: session.user.email ?? '',
-      tenantId: claims.tenant_id,
-      roles,
-      claims,
-    };
   }
 
   #decodeJwtClaims(accessToken: string): JwtClaims {

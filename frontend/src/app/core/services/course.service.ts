@@ -5,7 +5,7 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from './auth.service';
 import { ApiService } from './api.service';
 import { BunnyUploadService } from './bunny-upload.service';
-import { PosthogService } from './posthog.service';
+
 import { ActiveTrack } from './audio-player.service';
 import { extractErrorMessage } from '../utils/error.utils';
 import { isStoragePath } from '../utils/storage.utils';
@@ -33,7 +33,7 @@ export class CourseService {
   #auth = inject(AuthService);
   #api = inject(ApiService);
   #bunnyUpload = inject(BunnyUploadService);
-  #posthog = inject(PosthogService);
+
 
   #courses = signal<CourseWithProgress[]>([]);
   #courseDetail = signal<CourseDetail | null>(null);
@@ -389,11 +389,6 @@ export class CourseService {
         if (oldest) this.#moduleCache.delete(oldest);
       }
 
-      this.#posthog.capture('module_viewed', {
-        module_id: moduleId,
-        module_type: module.module_type,
-        course_id: courseId,
-      });
 
       // Auto-track in_progress when a user first views a module
       const tenantId = this.#auth.currentUser()?.claims?.tenant_id;
@@ -472,8 +467,6 @@ export class CourseService {
       return;
     }
 
-    this.#posthog.capture('module_completed', { module_id: moduleId });
-
     // Update local state + cache
     const updated = {
       ...viewer,
@@ -527,7 +520,6 @@ export class CourseService {
       .insert({ user_id: userId, tenant_id: tenantId, course_id: courseId });
 
     if (error) throw new Error(extractErrorMessage(error, 'Failed to enroll'));
-    this.#posthog.capture('course_enrolled', { course_id: courseId, method: 'open' });
     await this.loadCourseDetail(courseId);
   }
 
@@ -536,7 +528,6 @@ export class CourseService {
       .rpc('enroll_with_password', { p_course_id: courseId, p_password: password });
 
     if (error) throw new Error(extractErrorMessage(error, 'Failed to enroll'));
-    this.#posthog.capture('course_enrolled', { course_id: courseId, method: 'password' });
     await this.loadCourseDetail(courseId);
   }
 
@@ -830,7 +821,6 @@ export class CourseService {
       .single();
 
     if (error) throw new Error(extractErrorMessage(error, 'Failed to start quiz'));
-    this.#posthog.capture('quiz_started', { quiz_id: quizId, attempt_number: attemptNumber });
     return data as QuizAttempt;
   }
 
@@ -879,12 +869,6 @@ export class CourseService {
       .eq('id', attemptId)
       .single();
 
-    this.#posthog.capture('quiz_submitted', {
-      quiz_id: (attempt as QuizAttempt)?.quiz_id,
-      score: grade.score,
-      passed: grade.passed,
-      attempt_number: (attempt as QuizAttempt)?.attempt_number,
-    });
     return { attempt: attempt as QuizAttempt, grade, questions };
   }
 
@@ -1020,7 +1004,6 @@ export class CourseService {
       throw new Error(extractErrorMessage(error, 'Failed to submit exam'));
     }
 
-    this.#posthog.capture('exam_submitted', { exam_id: examId, course_id: courseId });
     const signedUrl = await this.#getSignedUrlFromBucket('exam-submissions', storagePath);
     return { ...data, file_url: signedUrl ?? '' } as ExamSubmission;
   }

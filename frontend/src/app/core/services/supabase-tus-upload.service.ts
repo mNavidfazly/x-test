@@ -1,11 +1,11 @@
 import { inject, Injectable, signal } from '@angular/core';
 import * as tus from 'tus-js-client';
-import { SupabaseService } from './supabase.service';
+import { KeycloakService } from './keycloak.service';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseTusUploadService {
-  readonly #supabase = inject(SupabaseService);
+  readonly #keycloak = inject(KeycloakService);
 
   readonly uploading = signal(false);
   readonly progress = signal(0);
@@ -15,8 +15,8 @@ export class SupabaseTusUploadService {
   #currentUpload: tus.Upload | null = null;
 
   async upload(bucket: string, path: string, file: File): Promise<string> {
-    const { data: { session } } = await this.#supabase.client.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
+    const token = this.#keycloak.getToken();
+    if (!token) throw new Error('Not authenticated');
 
     this.uploading.set(true);
     this.progress.set(0);
@@ -35,7 +35,7 @@ export class SupabaseTusUploadService {
         uploadDataDuringCreation: true,
         removeFingerprintOnSuccess: true,
         headers: {
-          authorization: `Bearer ${session.access_token}`,
+          authorization: `Bearer ${token}`,
           'x-upsert': 'false',
         },
         metadata: {

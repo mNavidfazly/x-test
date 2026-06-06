@@ -1,25 +1,21 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, from, switchMap } from 'rxjs';
+import { Observable, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { SupabaseService } from './supabase.service';
+import { KeycloakService } from './keycloak.service';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
   private readonly http = inject(HttpClient);
-  private readonly supabase = inject(SupabaseService);
+  private readonly keycloak = inject(KeycloakService);
   private readonly baseUrl = environment.apiUrl;
 
   private getAuthHeaders(): Observable<HttpHeaders> {
-    return from(this.supabase.client.auth.getSession()).pipe(
-      switchMap(({ data }) => {
-        const token = data.session?.access_token;
-        const headers = new HttpHeaders(
-          token ? { Authorization: `Bearer ${token}` } : {},
-        );
-        return [headers];
-      }),
+    const token = this.keycloak.getToken();
+    const headers = new HttpHeaders(
+      token ? { Authorization: `Bearer ${token}` } : {},
     );
+    return of(headers);
   }
 
   get<T>(path: string): Observable<T> {

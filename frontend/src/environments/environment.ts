@@ -1,10 +1,10 @@
 export const environment = {
   production: false,
-  supabaseUrl: 'https://ruhdnvtvoxxiodnyyqqf.supabase.co',
-  supabaseAnonKey:
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1aGRudnR2b3h4aW9kbnl5cXFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1NjUzNDksImV4cCI6MjA4NjE0MTM0OX0.2kSHbnuCaUDgNQDJdaZlAyzD3PngdYUmlPTjSe4CuHg',
+  supabaseUrl: 'https://yecivnczykkdhjjhydam.supabase.co',
+  supabaseAnonKey: 'sb_publishable_zmIvwuOdWUFj_FKgNHggEA_gbM8NOmZ',
+  keycloakUrl: 'https://dev-auth.x-lng.com',
+  keycloakRealm: 'customers',
+  keycloakClientId: 'x-origination-ui',
   apiUrl: 'http://localhost:8000/api',
-  posthogApiKey: 'phc_jG0XkQtsolp2t1DQcVUchxkjUoBX4BKEUBicla6aIUK',
-  posthogHost: 'https://eu.i.posthog.com',
   sentryDsn: '',
 };

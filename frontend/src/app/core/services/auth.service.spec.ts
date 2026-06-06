@@ -4,9 +4,7 @@ import { provideRouter, Router } from '@angular/router';
 import { AuthService } from './auth.service';
 import { SupabaseService } from './supabase.service';
 import { ToastService } from './toast.service';
-import { PosthogService } from './posthog.service';
 import { createMockToastService } from '../../__mocks__/toast.mock';
-import { createMockPosthogService } from '../../__mocks__/posthog.mock';
 import { JwtClaims } from '../models/auth.model';
 
 function buildJwt(claims: Partial<JwtClaims> & Record<string, unknown> = {}): string {
@@ -81,7 +79,6 @@ describe('AuthService', () => {
         AuthService,
         { provide: SupabaseService, useValue: mockSupabase },
         { provide: ToastService, useValue: mockToast },
-        { provide: PosthogService, useValue: createMockPosthogService() },
       ],
     });
 
@@ -282,7 +279,6 @@ describe('AuthService', () => {
         AuthService,
         { provide: SupabaseService, useValue: mockSupabase },
         { provide: ToastService, useValue: toast },
-        { provide: PosthogService, useValue: createMockPosthogService() },
       ],
     });
 
@@ -389,7 +385,6 @@ describe('AuthService', () => {
         AuthService,
         { provide: SupabaseService, useValue: mockSupabase },
         { provide: ToastService, useValue: mockToast },
-        { provide: PosthogService, useValue: createMockPosthogService() },
       ],
     });
 

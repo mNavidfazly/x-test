@@ -18,7 +18,7 @@ import { config } from 'dotenv';
 
 config(); // load .env
 
-const PROJECT_REF = process.env.SUPABASE_PROJECT_REF ?? 'ruhdnvtvoxxiodnyyqqf';
+const PROJECT_REF = process.env.SUPABASE_PROJECT_REF ?? 'yecivnczykkdhjjhydam';
 const POLL_INTERVAL_MS = 10_000;
 const POLL_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
