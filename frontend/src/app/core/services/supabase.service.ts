@@ -26,6 +26,10 @@ export class SupabaseService {
     this.#tokenExpiresAt = 0;
   }
 
+  async getToken(): Promise<string | null> {
+    return this.#getSupabaseToken();
+  }
+
   async #getSupabaseToken(): Promise<string | null> {
     const keycloakToken = this.#keycloak.getToken();
     if (!keycloakToken) return null;

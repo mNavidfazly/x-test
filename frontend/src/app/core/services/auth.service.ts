@@ -36,24 +36,28 @@ export class AuthService {
     const authenticated = await this.#keycloak.init();
 
     if (authenticated) {
-      this.#updateUser();
+      await this.#updateUser();
     }
 
     this.#loading.set(false);
   }
 
-  #updateUser(): void {
+  async #updateUser(): Promise<void> {
     const kcUser = this.#keycloak.getUser();
-    const token = this.#keycloak.getToken();
+    const keycloakToken = this.#keycloak.getToken();
 
-    if (!kcUser || !token) {
+    if (!kcUser || !keycloakToken) {
       this.#currentUser.set(null);
       return;
     }
 
-    const claims = this.#decodeJwtClaims(token);
+    const supabaseToken = await this.#supabase.getToken();
+    const tokenToDecode = supabaseToken ?? keycloakToken;
+    const claims = this.#decodeJwtClaims(tokenToDecode);
     const roles = this.#computeRoles(claims);
-    const userId = this.#keycloak.getUserId() ?? '';
+
+    const supabaseSub = supabaseToken ? this.#extractSub(supabaseToken) : null;
+    const userId = supabaseSub ?? this.#keycloak.getUserId() ?? '';
 
     const user: AppUser = {
       id: userId,
@@ -67,6 +71,15 @@ export class AuthService {
     Sentry.setUser({ id: user.id, email: user.email });
     Sentry.setTag('tenant_id', user.tenantId);
     Sentry.setTag('roles', user.roles.join(','));
+  }
+
+  #extractSub(token: string): string | null {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub ?? null;
+    } catch {
+      return null;
+    }
   }
 
   async login(): Promise<void> {
