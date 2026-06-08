@@ -5,7 +5,7 @@ import { KeycloakService } from './keycloak.service';
 import { SupabaseService } from './supabase.service';
 import { AppUser, JwtClaims, UserRole } from '../models/auth.model';
 
-const CLAIMS_POLL_MS = 10_000;
+const CLAIMS_POLL_MS = 5_000;
 
 const DEFAULT_CLAIMS: JwtClaims = {
   tenant_id: '',
