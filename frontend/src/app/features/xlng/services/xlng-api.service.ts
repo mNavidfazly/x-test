@@ -37,15 +37,12 @@ export class XlngApiService {
     return res.json();
   }
 
-  async getVariations(page = 0, size = 100): Promise<{ items: XlngVariationBase[]; total: number }> {
+  async getVariations(page = 1, size = 100): Promise<{ items: XlngVariationBase[]; total: number }> {
     const res = await this.#fetch<XlngPageResponse<XlngVariationBase>>(
       'datacore',
       `scenario-variations?page=${page}&size=${size}`,
     );
-    return {
-      items: res.content ?? res.items ?? [],
-      total: res.totalElements ?? res.total ?? 0,
-    };
+    return { items: res.items, total: res.total };
   }
 
   getVariation(id: string): Promise<XlngVariationDetail> {

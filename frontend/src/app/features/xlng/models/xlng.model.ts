@@ -1,10 +1,9 @@
 export interface XlngPageResponse<T> {
-  content?: T[];
-  items?: T[];
-  total?: number;
-  totalElements?: number;
+  items: T[];
+  total: number;
   page: number;
   size: number;
+  pages: number;
 }
 
 export interface XlngScenarioBase {
