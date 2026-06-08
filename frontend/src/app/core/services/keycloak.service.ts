@@ -19,6 +19,7 @@ export class KeycloakService {
 
   readonly #authenticated = signal(false);
   readonly #initialized = signal(false);
+  #refreshInterval: ReturnType<typeof setInterval> | null = null;
 
   readonly authenticated = this.#authenticated.asReadonly();
   readonly initialized = this.#initialized.asReadonly();
@@ -51,6 +52,10 @@ export class KeycloakService {
         this.#authenticated.set(false);
       };
 
+      if (auth) {
+        this.#startRefreshInterval();
+      }
+
       this.#initialized.set(true);
       this.#authenticated.set(auth);
       return auth;
@@ -61,11 +66,29 @@ export class KeycloakService {
     }
   }
 
+  #startRefreshInterval(): void {
+    this.#stopRefreshInterval();
+    this.#refreshInterval = setInterval(() => {
+      this.#keycloak.updateToken(60).catch(() => {
+        this.#authenticated.set(false);
+        this.#stopRefreshInterval();
+      });
+    }, 30_000);
+  }
+
+  #stopRefreshInterval(): void {
+    if (this.#refreshInterval) {
+      clearInterval(this.#refreshInterval);
+      this.#refreshInterval = null;
+    }
+  }
+
   login(): Promise<void> {
     return this.#keycloak.login({ redirectUri: window.location.origin + '/' });
   }
 
   logout(): Promise<void> {
+    this.#stopRefreshInterval();
     return this.#keycloak.logout({ redirectUri: window.location.origin + '/login' });
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import * as Sentry from '@sentry/angular';
 import { KeycloakService } from './keycloak.service';
@@ -30,6 +30,14 @@ export class AuthService {
 
   constructor() {
     this.#initKeycloak();
+    effect(() => {
+      if (this.#keycloak.initialized() && !this.#keycloak.authenticated()) {
+        this.#supabase.clearToken();
+        this.#currentUser.set(null);
+        Sentry.setUser(null);
+        this.#router.navigate(['/login']);
+      }
+    });
   }
 
   async #initKeycloak(): Promise<void> {
