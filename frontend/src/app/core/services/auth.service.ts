@@ -1,9 +1,11 @@
-import { Injectable, computed, inject, signal } from '@angular/core';
+import { Injectable, DestroyRef, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import * as Sentry from '@sentry/angular';
 import { KeycloakService } from './keycloak.service';
 import { SupabaseService } from './supabase.service';
 import { AppUser, JwtClaims, UserRole } from '../models/auth.model';
+
+const CLAIMS_REFRESH_MS = 60_000;
 
 const DEFAULT_CLAIMS: JwtClaims = {
   tenant_id: '',
@@ -20,8 +22,10 @@ export class AuthService {
   #keycloak = inject(KeycloakService);
   #supabase = inject(SupabaseService);
   #router = inject(Router);
+  #destroyRef = inject(DestroyRef);
   #currentUser = signal<AppUser | null>(null);
   #loading = signal(true);
+  #refreshTimer: ReturnType<typeof setInterval> | null = null;
 
   readonly currentUser = this.#currentUser.asReadonly();
   readonly loading = this.#loading.asReadonly();
@@ -30,6 +34,7 @@ export class AuthService {
 
   constructor() {
     this.#initKeycloak();
+    this.#destroyRef.onDestroy(() => this.#stopClaimsRefresh());
   }
 
   async #initKeycloak(): Promise<void> {
@@ -37,9 +42,22 @@ export class AuthService {
 
     if (authenticated) {
       await this.#updateUser();
+      this.#startClaimsRefresh();
     }
 
     this.#loading.set(false);
+  }
+
+  #startClaimsRefresh(): void {
+    this.#stopClaimsRefresh();
+    this.#refreshTimer = setInterval(() => this.#updateUser(), CLAIMS_REFRESH_MS);
+  }
+
+  #stopClaimsRefresh(): void {
+    if (this.#refreshTimer) {
+      clearInterval(this.#refreshTimer);
+      this.#refreshTimer = null;
+    }
   }
 
   async #updateUser(): Promise<void> {
@@ -87,6 +105,7 @@ export class AuthService {
   }
 
   async signOut(): Promise<void> {
+    this.#stopClaimsRefresh();
     this.#supabase.clearToken();
     this.#currentUser.set(null);
     Sentry.setUser(null);

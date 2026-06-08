@@ -3,6 +3,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { KeycloakService } from './keycloak.service';
 
+const CLAIMS_REFRESH_MS = 60_000;
+
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
   readonly client: SupabaseClient;
@@ -10,6 +12,7 @@ export class SupabaseService {
   #keycloak = inject(KeycloakService);
   #cachedToken: string | null = null;
   #tokenExpiresAt = 0;
+  #refreshAt = 0;
 
   constructor() {
     this.client = createClient(
@@ -24,6 +27,7 @@ export class SupabaseService {
   clearToken(): void {
     this.#cachedToken = null;
     this.#tokenExpiresAt = 0;
+    this.#refreshAt = 0;
   }
 
   async getToken(): Promise<string | null> {
@@ -35,7 +39,7 @@ export class SupabaseService {
     if (!keycloakToken) return null;
 
     const now = Date.now();
-    if (this.#cachedToken && now < this.#tokenExpiresAt - 60_000) {
+    if (this.#cachedToken && now < this.#refreshAt) {
       return this.#cachedToken;
     }
 
@@ -58,6 +62,7 @@ export class SupabaseService {
     const { token, expires_in } = await res.json();
     this.#cachedToken = token;
     this.#tokenExpiresAt = now + expires_in * 1000;
+    this.#refreshAt = now + CLAIMS_REFRESH_MS;
     return token;
   }
 }
