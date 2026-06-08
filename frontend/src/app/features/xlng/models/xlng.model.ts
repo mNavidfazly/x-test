@@ -33,7 +33,7 @@ export interface XlngVariationDetail extends XlngVariationBase {
   nSimulations: number;
   startDate: string;
   endDate: string;
-  simulatedProducts: string[];
+  simulatedProducts?: string[];
   scenarios?: XlngScenarioBase[];
   scenarioIds?: string[];
 }

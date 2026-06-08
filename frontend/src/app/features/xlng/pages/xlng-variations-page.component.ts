@@ -17,8 +17,8 @@ import { XlngVariationBase } from '../models/xlng.model';
   template: `
     <div class="p-6 max-w-7xl mx-auto">
       <div class="mb-6">
-        <h1 class="page-title">xLNG Scenarios</h1>
-        <p class="text-sm text-slate-500 mt-1">Browse and compare portfolio scenario variations</p>
+        <h1 class="page-title">Scenario Variations</h1>
+        <p class="text-sm text-slate-500 mt-1">Compare scenarios generated from different Monte Carlo paths.</p>
       </div>
 
       @if (loading()) {
