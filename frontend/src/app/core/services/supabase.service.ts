@@ -3,7 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../../environments/environment';
 import { KeycloakService } from './keycloak.service';
 
-const CLAIMS_REFRESH_MS = 60_000;
+const CLAIMS_REFRESH_MS = 10_000;
 
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
