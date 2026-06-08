@@ -5,6 +5,8 @@ import { KeycloakService } from './keycloak.service';
 import { SupabaseService } from './supabase.service';
 import { AppUser, JwtClaims, UserRole } from '../models/auth.model';
 
+const CLAIMS_POLL_MS = 10_000;
+
 const DEFAULT_CLAIMS: JwtClaims = {
   tenant_id: '',
   is_tenant_admin: false,
@@ -22,6 +24,7 @@ export class AuthService {
   #router = inject(Router);
   #currentUser = signal<AppUser | null>(null);
   #loading = signal(true);
+  #claimsPollInterval: ReturnType<typeof setInterval> | null = null;
 
   readonly currentUser = this.#currentUser.asReadonly();
   readonly loading = this.#loading.asReadonly();
@@ -32,6 +35,7 @@ export class AuthService {
     this.#initKeycloak();
     effect(() => {
       if (this.#keycloak.initialized() && !this.#keycloak.authenticated()) {
+        this.#stopClaimsPoll();
         this.#supabase.clearToken();
         this.#currentUser.set(null);
         Sentry.setUser(null);
@@ -45,9 +49,22 @@ export class AuthService {
 
     if (authenticated) {
       await this.#updateUser();
+      this.#startClaimsPoll();
     }
 
     this.#loading.set(false);
+  }
+
+  #startClaimsPoll(): void {
+    this.#stopClaimsPoll();
+    this.#claimsPollInterval = setInterval(() => this.#updateUser(), CLAIMS_POLL_MS);
+  }
+
+  #stopClaimsPoll(): void {
+    if (this.#claimsPollInterval) {
+      clearInterval(this.#claimsPollInterval);
+      this.#claimsPollInterval = null;
+    }
   }
 
   async #updateUser(): Promise<void> {
@@ -95,6 +112,7 @@ export class AuthService {
   }
 
   async signOut(): Promise<void> {
+    this.#stopClaimsPoll();
     this.#supabase.clearToken();
     this.#currentUser.set(null);
     Sentry.setUser(null);
