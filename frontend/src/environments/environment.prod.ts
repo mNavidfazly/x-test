@@ -7,4 +7,8 @@ export const environment = {
   keycloakClientId: 'x-origination-ui',
   apiUrl: 'https://x-test-production.up.railway.app/api',
   sentryDsn: '',
+  xlngUrls: {
+    datacore: 'https://dev-datacore.x-lng.com/v1',
+    operationPlanManager: 'https://dev-operationplanmanager.x-lng.com/v1',
+  },
 };

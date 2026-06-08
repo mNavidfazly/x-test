@@ -3,7 +3,7 @@ import {
   LucideIconData,
   LayoutDashboard, BookOpen, Bell, GraduationCap, MessageSquare,
   ClipboardCheck, Users, UserPlus, Building, HelpCircle, BarChart3,
-  Building2, FolderOpen, Clock, Flag, UserCog, StickyNote,
+  Building2, FolderOpen, Clock, Flag, UserCog, StickyNote, Layers,
 } from 'lucide-angular';
 
 export interface NavItem {
@@ -29,6 +29,13 @@ export const NAV_SECTIONS: NavSection[] = [
       { label: 'My Issues', route: '/issues', icon: Flag },
       { label: 'My Notes', route: '/notes', icon: StickyNote },
       { label: 'Notifications', route: '/notifications', icon: Bell },
+    ],
+  },
+  {
+    label: 'xLNG',
+    roles: 'all',
+    items: [
+      { label: 'Scenario Variations', route: '/xlng', icon: Layers },
     ],
   },
   {

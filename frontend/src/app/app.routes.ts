@@ -118,6 +118,25 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'xlng',
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./features/xlng/pages/xlng-variations-page.component').then(
+                (m) => m.XlngVariationsPageComponent,
+              ),
+          },
+          {
+            path: ':variationId',
+            loadComponent: () =>
+              import('./features/xlng/pages/xlng-variation-detail-page.component').then(
+                (m) => m.XlngVariationDetailPageComponent,
+              ),
+          },
+        ],
+      },
+      {
         path: 'teaching/courses',
         canActivate: [roleGuard('lecturer', 'platform_admin')],
         loadComponent: () =>
